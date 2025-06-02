@@ -48,10 +48,10 @@ export function AuthModal({ open, onOpenChange, mode, onModeChange }: AuthModalP
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="text-center">
-            {mode === 'login' ? 'Sign In to Your Account' : 'Create Your Account'}
+            {mode === 'login' ? 'Войдите в свой аккаунт' : 'Создайте аккаунт'}
           </DialogTitle>
           <p className="text-center text-neutral-600">
-            Join thousands of car enthusiasts
+            Присоединяйтесь к тысячам автолюбителей
           </p>
         </DialogHeader>
 

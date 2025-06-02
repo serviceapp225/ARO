@@ -13,7 +13,7 @@ export function ActiveAuctions() {
       <section className="py-16 bg-neutral-50">
         <div className="container mx-auto px-4 lg:px-8">
           <div className="flex items-center justify-between mb-12">
-            <h2 className="text-3xl font-bold text-neutral-900">Active Auctions</h2>
+            <h2 className="text-3xl font-bold text-neutral-900">Активные аукционы</h2>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {[1, 2, 3].map((i) => (
@@ -39,15 +39,15 @@ export function ActiveAuctions() {
     <section className="py-16 bg-neutral-50">
       <div className="container mx-auto px-4 lg:px-8">
         <div className="flex items-center justify-between mb-12">
-          <h2 className="text-3xl font-bold text-neutral-900">Active Auctions</h2>
+          <h2 className="text-3xl font-bold text-neutral-900">Активные аукционы</h2>
           <a href="/search" className="text-primary font-semibold hover:underline">
-            View All
+            Смотреть все
           </a>
         </div>
 
         {auctions.length === 0 ? (
           <div className="text-center py-12">
-            <p className="text-neutral-500 text-lg">No active auctions at this time.</p>
+            <p className="text-neutral-500 text-lg">В данный момент нет активных аукционов.</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -79,24 +79,24 @@ export function ActiveAuctions() {
                     {auction.year} {auction.make} {auction.model}
                   </h3>
                   <p className="text-neutral-600 mb-4">
-                    {auction.mileage.toLocaleString()} miles
+                    {auction.mileage.toLocaleString()} км
                   </p>
                   <div className="flex items-center justify-between mb-4">
                     <div>
-                      <p className="text-sm text-neutral-500">Current Bid</p>
+                      <p className="text-sm text-neutral-500">Текущая ставка</p>
                       <p className="text-2xl font-bold text-emerald-600 font-mono">
                         ${auction.currentBid.toLocaleString()}
                       </p>
                     </div>
                     <div className="text-right">
-                      <p className="text-sm text-neutral-500">Bids</p>
+                      <p className="text-sm text-neutral-500">Ставки</p>
                       <p className="text-lg font-semibold text-neutral-700">
                         {auction.bidCount}
                       </p>
                     </div>
                   </div>
                   <Button className="w-full bg-primary hover:bg-blue-800">
-                    View & Bid
+                    Смотреть и сделать ставку
                   </Button>
                 </CardContent>
               </Card>

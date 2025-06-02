@@ -9,18 +9,18 @@ export function SellYourCar() {
   const features = [
     {
       icon: Camera,
-      title: 'Upload Photos',
-      description: 'Add up to 5 high-quality photos of your vehicle',
+      title: 'Загрузите фото',
+      description: 'Добавьте до 5 качественных фотографий вашего автомобиля',
     },
     {
       icon: Gavel,
-      title: 'Set Your Reserve',
-      description: 'Choose your starting price and auction duration',
+      title: 'Установите резерв',
+      description: 'Выберите стартовую цену и продолжительность аукциона',
     },
     {
       icon: DollarSign,
-      title: 'Get Paid',
-      description: 'Secure payment processing once auction ends',
+      title: 'Получите оплату',
+      description: 'Безопасная обработка платежей после завершения аукциона',
     },
   ];
 
@@ -30,10 +30,10 @@ export function SellYourCar() {
         <div className="container mx-auto px-4 lg:px-8">
           <div className="max-w-4xl mx-auto text-center">
             <h2 className="text-3xl lg:text-4xl font-bold text-neutral-900 mb-6">
-              Sell Your Car
+              Продайте свой автомобиль
             </h2>
             <p className="text-xl text-neutral-600 mb-8">
-              Reach thousands of qualified buyers and get the best price for your vehicle
+              Найдите тысячи квалифицированных покупателей и получите лучшую цену за ваш автомобиль
             </p>
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
@@ -54,7 +54,7 @@ export function SellYourCar() {
               onClick={() => setShowAddCarModal(true)}
             >
               <Plus className="w-5 h-5 mr-2" />
-              Add Your Car
+              Добавить автомобиль
             </Button>
           </div>
         </div>
