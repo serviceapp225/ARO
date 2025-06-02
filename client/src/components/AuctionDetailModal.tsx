@@ -1,0 +1,212 @@
+import { useState } from 'react';
+import { Heart, Share2, X } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { CountdownTimer } from './CountdownTimer';
+import { ImageCarousel } from './ImageCarousel';
+import { useAuctions } from '@/contexts/AuctionContext';
+import { useToast } from '@/hooks/use-toast';
+
+export function AuctionDetailModal() {
+  const { selectedAuction, setSelectedAuction } = useAuctions();
+  const [bidAmount, setBidAmount] = useState('');
+  const { toast } = useToast();
+
+  if (!selectedAuction) return null;
+
+  const minimumBid = selectedAuction.currentBid + 1;
+
+  const handlePlaceBid = (e: React.FormEvent) => {
+    e.preventDefault();
+    const bid = parseFloat(bidAmount);
+    
+    if (bid < minimumBid) {
+      toast({
+        title: "Bid too low",
+        description: `Minimum bid is $${minimumBid.toLocaleString()}`,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    toast({
+      title: "Bid Placed!",
+      description: `Your bid of $${bid.toLocaleString()} has been placed.`,
+    });
+    
+    setBidAmount('');
+  };
+
+  const handleFavorite = () => {
+    toast({
+      title: "Added to Favorites",
+      description: "This auction has been added to your favorites.",
+    });
+  };
+
+  const handleShare = () => {
+    navigator.clipboard.writeText(window.location.href);
+    toast({
+      title: "Link Copied",
+      description: "Auction link copied to clipboard.",
+    });
+  };
+
+  // Mock bid history
+  const bidHistory = [
+    { bidder: 'john_doe87', amount: selectedAuction.currentBid, time: '2 minutes ago' },
+    { bidder: 'mike_enthusiast', amount: selectedAuction.currentBid - 500, time: '5 minutes ago' },
+    { bidder: 'car_collector', amount: selectedAuction.currentBid - 1000, time: '8 minutes ago' },
+  ];
+
+  return (
+    <Dialog open={true} onOpenChange={() => setSelectedAuction(null)}>
+      <DialogContent className="max-w-6xl max-h-[95vh] overflow-y-auto p-0">
+        {/* Photo Carousel */}
+        <div className="relative h-96 bg-neutral-100">
+          <ImageCarousel
+            images={selectedAuction.photos}
+            alt={`${selectedAuction.year} ${selectedAuction.make} ${selectedAuction.model}`}
+            className="h-full"
+          />
+        </div>
+
+        <div className="p-8">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Vehicle Details */}
+            <div className="lg:col-span-2 space-y-6">
+              <div>
+                <h2 className="text-3xl font-bold text-neutral-900 mb-2">
+                  {selectedAuction.year} {selectedAuction.make} {selectedAuction.model}
+                </h2>
+                <p className="text-neutral-600">
+                  {selectedAuction.mileage.toLocaleString()} miles
+                </p>
+              </div>
+
+              <div>
+                <h3 className="text-lg font-semibold mb-3">Description</h3>
+                <p className="text-neutral-700 leading-relaxed">
+                  This stunning {selectedAuction.year} {selectedAuction.make} {selectedAuction.model} is a true masterpiece of automotive engineering. 
+                  With only {selectedAuction.mileage.toLocaleString()} carefully driven miles, this vehicle represents excellence in 
+                  performance and luxury. Features include premium interior, advanced safety systems, and exceptional build quality.
+                </p>
+              </div>
+
+              {/* Bid History */}
+              <div>
+                <h3 className="text-lg font-semibold mb-3">Recent Bids</h3>
+                <div className="space-y-3 max-h-40 overflow-y-auto">
+                  {bidHistory.map((bid, index) => (
+                    <div key={index} className="flex items-center justify-between p-3 bg-neutral-50 rounded-lg">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center text-white text-sm font-semibold">
+                          {bid.bidder.charAt(0).toUpperCase()}
+                        </div>
+                        <span className="font-medium">{bid.bidder}</span>
+                      </div>
+                      <div className="text-right">
+                        <div className="font-semibold text-emerald-600 font-mono">
+                          ${bid.amount.toLocaleString()}
+                        </div>
+                        <div className="text-sm text-neutral-500">{bid.time}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Bidding Panel */}
+            <div className="space-y-6">
+              {/* Timer */}
+              <CountdownTimer 
+                endTime={selectedAuction.endTime} 
+                size="large"
+                onTimeUp={() => toast({ title: "Auction Ended", description: "This auction has concluded." })}
+              />
+
+              {/* Current Bid */}
+              <div className="text-center p-6 bg-emerald-50 rounded-2xl">
+                <div className="text-sm text-neutral-600 mb-1">Current Highest Bid</div>
+                <div className="text-4xl font-bold text-emerald-600 font-mono mb-2">
+                  ${selectedAuction.currentBid.toLocaleString()}
+                </div>
+                <div className="text-sm text-neutral-600">
+                  {selectedAuction.bidCount} bids placed
+                </div>
+              </div>
+
+              {/* Place Bid */}
+              <form onSubmit={handlePlaceBid} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-neutral-700 mb-2">
+                    Your Bid Amount
+                  </label>
+                  <div className="relative">
+                    <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-neutral-500 text-lg">
+                      $
+                    </span>
+                    <Input
+                      type="number"
+                      placeholder={minimumBid.toString()}
+                      min={minimumBid}
+                      value={bidAmount}
+                      onChange={(e) => setBidAmount(e.target.value)}
+                      className="pl-8 py-4 text-lg font-mono"
+                      required
+                    />
+                  </div>
+                  <p className="text-sm text-neutral-500 mt-1">
+                    Minimum bid: ${minimumBid.toLocaleString()}
+                  </p>
+                </div>
+                
+                <Button 
+                  type="submit"
+                  className="w-full bg-red-600 hover:bg-red-700 py-4 text-lg"
+                >
+                  Place Bid
+                </Button>
+                
+                <p className="text-xs text-neutral-500 text-center">
+                  By bidding, you agree to our Terms of Service
+                </p>
+              </form>
+
+              {/* Quick Actions */}
+              <div className="flex space-x-3">
+                <Button
+                  variant="outline"
+                  className="flex-1"
+                  onClick={handleFavorite}
+                >
+                  <Heart className="w-4 h-4 mr-1" />
+                  Watch
+                </Button>
+                <Button
+                  variant="outline"
+                  className="flex-1"
+                  onClick={handleShare}
+                >
+                  <Share2 className="w-4 h-4 mr-1" />
+                  Share
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <Button
+          variant="ghost"
+          size="icon"
+          className="absolute top-4 right-4 bg-black/50 text-white hover:bg-black/70"
+          onClick={() => setSelectedAuction(null)}
+        >
+          <X className="h-4 w-4" />
+        </Button>
+      </DialogContent>
+    </Dialog>
+  );
+}
