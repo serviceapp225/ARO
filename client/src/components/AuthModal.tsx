@@ -57,8 +57,8 @@ export function AuthModal({ open, onOpenChange, mode, onModeChange }: AuthModalP
 
         <Tabs value={mode} onValueChange={(value) => onModeChange(value as 'login' | 'register')}>
           <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="login">Sign In</TabsTrigger>
-            <TabsTrigger value="register">Sign Up</TabsTrigger>
+            <TabsTrigger value="login">Войти</TabsTrigger>
+            <TabsTrigger value="register">Регистрация</TabsTrigger>
           </TabsList>
 
           <TabsContent value="login" className="space-y-4">
@@ -66,7 +66,7 @@ export function AuthModal({ open, onOpenChange, mode, onModeChange }: AuthModalP
               <div>
                 <Input
                   type="email"
-                  placeholder="Email address"
+                  placeholder="Электронная почта"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
@@ -75,7 +75,7 @@ export function AuthModal({ open, onOpenChange, mode, onModeChange }: AuthModalP
               <div>
                 <Input
                   type="password"
-                  placeholder="Password"
+                  placeholder="Пароль"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
@@ -90,36 +90,36 @@ export function AuthModal({ open, onOpenChange, mode, onModeChange }: AuthModalP
                     onChange={(e) => setRememberMe(e.target.checked)}
                     className="mr-2"
                   />
-                  <span className="text-neutral-600">Remember me</span>
+                  <span className="text-neutral-600">Запомнить меня</span>
                 </label>
                 <a href="#" className="text-primary hover:underline">
-                  Forgot password?
+                  Забыли пароль?
                 </a>
               </div>
 
               <Button type="submit" className="w-full">
-                Sign In
+                Войти
               </Button>
             </form>
           </TabsContent>
 
           <TabsContent value="register" className="space-y-4">
             <div className="space-y-4">
-              <Label>I want to:</Label>
+              <Label>Я хочу:</Label>
               <RadioGroup value={role} onValueChange={(value) => setRole(value as 'buyer' | 'seller')}>
                 <div className="grid grid-cols-2 gap-3">
                   <label className="flex items-center p-3 border border-neutral-200 rounded-lg cursor-pointer hover:bg-neutral-50">
                     <RadioGroupItem value="buyer" className="mr-2" />
                     <div>
-                      <div className="font-medium">Buy Cars</div>
-                      <div className="text-sm text-neutral-500">Bid on auctions</div>
+                      <div className="font-medium">Покупать авто</div>
+                      <div className="text-sm text-neutral-500">Участвовать в аукционах</div>
                     </div>
                   </label>
                   <label className="flex items-center p-3 border border-neutral-200 rounded-lg cursor-pointer hover:bg-neutral-50">
                     <RadioGroupItem value="seller" className="mr-2" />
                     <div>
-                      <div className="font-medium">Sell Cars</div>
-                      <div className="text-sm text-neutral-500">List my vehicles</div>
+                      <div className="font-medium">Продавать авто</div>
+                      <div className="text-sm text-neutral-500">Размещать объявления</div>
                     </div>
                   </label>
                 </div>
@@ -130,7 +130,7 @@ export function AuthModal({ open, onOpenChange, mode, onModeChange }: AuthModalP
               <div>
                 <Input
                   type="email"
-                  placeholder="Email address"
+                  placeholder="Электронная почта"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
@@ -139,7 +139,7 @@ export function AuthModal({ open, onOpenChange, mode, onModeChange }: AuthModalP
               <div>
                 <Input
                   type="password"
-                  placeholder="Password"
+                  placeholder="Пароль"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
@@ -147,7 +147,7 @@ export function AuthModal({ open, onOpenChange, mode, onModeChange }: AuthModalP
               </div>
 
               <Button type="submit" className="w-full">
-                Sign Up
+                Зарегистрироваться
               </Button>
             </form>
           </TabsContent>
@@ -158,7 +158,7 @@ export function AuthModal({ open, onOpenChange, mode, onModeChange }: AuthModalP
             <div className="w-full border-t border-neutral-300" />
           </div>
           <div className="relative flex justify-center text-sm">
-            <span className="px-2 bg-white text-neutral-500">Or continue with</span>
+            <span className="px-2 bg-white text-neutral-500">Или продолжить с</span>
           </div>
         </div>
 
