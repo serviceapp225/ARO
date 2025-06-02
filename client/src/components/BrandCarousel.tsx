@@ -14,7 +14,7 @@ export function BrandCarousel() {
     <section className="py-12 bg-white">
       <div className="container mx-auto px-4 lg:px-8">
         <h2 className="text-2xl font-bold text-center mb-8 text-neutral-900">
-          Featured Brands
+          Популярные марки
         </h2>
         
         <ScrollArea className="w-full whitespace-nowrap">

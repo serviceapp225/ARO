@@ -13,9 +13,9 @@ export function Header() {
   const { user, logout } = useAuth();
 
   const navigation = [
-    { name: 'Home', href: '/' },
-    { name: 'Search', href: '/search' },
-    { name: 'Favorites', href: '/favorites' },
+    { name: 'Главная', href: '/' },
+    { name: 'Поиск', href: '/search' },
+    { name: 'Избранное', href: '/favorites' },
   ];
 
   const openAuthModal = (mode: 'login' | 'register') => {
@@ -53,7 +53,7 @@ export function Header() {
               ))}
               <Link href="/sell">
                 <Button className="bg-red-600 hover:bg-red-700">
-                  Sell a Car
+                  Продать авто
                 </Button>
               </Link>
             </nav>
@@ -63,10 +63,10 @@ export function Header() {
               {user ? (
                 <div className="flex items-center space-x-4">
                   <Link href="/profile">
-                    <Button variant="ghost">Profile</Button>
+                    <Button variant="ghost">Профиль</Button>
                   </Link>
                   <Button variant="ghost" onClick={logout}>
-                    Sign Out
+                    Выйти
                   </Button>
                 </div>
               ) : (
@@ -76,13 +76,13 @@ export function Header() {
                     onClick={() => openAuthModal('login')}
                     className="hidden sm:inline-flex"
                   >
-                    Login
+                    Войти
                   </Button>
                   <Button 
                     onClick={() => openAuthModal('register')}
                     className="hidden sm:inline-flex"
                   >
-                    Sign Up
+                    Регистрация
                   </Button>
                 </>
               )}
@@ -114,7 +114,7 @@ export function Header() {
                 ))}
                 <Link href="/sell" onClick={() => setIsMobileMenuOpen(false)}>
                   <Button className="bg-red-600 hover:bg-red-700 w-full">
-                    Sell a Car
+                    Продать авто
                   </Button>
                 </Link>
                 {!user && (
@@ -126,7 +126,7 @@ export function Header() {
                         setIsMobileMenuOpen(false);
                       }}
                     >
-                      Login
+                      Войти
                     </Button>
                     <Button 
                       onClick={() => {
@@ -134,7 +134,7 @@ export function Header() {
                         setIsMobileMenuOpen(false);
                       }}
                     >
-                      Sign Up
+                      Регистрация
                     </Button>
                   </div>
                 )}
