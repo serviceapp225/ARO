@@ -6,29 +6,44 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('AUTOAUCTION'),
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-      ),
-      body: const SingleChildScrollView(
-        padding: EdgeInsets.all(16.0),
+      backgroundColor: Colors.grey.shade50,
+      body: SafeArea(
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Hero Section
-            _HeroSection(),
-            SizedBox(height: 24),
+            // Top Section with App Title and WhatsApp
+            const _TopHeader(),
             
-            // Featured Auctions
-            _SectionTitle(title: 'Featured Auctions'),
-            SizedBox(height: 16),
-            _FeaturedAuctions(),
-            SizedBox(height: 24),
+            // Search Bar and Sell Button
+            const _SearchSection(),
             
-            // Categories
-            _SectionTitle(title: 'Browse by Category'),
-            SizedBox(height: 16),
-            _Categories(),
+            // Main Scrollable Content
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SizedBox(height: 16),
+                    
+                    // Announcement Banners
+                    const _AnnouncementBanners(),
+                    const SizedBox(height: 24),
+                    
+                    // Active Auctions Grid
+                    const _SectionTitle(title: 'Active Auctions'),
+                    const SizedBox(height: 12),
+                    const _ActiveAuctionsGrid(),
+                    const SizedBox(height: 24),
+                    
+                    // Popular Brands
+                    const _SectionTitle(title: 'Popular Brands'),
+                    const SizedBox(height: 12),
+                    const _PopularBrands(),
+                    const SizedBox(height: 100), // Bottom padding for navigation
+                  ],
+                ),
+              ),
+            ),
           ],
         ),
       ),
@@ -36,45 +51,43 @@ class HomeScreen extends StatelessWidget {
   }
 }
 
-class _HeroSection extends StatelessWidget {
-  const _HeroSection();
+// Top Header with App Title and WhatsApp
+class _TopHeader extends StatelessWidget {
+  const _TopHeader();
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [Colors.blue.shade600, Colors.blue.shade800],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           const Text(
-            'Find Your Dream Car',
+            'AUTOAUCTION',
             style: TextStyle(
-              fontSize: 28,
+              fontSize: 24,
               fontWeight: FontWeight.bold,
-              color: Colors.white,
+              color: Colors.black87,
             ),
           ),
-          const SizedBox(height: 8),
-          const Text(
-            'Bid on premium vehicles from trusted sellers',
-            style: TextStyle(
-              fontSize: 16,
-              color: Colors.white70,
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.green.shade100,
+              borderRadius: BorderRadius.circular(25),
             ),
-          ),
-          const SizedBox(height: 16),
-          ElevatedButton(
-            onPressed: () => Navigator.pushNamed(context, '/auctions'),
-            child: const Text('Browse Auctions'),
+            child: IconButton(
+              onPressed: () {
+                // Handle WhatsApp contact
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Opening WhatsApp support...')),
+                );
+              },
+              icon: Icon(
+                Icons.chat,
+                color: Colors.green.shade600,
+                size: 24,
+              ),
+            ),
           ),
         ],
       ),
@@ -82,6 +95,137 @@ class _HeroSection extends StatelessWidget {
   }
 }
 
+// Search Section with Search Bar and Sell Button
+class _SearchSection extends StatelessWidget {
+  const _SearchSection();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Column(
+        children: [
+          // Search Bar
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.grey.withOpacity(0.1),
+                  spreadRadius: 1,
+                  blurRadius: 6,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: TextField(
+              decoration: InputDecoration(
+                hintText: 'Search cars, brands, or models...',
+                hintStyle: TextStyle(color: Colors.grey.shade500),
+                prefixIcon: Icon(Icons.search, color: Colors.grey.shade600),
+                border: InputBorder.none,
+                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+              ),
+              onTap: () => Navigator.pushNamed(context, '/search'),
+              readOnly: true,
+            ),
+          ),
+          
+          const SizedBox(height: 12),
+          
+          // Sell Your Car Button
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: () => Navigator.pushNamed(context, '/sell-car'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.blue.shade600,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                elevation: 2,
+              ),
+              child: const Text(
+                'Sell Your Car',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// Announcement Banners
+class _AnnouncementBanners extends StatelessWidget {
+  const _AnnouncementBanners();
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Colors.orange.shade400, Colors.red.shade500],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Row(
+            children: [
+              Icon(
+                Icons.campaign,
+                color: Colors.white,
+                size: 24,
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Live Auction Alert!',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const Text(
+                      '5 premium cars ending in 2 hours',
+                      style: TextStyle(
+                        color: Colors.white70,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Icon(
+                Icons.arrow_forward_ios,
+                color: Colors.white,
+                size: 16,
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+// Section Title Widget
 class _SectionTitle extends StatelessWidget {
   final String title;
   
@@ -92,62 +236,220 @@ class _SectionTitle extends StatelessWidget {
     return Text(
       title,
       style: const TextStyle(
-        fontSize: 22,
+        fontSize: 20,
         fontWeight: FontWeight.bold,
+        color: Colors.black87,
       ),
     );
   }
 }
 
-class _FeaturedAuctions extends StatelessWidget {
-  const _FeaturedAuctions();
+// Active Auctions Grid (2 per row)
+class _ActiveAuctionsGrid extends StatelessWidget {
+  const _ActiveAuctionsGrid();
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: 200,
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        itemCount: 3,
-        itemBuilder: (context, index) {
-          return Container(
-            width: 300,
-            margin: const EdgeInsets.only(right: 16),
-            child: Card(
+    return GridView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        crossAxisSpacing: 12,
+        mainAxisSpacing: 12,
+        childAspectRatio: 0.75,
+      ),
+      itemCount: 6,
+      itemBuilder: (context, index) {
+        return _AuctionCard(
+          title: 'BMW X5 2020',
+          year: '2020',
+          currentBid: '\$45,${index + 1}00',
+          timeLeft: '2h ${30 + index}m',
+          index: index,
+        );
+      },
+    );
+  }
+}
+
+// Individual Auction Card
+class _AuctionCard extends StatelessWidget {
+  final String title;
+  final String year;
+  final String currentBid;
+  final String timeLeft;
+  final int index;
+
+  const _AuctionCard({
+    required this.title,
+    required this.year,
+    required this.currentBid,
+    required this.timeLeft,
+    required this.index,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () => Navigator.pushNamed(
+        context,
+        '/auction-detail',
+        arguments: 'auction_$index',
+      ),
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.1),
+              spreadRadius: 1,
+              blurRadius: 6,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Car Image
+            Container(
+              height: 120,
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: Colors.grey.shade200,
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+              ),
+              child: const Center(
+                child: Icon(
+                  Icons.directions_car,
+                  size: 40,
+                  color: Colors.grey,
+                ),
+              ),
+            ),
+            
+            // Car Details
+            Padding(
+              padding: const EdgeInsets.all(12),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Container(
-                    height: 120,
-                    decoration: BoxDecoration(
-                      color: Colors.grey.shade300,
-                      borderRadius: const BorderRadius.vertical(
-                        top: Radius.circular(12),
-                      ),
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
                     ),
-                    child: const Center(
-                      child: Icon(Icons.directions_car, size: 48),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  Text(
+                    year,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey.shade600,
                     ),
                   ),
-                  Padding(
-                    padding: const EdgeInsets.all(12),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          '2020 BMW X5',
-                          style: Theme.of(context).textTheme.titleMedium,
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          'Current bid: \$45,000',
-                          style: TextStyle(
-                            color: Colors.green.shade600,
-                            fontWeight: FontWeight.bold,
-                          ),
+                  const SizedBox(height: 8),
+                  Text(
+                    currentBid,
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.green.shade600,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: Colors.orange.shade100,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      timeLeft,
+                      style: TextStyle(
+                        fontSize: 10,
+                        color: Colors.orange.shade700,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// Popular Brands Horizontal Scroll
+class _PopularBrands extends StatelessWidget {
+  const _PopularBrands();
+
+  @override
+  Widget build(BuildContext context) {
+    final brands = [
+      {'name': 'BMW', 'logo': Icons.drive_eta},
+      {'name': 'Mercedes', 'logo': Icons.airport_shuttle},
+      {'name': 'Audi', 'logo': Icons.directions_car},
+      {'name': 'Toyota', 'logo': Icons.local_taxi},
+      {'name': 'Honda', 'logo': Icons.commute},
+      {'name': 'Ford', 'logo': Icons.local_shipping},
+    ];
+
+    return SizedBox(
+      height: 100,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        itemCount: brands.length,
+        itemBuilder: (context, index) {
+          final brand = brands[index];
+          return Container(
+            width: 80,
+            margin: const EdgeInsets.only(right: 12),
+            child: GestureDetector(
+              onTap: () {
+                Navigator.pushNamed(context, '/search');
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Filtering by ${brand['name']}')),
+                );
+              },
+              child: Column(
+                children: [
+                  Container(
+                    width: 60,
+                    height: 60,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(30),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey.withOpacity(0.2),
+                          spreadRadius: 1,
+                          blurRadius: 4,
+                          offset: const Offset(0, 2),
                         ),
                       ],
                     ),
+                    child: Icon(
+                      brand['logo'] as IconData,
+                      size: 28,
+                      color: Colors.blue.shade600,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    brand['name'] as String,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                    ),
+                    textAlign: TextAlign.center,
                   ),
                 ],
               ),
@@ -155,56 +457,6 @@ class _FeaturedAuctions extends StatelessWidget {
           );
         },
       ),
-    );
-  }
-}
-
-class _Categories extends StatelessWidget {
-  const _Categories();
-
-  @override
-  Widget build(BuildContext context) {
-    final categories = [
-      {'name': 'Luxury', 'icon': Icons.star},
-      {'name': 'SUV', 'icon': Icons.terrain},
-      {'name': 'Sports', 'icon': Icons.speed},
-      {'name': 'Electric', 'icon': Icons.electric_car},
-    ];
-
-    return GridView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        crossAxisSpacing: 16,
-        mainAxisSpacing: 16,
-        childAspectRatio: 1.5,
-      ),
-      itemCount: categories.length,
-      itemBuilder: (context, index) {
-        final category = categories[index];
-        return Card(
-          child: InkWell(
-            onTap: () => Navigator.pushNamed(context, '/search'),
-            borderRadius: BorderRadius.circular(12),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  category['icon'] as IconData,
-                  size: 32,
-                  color: Theme.of(context).primaryColor,
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  category['name'] as String,
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
-              ],
-            ),
-          ),
-        );
-      },
     );
   }
 }
