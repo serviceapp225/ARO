@@ -1,0 +1,8 @@
+run = "cd autoauction_flutter && flutter run --web-port=5001 --web-hostname=0.0.0.0"
+modules = ["flutter"]
+
+[nix]
+channel = "stable-24_05"
+
+[deployment]
+run = ["sh", "-c", "cd autoauction_flutter && flutter run --web-port=5001 --web-hostname=0.0.0.0"]

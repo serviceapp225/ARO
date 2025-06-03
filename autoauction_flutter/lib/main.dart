@@ -1,125 +1,196 @@
 import 'package:flutter/material.dart';
+import 'screens/home_screen.dart';
+import 'screens/auction_feed.dart';
+import 'screens/auction_detail_screen.dart';
+import 'screens/search_screen.dart';
+import 'screens/sell_car_screen.dart';
+import 'screens/my_bids_screen.dart';
+import 'screens/profile_screen.dart';
+import 'screens/login_screen.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(const AutoAuctionApp());
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class AutoAuctionApp extends StatelessWidget {
+  const AutoAuctionApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'AUTOAUCTION',
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // TRY THIS: Try running your application with "flutter run". You'll see
-        // the application has a purple toolbar. Then, without quitting the app,
-        // try changing the seedColor in the colorScheme below to Colors.green
-        // and then invoke "hot reload" (save your changes or press the "hot
-        // reload" button in a Flutter-supported IDE, or press "r" if you used
-        // the command line to start the app).
-        //
-        // Notice that the counter didn't reset back to zero; the application
-        // state is not lost during the reload. To reset the state, use hot
-        // restart instead.
-        //
-        // This works for code too, not just values: Most code changes can be
-        // tested with just a hot reload.
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
         useMaterial3: true,
+        appBarTheme: const AppBarTheme(
+          centerTitle: true,
+          elevation: 2,
+        ),
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+          ),
+        ),
+        cardTheme: CardTheme(
+          elevation: 2,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      // Start with login screen for demo purposes
+      initialRoute: '/login',
+      routes: {
+        '/': (context) => const MainNavigation(),
+        '/login': (context) => const LoginScreen(),
+        '/auctions': (context) => const AuctionFeedScreen(),
+        '/auction-detail': (context) {
+          final auctionId = ModalRoute.of(context)?.settings.arguments as String?;
+          return AuctionDetailScreen(auctionId: auctionId ?? 'sample_auction');
+        },
+        '/search': (context) => const SearchScreen(),
+        '/sell-car': (context) => const SellCarScreen(),
+        '/my-bids': (context) => const MyBidsScreen(),
+        '/profile': (context) => const ProfileScreen(),
+      },
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
-  final String title;
+class MainNavigation extends StatefulWidget {
+  const MainNavigation({super.key});
 
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  State<MainNavigation> createState() => _MainNavigationState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
+class _MainNavigationState extends State<MainNavigation> {
+  int _selectedIndex = 0;
+  
+  final List<Widget> _screens = [
+    const HomeScreen(),
+    const AuctionFeedScreen(),
+    const SearchScreen(),
+    const SellCarScreen(),
+    const MyBidsScreen(),
+    const ProfileScreen(),
+  ];
 
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-    });
-  }
+  final List<NavigationDestination> _destinations = [
+    const NavigationDestination(
+      icon: Icon(Icons.home_outlined),
+      selectedIcon: Icon(Icons.home),
+      label: 'Home',
+    ),
+    const NavigationDestination(
+      icon: Icon(Icons.gavel_outlined),
+      selectedIcon: Icon(Icons.gavel),
+      label: 'Auctions',
+    ),
+    const NavigationDestination(
+      icon: Icon(Icons.search_outlined),
+      selectedIcon: Icon(Icons.search),
+      label: 'Search',
+    ),
+    const NavigationDestination(
+      icon: Icon(Icons.sell_outlined),
+      selectedIcon: Icon(Icons.sell),
+      label: 'Sell',
+    ),
+    const NavigationDestination(
+      icon: Icon(Icons.format_list_bulleted_outlined),
+      selectedIcon: Icon(Icons.format_list_bulleted),
+      label: 'My Bids',
+    ),
+    const NavigationDestination(
+      icon: Icon(Icons.person_outlined),
+      selectedIcon: Icon(Icons.person),
+      label: 'Profile',
+    ),
+  ];
 
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
+    return Scaffold(
+      body: IndexedStack(
+        index: _selectedIndex,
+        children: _screens,
+      ),
+      bottomNavigationBar: NavigationBar(
+        selectedIndex: _selectedIndex,
+        onDestinationSelected: (index) {
+          setState(() {
+            _selectedIndex = index;
+          });
+        },
+        destinations: _destinations,
+      ),
+    );
+  }
+}
+
+// Test route widget for easy development and testing
+class TestRoutes extends StatelessWidget {
+  const TestRoutes({super.key});
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        // TRY THIS: Try changing the color here to a specific color (to
-        // Colors.amber, perhaps?) and trigger a hot reload to see the AppBar
-        // change color while the other colors stay the same.
+        title: const Text('Test All Screens'),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
       ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
+      body: Padding(
+        padding: const EdgeInsets.all(16),
         child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          //
-          // TRY THIS: Invoke "debug painting" (choose the "Toggle Debug Paint"
-          // action in the IDE, or press "p" in the console), to see the
-          // wireframe for each widget.
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
             const Text(
-              'You have pushed the button this many times:',
+              'AUTOAUCTION - Screen Navigator',
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+              ),
+              textAlign: TextAlign.center,
             ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
+            const SizedBox(height: 32),
+            
+            _buildTestButton(context, 'Login Screen', '/login'),
+            _buildTestButton(context, 'Home Screen', '/'),
+            _buildTestButton(context, 'Auction Feed', '/auctions'),
+            _buildTestButton(context, 'Auction Detail', '/auction-detail'),
+            _buildTestButton(context, 'Search Screen', '/search'),
+            _buildTestButton(context, 'Sell Car', '/sell-car'),
+            _buildTestButton(context, 'My Bids', '/my-bids'),
+            _buildTestButton(context, 'Profile', '/profile'),
+            
+            const SizedBox(height: 32),
+            
+            const Text(
+              'Use this screen to test navigation to all screens independently.',
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey,
+              ),
+              textAlign: TextAlign.center,
             ),
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
+    );
+  }
+
+  Widget _buildTestButton(BuildContext context, String title, String route) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: ElevatedButton(
+        onPressed: () => Navigator.pushNamed(context, route),
+        child: Text(title),
+      ),
     );
   }
 }
