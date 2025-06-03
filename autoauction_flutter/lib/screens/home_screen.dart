@@ -163,7 +163,7 @@ class _SearchSection extends StatelessWidget {
   }
 }
 
-// Announcement Banners
+// Announcement Banners - Large Advertisement Column
 class _AnnouncementBanners extends StatelessWidget {
   const _AnnouncementBanners();
 
@@ -171,6 +171,78 @@ class _AnnouncementBanners extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
+        // Large Main Advertisement Banner
+        Container(
+          width: double.infinity,
+          height: 180,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Colors.blue.shade600, Colors.purple.shade700],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Stack(
+            children: [
+              Positioned(
+                right: -20,
+                top: -10,
+                child: Icon(
+                  Icons.directions_car,
+                  size: 120,
+                  color: Colors.white.withOpacity(0.2),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Text(
+                      'ПРЕМИУМ АУКЦИОН',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      'Эксклюзивные автомобили\nот проверенных дилеров',
+                      style: TextStyle(
+                        color: Colors.white70,
+                        fontSize: 16,
+                        height: 1.3,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Text(
+                        'Участвовать →',
+                        style: TextStyle(
+                          color: Colors.blue.shade700,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+        
+        const SizedBox(height: 16),
+        
+        // Secondary Advertisement Banner
         Container(
           width: double.infinity,
           padding: const EdgeInsets.all(16),
@@ -185,7 +257,7 @@ class _AnnouncementBanners extends StatelessWidget {
           child: Row(
             children: [
               Icon(
-                Icons.campaign,
+                Icons.timer,
                 color: Colors.white,
                 size: 24,
               ),
@@ -195,7 +267,7 @@ class _AnnouncementBanners extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text(
-                      'Live Auction Alert!',
+                      'Горячие лоты!',
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: 16,
@@ -203,7 +275,7 @@ class _AnnouncementBanners extends StatelessWidget {
                       ),
                     ),
                     const Text(
-                      '5 premium cars ending in 2 hours',
+                      '12 автомобилей заканчиваются через 2 часа',
                       style: TextStyle(
                         color: Colors.white70,
                         fontSize: 14,
@@ -216,6 +288,51 @@ class _AnnouncementBanners extends StatelessWidget {
                 Icons.arrow_forward_ios,
                 color: Colors.white,
                 size: 16,
+              ),
+            ],
+          ),
+        ),
+        
+        const SizedBox(height: 16),
+        
+        // News/Info Banner
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.green.shade50,
+            border: Border.all(color: Colors.green.shade200),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Row(
+            children: [
+              Icon(
+                Icons.verified_user,
+                color: Colors.green.shade600,
+                size: 24,
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Безопасные сделки',
+                      style: TextStyle(
+                        color: Colors.green.shade800,
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Text(
+                      'Все автомобили проходят проверку',
+                      style: TextStyle(
+                        color: Colors.green.shade600,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ],
           ),
