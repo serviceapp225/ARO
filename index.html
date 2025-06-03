@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>AUTOAUCTION Flutter Demo</title>
+    <meta charset="UTF-8">
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            margin: 20px;
+            background: #f5f5f5;
+        }
+        .demo-container {
+            max-width: 400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px;
+            background: white;
+        }
+        .app-title {
+            font-size: 24px;
+            font-weight: bold;
+            color: #1a1a1a;
+        }
+        .whatsapp-btn {
+            width: 40px;
+            height: 40px;
+            background: #e8f5e8;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #4caf50;
+        }
+        .search-section {
+            padding: 16px;
+        }
+        .search-bar {
+            width: 100%;
+            padding: 16px;
+            border: none;
+            background: #f8f8f8;
+            border-radius: 12px;
+            margin-bottom: 12px;
+            color: #666;
+            box-sizing: border-box;
+        }
+        .sell-btn {
+            width: 100%;
+            padding: 16px;
+            background: #2196f3;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 16px;
+        }
+        .ads-section {
+            padding: 16px;
+        }
+        .main-ad {
+            height: 180px;
+            background: linear-gradient(135deg, #2196f3, #9c27b0);
+            border-radius: 16px;
+            padding: 20px;
+            color: white;
+            position: relative;
+            margin-bottom: 16px;
+            overflow: hidden;
+        }
+        .car-icon {
+            position: absolute;
+            right: -20px;
+            top: -10px;
+            font-size: 120px;
+            opacity: 0.2;
+        }
+        .ad-title {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+        .ad-subtitle {
+            font-size: 16px;
+            opacity: 0.7;
+            line-height: 1.3;
+            margin-bottom: 16px;
+        }
+        .ad-btn {
+            background: white;
+            color: #2196f3;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: bold;
+            display: inline-block;
+        }
+        .secondary-ad {
+            background: linear-gradient(135deg, #ff9800, #f44336);
+            padding: 16px;
+            border-radius: 12px;
+            color: white;
+            margin-bottom: 16px;
+        }
+        .safety-ad {
+            background: #e8f5e8;
+            border: 1px solid #c8e6c9;
+            padding: 16px;
+            border-radius: 12px;
+            color: #2e7d32;
+        }
+        .section-title {
+            font-size: 20px;
+            font-weight: bold;
+            margin: 24px 16px 12px;
+        }
+        .auctions-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            padding: 0 16px;
+        }
+        .auction-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .car-image {
+            height: 120px;
+            background: #f0f0f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #999;
+            font-size: 40px;
+        }
+        .car-details {
+            padding: 12px;
+        }
+        .car-title {
+            font-weight: bold;
+            font-size: 14px;
+            margin-bottom: 4px;
+        }
+        .car-year {
+            color: #666;
+            font-size: 12px;
+            margin-bottom: 8px;
+        }
+        .car-price {
+            color: #4caf50;
+            font-weight: bold;
+            font-size: 16px;
+            margin-bottom: 4px;
+        }
+        .time-left {
+            background: #fff3e0;
+            color: #f57c00;
+            padding: 2px 8px;
+            border-radius: 8px;
+            font-size: 10px;
+            font-weight: 600;
+            display: inline-block;
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-container">
+        <!-- Header -->
+        <div class="header">
+            <div class="app-title">AUTOAUCTION</div>
+            <div class="whatsapp-btn">💬</div>
+        </div>
+
+        <!-- Search Section -->
+        <div class="search-section">
+            <input class="search-bar" placeholder="Search cars, brands, or models..." readonly>
+            <button class="sell-btn">Sell Your Car</button>
+        </div>
+
+        <!-- Advertisement Section -->
+        <div class="ads-section">
+            <div class="main-ad">
+                <div class="car-icon">🚗</div>
+                <div class="ad-title">ПРЕМИУМ АУКЦИОН</div>
+                <div class="ad-subtitle">Эксклюзивные автомобили<br>от проверенных дилеров</div>
+                <div class="ad-btn">Участвовать →</div>
+            </div>
+            
+            <div class="secondary-ad">
+                <div style="display: flex; align-items: center;">
+                    <div style="margin-right: 12px;">⏰</div>
+                    <div>
+                        <div style="font-weight: bold; margin-bottom: 4px;">Горячие лоты!</div>
+                        <div style="opacity: 0.7; font-size: 14px;">12 автомобилей заканчиваются через 2 часа</div>
+                    </div>
+                    <div style="margin-left: auto;">→</div>
+                </div>
+            </div>
+            
+            <div class="safety-ad">
+                <div style="display: flex; align-items: center;">
+                    <div style="margin-right: 12px;">✓</div>
+                    <div>
+                        <div style="font-weight: bold; margin-bottom: 4px;">Безопасные сделки</div>
+                        <div style="font-size: 14px;">Все автомобили проходят проверку</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Active Auctions -->
+        <div class="section-title">Active Auctions</div>
+        <div class="auctions-grid">
+            <div class="auction-card">
+                <div class="car-image">🚗</div>
+                <div class="car-details">
+                    <div class="car-title">BMW X5 2020</div>
+                    <div class="car-year">2020</div>
+                    <div class="car-price">$45,100</div>
+                    <div class="time-left">2h 30m</div>
+                </div>
+            </div>
+            
+            <div class="auction-card">
+                <div class="car-image">🚗</div>
+                <div class="car-details">
+                    <div class="car-title">BMW X5 2020</div>
+                    <div class="car-year">2020</div>
+                    <div class="car-price">$45,200</div>
+                    <div class="time-left">2h 31m</div>
+                </div>
+            </div>
+            
+            <div class="auction-card">
+                <div class="car-image">🚗</div>
+                <div class="car-details">
+                    <div class="car-title">BMW X5 2020</div>
+                    <div class="car-year">2020</div>
+                    <div class="car-price">$45,300</div>
+                    <div class="time-left">2h 32m</div>
+                </div>
+            </div>
+            
+            <div class="auction-card">
+                <div class="car-image">🚗</div>
+                <div class="car-details">
+                    <div class="car-title">BMW X5 2020</div>
+                    <div class="car-year">2020</div>
+                    <div class="car-price">$45,400</div>
+                    <div class="time-left">2h 33m</div>
+                </div>
+            </div>
+        </div>
+
+        <div style="height: 100px;"></div>
+    </div>
+
+    <div style="text-align: center; margin-top: 20px; color: #666;">
+        <h3>Flutter AUTOAUCTION - Обновленный главный экран</h3>
+        <p>Большая рекламная колонка + активные аукционы</p>
+        <p>Код находится в: autoauction_flutter/lib/screens/home_screen.dart</p>
+    </div>
+</body>
+</html>
