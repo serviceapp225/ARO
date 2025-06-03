@@ -42,8 +42,8 @@ class AutoAuctionApp extends StatelessWidget {
           ),
         ),
       ),
-      // Start with login screen for demo purposes
-      initialRoute: '/login',
+      // Start with home screen to show updated design
+      initialRoute: '/',
       routes: {
         '/': (context) => const MainNavigation(),
         '/login': (context) => const LoginScreen(),

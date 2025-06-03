@@ -1,0 +1,3 @@
+#!/bin/bash
+cd autoauction_flutter
+flutter run -d linux --hot

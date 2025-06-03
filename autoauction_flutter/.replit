@@ -1,8 +1,8 @@
-run = "flutter run -d web --web-port=5001 --web-hostname=0.0.0.0"
+run = "flutter run -d linux --hot"
 modules = ["flutter"]
 
 [nix]
 channel = "stable-24_05"
 
 [deployment]
-run = ["sh", "-c", "flutter run -d web --web-port=5001 --web-hostname=0.0.0.0"]
+run = ["sh", "-c", "flutter run -d linux --hot"]
