@@ -33,12 +33,6 @@ class HomeScreen extends StatelessWidget {
                     const _SectionTitle(title: 'Active Auctions'),
                     const SizedBox(height: 12),
                     const _ActiveAuctionsGrid(),
-                    const SizedBox(height: 24),
-                    
-                    // Popular Brands
-                    const _SectionTitle(title: 'Popular Brands'),
-                    const SizedBox(height: 12),
-                    const _PopularBrands(),
                     const SizedBox(height: 100), // Bottom padding for navigation
                   ],
                 ),
