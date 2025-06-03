@@ -1,191 +1,289 @@
-import { useState } from 'react';
-import { Header } from '@/components/Header';
-import { Footer } from '@/components/Footer';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Card, CardContent } from '@/components/ui/card';
-import { Search as SearchIcon, Filter } from 'lucide-react';
+import { useState } from "react";
+import { Search as SearchIcon, SlidersHorizontal, X } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
+import { ActiveAuctions } from "@/components/ActiveAuctions";
 
 export default function Search() {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [filters, setFilters] = useState({
-    make: '',
-    priceRange: '',
-    year: '',
-    mileage: ''
+  const [searchFilters, setSearchFilters] = useState({
+    brand: "",
+    model: "",
+    yearFrom: "",
+    yearTo: "",
+    bodyType: "",
+    fuelType: "",
+    transmission: ""
   });
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log('Searching:', { searchQuery, filters });
+  const brands = ["Toyota", "BMW", "Mercedes-Benz", "Audi", "Honda", "Nissan", "Volkswagen", "Hyundai", "Kia", "Mazda"];
+  const currentYear = new Date().getFullYear();
+  const years = Array.from({ length: 30 }, (_, i) => (currentYear - i).toString());
+  
+  const bodyTypes = ["Седан", "Кроссовер/SUV", "Хэтчбек", "Универсал", "Купе", "Кабриолет", "Пикап"];
+  const fuelTypes = ["Бензин", "Дизель", "Гибрид", "Электро"];
+  const transmissions = ["Автомат", "Механика", "Вариатор"];
+
+  const handleFilterChange = (field: string, value: string) => {
+    setSearchFilters(prev => ({ ...prev, [field]: value }));
   };
 
-  // Mock search results
-  const searchResults = [
-    {
-      id: 1,
-      title: '2020 Porsche 911 Turbo S',
-      make: 'Porsche',
-      year: 2020,
-      mileage: 15000,
-      currentBid: 145500,
-      endTime: '2h 34m',
-      image: 'https://images.unsplash.com/photo-1544636331-e26879cd4d9b?w=400'
-    },
-    {
-      id: 2,
-      title: '2019 BMW M3',
-      make: 'BMW',
-      year: 2019,
-      mileage: 22000,
-      currentBid: 75000,
-      endTime: '1d 12h',
-      image: 'https://images.unsplash.com/photo-1555215695-3004980ad54e?w=400'
-    },
-    {
-      id: 3,
-      title: '2021 Tesla Model S',
-      make: 'Tesla',
-      year: 2021,
-      mileage: 8500,
-      currentBid: 85000,
-      endTime: '3d 5h',
-      image: 'https://images.unsplash.com/photo-1536700503339-1e4b06520771?w=400'
-    },
-  ];
+  const clearFilter = (field: string) => {
+    setSearchFilters(prev => ({ ...prev, [field]: "" }));
+  };
+
+  const clearAllFilters = () => {
+    setSearchFilters({
+      brand: "",
+      model: "",
+      yearFrom: "",
+      yearTo: "",
+      bodyType: "",
+      fuelType: "",
+      transmission: ""
+    });
+  };
+
+  const handleSearch = () => {
+    console.log("Searching with filters:", searchFilters);
+  };
+
+  const activeFiltersCount = Object.values(searchFilters).filter(Boolean).length;
 
   return (
-    <div className="min-h-screen bg-neutral-50">
-      <Header />
-      
-      <div className="container mx-auto px-4 lg:px-8 py-8">
-        <div className="max-w-6xl mx-auto">
-          <h1 className="text-3xl font-bold text-neutral-900 mb-8">Search Auctions</h1>
-          
-          {/* Search Form */}
-          <form onSubmit={handleSearch} className="mb-8">
-            <Card>
-              <CardContent className="p-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
-                  <div className="lg:col-span-2">
+    <div className="min-h-screen bg-neutral-50 pb-20">
+      <header className="bg-white shadow-sm border-b border-neutral-200">
+        <div className="container mx-auto px-4 py-4">
+          <h1 className="text-2xl font-bold text-neutral-900">Поиск автомобилей</h1>
+          <p className="text-neutral-600 mt-1">Найдите автомобиль по параметрам</p>
+        </div>
+      </header>
+
+      <main className="container mx-auto px-4 py-6">
+        <div className="max-w-4xl mx-auto space-y-6">
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle className="flex items-center gap-2">
+                  <SlidersHorizontal className="w-5 h-5" />
+                  Параметры поиска
+                  {activeFiltersCount > 0 && (
+                    <Badge variant="secondary">{activeFiltersCount}</Badge>
+                  )}
+                </CardTitle>
+                {activeFiltersCount > 0 && (
+                  <Button variant="ghost" size="sm" onClick={clearAllFilters}>
+                    Очистить все
+                  </Button>
+                )}
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Марка</Label>
+                  <div className="flex gap-2">
+                    <Select value={searchFilters.brand} onValueChange={(value) => handleFilterChange("brand", value)}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Выберите марку" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {brands.map((brand) => (
+                          <SelectItem key={brand} value={brand.toLowerCase()}>
+                            {brand}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {searchFilters.brand && (
+                      <Button variant="ghost" size="sm" onClick={() => clearFilter("brand")}>
+                        <X className="w-4 h-4" />
+                      </Button>
+                    )}
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Модель</Label>
+                  <div className="flex gap-2">
                     <Input
-                      placeholder="Search by make, model, or keyword..."
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      className="w-full"
+                      placeholder="Введите модель"
+                      value={searchFilters.model}
+                      onChange={(e) => handleFilterChange("model", e.target.value)}
                     />
+                    {searchFilters.model && (
+                      <Button variant="ghost" size="sm" onClick={() => clearFilter("model")}>
+                        <X className="w-4 h-4" />
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Год выпуска</Label>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="flex gap-2">
+                    <Select value={searchFilters.yearFrom} onValueChange={(value) => handleFilterChange("yearFrom", value)}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="С" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {years.map((year) => (
+                          <SelectItem key={year} value={year}>
+                            {year}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {searchFilters.yearFrom && (
+                      <Button variant="ghost" size="sm" onClick={() => clearFilter("yearFrom")}>
+                        <X className="w-4 h-4" />
+                      </Button>
+                    )}
                   </div>
                   
-                  <Select value={filters.make} onValueChange={(value) => setFilters(prev => ({ ...prev, make: value }))}>
+                  <div className="flex gap-2">
+                    <Select value={searchFilters.yearTo} onValueChange={(value) => handleFilterChange("yearTo", value)}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="По" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {years.map((year) => (
+                          <SelectItem key={year} value={year}>
+                            {year}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {searchFilters.yearTo && (
+                      <Button variant="ghost" size="sm" onClick={() => clearFilter("yearTo")}>
+                        <X className="w-4 h-4" />
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Тип кузова</Label>
+                <div className="flex gap-2">
+                  <Select value={searchFilters.bodyType} onValueChange={(value) => handleFilterChange("bodyType", value)}>
                     <SelectTrigger>
-                      <SelectValue placeholder="Make" />
+                      <SelectValue placeholder="Выберите тип кузова" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="bmw">BMW</SelectItem>
-                      <SelectItem value="mercedes">Mercedes-Benz</SelectItem>
-                      <SelectItem value="audi">Audi</SelectItem>
-                      <SelectItem value="porsche">Porsche</SelectItem>
-                      <SelectItem value="tesla">Tesla</SelectItem>
+                      {bodyTypes.map((type) => (
+                        <SelectItem key={type} value={type}>
+                          {type}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
-                  
-                  <Select value={filters.priceRange} onValueChange={(value) => setFilters(prev => ({ ...prev, priceRange: value }))}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Price Range" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="0-50000">$0 - $50,000</SelectItem>
-                      <SelectItem value="50000-100000">$50,000 - $100,000</SelectItem>
-                      <SelectItem value="100000-200000">$100,000 - $200,000</SelectItem>
-                      <SelectItem value="200000+">$200,000+</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  
-                  <Select value={filters.year} onValueChange={(value) => setFilters(prev => ({ ...prev, year: value }))}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Year" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="2024">2024</SelectItem>
-                      <SelectItem value="2023">2023</SelectItem>
-                      <SelectItem value="2022">2022</SelectItem>
-                      <SelectItem value="2021">2021</SelectItem>
-                      <SelectItem value="2020">2020</SelectItem>
-                      <SelectItem value="older">Older</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  
-                  <Button type="submit" className="bg-primary hover:bg-blue-800">
-                    <SearchIcon className="w-4 h-4 mr-2" />
-                    Search
-                  </Button>
+                  {searchFilters.bodyType && (
+                    <Button variant="ghost" size="sm" onClick={() => clearFilter("bodyType")}>
+                      <X className="w-4 h-4" />
+                    </Button>
+                  )}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Тип топлива</Label>
+                  <div className="flex gap-2">
+                    <Select value={searchFilters.fuelType} onValueChange={(value) => handleFilterChange("fuelType", value)}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Тип топлива" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {fuelTypes.map((type) => (
+                          <SelectItem key={type} value={type}>
+                            {type}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {searchFilters.fuelType && (
+                      <Button variant="ghost" size="sm" onClick={() => clearFilter("fuelType")}>
+                        <X className="w-4 h-4" />
+                      </Button>
+                    )}
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Трансмиссия</Label>
+                  <div className="flex gap-2">
+                    <Select value={searchFilters.transmission} onValueChange={(value) => handleFilterChange("transmission", value)}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="КПП" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {transmissions.map((type) => (
+                          <SelectItem key={type} value={type}>
+                            {type}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {searchFilters.transmission && (
+                      <Button variant="ghost" size="sm" onClick={() => clearFilter("transmission")}>
+                        <X className="w-4 h-4" />
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <Button onClick={handleSearch} className="w-full bg-red-600 hover:bg-red-700 text-lg py-3">
+                <SearchIcon className="w-5 h-5 mr-2" />
+                Найти автомобили
+              </Button>
+            </CardContent>
+          </Card>
+
+          {activeFiltersCount > 0 && (
+            <Card>
+              <CardContent className="p-4">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="text-sm text-neutral-600">Активные фильтры:</span>
+                  {Object.entries(searchFilters).map(([key, value]) => {
+                    if (!value) return null;
+                    const labels: Record<string, string> = {
+                      brand: "Марка",
+                      model: "Модель",
+                      yearFrom: "Год с",
+                      yearTo: "Год по", 
+                      bodyType: "Кузов",
+                      fuelType: "Топливо",
+                      transmission: "КПП"
+                    };
+                    return (
+                      <Badge key={key} variant="secondary" className="gap-1">
+                        {labels[key]}: {value}
+                        <button onClick={() => clearFilter(key)}>
+                          <X className="w-3 h-3" />
+                        </button>
+                      </Badge>
+                    );
+                  })}
                 </div>
               </CardContent>
             </Card>
-          </form>
-          
-          {/* Search Results */}
-          <div className="mb-6 flex items-center justify-between">
-            <h2 className="text-xl font-semibold text-neutral-900">
-              {searchResults.length} Results Found
+          )}
+
+          <div>
+            <h2 className="text-xl font-bold text-neutral-900 mb-6">
+              Результаты поиска
             </h2>
-            <Button variant="outline" size="sm">
-              <Filter className="w-4 h-4 mr-2" />
-              More Filters
-            </Button>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {searchResults.map((auction) => (
-              <Card key={auction.id} className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer">
-                <div className="relative">
-                  <img 
-                    src={auction.image} 
-                    alt={auction.title}
-                    className="w-full h-48 object-cover"
-                  />
-                  <div className="absolute top-4 left-4 bg-red-600 text-white px-3 py-1 rounded-full text-sm font-semibold">
-                    {auction.endTime} left
-                  </div>
-                </div>
-                <CardContent className="p-6">
-                  <h3 className="text-lg font-bold text-neutral-900 mb-2">
-                    {auction.title}
-                  </h3>
-                  <p className="text-neutral-600 mb-4">
-                    {auction.mileage.toLocaleString()} miles
-                  </p>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-neutral-500">Current Bid</p>
-                      <p className="text-xl font-bold text-emerald-600 font-mono">
-                        ${auction.currentBid.toLocaleString()}
-                      </p>
-                    </div>
-                    <Button size="sm">
-                      View Details
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-          
-          {/* Pagination */}
-          <div className="mt-8 flex justify-center">
-            <div className="flex space-x-2">
-              <Button variant="outline" disabled>Previous</Button>
-              <Button variant="outline" className="bg-primary text-white">1</Button>
-              <Button variant="outline">2</Button>
-              <Button variant="outline">3</Button>
-              <Button variant="outline">Next</Button>
-            </div>
+            <ActiveAuctions />
           </div>
         </div>
-      </div>
-      
-      <Footer />
+      </main>
     </div>
   );
 }
