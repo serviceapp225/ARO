@@ -76,135 +76,138 @@ export default function AuctionFeed() {
       </header>
 
       <main className="container mx-auto px-4 py-6">
-        {/* Search and Filter Section */}
+        {/* Filter Section */}
         <div className="bg-white rounded-2xl p-4 mb-6 shadow-sm">
-          {/* Search Bar */}
-          <div className="relative mb-4">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-            <Input
-              placeholder="Поиск по марке, модели..."
-              value={searchFilters.query}
-              onChange={(e) => handleFilterChange("query", e.target.value)}
-              className="pl-10"
-            />
-          </div>
-
-          {/* Filter Toggle */}
-          <div className="flex items-center justify-between">
-            <Button
-              variant="outline"
-              onClick={() => setShowFilters(!showFilters)}
-              className="flex items-center gap-2"
-            >
-              <Filter className="w-4 h-4" />
-              Фильтры
+          {/* Filter Header */}
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+              <Filter className="w-5 h-5" />
+              Параметры поиска
               {hasActiveFilters && (
-                <Badge variant="secondary" className="ml-1">
+                <Badge variant="secondary" className="ml-2">
                   {Object.values(searchFilters).filter(Boolean).length}
                 </Badge>
               )}
-            </Button>
+            </h3>
 
             {hasActiveFilters && (
               <Button variant="ghost" onClick={clearFilters} className="text-sm">
                 <X className="w-4 h-4 mr-1" />
-                Очистить
+                Очистить все
               </Button>
             )}
           </div>
 
-          {/* Filters */}
-          {showFilters && (
-            <div className="mt-4 pt-4 border-t border-gray-200 space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* Brand Filter */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Марка
-                  </label>
-                  <Select value={searchFilters.brand} onValueChange={(value) => handleFilterChange("brand", value)}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Выберите марку" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {CAR_MAKES.map((brand) => (
-                        <SelectItem key={brand} value={brand.toLowerCase()}>
-                          {brand}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {/* Model Filter */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Модель
-                  </label>
-                  <Select 
-                    value={searchFilters.model} 
-                    onValueChange={(value) => handleFilterChange("model", value)}
-                    disabled={!searchFilters.brand}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder={searchFilters.brand ? "Выберите модель" : "Сначала выберите марку"} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {searchFilters.brand && getModelsForMake(
-                        CAR_MAKES.find(make => make.toLowerCase() === searchFilters.brand) || ''
-                      ).map((model) => (
-                        <SelectItem key={model} value={model.toLowerCase()}>
-                          {model}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
+          {/* All Filters Visible */}
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Brand Filter */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Год выпуска
+                  Марка
                 </label>
-                <div className="grid grid-cols-2 gap-4">
-                  <Select value={searchFilters.yearFrom} onValueChange={(value) => handleFilterChange("yearFrom", value)}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="С" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {years.map((year) => (
-                        <SelectItem key={year} value={year}>
-                          {year}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  
-                  <Select value={searchFilters.yearTo} onValueChange={(value) => handleFilterChange("yearTo", value)}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="По" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {years.map((year) => (
-                        <SelectItem key={year} value={year}>
-                          {year}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Тип кузова
-                </label>
-                <Select value={searchFilters.bodyType} onValueChange={(value) => handleFilterChange("bodyType", value)}>
+                <Select value={searchFilters.brand} onValueChange={(value) => handleFilterChange("brand", value)}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Выберите тип кузова" />
+                    <SelectValue placeholder="Выберите марку" />
                   </SelectTrigger>
                   <SelectContent>
-                    {bodyTypes.map((type) => (
+                    {CAR_MAKES.map((brand) => (
+                      <SelectItem key={brand} value={brand.toLowerCase()}>
+                        {brand}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Model Filter */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Модель
+                </label>
+                <Select 
+                  value={searchFilters.model} 
+                  onValueChange={(value) => handleFilterChange("model", value)}
+                  disabled={!searchFilters.brand}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder={searchFilters.brand ? "Выберите модель" : "Сначала выберите марку"} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {searchFilters.brand && getModelsForMake(
+                      CAR_MAKES.find(make => make.toLowerCase() === searchFilters.brand) || ''
+                    ).map((model) => (
+                      <SelectItem key={model} value={model.toLowerCase()}>
+                        {model}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Год выпуска
+              </label>
+              <div className="grid grid-cols-2 gap-4">
+                <Select value={searchFilters.yearFrom} onValueChange={(value) => handleFilterChange("yearFrom", value)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="С" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {years.map((year) => (
+                      <SelectItem key={year} value={year}>
+                        {year}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                
+                <Select value={searchFilters.yearTo} onValueChange={(value) => handleFilterChange("yearTo", value)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="По" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {years.map((year) => (
+                      <SelectItem key={year} value={year}>
+                        {year}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Тип кузова
+              </label>
+              <Select value={searchFilters.bodyType} onValueChange={(value) => handleFilterChange("bodyType", value)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Выберите тип кузова" />
+                </SelectTrigger>
+                <SelectContent>
+                  {bodyTypes.map((type) => (
+                    <SelectItem key={type} value={type}>
+                      {type}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Тип топлива
+                </label>
+                <Select value={searchFilters.fuelType} onValueChange={(value) => handleFilterChange("fuelType", value)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Тип топлива" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {fuelTypes.map((type) => (
                       <SelectItem key={type} value={type}>
                         {type}
                       </SelectItem>
@@ -213,128 +216,108 @@ export default function AuctionFeed() {
                 </Select>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Тип топлива
-                  </label>
-                  <Select value={searchFilters.fuelType} onValueChange={(value) => handleFilterChange("fuelType", value)}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Тип топлива" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {fuelTypes.map((type) => (
-                        <SelectItem key={type} value={type}>
-                          {type}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Трансмиссия
-                  </label>
-                  <Select value={searchFilters.transmission} onValueChange={(value) => handleFilterChange("transmission", value)}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="КПП" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {transmissions.map((type) => (
-                        <SelectItem key={type} value={type}>
-                          {type}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Объем двигателя (л)
+                  Трансмиссия
                 </label>
-                <div className="grid grid-cols-2 gap-4">
-                  <Input
-                    type="number"
-                    step="0.1"
-                    placeholder="От"
-                    value={searchFilters.engineVolumeFrom}
-                    onChange={(e) => handleFilterChange("engineVolumeFrom", e.target.value)}
-                  />
-                  
-                  <Input
-                    type="number"
-                    step="0.1"
-                    placeholder="До"
-                    value={searchFilters.engineVolumeTo}
-                    onChange={(e) => handleFilterChange("engineVolumeTo", e.target.value)}
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Пробег (км)
-                </label>
-                <div className="grid grid-cols-2 gap-4">
-                  <Select value={searchFilters.mileageFrom} onValueChange={(value) => handleFilterChange("mileageFrom", value)}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="От" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="0">0</SelectItem>
-                      <SelectItem value="25000">25,000</SelectItem>
-                      <SelectItem value="50000">50,000</SelectItem>
-                      <SelectItem value="75000">75,000</SelectItem>
-                      <SelectItem value="100000">100,000</SelectItem>
-                      <SelectItem value="150000">150,000</SelectItem>
-                      <SelectItem value="200000">200,000</SelectItem>
-                      <SelectItem value="250000">250,000</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  
-                  <Select value={searchFilters.mileageTo} onValueChange={(value) => handleFilterChange("mileageTo", value)}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="До" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="25000">25,000</SelectItem>
-                      <SelectItem value="50000">50,000</SelectItem>
-                      <SelectItem value="75000">75,000</SelectItem>
-                      <SelectItem value="100000">100,000</SelectItem>
-                      <SelectItem value="150000">150,000</SelectItem>
-                      <SelectItem value="200000">200,000</SelectItem>
-                      <SelectItem value="250000">250,000</SelectItem>
-                      <SelectItem value="300000">300,000</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Цена ($)
-                </label>
-                <div className="grid grid-cols-2 gap-4">
-                  <Input
-                    type="number"
-                    placeholder="От"
-                    value={searchFilters.priceFrom}
-                    onChange={(e) => handleFilterChange("priceFrom", e.target.value)}
-                  />
-                  
-                  <Input
-                    type="number"
-                    placeholder="До"
-                    value={searchFilters.priceTo}
-                    onChange={(e) => handleFilterChange("priceTo", e.target.value)}
-                  />
-                </div>
+                <Select value={searchFilters.transmission} onValueChange={(value) => handleFilterChange("transmission", value)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="КПП" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {transmissions.map((type) => (
+                      <SelectItem key={type} value={type}>
+                        {type}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
-          )}
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Объем двигателя (л)
+              </label>
+              <div className="grid grid-cols-2 gap-4">
+                <Input
+                  type="number"
+                  step="0.1"
+                  placeholder="От"
+                  value={searchFilters.engineVolumeFrom}
+                  onChange={(e) => handleFilterChange("engineVolumeFrom", e.target.value)}
+                />
+                
+                <Input
+                  type="number"
+                  step="0.1"
+                  placeholder="До"
+                  value={searchFilters.engineVolumeTo}
+                  onChange={(e) => handleFilterChange("engineVolumeTo", e.target.value)}
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Пробег (км)
+              </label>
+              <div className="grid grid-cols-2 gap-4">
+                <Select value={searchFilters.mileageFrom} onValueChange={(value) => handleFilterChange("mileageFrom", value)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="От" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="0">0</SelectItem>
+                    <SelectItem value="25000">25,000</SelectItem>
+                    <SelectItem value="50000">50,000</SelectItem>
+                    <SelectItem value="75000">75,000</SelectItem>
+                    <SelectItem value="100000">100,000</SelectItem>
+                    <SelectItem value="150000">150,000</SelectItem>
+                    <SelectItem value="200000">200,000</SelectItem>
+                    <SelectItem value="250000">250,000</SelectItem>
+                  </SelectContent>
+                </Select>
+                
+                <Select value={searchFilters.mileageTo} onValueChange={(value) => handleFilterChange("mileageTo", value)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="До" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="25000">25,000</SelectItem>
+                    <SelectItem value="50000">50,000</SelectItem>
+                    <SelectItem value="75000">75,000</SelectItem>
+                    <SelectItem value="100000">100,000</SelectItem>
+                    <SelectItem value="150000">150,000</SelectItem>
+                    <SelectItem value="200000">200,000</SelectItem>
+                    <SelectItem value="250000">250,000</SelectItem>
+                    <SelectItem value="300000">300,000</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Цена ($)
+              </label>
+              <div className="grid grid-cols-2 gap-4">
+                <Input
+                  type="number"
+                  placeholder="От"
+                  value={searchFilters.priceFrom}
+                  onChange={(e) => handleFilterChange("priceFrom", e.target.value)}
+                />
+                
+                <Input
+                  type="number"
+                  placeholder="До"
+                  value={searchFilters.priceTo}
+                  onChange={(e) => handleFilterChange("priceTo", e.target.value)}
+                />
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Sort and Results Section */}
