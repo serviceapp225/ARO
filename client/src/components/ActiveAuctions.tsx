@@ -4,10 +4,12 @@ import { Card, CardContent } from '@/components/ui/card';
 import { CountdownTimer } from './CountdownTimer';
 import { ImageCarousel } from './ImageCarousel';
 import { useAuctions } from '@/contexts/AuctionContext';
+import { useLocation } from 'wouter';
 import { useState, useEffect } from 'react';
 
 export function ActiveAuctions() {
-  const { auctions, loading, setSelectedAuction } = useAuctions();
+  const { auctions, loading } = useAuctions();
+  const [, setLocation] = useLocation();
   const [displayCount, setDisplayCount] = useState(20);
 
   // Generate additional auction items for infinite scroll
@@ -77,7 +79,7 @@ export function ActiveAuctions() {
         <Card
           key={`${auction.id}-${index}`}
           className="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md transition-shadow cursor-pointer"
-          onClick={() => setSelectedAuction(auction)}
+          onClick={() => setLocation(`/auction/${auction.id}`)}
         >
           <div className="relative">
             <div className="h-32 bg-gray-200 flex items-center justify-center">
