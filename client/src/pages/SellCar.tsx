@@ -240,16 +240,25 @@ export default function SellCar() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="customsCleared">Растаможен</Label>
-                  <Select value={formData.customsCleared} onValueChange={(value) => handleInputChange("customsCleared", value)}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Выберите статус" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="yes">Да</SelectItem>
-                      <SelectItem value="no">Нет</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <Label>Растаможен</Label>
+                  <div className="flex gap-2 mt-2">
+                    <Button
+                      type="button"
+                      variant={formData.customsCleared === "yes" ? "default" : "outline"}
+                      className="flex-1"
+                      onClick={() => handleInputChange("customsCleared", "yes")}
+                    >
+                      Да
+                    </Button>
+                    <Button
+                      type="button"
+                      variant={formData.customsCleared === "no" ? "default" : "outline"}
+                      className="flex-1"
+                      onClick={() => handleInputChange("customsCleared", "no")}
+                    >
+                      Нет
+                    </Button>
+                  </div>
                 </div>
               </div>
 
