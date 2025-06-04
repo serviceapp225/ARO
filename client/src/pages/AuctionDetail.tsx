@@ -36,6 +36,7 @@ export default function AuctionDetail() {
       transmission: "Автоматическая 8-ступенчатая",
       drivetrain: "Полный привод (xDrive)",
       fuelType: "Бензин",
+      bodyType: "Кроссовер",
       color: "Черный металлик",
       condition: "Отличное",
       vin: "WBXPC9C59WP123456",
@@ -158,6 +159,10 @@ export default function AuctionDetail() {
               <div className="flex justify-between py-2 border-b border-gray-100">
                 <span className="text-gray-600">Топливо:</span>
                 <span className="font-medium">{mockAuction.specifications.fuelType}</span>
+              </div>
+              <div className="flex justify-between py-2 border-b border-gray-100">
+                <span className="text-gray-600">Кузов:</span>
+                <span className="font-medium">{mockAuction.specifications.bodyType}</span>
               </div>
               <div className="flex justify-between py-2 border-b border-gray-100">
                 <span className="text-gray-600">Цвет:</span>

@@ -29,6 +29,7 @@ class _AuctionDetailScreenState extends State<AuctionDetailScreen>
       'transmission': 'Автоматическая 8-ступенчатая',
       'drivetrain': 'Полный привод (xDrive)',
       'fuelType': 'Бензин',
+      'bodyType': 'Кроссовер',
       'color': 'Черный металлик',
       'condition': 'Отличное',
       'vin': 'WBXPC9C59WP123456',
@@ -530,6 +531,7 @@ class _AuctionDetailScreenState extends State<AuctionDetailScreen>
       case 'transmission': return 'КПП:';
       case 'drivetrain': return 'Привод:';
       case 'fuelType': return 'Топливо:';
+      case 'bodyType': return 'Кузов:';
       case 'color': return 'Цвет:';
       case 'condition': return 'Состояние:';
       case 'vin': return 'VIN:';
