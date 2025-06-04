@@ -20,7 +20,7 @@ export default function Search() {
     transmission: ""
   });
   const currentYear = new Date().getFullYear();
-  const years = Array.from({ length: 30 }, (_, i) => (currentYear - i).toString());
+  const years = Array.from({ length: currentYear - 1970 + 1 }, (_, i) => (currentYear - i).toString());
   
   const bodyTypes = ["Седан", "Кроссовер/SUV", "Хэтчбек", "Универсал", "Купе", "Кабриолет", "Пикап"];
   const fuelTypes = ["Бензин", "Дизель", "Гибрид", "Электро"];

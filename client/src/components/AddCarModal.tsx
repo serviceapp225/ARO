@@ -189,8 +189,8 @@ export function AddCarModal({ open, onOpenChange }: AddCarModalProps) {
                 id="year"
                 type="number"
                 placeholder="2020"
-                min="1900"
-                max="2024"
+                min="1970"
+                max="2025"
                 value={formData.year}
                 onChange={(e) => handleInputChange('year', e.target.value)}
                 required

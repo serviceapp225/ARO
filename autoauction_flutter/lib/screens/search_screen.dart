@@ -337,9 +337,9 @@ class _FilterBottomSheetState extends State<_FilterBottomSheet> {
           const SizedBox(height: 8),
           Slider(
             value: _tempSelectedYear.toDouble(),
-            min: 2000,
-            max: 2024,
-            divisions: 24,
+            min: 1970,
+            max: 2025,
+            divisions: 55,
             label: _tempSelectedYear.toString(),
             onChanged: (value) => setState(() => _tempSelectedYear = value.round()),
           ),

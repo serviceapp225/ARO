@@ -154,31 +154,42 @@ export const CAR_MAKES_MODELS = {
     "9-3", "9-5", "900", "9000", "99", "96"
   ],
   "Skoda": [
-    "Octavia", "Superb", "Fabia", "Kodiaq", "Karoq", "Kamiq", "Scala", "Enyaq"
+    "Octavia", "Octavia RS", "Superb", "Superb Combi", "Fabia", "Fabia Monte Carlo", "Kodiaq", "Kodiaq RS", 
+    "Karoq", "Kamiq", "Scala", "Enyaq", "Citigo", "Rapid", "Rapid Spaceback", "Yeti"
   ],
   "SEAT": [
-    "Leon", "Ibiza", "Arona", "Ateca", "Tarraco", "Alhambra", "Mii"
+    "Leon", "Leon Cupra", "Leon ST", "Ibiza", "Ibiza Cupra", "Arona", "Ateca", "Ateca Cupra", 
+    "Tarraco", "Alhambra", "Mii", "Toledo", "Altea", "Exeo", "Cordoba"
   ],
   "Peugeot": [
-    "208", "308", "508", "2008", "3008", "5008", "Partner", "Boxer", "e-208"
+    "208", "208 GTI", "308", "308 GTI", "508", "508 PSE", "2008", "3008", "3008 GT", "5008", 
+    "Partner", "Boxer", "e-208", "e-2008", "e-308", "107", "206", "207", "307", "407", "607", 
+    "RCZ", "Rifter", "Traveller", "Expert"
   ],
   "Citroen": [
-    "C3", "C4", "C5", "C1", "Berlingo", "Jumper", "DS3", "DS4", "DS5"
+    "C3", "C3 Aircross", "C4", "C4 Cactus", "C4 Picasso", "C5", "C5 Aircross", "C1", "C2", "C6", "C8",
+    "Berlingo", "Jumper", "Jumpy", "DS3", "DS4", "DS5", "Xsara", "Xantia", "XM", "2CV", "Saxo", "AX"
   ],
   "Renault": [
-    "Clio", "Megane", "Scenic", "Captur", "Kadjar", "Koleos", "Talisman", "Zoe"
+    "Clio", "Clio RS", "Megane", "Megane RS", "Scenic", "Grand Scenic", "Captur", "Kadjar", "Koleos", 
+    "Talisman", "Zoe", "Twingo", "Kangoo", "Master", "Trafic", "Espace", "Vel Satis", "Laguna", 
+    "Symbol", "Logan", "Sandero", "Duster"
   ],
   "Dacia": [
     "Duster", "Logan", "Sandero", "Spring", "Jogger", "Lodgy"
   ],
   "Opel": [
-    "Corsa", "Astra", "Insignia", "Crossland", "Grandland", "Mokka", "Vivaro"
+    "Corsa", "Corsa OPC", "Astra", "Astra OPC", "Astra GTC", "Insignia", "Insignia OPC", "Crossland", "Grandland", "Grandland X", 
+    "Mokka", "Mokka X", "Vivaro", "Zafira", "Zafira Tourer", "Vectra", "Omega", "Kadett", "Ascona", "Manta",
+    "Antara", "Meriva", "Agila", "Tigra", "Calibra", "Speedster", "GT", "Combo", "Movano"
   ],
   "Smart": [
-    "Fortwo", "Forfour", "EQfortwo", "EQforfour", "Roadster"
+    "Fortwo", "Fortwo Cabrio", "Fortwo Brabus", "Forfour", "Forfour Brabus", "EQfortwo", "EQforfour", 
+    "Roadster", "Roadster Brabus", "Crossblade", "City-Coupe"
   ],
   "Mini": [
-    "Cooper", "Countryman", "Clubman", "Convertible", "Electric"
+    "Cooper", "Cooper S", "Cooper SE", "John Cooper Works", "Countryman", "Countryman S", "Countryman JCW", 
+    "Clubman", "Clubman S", "Clubman JCW", "Convertible", "Convertible S", "Electric", "Paceman", "Coupe", "Roadster"
   ],
   "Rolls-Royce": [
     "Phantom", "Ghost", "Wraith", "Dawn", "Cullinan", "Spectre"
