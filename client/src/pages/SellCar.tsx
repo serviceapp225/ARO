@@ -28,7 +28,7 @@ export default function SellCar() {
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
     if (files) {
-      const newImages = Array.from(files).slice(0, 5 - uploadedImages.length).map(file => 
+      const newImages = Array.from(files).slice(0, 20 - uploadedImages.length).map(file => 
         URL.createObjectURL(file)
       );
       setUploadedImages(prev => [...prev, ...newImages]);
@@ -93,7 +93,7 @@ export default function SellCar() {
                   </div>
                 ))}
                 
-                {uploadedImages.length < 5 && (
+                {uploadedImages.length < 20 && (
                   <label className="aspect-video border-2 border-dashed border-neutral-300 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-primary hover:bg-neutral-50 transition-colors">
                     <Plus className="w-8 h-8 text-neutral-400 mb-2" />
                     <span className="text-sm text-neutral-500">Добавить фото</span>
