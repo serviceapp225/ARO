@@ -13,6 +13,7 @@ interface Auction {
   bidCount: number;
   endTime: Date;
   status: 'active' | 'ended';
+  customsCleared: boolean;
 }
 
 interface AuctionContextType {
@@ -42,7 +43,8 @@ export function AuctionProvider({ children }: { children: ReactNode }) {
         currentBid: 47500,
         bidCount: 23,
         endTime: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000),
-        status: 'active'
+        status: 'active',
+        customsCleared: true
       },
       {
         id: '2',
@@ -54,7 +56,8 @@ export function AuctionProvider({ children }: { children: ReactNode }) {
         currentBid: 35000,
         bidCount: 18,
         endTime: new Date(Date.now() + 1 * 24 * 60 * 60 * 1000),
-        status: 'active'
+        status: 'active',
+        customsCleared: false
       },
       {
         id: '3',
@@ -66,7 +69,8 @@ export function AuctionProvider({ children }: { children: ReactNode }) {
         currentBid: 28000,
         bidCount: 12,
         endTime: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
-        status: 'active'
+        status: 'active',
+        customsCleared: true
       }
     ];
 

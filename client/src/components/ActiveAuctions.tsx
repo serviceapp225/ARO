@@ -93,9 +93,18 @@ export function ActiveAuctions() {
               <h3 className="text-sm font-bold text-gray-900 mb-1 truncate">
                 {auction.year} {auction.make} {auction.model}
               </h3>
-              <p className="text-xs text-gray-600 mb-2">
-                {auction.mileage.toLocaleString()} км
-              </p>
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-xs text-gray-600">
+                  {auction.mileage.toLocaleString()} км
+                </p>
+                <span className={`text-xs px-2 py-1 rounded-full ${
+                  auction.customsCleared 
+                    ? 'bg-green-100 text-green-700' 
+                    : 'bg-red-100 text-red-700'
+                }`}>
+                  {auction.customsCleared ? 'Растаможен' : 'Не растаможен'}
+                </span>
+              </div>
               <div className="mb-2">
                 <p className="text-xs text-gray-500">Текущая ставка</p>
                 <p className="text-sm font-bold text-green-600">
