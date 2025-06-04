@@ -86,14 +86,16 @@ export function AdvertisementBanner() {
   const IconComponent = currentBanner.icon;
 
   return (
-    <div className={`relative h-44 bg-gradient-to-br ${currentBanner.gradient} rounded-2xl p-6 text-white overflow-hidden transition-all duration-500`}>
-      {/* Sports Car Background Image */}
+    <div className="relative h-44 rounded-2xl p-6 text-white overflow-hidden transition-all duration-500 shadow-2xl">
+      {/* Dark Car Background Image */}
       <div 
-        className="absolute right-0 top-0 w-full h-full opacity-20 bg-cover bg-right bg-no-repeat rounded-2xl"
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat rounded-2xl"
         style={{
-          backgroundImage: `url('https://images.unsplash.com/photo-1544636331-e26879cd4d9b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80')`
+          backgroundImage: `url('https://images.unsplash.com/photo-1525609004556-c46c7d6cf023?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80')`
         }}
       ></div>
+      {/* Dark overlay with gradient */}
+      <div className={`absolute inset-0 bg-gradient-to-br ${currentBanner.gradient} bg-opacity-60 rounded-2xl`}></div>
       
       {/* Icon overlay */}
       <div className="absolute right-[-10px] top-[-5px] opacity-20">

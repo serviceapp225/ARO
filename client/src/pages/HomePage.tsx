@@ -20,14 +20,16 @@ export default function HomePage() {
 
       <main className="container mx-auto px-4 py-6 space-y-6">
         {/* Sell Car Section */}
-        <div className="relative h-44 bg-gradient-to-br from-emerald-500 via-teal-600 to-cyan-700 rounded-2xl p-6 text-white overflow-hidden shadow-2xl">
-          {/* Car Background Image */}
+        <div className="relative h-44 rounded-2xl p-6 text-white overflow-hidden shadow-2xl">
+          {/* Dark Car Background Image */}
           <div 
-            className="absolute right-0 top-0 w-full h-full opacity-20 bg-cover bg-right bg-no-repeat rounded-2xl"
+            className="absolute inset-0 bg-cover bg-center bg-no-repeat rounded-2xl"
             style={{
-              backgroundImage: `url('https://images.unsplash.com/photo-1605559424843-9e4c228bf1c2?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80')`
+              backgroundImage: `url('https://images.unsplash.com/photo-1503376780353-7e6692767b70?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80')`
             }}
           ></div>
+          {/* Dark overlay */}
+          <div className="absolute inset-0 bg-black bg-opacity-40 rounded-2xl"></div>
           
           {/* Content */}
           <div className="relative z-10 space-y-2">
