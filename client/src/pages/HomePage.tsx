@@ -33,9 +33,6 @@ export default function HomePage() {
           
           {/* Content */}
           <div className="relative z-10 space-y-2">
-            <div className="absolute right-[-20px] top-[-10px]">
-              <Car className="w-28 h-28 text-white opacity-20" />
-            </div>
             
             <h2 className="text-2xl font-bold">Продай свое авто</h2>
             <p className="text-white/80 text-base leading-relaxed">

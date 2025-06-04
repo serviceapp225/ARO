@@ -96,11 +96,6 @@ export function AdvertisementBanner() {
       ></div>
       {/* Dark overlay */}
       <div className="absolute inset-0 bg-black bg-opacity-50 rounded-2xl"></div>
-      
-      {/* Icon overlay */}
-      <div className="absolute right-[-10px] top-[-5px] opacity-20">
-        <IconComponent className="w-20 h-20 text-white" />
-      </div>
       <div className="relative z-10 space-y-2">
         <h2 className="text-2xl font-bold">{currentBanner.title}</h2>
         <p className="text-white/80 text-base leading-relaxed whitespace-pre-line">
