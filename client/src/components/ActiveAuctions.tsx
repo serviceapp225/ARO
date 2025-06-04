@@ -10,54 +10,43 @@ import { useState, useEffect } from 'react';
 export function ActiveAuctions() {
   const { auctions, loading } = useAuctions();
   const [, setLocation] = useLocation();
-  const [displayCount, setDisplayCount] = useState(20);
+  const [page, setPage] = useState(1);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
 
-  // Generate additional auction items for infinite scroll
-  const generateExtraAuctions = (count: number) => {
-    const carModels = [
-      { make: 'BMW', model: 'X5', year: 2020 },
-      { make: 'Mercedes', model: 'C-Class', year: 2021 },
-      { make: 'Audi', model: 'A4', year: 2019 },
-      { make: 'Toyota', model: 'Camry', year: 2022 },
-      { make: 'Honda', model: 'Civic', year: 2020 },
-      { make: 'Lexus', model: 'RX', year: 2021 },
-      { make: 'Porsche', model: '911', year: 2020 },
-      { make: 'Volvo', model: 'XC90', year: 2019 },
-    ];
+  const ITEMS_PER_PAGE = 20;
 
-    return Array.from({ length: count }, (_, i) => {
-      const carModel = carModels[i % carModels.length];
-      return {
-        id: `extra-${i}`,
-        make: carModel.make,
-        model: carModel.model,
-        year: carModel.year,
-        mileage: Math.floor(Math.random() * 50000) + 10000,
-        photos: ['/placeholder-car.jpg'],
-        currentBid: Math.floor(Math.random() * 50000) + 15000,
-        bidCount: Math.floor(Math.random() * 15) + 1,
-        endTime: new Date(Date.now() + Math.random() * 7 * 24 * 60 * 60 * 1000),
-        status: 'active' as const
-      };
-    });
-  };
+  // Calculate displayed auctions based on current page
+  const displayedAuctions = auctions.slice(0, page * ITEMS_PER_PAGE);
 
-  // Only generate extra auctions if we have fewer than displayCount auctions
-  const extraAuctionsNeeded = Math.max(0, displayCount - auctions.length);
-  const allAuctions = [...auctions, ...generateExtraAuctions(extraAuctionsNeeded)];
-
-  // Handle scroll to load more - but stop when we reach a reasonable limit
+  // Handle scroll to load more real data
   useEffect(() => {
     const handleScroll = () => {
-      // Only load more if we don't have enough auctions and haven't reached the limit
-      if (allAuctions.length < 100 && window.innerHeight + window.scrollY >= document.body.offsetHeight - 1000) {
-        setDisplayCount(prev => Math.min(prev + 10, 100)); // Cap at 100 total auctions
+      if (
+        !loadingMore && 
+        hasMore && 
+        window.innerHeight + window.scrollY >= document.body.offsetHeight - 1000
+      ) {
+        setLoadingMore(true);
+        
+        // Simulate API call delay
+        setTimeout(() => {
+          const nextPage = page + 1;
+          const totalAvailable = auctions.length;
+          
+          if (nextPage * ITEMS_PER_PAGE >= totalAvailable) {
+            setHasMore(false);
+          }
+          
+          setPage(nextPage);
+          setLoadingMore(false);
+        }, 500);
       }
     };
 
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
-  }, [allAuctions.length]);
+  }, [page, loadingMore, hasMore, auctions.length]);
 
   if (loading) {
     return (
@@ -79,7 +68,7 @@ export function ActiveAuctions() {
   return (
     <div className="mb-20">
       <div className="grid grid-cols-2 gap-3">
-        {allAuctions.slice(0, displayCount).map((auction, index) => (
+        {displayedAuctions.map((auction, index) => (
           <Card
             key={`${auction.id}-${index}`}
             className="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md transition-shadow cursor-pointer"
@@ -124,18 +113,27 @@ export function ActiveAuctions() {
         ))}
       </div>
       
-      {/* Show message when all auctions are loaded */}
-      {allAuctions.length >= 100 && (
-        <div className="text-center mt-8 p-4 bg-gray-100 rounded-lg">
-          <p className="text-gray-600">Все доступные автомобили загружены</p>
-          <p className="text-sm text-gray-500 mt-1">Всего: {allAuctions.length} автомобилей</p>
+      {/* Loading more indicator */}
+      {loadingMore && (
+        <div className="text-center mt-8 p-4">
+          <p className="text-gray-500">Загружаем еще автомобили...</p>
         </div>
       )}
       
-      {/* Show loading indicator when more auctions are being loaded */}
-      {allAuctions.length < 100 && allAuctions.length >= displayCount && (
-        <div className="text-center mt-8 p-4">
-          <p className="text-gray-500">Загружаем еще автомобили...</p>
+      {/* Show message when all auctions are loaded */}
+      {!hasMore && !loadingMore && displayedAuctions.length > 0 && (
+        <div className="text-center mt-8 p-4 bg-gray-100 rounded-lg">
+          <p className="text-gray-600">Все доступные автомобили загружены</p>
+          <p className="text-sm text-gray-500 mt-1">Всего: {displayedAuctions.length} автомобилей</p>
+        </div>
+      )}
+      
+      {/* Show message when no auctions available */}
+      {displayedAuctions.length === 0 && !loading && (
+        <div className="text-center mt-8 p-8 bg-gray-50 rounded-lg">
+          <Car className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+          <p className="text-gray-600 text-lg mb-2">Нет активных аукционов</p>
+          <p className="text-gray-500 text-sm">Новые автомобили появятся скоро</p>
         </div>
       )}
     </div>
