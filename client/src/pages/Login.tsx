@@ -5,12 +5,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function Login() {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [agreeToTerms, setAgreeToTerms] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [, navigate] = useLocation();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -20,14 +22,22 @@ export default function Login() {
     }
 
     setIsLoading(true);
-    // TODO: Implement phone authentication
     console.log("Authenticating with phone:", phoneNumber);
     
-    // Simulate API call
+    // Simulate successful login after 1 second
     setTimeout(() => {
       setIsLoading(false);
-      // Redirect to verification code page or home
-    }, 2000);
+      // Create demo user in localStorage
+      const demoUser = {
+        email: phoneNumber + "@autoauction.tj",
+        phoneNumber: phoneNumber,
+        uid: "demo-user-" + Date.now()
+      };
+      localStorage.setItem('demo-user', JSON.stringify(demoUser));
+      
+      // Trigger page reload to update auth state
+      window.location.href = '/profile';
+    }, 1000);
   };
 
   const formatPhoneNumber = (value: string) => {

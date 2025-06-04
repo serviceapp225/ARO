@@ -1,11 +1,14 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { User } from 'firebase/auth';
-import { auth, handleRedirect } from '@/lib/firebase';
-import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { useToast } from '@/hooks/use-toast';
 
+interface DemoUser {
+  email: string;
+  phoneNumber: string;
+  uid: string;
+}
+
 interface AuthContextType {
-  user: User | null;
+  user: DemoUser | null;
   loading: boolean;
   logout: () => Promise<void>;
 }
@@ -13,48 +16,36 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<DemoUser | null>(null);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setUser(user);
-      setLoading(false);
-    });
-
-    // Handle redirect result
-    handleRedirect()
-      .then((result) => {
-        if (result) {
-          toast({
-            title: "Welcome!",
-            description: "Successfully signed in with Google.",
-          });
-        }
-      })
-      .catch((error) => {
-        toast({
-          title: "Sign-in Error",
-          description: error.errorMessage || "Failed to sign in with Google.",
-          variant: "destructive",
-        });
-      });
-
-    return () => unsubscribe();
-  }, [toast]);
+    // Check for demo user in localStorage
+    const demoUserData = localStorage.getItem('demo-user');
+    if (demoUserData) {
+      try {
+        const demoUser = JSON.parse(demoUserData);
+        setUser(demoUser);
+      } catch (error) {
+        localStorage.removeItem('demo-user');
+      }
+    }
+    setLoading(false);
+  }, []);
 
   const logout = async () => {
     try {
-      await signOut(auth);
+      localStorage.removeItem('demo-user');
+      setUser(null);
       toast({
-        title: "Signed Out",
-        description: "You have been successfully signed out.",
+        title: "Выход выполнен",
+        description: "Вы успешно вышли из системы.",
       });
     } catch (error) {
       toast({
-        title: "Error",
-        description: "Failed to sign out.",
+        title: "Ошибка",
+        description: "Не удалось выйти из системы.",
         variant: "destructive",
       });
     }
