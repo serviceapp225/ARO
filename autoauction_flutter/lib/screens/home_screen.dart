@@ -302,10 +302,11 @@ class _AuctionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => Navigator.pushNamed(
+      onTap: () => Navigator.push(
         context,
-        '/auction-detail',
-        arguments: 'auction_$index',
+        MaterialPageRoute(
+          builder: (context) => AuctionDetailScreen(carId: 'auction_$index'),
+        ),
       ),
       child: Container(
         decoration: BoxDecoration(
