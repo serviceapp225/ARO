@@ -70,7 +70,8 @@ export default function AuctionDetail() {
 
   useEffect(() => {
     const calculateTimeLeft = () => {
-      const difference = auction.endTime.getTime() - new Date().getTime();
+      const endTime = auction?.endTime || mockAuction.endTime;
+      const difference = endTime.getTime() - new Date().getTime();
       
       if (difference > 0) {
         setTimeLeft({
@@ -85,7 +86,7 @@ export default function AuctionDetail() {
     calculateTimeLeft();
     const timer = setInterval(calculateTimeLeft, 1000);
     return () => clearInterval(timer);
-  }, [auction.endTime]);
+  }, [id]); // Changed dependency to id instead of auction.endTime
 
   const handlePlaceBid = () => {
     if (parseInt(bidAmount) > auction.currentBid) {
