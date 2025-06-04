@@ -20,8 +20,19 @@ export function ActiveAuctions({ searchQuery = "" }: ActiveAuctionsProps) {
 
   const ITEMS_PER_PAGE = 20;
 
+  // Filter auctions by search query (lot number or car name)
+  const filteredAuctions = auctions.filter(auction => {
+    if (!searchQuery.trim()) return true;
+    
+    const query = searchQuery.toLowerCase();
+    const lotMatch = auction.lotNumber.toLowerCase().includes(query);
+    const carNameMatch = `${auction.make} ${auction.model}`.toLowerCase().includes(query);
+    
+    return lotMatch || carNameMatch;
+  });
+
   // Calculate displayed auctions based on current page
-  const displayedAuctions = auctions.slice(0, page * ITEMS_PER_PAGE);
+  const displayedAuctions = filteredAuctions.slice(0, page * ITEMS_PER_PAGE);
 
   // Handle scroll to load more real data
   useEffect(() => {
@@ -36,7 +47,7 @@ export function ActiveAuctions({ searchQuery = "" }: ActiveAuctionsProps) {
         // Simulate API call delay
         setTimeout(() => {
           const nextPage = page + 1;
-          const totalAvailable = auctions.length;
+          const totalAvailable = filteredAuctions.length;
           
           if (nextPage * ITEMS_PER_PAGE >= totalAvailable) {
             setHasMore(false);
