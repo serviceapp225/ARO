@@ -39,23 +39,6 @@ export default function HomePage() {
               Получи максимальную цену за свой автомобиль на нашем аукционе
             </p>
             
-            <div className="flex justify-center items-center gap-4 pt-4">
-              <div className="text-center">
-                <div className="text-2xl font-bold">24ч</div>
-                <div className="text-sm text-emerald-200">Быстро</div>
-              </div>
-              <div className="w-px h-12 bg-white/30"></div>
-              <div className="text-center">
-                <div className="text-2xl font-bold">0%</div>
-                <div className="text-sm text-emerald-200">Комиссия</div>
-              </div>
-              <div className="w-px h-12 bg-white/30"></div>
-              <div className="text-center">
-                <div className="text-2xl font-bold">100%</div>
-                <div className="text-sm text-emerald-200">Безопасно</div>
-              </div>
-            </div>
-            
             <Link href="/sell">
               <Button className="mt-6 bg-white text-emerald-700 hover:bg-emerald-50 py-3 px-8 rounded-xl font-bold text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 flex items-center gap-2 mx-auto">
                 <Plus className="w-5 h-5" />
