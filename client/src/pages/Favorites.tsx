@@ -4,6 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useLocation } from "wouter";
 
 interface FavoriteCar {
   id: string;
@@ -24,6 +25,7 @@ interface FavoriteCar {
 
 export default function Favorites() {
   const [sortBy, setSortBy] = useState("recent");
+  const [, setLocation] = useLocation();
   const [favorites, setFavorites] = useState<FavoriteCar[]>([
     {
       id: "1",
@@ -77,6 +79,10 @@ export default function Favorites() {
 
   const removeFavorite = (id: string) => {
     setFavorites(prev => prev.filter(car => car.id !== id));
+  };
+
+  const goToAuction = (id: string) => {
+    setLocation(`/auction/${id}`);
   };
 
   const formatPrice = (price: number) => {
@@ -155,7 +161,7 @@ export default function Favorites() {
             {/* Favorites Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {sortedFavorites.map((car) => (
-                <Card key={car.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+                <Card key={car.id} className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer" onClick={() => goToAuction(car.id)}>
                   <div className="relative">
                     <img
                       src={car.image}
@@ -167,7 +173,10 @@ export default function Favorites() {
                         size="sm"
                         variant="secondary"
                         className="w-8 h-8 p-0 bg-white/90 hover:bg-white"
-                        onClick={() => removeFavorite(car.id)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          removeFavorite(car.id);
+                        }}
                       >
                         <Trash2 className="w-4 h-4 text-red-500" />
                       </Button>
@@ -212,8 +221,15 @@ export default function Favorites() {
                         </div>
                       </div>
 
-                      <Button className="w-full" size="sm">
-                        Перейти к аукциону
+                      <Button 
+                        className="w-full" 
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          goToAuction(car.id);
+                        }}
+                      >
+                        Посмотреть характеристики
                       </Button>
                     </div>
                   </CardContent>
