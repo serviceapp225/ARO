@@ -7,8 +7,8 @@ export function BottomNavigation() {
   const navItems = [
     { path: "/home", icon: Home, label: "Главная" },
     { path: "/auctions", icon: Gavel, label: "Аукционы" },
+    { path: "/sell", icon: Plus, label: "Продать", isCenter: true },
     { path: "/search", icon: Search, label: "Поиск" },
-    { path: "/sell", icon: Plus, label: "Продать" },
     { path: "/profile", icon: User, label: "Профиль" },
   ];
 
@@ -18,6 +18,23 @@ export function BottomNavigation() {
         {navItems.map((item) => {
           const isActive = location === item.path || (item.path === "/home" && location === "/");
           const Icon = item.icon;
+          
+          if (item.isCenter) {
+            return (
+              <Link
+                key={item.path}
+                href={item.path}
+                className="flex flex-col items-center p-3 min-w-0 flex-1"
+              >
+                <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
+                  isActive ? "bg-blue-600 text-white" : "bg-blue-600 text-white"
+                }`}>
+                  <Icon className="w-6 h-6" />
+                </div>
+                <span className="text-xs font-medium mt-1 text-blue-600">{item.label}</span>
+              </Link>
+            );
+          }
           
           return (
             <Link
