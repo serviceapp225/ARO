@@ -45,17 +45,7 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* Hot Lots Banner */}
-          <div className="bg-gradient-to-r from-orange-400 to-red-500 rounded-xl p-4 text-white">
-            <div className="flex items-center space-x-3">
-              <Timer className="w-6 h-6" />
-              <div className="flex-1">
-                <h3 className="font-bold text-lg">Горячие лоты!</h3>
-                <p className="text-sm text-white/80">12 автомобилей заканчиваются через 2 часа</p>
-              </div>
-              <span className="text-white/80">›</span>
-            </div>
-          </div>
+
 
           {/* Security Banner */}
           <div className="bg-green-50 border border-green-200 rounded-xl p-4">
