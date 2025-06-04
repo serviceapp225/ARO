@@ -127,20 +127,38 @@ export default function AuctionDetail() {
                 <h1 className="text-2xl font-bold text-gray-900">
                   {auction.year} {auction.make} {auction.model}
                 </h1>
-                <p className="text-gray-600 flex items-center gap-2 mt-1">
-                  <Gauge className="w-4 h-4" />
-                  {auction.mileage.toLocaleString()} км
-                </p>
+                <div className="mt-3 space-y-2">
+                  <p className="text-gray-600 flex items-center gap-2">
+                    <Calendar className="w-4 h-4" />
+                    Год выпуска: {auction.year}
+                  </p>
+                  <p className="text-gray-600 flex items-center gap-2">
+                    <Gauge className="w-4 h-4" />
+                    Пробег: {auction.mileage.toLocaleString()} км
+                  </p>
+                  <p className="text-gray-600 flex items-center gap-2">
+                    <Car className="w-4 h-4" />
+                    Двигатель: {mockAuction.specifications.engine}
+                  </p>
+                  <p className="text-gray-600 flex items-center gap-2">
+                    <Users className="w-4 h-4" />
+                    Коробка передач: {mockAuction.specifications.transmission}
+                  </p>
+                  <p className="text-gray-600 flex items-center gap-2">
+                    <Car className="w-4 h-4" />
+                    Привод: {mockAuction.specifications.drivetrain}
+                  </p>
+                </div>
               </div>
               <Badge variant="secondary" className="bg-green-100 text-green-800">
                 Активный
               </Badge>
             </div>
             
-            <div className="grid grid-cols-2 gap-4 text-sm">
+            <div className="grid grid-cols-2 gap-4 text-sm mt-4 pt-4 border-t border-gray-100">
               <div className="flex items-center gap-2">
-                <Calendar className="w-4 h-4 text-gray-500" />
-                <span className="text-gray-600">Год: {auction.year}</span>
+                <Eye className="w-4 h-4 text-gray-500" />
+                <span className="text-gray-600">Просмотров: {mockAuction.views}</span>
               </div>
               <div className="flex items-center gap-2">
                 <Users className="w-4 h-4 text-gray-500" />
