@@ -1,8 +1,9 @@
-import { MessageCircle, Search, Timer, Shield, Car } from "lucide-react";
+import { MessageCircle, Search, Timer, Shield, Car, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ActiveAuctions } from "@/components/ActiveAuctions";
 import { AdvertisementBanner } from "@/components/AdvertisementBanner";
+import { Link } from "wouter";
 
 export default function HomePage() {
   return (
@@ -20,9 +21,13 @@ export default function HomePage() {
       <main className="container mx-auto px-4 py-6 space-y-6">
         {/* Sell Car Button */}
         <div className="flex justify-center">
-          <Button className="bg-blue-600 hover:bg-blue-700 text-white py-3 px-8 rounded-lg">
-            Продай свое авто
-          </Button>
+          <Link href="/sell">
+            <Button className="relative bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white py-4 px-10 rounded-2xl text-lg font-bold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 flex items-center gap-3">
+              <Plus className="w-6 h-6" />
+              Продай свое авто
+              <div className="absolute inset-0 bg-gradient-to-r from-orange-400 to-red-500 rounded-2xl opacity-0 hover:opacity-20 transition-opacity duration-300"></div>
+            </Button>
+          </Link>
         </div>
 
         {/* Dynamic Advertisement Banner */}
