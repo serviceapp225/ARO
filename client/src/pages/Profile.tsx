@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { User, Globe, Bell, Heart, HelpCircle, FileText, LogOut, Camera, Edit, ChevronRight } from "lucide-react";
+import { Link } from "wouter";
 
 export default function Profile() {
   const { user, logout } = useAuth();
@@ -24,7 +25,9 @@ export default function Profile() {
           <p className="text-gray-500 mb-4">
             Войдите для доступа к профилю
           </p>
-          <Button className="w-full">Войти</Button>
+          <Link href="/login">
+            <Button className="w-full">Войти</Button>
+          </Link>
         </div>
       </div>
     );
