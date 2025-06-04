@@ -49,7 +49,8 @@ export default function AuctionDetail() {
       color: "Черный металлик",
       city: "Москва",
       condition: getConditionByMileage(45000),
-      vin: "WBXPC9C59WP123456"
+      vin: "WBXPC9C59WP123456",
+      customsCleared: true
     },
     seller: "Официальный дилер BMW",
     location: "Москва, Россия",
@@ -187,6 +188,12 @@ export default function AuctionDetail() {
               <div className="flex justify-between py-2 border-b border-gray-100">
                 <span className="text-gray-600">VIN:</span>
                 <span className="font-medium font-mono">{mockAuction.specifications.vin}</span>
+              </div>
+              <div className="flex justify-between py-2 border-b border-gray-100">
+                <span className="text-gray-600">Растаможен:</span>
+                <span className={`font-medium ${mockAuction.specifications.customsCleared ? 'text-green-600' : 'text-red-600'}`}>
+                  {mockAuction.specifications.customsCleared ? 'Да' : 'Нет'}
+                </span>
               </div>
               <div className="flex justify-between py-2 border-b border-gray-100">
                 <span className="text-gray-600">Просмотров:</span>
