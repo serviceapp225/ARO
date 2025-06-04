@@ -6,8 +6,8 @@ const bannerVariants = [
     id: 1,
     gradient: "from-blue-600 to-purple-700",
     icon: Car,
-    title: "БЫСТРАЯ ПРОДАЖА",
-    subtitle: "Продайте авто за 24 часа\nбез лишних хлопот",
+    title: "ПРОДАЙ СВОЕ АВТО",
+    subtitle: "По достойной цене\nбез посредников",
     buttonText: "Продать сейчас →",
     bgColor: "blue-700"
   },
@@ -55,6 +55,15 @@ const bannerVariants = [
     subtitle: "Скидка 5% на все\nпремиум автомобили",
     buttonText: "Узнать больше →",
     bgColor: "yellow-700"
+  },
+  {
+    id: 7,
+    gradient: "from-emerald-600 to-cyan-700",
+    icon: Car,
+    title: "ПРОДАЙ ВЫГОДНО",
+    subtitle: "Твое авто достойно\nлучшей цены на рынке",
+    buttonText: "Оценить авто →",
+    bgColor: "emerald-700"
   }
 ];
 
