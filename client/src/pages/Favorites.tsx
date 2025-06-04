@@ -47,7 +47,7 @@ export default function Favorites() {
     },
     {
       id: "2", 
-      lotNumber: "002",
+      lotNumber: "561847",
       make: "Honda",
       model: "CR-V",
       year: 2019,
@@ -64,7 +64,7 @@ export default function Favorites() {
     },
     {
       id: "3",
-      lotNumber: "003",
+      lotNumber: "329054",
       make: "BMW",
       model: "X3",
       year: 2021,

@@ -29,15 +29,16 @@ export default function AuctionDetail() {
   // Create mock auction data based on ID
   const createMockAuction = (carId: string) => {
     const carData = {
-      "1": { make: "Toyota", model: "Camry", year: 2020, mileage: 45000, engine: "2.5L", transmission: "Автоматическая", fuelType: "Бензин", bodyType: "Седан", color: "Белый", location: "Душанбе" },
-      "2": { make: "Honda", model: "CR-V", year: 2019, mileage: 52000, engine: "1.5L Turbo", transmission: "Автоматическая", fuelType: "Бензин", bodyType: "Кроссовер", color: "Серебристый", location: "Худжанд" },
-      "3": { make: "BMW", model: "X3", year: 2021, mileage: 28000, engine: "2.0L Twin Turbo", transmission: "Автоматическая", fuelType: "Бензин", bodyType: "Внедорожник", color: "Черный металлик", location: "Душанбе" }
+      "1": { lotNumber: "847293", make: "Toyota", model: "Camry", year: 2020, mileage: 45000, engine: "2.5L", transmission: "Автоматическая", fuelType: "Бензин", bodyType: "Седан", color: "Белый", location: "Душанбе" },
+      "2": { lotNumber: "561847", make: "Honda", model: "CR-V", year: 2019, mileage: 52000, engine: "1.5L Turbo", transmission: "Автоматическая", fuelType: "Бензин", bodyType: "Кроссовер", color: "Серебристый", location: "Худжанд" },
+      "3": { lotNumber: "329054", make: "BMW", model: "X3", year: 2021, mileage: 28000, engine: "2.0L Twin Turbo", transmission: "Автоматическая", fuelType: "Бензин", bodyType: "Внедорожник", color: "Черный металлик", location: "Душанбе" }
     };
 
     const car = carData[carId as keyof typeof carData] || carData["1"];
     
     return {
       id: carId,
+      lotNumber: car.lotNumber,
       make: car.make,
       model: car.model,
       year: car.year,
@@ -51,6 +52,7 @@ export default function AuctionDetail() {
       photos: ['/car1.jpg', '/car2.jpg', '/car3.jpg'],
       status: 'active' as const,
       specifications: {
+        lotNumber: car.lotNumber,
         engine: car.engine,
         transmission: car.transmission,
         drivetrain: "Передний привод",
@@ -158,6 +160,10 @@ export default function AuctionDetail() {
             </div>
 
             <div className="grid grid-cols-1 gap-3 text-sm">
+              <div className="flex justify-between py-2 border-b border-gray-100">
+                <span className="text-gray-600">Номер лота:</span>
+                <span className="font-medium font-mono">{mockAuction.specifications.lotNumber}</span>
+              </div>
               <div className="flex justify-between py-2 border-b border-gray-100">
                 <span className="text-gray-600">Год выпуска:</span>
                 <span className="font-medium">{auction.year}</span>
