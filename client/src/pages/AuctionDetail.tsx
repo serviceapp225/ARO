@@ -176,10 +176,10 @@ export default function AuctionDetail() {
                   {mockAuction.specifications.customsCleared ? '✓ Растаможен' : '✗ Не растаможен'}
                 </Badge>
                 <Badge variant="outline" className={`${auction.recycled ? 'text-blue-700 bg-blue-50 border-blue-200' : 'text-orange-700 bg-orange-50 border-orange-200'}`}>
-                  {auction.recycled ? '♻ Утилизация' : '⚠ Без утилизации'}
+                  {auction.recycled ? 'Утилизация есть' : 'Утилизация нет'}
                 </Badge>
                 <Badge variant="outline" className={`${auction.technicalInspectionValid ? 'text-purple-700 bg-purple-50 border-purple-200' : 'text-gray-700 bg-gray-50 border-gray-200'}`}>
-                  {auction.technicalInspectionValid ? `🔧 до ${auction.technicalInspectionDate}` : '❌ Нет техосмотра'}
+                  {auction.technicalInspectionValid ? `Техосмотр до ${auction.technicalInspectionDate}` : 'Техосмотр нет'}
                 </Badge>
               </div>
             </div>

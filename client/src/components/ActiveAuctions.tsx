@@ -132,7 +132,7 @@ export function ActiveAuctions({ searchQuery = "" }: ActiveAuctionsProps) {
                     ? 'bg-blue-100 text-blue-700' 
                     : 'bg-orange-100 text-orange-700'
                 }`}>
-                  {auction.recycled ? '♻ Утилизация' : '⚠ Без утилизации'}
+                  {auction.recycled ? 'Утилизация есть' : 'Утилизация нет'}
                 </span>
                 
                 <span className={`text-xs px-2 py-1 rounded-full ${
@@ -141,8 +141,8 @@ export function ActiveAuctions({ searchQuery = "" }: ActiveAuctionsProps) {
                     : 'bg-gray-100 text-gray-700'
                 }`}>
                   {auction.technicalInspectionValid 
-                    ? `🔧 до ${auction.technicalInspectionDate}` 
-                    : '❌ Нет техосмотра'}
+                    ? `Техосмотр до ${auction.technicalInspectionDate}` 
+                    : 'Техосмотр нет'}
                 </span>
               </div>
               <div className="mb-2">
