@@ -142,7 +142,7 @@ export function ActiveAuctions({ searchQuery = "" }: ActiveAuctionsProps) {
                 }`}>
                   {auction.technicalInspectionValid 
                     ? `Техосмотр до ${auction.technicalInspectionDate}` 
-                    : 'Техосмотр нет'}
+                    : 'Техосмотр: нет'}
                 </span>
               </div>
               <div className="mb-2">

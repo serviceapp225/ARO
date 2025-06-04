@@ -179,7 +179,7 @@ export default function AuctionDetail() {
                   {auction.recycled ? 'Утилизация: есть' : 'Утилизация: нет'}
                 </Badge>
                 <Badge variant="outline" className={`${auction.technicalInspectionValid ? 'text-purple-700 bg-purple-50 border-purple-200' : 'text-gray-700 bg-gray-50 border-gray-200'}`}>
-                  {auction.technicalInspectionValid ? `Техосмотр до ${auction.technicalInspectionDate}` : 'Техосмотр нет'}
+                  {auction.technicalInspectionValid ? `Техосмотр до ${auction.technicalInspectionDate}` : 'Техосмотр: нет'}
                 </Badge>
               </div>
             </div>
