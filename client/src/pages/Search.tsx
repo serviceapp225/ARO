@@ -307,6 +307,78 @@ export default function Search() {
 
               <div className="space-y-2">
                 <Label>Пробег (км)</Label>
+                
+                {/* Quick select buttons */}
+                <div className="grid grid-cols-3 gap-2 mb-3">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      handleFilterChange("mileageFrom", "0");
+                      handleFilterChange("mileageTo", "25000");
+                    }}
+                  >
+                    До 25к
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      handleFilterChange("mileageFrom", "25000");
+                      handleFilterChange("mileageTo", "50000");
+                    }}
+                  >
+                    25-50к
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      handleFilterChange("mileageFrom", "50000");
+                      handleFilterChange("mileageTo", "75000");
+                    }}
+                  >
+                    50-75к
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      handleFilterChange("mileageFrom", "75000");
+                      handleFilterChange("mileageTo", "100000");
+                    }}
+                  >
+                    75-100к
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      handleFilterChange("mileageFrom", "100000");
+                      handleFilterChange("mileageTo", "200000");
+                    }}
+                  >
+                    100-200к
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      handleFilterChange("mileageFrom", "200000");
+                      handleFilterChange("mileageTo", "300000");
+                    }}
+                  >
+                    200-300к
+                  </Button>
+                </div>
+                
+                {/* Custom range inputs */}
                 <div className="grid grid-cols-2 gap-4">
                   <div className="flex gap-2">
                     <Input
