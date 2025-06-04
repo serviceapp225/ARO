@@ -24,7 +24,8 @@ export default function AuctionFeed() {
     mileageFrom: "",
     mileageTo: "",
     priceFrom: "",
-    priceTo: ""
+    priceTo: "",
+    customsCleared: ""
   });
 
   const currentYear = new Date().getFullYear();
@@ -62,7 +63,8 @@ export default function AuctionFeed() {
       mileageFrom: "",
       mileageTo: "",
       priceFrom: "",
-      priceTo: ""
+      priceTo: "",
+      customsCleared: ""
     });
   };
 
@@ -197,7 +199,7 @@ export default function AuctionFeed() {
               </Select>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Тип топлива
@@ -230,6 +232,21 @@ export default function AuctionFeed() {
                         {type}
                       </SelectItem>
                     ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Растаможен
+                </label>
+                <Select value={searchFilters.customsCleared} onValueChange={(value) => handleFilterChange("customsCleared", value)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Растаможен" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="yes">Да</SelectItem>
+                    <SelectItem value="no">Нет</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
