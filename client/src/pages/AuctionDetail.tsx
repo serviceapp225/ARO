@@ -34,6 +34,9 @@ export default function AuctionDetail() {
     mileage: 45000,
     currentBid: 47500,
     bidCount: 23,
+    reservePrice: 50000, // Reserve price - null means no reserve
+    hasReserve: true,
+    reserveMet: false,
     endTime: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000),
     photos: ['/car1.jpg', '/car2.jpg', '/car3.jpg'],
     status: 'active' as const,
@@ -237,6 +240,30 @@ export default function AuctionDetail() {
               <p className="text-gray-600 text-sm">
                 Следующая ставка от ${(auction.currentBid + 500).toLocaleString()}
               </p>
+              
+              {/* Reserve Price Information */}
+              <div className="mt-4 pt-4 border-t border-gray-100">
+                {mockAuction.hasReserve ? (
+                  <div className="space-y-2">
+                    <div className={`text-sm font-medium ${mockAuction.reserveMet ? 'text-green-600' : 'text-orange-600'}`}>
+                      {mockAuction.reserveMet ? (
+                        <>✓ Резервная цена достигнута</>
+                      ) : (
+                        <>⚠ Резервная цена не достигнута</>
+                      )}
+                    </div>
+                    {!mockAuction.reserveMet && (
+                      <p className="text-xs text-gray-500">
+                        Резервная цена: ${mockAuction.reservePrice.toLocaleString()}
+                      </p>
+                    )}
+                  </div>
+                ) : (
+                  <div className="text-sm font-medium text-blue-600">
+                    🔥 Продажа без резерва!
+                  </div>
+                )}
+              </div>
             </div>
             
             <div className="flex gap-2">

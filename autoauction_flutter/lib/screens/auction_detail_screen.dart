@@ -23,6 +23,9 @@ class _AuctionDetailScreenState extends State<AuctionDetailScreen>
     'mileage': 45000,
     'currentBid': 47500,
     'bidCount': 23,
+    'reservePrice': 50000,
+    'hasReserve': true,
+    'reserveMet': false,
     'endTime': DateTime.now().add(const Duration(days: 2)),
     'specifications': {
       'engine': '3.0L Twin Turbo',
@@ -454,6 +457,69 @@ class _AuctionDetailScreenState extends State<AuctionDetailScreen>
                     color: Colors.grey[600],
                     fontSize: 12,
                   ),
+                ),
+                const SizedBox(height: 16),
+                // Reserve Price Information
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.grey[50],
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.grey[200]!),
+                  ),
+                  child: carData['hasReserve'] ? 
+                    Column(
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              carData['reserveMet'] ? Icons.check_circle : Icons.warning,
+                              color: carData['reserveMet'] ? Colors.green : Colors.orange,
+                              size: 16,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              carData['reserveMet'] ? 'Резервная цена достигнута' : 'Резервная цена не достигнута',
+                              style: TextStyle(
+                                color: carData['reserveMet'] ? Colors.green : Colors.orange,
+                                fontWeight: FontWeight.w600,
+                                fontSize: 14,
+                              ),
+                            ),
+                          ],
+                        ),
+                        if (!carData['reserveMet']) ...[
+                          const SizedBox(height: 8),
+                          Text(
+                            'Резервная цена: \$${carData['reservePrice'].toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]},')}',
+                            style: TextStyle(
+                              color: Colors.grey[600],
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
+                      ],
+                    ) :
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(
+                          Icons.local_fire_department,
+                          color: Colors.blue,
+                          size: 16,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Продажа без резерва!',
+                          style: TextStyle(
+                            color: Colors.blue[600],
+                            fontWeight: FontWeight.w600,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ],
+                    ),
                 ),
               ],
             ),
