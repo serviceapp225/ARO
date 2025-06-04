@@ -42,19 +42,22 @@ export function ActiveAuctions() {
     });
   };
 
-  const allAuctions = [...auctions, ...generateExtraAuctions(displayCount)];
+  // Only generate extra auctions if we have fewer than displayCount auctions
+  const extraAuctionsNeeded = Math.max(0, displayCount - auctions.length);
+  const allAuctions = [...auctions, ...generateExtraAuctions(extraAuctionsNeeded)];
 
-  // Handle scroll to load more
+  // Handle scroll to load more - but stop when we reach a reasonable limit
   useEffect(() => {
     const handleScroll = () => {
-      if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 1000) {
-        setDisplayCount(prev => prev + 10);
+      // Only load more if we don't have enough auctions and haven't reached the limit
+      if (allAuctions.length < 100 && window.innerHeight + window.scrollY >= document.body.offsetHeight - 1000) {
+        setDisplayCount(prev => Math.min(prev + 10, 100)); // Cap at 100 total auctions
       }
     };
 
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  }, [allAuctions.length]);
 
   if (loading) {
     return (
@@ -74,50 +77,67 @@ export function ActiveAuctions() {
   }
 
   return (
-    <div className="grid grid-cols-2 gap-3 mb-20">
-      {allAuctions.slice(0, displayCount).map((auction, index) => (
-        <Card
-          key={`${auction.id}-${index}`}
-          className="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md transition-shadow cursor-pointer"
-          onClick={() => setLocation(`/auction/${auction.id}`)}
-        >
-          <div className="relative">
-            <div className="h-32 bg-gray-200 flex items-center justify-center">
-              <Car className="w-8 h-8 text-gray-400" />
+    <div className="mb-20">
+      <div className="grid grid-cols-2 gap-3">
+        {allAuctions.slice(0, displayCount).map((auction, index) => (
+          <Card
+            key={`${auction.id}-${index}`}
+            className="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md transition-shadow cursor-pointer"
+            onClick={() => setLocation(`/auction/${auction.id}`)}
+          >
+            <div className="relative">
+              <div className="h-32 bg-gray-200 flex items-center justify-center">
+                <Car className="w-8 h-8 text-gray-400" />
+              </div>
+              <div className="absolute top-2 left-2">
+                <CountdownTimer endTime={auction.endTime} size="small" />
+              </div>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="absolute top-2 right-2 w-6 h-6 bg-black/50 text-white hover:bg-black/70"
+              >
+                <Heart className="h-3 w-3" />
+              </Button>
             </div>
-            <div className="absolute top-2 left-2">
-              <CountdownTimer endTime={auction.endTime} size="small" />
-            </div>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="absolute top-2 right-2 w-6 h-6 bg-black/50 text-white hover:bg-black/70"
-            >
-              <Heart className="h-3 w-3" />
-            </Button>
-          </div>
-          <CardContent className="p-3">
-            <h3 className="text-sm font-bold text-gray-900 mb-1 truncate">
-              {auction.year} {auction.make} {auction.model}
-            </h3>
-            <p className="text-xs text-gray-600 mb-2">
-              {auction.mileage.toLocaleString()} км
-            </p>
-            <div className="mb-2">
-              <p className="text-xs text-gray-500">Текущая ставка</p>
-              <p className="text-sm font-bold text-green-600">
-                ${auction.currentBid.toLocaleString()}
+            <CardContent className="p-3">
+              <h3 className="text-sm font-bold text-gray-900 mb-1 truncate">
+                {auction.year} {auction.make} {auction.model}
+              </h3>
+              <p className="text-xs text-gray-600 mb-2">
+                {auction.mileage.toLocaleString()} км
               </p>
-            </div>
-            <div className="flex justify-between items-center text-xs text-gray-500">
-              <span>{auction.bidCount} ставок</span>
-              <span className="bg-orange-100 text-orange-700 px-2 py-1 rounded">
-                2h {Math.floor(Math.random() * 60)}m
-              </span>
-            </div>
-          </CardContent>
-        </Card>
-      ))}
+              <div className="mb-2">
+                <p className="text-xs text-gray-500">Текущая ставка</p>
+                <p className="text-sm font-bold text-green-600">
+                  ${auction.currentBid.toLocaleString()}
+                </p>
+              </div>
+              <div className="flex justify-between items-center text-xs text-gray-500">
+                <span>{auction.bidCount} ставок</span>
+                <span className="bg-orange-100 text-orange-700 px-2 py-1 rounded">
+                  2h {Math.floor(Math.random() * 60)}m
+                </span>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+      
+      {/* Show message when all auctions are loaded */}
+      {allAuctions.length >= 100 && (
+        <div className="text-center mt-8 p-4 bg-gray-100 rounded-lg">
+          <p className="text-gray-600">Все доступные автомобили загружены</p>
+          <p className="text-sm text-gray-500 mt-1">Всего: {allAuctions.length} автомобилей</p>
+        </div>
+      )}
+      
+      {/* Show loading indicator when more auctions are being loaded */}
+      {allAuctions.length < 100 && allAuctions.length >= displayCount && (
+        <div className="text-center mt-8 p-4">
+          <p className="text-gray-500">Загружаем еще автомобили...</p>
+        </div>
+      )}
     </div>
   );
 }
