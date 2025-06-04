@@ -185,11 +185,14 @@ export default function SellCar() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="sedan">Седан</SelectItem>
-                      <SelectItem value="suv">Кроссовер/SUV</SelectItem>
+                      <SelectItem value="crossover">Кроссовер</SelectItem>
+                      <SelectItem value="suv">Внедорожник</SelectItem>
                       <SelectItem value="hatchback">Хэтчбек</SelectItem>
                       <SelectItem value="wagon">Универсал</SelectItem>
+                      <SelectItem value="minivan">Минивен</SelectItem>
                       <SelectItem value="coupe">Купе</SelectItem>
                       <SelectItem value="convertible">Кабриолет</SelectItem>
+                      <SelectItem value="pickup">Пикап</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
