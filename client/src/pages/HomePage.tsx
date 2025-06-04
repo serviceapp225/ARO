@@ -1,11 +1,23 @@
 import { MessageCircle, Search, Timer, Shield, Car, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { ActiveAuctions } from "@/components/ActiveAuctions";
 import { AdvertisementBanner } from "@/components/AdvertisementBanner";
 import { Link } from "wouter";
+import { useState } from "react";
 
 export default function HomePage() {
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      console.log("Поиск:", searchQuery);
+      // Здесь будет логика поиска
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 pb-20">
       {/* Header with App Name and WhatsApp */}
@@ -24,6 +36,22 @@ export default function HomePage() {
       </header>
 
       <main className="container mx-auto px-4 py-6 space-y-6">
+        {/* Search Section */}
+        <div className="bg-white rounded-2xl p-4 shadow-sm">
+          <form onSubmit={handleSearch} className="relative">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+              <Input
+                type="text"
+                placeholder="Напишите номер лота или название автомобиля"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10 pr-4 py-3 text-base border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+              />
+            </div>
+          </form>
+        </div>
+
         {/* Sell Car Section */}
         <div className="relative h-44 rounded-2xl p-6 text-white overflow-hidden shadow-2xl">
           {/* Dark Car Background Image */}
