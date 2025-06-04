@@ -90,7 +90,7 @@ export default function AuctionFeed() {
                       <SelectValue placeholder="Выберите марку" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">Все марки</SelectItem>
+                      <SelectItem value="all">Все марки</SelectItem>
                       {CAR_MAKES.map((make) => (
                         <SelectItem key={make} value={make}>
                           {make}
@@ -110,7 +110,7 @@ export default function AuctionFeed() {
                       <SelectValue placeholder="Выберите год" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">Любой год</SelectItem>
+                      <SelectItem value="all">Любой год</SelectItem>
                       {years.map((year) => (
                         <SelectItem key={year} value={year.toString()}>
                           {year}
