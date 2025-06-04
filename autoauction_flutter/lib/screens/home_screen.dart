@@ -90,14 +90,13 @@ class _SearchSection extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: SizedBox(
-        width: double.infinity,
+      child: Center(
         child: ElevatedButton(
           onPressed: () => Navigator.pushNamed(context, '/sell-car'),
           style: ElevatedButton.styleFrom(
             backgroundColor: Colors.blue.shade600,
             foregroundColor: Colors.white,
-            padding: const EdgeInsets.symmetric(vertical: 16),
+            padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 32),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
             ),

@@ -16,8 +16,8 @@ export function FlutterPreview() {
         </div>
 
         {/* Sell Car Section */}
-        <div className="px-4 pb-4">
-          <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3">
+        <div className="px-4 pb-4 flex justify-center">
+          <Button className="bg-blue-600 hover:bg-blue-700 text-white py-3 px-8 rounded-lg">
             Sell Your Car
           </Button>
         </div>

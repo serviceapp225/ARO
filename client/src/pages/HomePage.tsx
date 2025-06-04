@@ -18,8 +18,8 @@ export default function HomePage() {
 
       <main className="container mx-auto px-4 py-6 space-y-6">
         {/* Sell Car Button */}
-        <div>
-          <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3">
+        <div className="flex justify-center">
+          <Button className="bg-blue-600 hover:bg-blue-700 text-white py-3 px-8 rounded-lg">
             Sell Your Car
           </Button>
         </div>
