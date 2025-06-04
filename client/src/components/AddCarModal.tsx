@@ -7,16 +7,12 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
+import { CAR_MAKES, getModelsForMake } from '@shared/car-data';
 
 interface AddCarModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
-
-const carMakes = [
-  'BMW', 'Mercedes-Benz', 'Audi', 'Porsche', 'Tesla', 'Ferrari', 
-  'Ford', 'Chevrolet', 'Toyota', 'Honda', 'Nissan', 'Lexus'
-];
 
 const auctionDurations = [
   { value: '24', label: '24 Hours' },
@@ -39,7 +35,14 @@ export function AddCarModal({ open, onOpenChange }: AddCarModalProps) {
   const { toast } = useToast();
 
   const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData(prev => {
+      const newData = { ...prev, [field]: value };
+      // Reset model when make changes
+      if (field === 'make') {
+        newData.model = '';
+      }
+      return newData;
+    });
   };
 
   const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -153,7 +156,7 @@ export function AddCarModal({ open, onOpenChange }: AddCarModalProps) {
                   <SelectValue placeholder="Select Make" />
                 </SelectTrigger>
                 <SelectContent>
-                  {carMakes.map((make) => (
+                  {CAR_MAKES.map((make) => (
                     <SelectItem key={make} value={make}>
                       {make}
                     </SelectItem>
@@ -163,13 +166,22 @@ export function AddCarModal({ open, onOpenChange }: AddCarModalProps) {
             </div>
             <div>
               <Label htmlFor="model">Model</Label>
-              <Input
-                id="model"
-                placeholder="e.g., 911 Turbo S"
-                value={formData.model}
-                onChange={(e) => handleInputChange('model', e.target.value)}
-                required
-              />
+              <Select 
+                value={formData.model} 
+                onValueChange={(value) => handleInputChange('model', value)}
+                disabled={!formData.make}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder={formData.make ? "Select Model" : "Select Make First"} />
+                </SelectTrigger>
+                <SelectContent>
+                  {formData.make && getModelsForMake(formData.make).map((model) => (
+                    <SelectItem key={model} value={model}>
+                      {model}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div>
               <Label htmlFor="year">Year</Label>

@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { ActiveAuctions } from "@/components/ActiveAuctions";
+import { CAR_MAKES, getModelsForMake } from "@shared/car-data";
 
 export default function Search() {
   const [searchFilters, setSearchFilters] = useState({
@@ -18,8 +19,6 @@ export default function Search() {
     fuelType: "",
     transmission: ""
   });
-
-  const brands = ["Toyota", "BMW", "Mercedes-Benz", "Audi", "Honda", "Nissan", "Volkswagen", "Hyundai", "Kia", "Mazda"];
   const currentYear = new Date().getFullYear();
   const years = Array.from({ length: 30 }, (_, i) => (currentYear - i).toString());
   
