@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'auction_detail_screen.dart';
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
   @override
