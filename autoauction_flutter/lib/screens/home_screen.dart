@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -12,10 +10,10 @@ class HomeScreen extends StatelessWidget {
           children: [
             // Top Section with App Title and WhatsApp
             const _TopHeader(),
-            
+
             // Search Bar and Sell Button
             const _SearchSection(),
-            
+
             // Main Scrollable Content
             Expanded(
               child: SingleChildScrollView(
@@ -24,11 +22,11 @@ class HomeScreen extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const SizedBox(height: 16),
-                    
+
                     // Announcement Banners
                     const _AnnouncementBanners(),
                     const SizedBox(height: 24),
-                    
+
                     // Active Auctions Grid
                     const _SectionTitle(title: 'Active Auctions'),
                     const SizedBox(height: 12),
@@ -44,11 +42,9 @@ class HomeScreen extends StatelessWidget {
     );
   }
 }
-
 // Top Header with App Title and WhatsApp
 class _TopHeader extends StatelessWidget {
   const _TopHeader();
-
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -71,7 +67,6 @@ class _TopHeader extends StatelessWidget {
             ),
             child: IconButton(
               onPressed: () {
-                // Handle WhatsApp contact
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('Opening WhatsApp support...')),
                 );
@@ -88,11 +83,9 @@ class _TopHeader extends StatelessWidget {
     );
   }
 }
-
 // Search Section with Search Bar and Sell Button
 class _SearchSection extends StatelessWidget {
   const _SearchSection();
-
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -125,9 +118,9 @@ class _SearchSection extends StatelessWidget {
               readOnly: true,
             ),
           ),
-          
+
           const SizedBox(height: 12),
-          
+
           // Sell Your Car Button
           SizedBox(
             width: double.infinity,
@@ -156,11 +149,9 @@ class _SearchSection extends StatelessWidget {
     );
   }
 }
-
 // Announcement Banners - Large Advertisement Column
 class _AnnouncementBanners extends StatelessWidget {
   const _AnnouncementBanners();
-
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -233,9 +224,9 @@ class _AnnouncementBanners extends StatelessWidget {
             ],
           ),
         ),
-        
+
         const SizedBox(height: 16),
-        
+
         // Secondary Advertisement Banner
         Container(
           width: double.infinity,
@@ -286,9 +277,9 @@ class _AnnouncementBanners extends StatelessWidget {
             ],
           ),
         ),
-        
+
         const SizedBox(height: 16),
-        
+
         // News/Info Banner
         Container(
           width: double.infinity,
@@ -335,13 +326,11 @@ class _AnnouncementBanners extends StatelessWidget {
     );
   }
 }
-
 // Section Title Widget
 class _SectionTitle extends StatelessWidget {
   final String title;
-  
-  const _SectionTitle({required this.title});
 
+  const _SectionTitle({required this.title});
   @override
   Widget build(BuildContext context) {
     return Text(
@@ -354,11 +343,9 @@ class _SectionTitle extends StatelessWidget {
     );
   }
 }
-
 // Active Auctions Grid (2 per row)
 class _ActiveAuctionsGrid extends StatelessWidget {
   const _ActiveAuctionsGrid();
-
   @override
   Widget build(BuildContext context) {
     return GridView.builder(
@@ -383,7 +370,6 @@ class _ActiveAuctionsGrid extends StatelessWidget {
     );
   }
 }
-
 // Individual Auction Card
 class _AuctionCard extends StatelessWidget {
   final String title;
@@ -391,7 +377,6 @@ class _AuctionCard extends StatelessWidget {
   final String currentBid;
   final String timeLeft;
   final int index;
-
   const _AuctionCard({
     required this.title,
     required this.year,
@@ -399,7 +384,6 @@ class _AuctionCard extends StatelessWidget {
     required this.timeLeft,
     required this.index,
   });
-
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
@@ -440,7 +424,7 @@ class _AuctionCard extends StatelessWidget {
                 ),
               ),
             ),
-            
+
             // Car Details
             Padding(
               padding: const EdgeInsets.all(12),
@@ -497,4 +481,3 @@ class _AuctionCard extends StatelessWidget {
     );
   }
 }
-
