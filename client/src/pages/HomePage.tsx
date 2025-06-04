@@ -22,14 +22,34 @@ export default function HomePage() {
         {/* Sell Car Section */}
         <div className="relative h-44 bg-gradient-to-br from-emerald-500 via-teal-600 to-cyan-700 rounded-2xl p-6 text-white overflow-hidden shadow-2xl">
           {/* Car Background */}
-          <div className="absolute right-0 top-1/2 -translate-y-1/2 opacity-15">
-            <svg className="w-80 h-40" viewBox="0 0 320 160" fill="none">
-              <path d="M40 120 L60 95 L120 85 L180 90 L230 95 L270 115 L300 135 L270 150 L230 145 L180 145 L120 145 L60 145 Z" fill="white"/>
-              <circle cx="100" cy="145" r="12" fill="white"/>
-              <circle cx="230" cy="145" r="12" fill="white"/>
-              <path d="M70 110 L105 100 L165 95 L225 100 L260 120" stroke="white" strokeWidth="2"/>
-              <rect x="115" y="100" width="30" height="20" fill="white" opacity="0.7"/>
-              <rect x="165" y="100" width="30" height="20" fill="white" opacity="0.7"/>
+          <div className="absolute right-0 top-1/2 -translate-y-1/2 opacity-20">
+            <svg className="w-96 h-48" viewBox="0 0 400 200" fill="none">
+              {/* Car Body */}
+              <path d="M50 140 L70 110 L130 100 L200 95 L270 100 L320 120 L350 150 L320 170 L270 165 L200 165 L130 165 L70 165 Z" fill="white"/>
+              
+              {/* Wheels */}
+              <circle cx="120" cy="165" r="18" fill="white"/>
+              <circle cx="120" cy="165" r="12" fill="none" stroke="white" strokeWidth="2" opacity="0.7"/>
+              <circle cx="280" cy="165" r="18" fill="white"/>
+              <circle cx="280" cy="165" r="12" fill="none" stroke="white" strokeWidth="2" opacity="0.7"/>
+              
+              {/* Car Details */}
+              <path d="M80 130 L110 115 L180 110 L250 115 L300 135" stroke="white" strokeWidth="3" opacity="0.8"/>
+              
+              {/* Windows */}
+              <rect x="140" y="115" width="35" height="25" rx="3" fill="white" opacity="0.6"/>
+              <rect x="185" y="115" width="35" height="25" rx="3" fill="white" opacity="0.6"/>
+              <rect x="230" y="115" width="25" height="25" rx="3" fill="white" opacity="0.6"/>
+              
+              {/* Headlights */}
+              <ellipse cx="60" cy="135" rx="8" ry="12" fill="white" opacity="0.9"/>
+              <ellipse cx="340" cy="145" rx="6" ry="8" fill="white" opacity="0.7"/>
+              
+              {/* Grille */}
+              <rect x="45" y="130" width="20" height="15" fill="white" opacity="0.8"/>
+              <line x1="48" y1="133" x2="62" y2="133" stroke="white" strokeWidth="1" opacity="0.6"/>
+              <line x1="48" y1="138" x2="62" y2="138" stroke="white" strokeWidth="1" opacity="0.6"/>
+              <line x1="48" y1="143" x2="62" y2="143" stroke="white" strokeWidth="1" opacity="0.6"/>
             </svg>
           </div>
           

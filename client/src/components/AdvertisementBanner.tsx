@@ -88,16 +88,33 @@ export function AdvertisementBanner() {
   return (
     <div className={`relative h-44 bg-gradient-to-br ${currentBanner.gradient} rounded-2xl p-6 text-white overflow-hidden transition-all duration-500`}>
       {/* Car Background */}
-      <div className="absolute right-0 top-1/2 -translate-y-1/2 opacity-10">
-        <svg className="w-80 h-40" viewBox="0 0 320 160" fill="none">
-          <path d="M40 120 L60 95 L120 85 L180 90 L230 95 L270 115 L300 135 L270 150 L230 145 L180 145 L120 145 L60 145 Z" fill="white"/>
-          <circle cx="100" cy="145" r="12" fill="white"/>
-          <circle cx="230" cy="145" r="12" fill="white"/>
-          <path d="M70 110 L105 100 L165 95 L225 100 L260 120" stroke="white" strokeWidth="2"/>
-          <rect x="115" y="100" width="30" height="20" fill="white" opacity="0.7"/>
-          <rect x="165" y="100" width="30" height="20" fill="white" opacity="0.7"/>
-          <path d="M80 120 L90 110 L110 105 L130 110 L140 120" fill="white" opacity="0.8"/>
-          <path d="M200 120 L210 110 L230 105 L250 110 L260 120" fill="white" opacity="0.8"/>
+      <div className="absolute right-0 top-1/2 -translate-y-1/2 opacity-15">
+        <svg className="w-80 h-40" viewBox="0 0 350 180" fill="none">
+          {/* Sports Car Body */}
+          <path d="M40 130 L55 105 L90 95 L150 90 L220 92 L280 100 L310 120 L320 140 L300 155 L280 150 L220 150 L150 150 L90 150 L55 150 Z" fill="white"/>
+          
+          {/* Wheels */}
+          <circle cx="105" cy="150" r="15" fill="white"/>
+          <circle cx="105" cy="150" r="10" fill="none" stroke="white" strokeWidth="2" opacity="0.8"/>
+          <circle cx="265" cy="150" r="15" fill="white"/>
+          <circle cx="265" cy="150" r="10" fill="none" stroke="white" strokeWidth="2" opacity="0.8"/>
+          
+          {/* Car Roof Line */}
+          <path d="M65 125 L95 110 L140 105 L200 107 L260 115 L290 130" stroke="white" strokeWidth="2" opacity="0.9"/>
+          
+          {/* Windows */}
+          <path d="M110 115 L140 108 L180 106 L220 108 L250 118 L240 125 L200 125 L140 125 Z" fill="white" opacity="0.7"/>
+          
+          {/* Windshield */}
+          <path d="M75 125 L105 112 L140 110 L135 125 L100 128 Z" fill="white" opacity="0.6"/>
+          
+          {/* Headlights */}
+          <ellipse cx="45" cy="125" rx="6" ry="10" fill="white" opacity="0.9"/>
+          <ellipse cx="315" cy="135" rx="4" ry="6" fill="white" opacity="0.8"/>
+          
+          {/* Side Details */}
+          <path d="M70 135 L90 130 L150 128 L220 130 L280 135" stroke="white" strokeWidth="1" opacity="0.6"/>
+          <path d="M80 140 L100 138 L160 136 L230 138 L270 142" stroke="white" strokeWidth="1" opacity="0.5"/>
         </svg>
       </div>
       
