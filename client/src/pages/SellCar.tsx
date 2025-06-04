@@ -11,7 +11,6 @@ import { CAR_MAKES_MODELS, getModelsForMake } from "../../../shared/car-data";
 export default function SellCar() {
   const [uploadedImages, setUploadedImages] = useState<string[]>([]);
   const [formData, setFormData] = useState({
-    title: "",
     make: "",
     model: "",
     year: "",
@@ -117,17 +116,6 @@ export default function SellCar() {
               <CardTitle>Информация об автомобиле</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div>
-                <Label htmlFor="title">Заголовок объявления</Label>
-                <Input
-                  id="title"
-                  placeholder="Например: Toyota Camry 2020 в отличном состоянии"
-                  value={formData.title}
-                  onChange={(e) => handleInputChange("title", e.target.value)}
-                  required
-                />
-              </div>
-
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="make">Марка</Label>
