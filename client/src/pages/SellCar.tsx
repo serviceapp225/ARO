@@ -20,7 +20,9 @@ export default function SellCar() {
     description: "",
     bodyType: "",
     fuelType: "",
-    transmission: ""
+    transmission: "",
+    engineVolume: "",
+    customsCleared: ""
   });
   
   const [availableModels, setAvailableModels] = useState<string[]>([]);
@@ -174,7 +176,7 @@ export default function SellCar() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div>
                   <Label htmlFor="bodyType">Тип кузова</Label>
                   <Select value={formData.bodyType} onValueChange={(value) => handleInputChange("bodyType", value)}>
@@ -217,6 +219,33 @@ export default function SellCar() {
                       <SelectItem value="automatic">Автомат</SelectItem>
                       <SelectItem value="manual">Механика</SelectItem>
                       <SelectItem value="cvt">Вариатор</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <Label htmlFor="engineVolume">Объем двигателя (л)</Label>
+                  <Input
+                    id="engineVolume"
+                    type="number"
+                    step="0.1"
+                    placeholder="2.0"
+                    value={formData.engineVolume}
+                    onChange={(e) => handleInputChange("engineVolume", e.target.value)}
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="customsCleared">Растаможен</Label>
+                  <Select value={formData.customsCleared} onValueChange={(value) => handleInputChange("customsCleared", value)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Выберите статус" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="yes">Да</SelectItem>
+                      <SelectItem value="no">Нет</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
