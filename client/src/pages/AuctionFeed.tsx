@@ -73,7 +73,7 @@ export default function AuctionFeed() {
       {/* Header */}
       <header className="bg-white shadow-sm border-b border-neutral-200">
         <div className="container mx-auto px-4 py-4">
-          <h1 className="text-2xl font-bold text-neutral-900">Активные аукционы</h1>
+          <h1 className="text-2xl font-bold text-neutral-900">Найди свой будущий автомобиль</h1>
         </div>
       </header>
 
@@ -84,7 +84,7 @@ export default function AuctionFeed() {
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
               <Filter className="w-5 h-5" />
-              Найди свой будущий автомобиль
+              Параметры поиска
               {hasActiveFilters && (
                 <Badge variant="secondary" className="ml-2">
                   {Object.values(searchFilters).filter(Boolean).length}
@@ -279,11 +279,8 @@ export default function AuctionFeed() {
           </div>
         </div>
 
-        {/* Sort and Results Section */}
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-lg font-semibold text-neutral-900">
-            Результаты поиска
-          </h2>
+        {/* Sort Section */}
+        <div className="flex justify-end mb-6">
           <Select value={sortBy} onValueChange={setSortBy}>
             <SelectTrigger className="w-48">
               <SelectValue />
