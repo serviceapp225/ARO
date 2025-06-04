@@ -1,39 +1,49 @@
 export const CAR_MAKES_MODELS = {
   "BMW": [
     "1 Series", "2 Series", "3 Series", "4 Series", "5 Series", "6 Series", "7 Series", "8 Series",
-    "X1", "X2", "X3", "X4", "X5", "X6", "X7", "Z4", "i3", "i4", "iX", "M2", "M3", "M4", "M5", "M8"
+    "X1", "X2", "X3", "X4", "X5", "X6", "X7", "XM", "Z3", "Z4", "Z8", "i3", "i4", "i7", "iX", "iX1", "iX3",
+    "M1", "M2", "M3", "M4", "M5", "M6", "M8", "1M", "X3 M", "X4 M", "X5 M", "X6 M"
   ],
   "Mercedes-Benz": [
     "A-Class", "B-Class", "C-Class", "CLA", "CLS", "E-Class", "S-Class", "G-Class", "GLA", "GLB", 
-    "GLC", "GLE", "GLS", "SL", "SLC", "AMG GT", "EQS", "EQC", "EQA", "EQB", "Maybach S-Class"
+    "GLC", "GLE", "GLS", "SL", "SLC", "SLK", "AMG GT", "EQS", "EQC", "EQA", "EQB", "EQE", "EQV",
+    "Maybach S-Class", "Maybach GLS", "AMG A35", "AMG A45", "AMG C43", "AMG C63", "AMG E53", "AMG E63",
+    "AMG GLA35", "AMG GLA45", "AMG GLC43", "AMG GLC63", "AMG GLE53", "AMG GLE63", "AMG S63", "AMG G63"
   ],
   "Audi": [
     "A1", "A3", "A4", "A5", "A6", "A7", "A8", "Q2", "Q3", "Q4 e-tron", "Q5", "Q7", "Q8", 
-    "TT", "R8", "RS3", "RS4", "RS5", "RS6", "RS7", "e-tron", "e-tron GT"
+    "TT", "TTS", "TT RS", "R8", "RS3", "RS4", "RS5", "RS6", "RS7", "e-tron", "e-tron GT",
+    "S1", "S3", "S4", "S5", "S6", "S7", "S8", "SQ2", "SQ3", "SQ5", "SQ7", "SQ8", "Q5 Sportback", "Q8 e-tron"
   ],
   "Toyota": [
-    "Corolla", "Camry", "Prius", "RAV4", "Highlander", "4Runner", "Tacoma", "Tundra", 
-    "Sienna", "Avalon", "C-HR", "Venza", "Supra", "86", "Yaris", "Prius Prime"
+    "Corolla", "Corolla Cross", "Camry", "Prius", "Prius Prime", "RAV4", "Highlander", "4Runner", "Tacoma", "Tundra", 
+    "Sienna", "Avalon", "C-HR", "Venza", "Supra", "86", "Yaris", "Yaris Cross", "Land Cruiser", "Sequoia",
+    "Prado", "Hilux", "Fortuner", "Innova", "Alphard", "Vellfire", "Noah", "Voxy", "Harrier", "Crown"
   ],
   "Honda": [
-    "Civic", "Accord", "CR-V", "HR-V", "Pilot", "Passport", "Ridgeline", "Odyssey", 
-    "Insight", "Fit", "CR-V Hybrid", "Accord Hybrid", "Clarity"
+    "Civic", "Civic Type R", "Accord", "CR-V", "HR-V", "Pilot", "Passport", "Ridgeline", "Odyssey", 
+    "Insight", "Fit", "CR-V Hybrid", "Accord Hybrid", "Clarity", "Element", "S2000", "NSX",
+    "City", "Jazz", "Freed", "Vezel", "Stepwgn", "Shuttle"
   ],
   "Ford": [
-    "Fiesta", "Focus", "Mondeo", "Mustang", "F-150", "Explorer", "Escape", "Edge", 
-    "Expedition", "Ranger", "Bronco", "Maverick", "EcoSport", "Kuga", "Puma"
+    "Fiesta", "Focus", "Focus ST", "Focus RS", "Mondeo", "Mustang", "Mustang Mach-E", "F-150", "F-250", "F-350", 
+    "Explorer", "Escape", "Edge", "Expedition", "Ranger", "Bronco", "Bronco Sport", "Maverick", "EcoSport", 
+    "Kuga", "Puma", "Galaxy", "S-Max", "Transit", "Fusion", "Taurus", "GT"
   ],
   "Volkswagen": [
-    "Golf", "Polo", "Passat", "Jetta", "Tiguan", "Touareg", "Atlas", "Arteon", 
-    "ID.3", "ID.4", "Up!", "T-Cross", "T-Roc", "Sharan", "Touran"
+    "Golf", "Golf GTI", "Golf R", "Polo", "Polo GTI", "Passat", "Passat CC", "Jetta", "Jetta GLI", 
+    "Tiguan", "Tiguan R", "Touareg", "Atlas", "Atlas Cross Sport", "Arteon", "Beetle", "Scirocco",
+    "ID.3", "ID.4", "ID.5", "ID.6", "ID.7", "ID. Buzz", "Up!", "T-Cross", "T-Roc", "Sharan", "Touran", "Caddy"
   ],
   "Nissan": [
-    "Sentra", "Altima", "Maxima", "Rogue", "Murano", "Pathfinder", "Armada", 
-    "Frontier", "Titan", "370Z", "GT-R", "Kicks", "Versa", "Leaf"
+    "Sentra", "Altima", "Maxima", "Rogue", "Rogue Sport", "Murano", "Pathfinder", "Armada", 
+    "Frontier", "Titan", "Titan XD", "370Z", "400Z", "GT-R", "Kicks", "Versa", "Leaf", "Ariya",
+    "Juke", "Qashqai", "X-Trail", "Patrol", "Navara", "Note", "Micra", "Skyline", "Silvia"
   ],
   "Hyundai": [
-    "Elantra", "Sonata", "Tucson", "Santa Fe", "Palisade", "Kona", "Venue", 
-    "Genesis G70", "Genesis G80", "Genesis G90", "Ioniq", "Veloster", "Accent"
+    "Elantra", "Elantra N", "Sonata", "Sonata N Line", "Tucson", "Santa Fe", "Palisade", "Kona", "Kona Electric", "Venue", 
+    "Ioniq", "Ioniq 5", "Ioniq 6", "Veloster", "Veloster N", "Accent", "i10", "i20", "i30", "i30 N", "i40",
+    "Creta", "Alcazar", "Verna", "Xcent", "Santa Cruz"
   ],
   "Kia": [
     "Rio", "Forte", "Optima", "Stinger", "Soul", "Seltos", "Sportage", "Sorento", 
