@@ -26,36 +26,49 @@ export default function AuctionDetail() {
     return "Удовлетворительное";
   };
 
-  const mockAuction = {
-    id: id,
-    make: "BMW",
-    model: "X5",
-    year: 2020,
-    mileage: 45000,
-    currentBid: 47500,
-    bidCount: 23,
-    reservePrice: 50000, // Reserve price - null means no reserve
-    hasReserve: true,
-    reserveMet: false,
-    endTime: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000),
-    photos: ['/car1.jpg', '/car2.jpg', '/car3.jpg'],
-    status: 'active' as const,
-    specifications: {
-      engine: "3.0L Twin Turbo",
-      transmission: "Автоматическая 8-ступенчатая",
-      drivetrain: "Полный привод (xDrive)",
-      fuelType: "Бензин",
-      bodyType: "Кроссовер",
-      color: "Черный металлик",
-      city: "Москва",
-      condition: getConditionByMileage(45000),
-      vin: "WBXPC9C59WP123456",
-      customsCleared: true
-    },
-    seller: "Официальный дилер BMW",
-    location: "Москва, Россия",
-    views: 342
+  // Create mock auction data based on ID
+  const createMockAuction = (carId: string) => {
+    const carData = {
+      "1": { make: "Toyota", model: "Camry", year: 2020, mileage: 45000, engine: "2.5L", transmission: "Автоматическая", fuelType: "Бензин", bodyType: "Седан", color: "Белый", location: "Душанбе" },
+      "2": { make: "Honda", model: "CR-V", year: 2019, mileage: 52000, engine: "1.5L Turbo", transmission: "Автоматическая", fuelType: "Бензин", bodyType: "Кроссовер", color: "Серебристый", location: "Худжанд" },
+      "3": { make: "BMW", model: "X3", year: 2021, mileage: 28000, engine: "2.0L Twin Turbo", transmission: "Автоматическая", fuelType: "Бензин", bodyType: "Внедорожник", color: "Черный металлик", location: "Душанбе" }
+    };
+
+    const car = carData[carId as keyof typeof carData] || carData["1"];
+    
+    return {
+      id: carId,
+      make: car.make,
+      model: car.model,
+      year: car.year,
+      mileage: car.mileage,
+      currentBid: 47500,
+      bidCount: 23,
+      reservePrice: 50000,
+      hasReserve: true,
+      reserveMet: false,
+      endTime: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000),
+      photos: ['/car1.jpg', '/car2.jpg', '/car3.jpg'],
+      status: 'active' as const,
+      specifications: {
+        engine: car.engine,
+        transmission: car.transmission,
+        drivetrain: "Передний привод",
+        fuelType: car.fuelType,
+        bodyType: car.bodyType,
+        color: car.color,
+        city: car.location,
+        condition: getConditionByMileage(car.mileage),
+        vin: "ABC123456789",
+        customsCleared: true
+      },
+      seller: `Официальный дилер ${car.make}`,
+      location: car.location,
+      views: 342
+    };
   };
+
+  const mockAuction = createMockAuction(id || "1");
 
   const auction = auctions.find(a => a.id === id) || mockAuction;
 
@@ -104,7 +117,7 @@ export default function AuctionDetail() {
     <div className="min-h-screen bg-gray-50 pb-20">
       <header className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-40">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <Button variant="ghost" size="sm" onClick={() => setLocation('/')}>
+          <Button variant="ghost" size="sm" onClick={() => window.history.back()}>
             <ArrowLeft className="w-5 h-5 mr-2" />
             Назад
           </Button>
