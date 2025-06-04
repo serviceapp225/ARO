@@ -21,7 +21,7 @@ export default function HomePage() {
         {/* Sell Car Button */}
         <div className="flex justify-center">
           <Button className="bg-blue-600 hover:bg-blue-700 text-white py-3 px-8 rounded-lg">
-            Sell Your Car
+            Продай свое авто
           </Button>
         </div>
 
