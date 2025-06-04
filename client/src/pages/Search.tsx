@@ -27,7 +27,14 @@ export default function Search() {
   const transmissions = ["Автомат", "Механика", "Вариатор"];
 
   const handleFilterChange = (field: string, value: string) => {
-    setSearchFilters(prev => ({ ...prev, [field]: value }));
+    setSearchFilters(prev => {
+      const newFilters = { ...prev, [field]: value };
+      // Reset model when brand changes
+      if (field === 'brand') {
+        newFilters.model = '';
+      }
+      return newFilters;
+    });
   };
 
   const clearFilter = (field: string) => {
@@ -90,7 +97,7 @@ export default function Search() {
                         <SelectValue placeholder="Выберите марку" />
                       </SelectTrigger>
                       <SelectContent>
-                        {brands.map((brand) => (
+                        {CAR_MAKES.map((brand) => (
                           <SelectItem key={brand} value={brand.toLowerCase()}>
                             {brand}
                           </SelectItem>
@@ -108,11 +115,24 @@ export default function Search() {
                 <div className="space-y-2">
                   <Label>Модель</Label>
                   <div className="flex gap-2">
-                    <Input
-                      placeholder="Введите модель"
-                      value={searchFilters.model}
-                      onChange={(e) => handleFilterChange("model", e.target.value)}
-                    />
+                    <Select 
+                      value={searchFilters.model} 
+                      onValueChange={(value) => handleFilterChange("model", value)}
+                      disabled={!searchFilters.brand}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder={searchFilters.brand ? "Выберите модель" : "Сначала выберите марку"} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {searchFilters.brand && getModelsForMake(
+                          CAR_MAKES.find(make => make.toLowerCase() === searchFilters.brand) || ''
+                        ).map((model) => (
+                          <SelectItem key={model} value={model.toLowerCase()}>
+                            {model}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                     {searchFilters.model && (
                       <Button variant="ghost" size="sm" onClick={() => clearFilter("model")}>
                         <X className="w-4 h-4" />

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../data/car_data.dart';
 
 class SellCarScreen extends StatefulWidget {
   const SellCarScreen({super.key});
@@ -9,14 +10,14 @@ class SellCarScreen extends StatefulWidget {
 
 class _SellCarScreenState extends State<SellCarScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _makeController = TextEditingController();
-  final _modelController = TextEditingController();
   final _yearController = TextEditingController();
   final _mileageController = TextEditingController();
   final _descriptionController = TextEditingController();
   final _startingBidController = TextEditingController();
   final _reservePriceController = TextEditingController();
   
+  String? _selectedMake;
+  String? _selectedModel;
   String _selectedCondition = 'Excellent';
   String _selectedTransmission = 'Automatic';
   String _selectedFuelType = 'Gasoline';
@@ -29,8 +30,6 @@ class _SellCarScreenState extends State<SellCarScreen> {
 
   @override
   void dispose() {
-    _makeController.dispose();
-    _modelController.dispose();
     _yearController.dispose();
     _mileageController.dispose();
     _descriptionController.dispose();
