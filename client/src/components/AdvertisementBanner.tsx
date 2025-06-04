@@ -87,8 +87,23 @@ export function AdvertisementBanner() {
 
   return (
     <div className={`relative h-44 bg-gradient-to-br ${currentBanner.gradient} rounded-2xl p-6 text-white overflow-hidden transition-all duration-500`}>
-      <div className="absolute right-[-20px] top-[-10px]">
-        <IconComponent className="w-28 h-28 text-white opacity-20" />
+      {/* Car Background */}
+      <div className="absolute right-0 top-1/2 -translate-y-1/2 opacity-10">
+        <svg className="w-80 h-40" viewBox="0 0 320 160" fill="none">
+          <path d="M40 120 L60 95 L120 85 L180 90 L230 95 L270 115 L300 135 L270 150 L230 145 L180 145 L120 145 L60 145 Z" fill="white"/>
+          <circle cx="100" cy="145" r="12" fill="white"/>
+          <circle cx="230" cy="145" r="12" fill="white"/>
+          <path d="M70 110 L105 100 L165 95 L225 100 L260 120" stroke="white" strokeWidth="2"/>
+          <rect x="115" y="100" width="30" height="20" fill="white" opacity="0.7"/>
+          <rect x="165" y="100" width="30" height="20" fill="white" opacity="0.7"/>
+          <path d="M80 120 L90 110 L110 105 L130 110 L140 120" fill="white" opacity="0.8"/>
+          <path d="M200 120 L210 110 L230 105 L250 110 L260 120" fill="white" opacity="0.8"/>
+        </svg>
+      </div>
+      
+      {/* Icon overlay */}
+      <div className="absolute right-[-10px] top-[-5px] opacity-20">
+        <IconComponent className="w-20 h-20 text-white" />
       </div>
       <div className="relative z-10 space-y-2">
         <h2 className="text-2xl font-bold">{currentBanner.title}</h2>

@@ -21,11 +21,16 @@ export default function HomePage() {
       <main className="container mx-auto px-4 py-6 space-y-6">
         {/* Sell Car Section */}
         <div className="relative bg-gradient-to-br from-emerald-500 via-teal-600 to-cyan-700 rounded-3xl p-8 text-white overflow-hidden shadow-2xl">
-          {/* Background Pattern */}
-          <div className="absolute inset-0 opacity-10">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-white rounded-full -translate-y-16 translate-x-16"></div>
-            <div className="absolute bottom-0 left-0 w-24 h-24 bg-white rounded-full translate-y-12 -translate-x-12"></div>
-            <div className="absolute top-1/2 right-1/4 w-16 h-16 bg-white rounded-full"></div>
+          {/* Car Background */}
+          <div className="absolute inset-0 opacity-15">
+            <svg className="absolute right-0 top-1/2 -translate-y-1/2 w-96 h-48" viewBox="0 0 400 200" fill="none">
+              <path d="M50 150 L80 120 L150 110 L220 115 L280 120 L320 140 L350 160 L320 180 L280 175 L220 175 L150 175 L80 175 Z" fill="white" opacity="0.3"/>
+              <circle cx="120" cy="175" r="15" fill="white" opacity="0.4"/>
+              <circle cx="280" cy="175" r="15" fill="white" opacity="0.4"/>
+              <path d="M90 140 L130 125 L200 120 L270 125 L310 145" stroke="white" strokeWidth="2" opacity="0.5"/>
+              <rect x="140" y="125" width="40" height="25" fill="white" opacity="0.2"/>
+              <rect x="200" y="125" width="40" height="25" fill="white" opacity="0.2"/>
+            </svg>
           </div>
           
           {/* Content */}
