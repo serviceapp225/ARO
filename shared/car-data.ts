@@ -46,53 +46,69 @@ export const CAR_MAKES_MODELS = {
     "Creta", "Alcazar", "Verna", "Xcent", "Santa Cruz"
   ],
   "Kia": [
-    "Rio", "Forte", "Optima", "Stinger", "Soul", "Seltos", "Sportage", "Sorento", 
-    "Telluride", "Carnival", "EV6", "Niro", "Cadenza"
+    "Rio", "Forte", "Forte GT", "Optima", "K5", "Stinger", "Soul", "Soul EV", "Seltos", "Sportage", "Sorento", 
+    "Telluride", "Carnival", "EV6", "EV9", "Niro", "Niro EV", "Cadenza", "Picanto", "Ceed", "Proceed", "XCeed",
+    "Mohave", "Carens", "Venga", "Cerato"
   ],
   "Lexus": [
-    "IS", "ES", "GS", "LS", "UX", "NX", "RX", "GX", "LX", "LC", "RC", 
-    "CT", "HS", "LFA"
+    "IS", "IS F", "ES", "ES F Sport", "GS", "GS F", "LS", "LS F Sport", "UX", "NX", "NX F Sport", 
+    "RX", "RX F Sport", "GX", "LX", "LC", "LC F", "RC", "RC F", "CT", "HS", "LFA", "SC", "LS 430", "GS 300"
   ],
   "Infiniti": [
-    "Q50", "Q60", "Q70", "QX30", "QX50", "QX60", "QX80", "QX55"
+    "Q50", "Q50 Red Sport", "Q60", "Q60 Red Sport", "Q70", "QX30", "QX50", "QX60", "QX80", "QX55",
+    "G35", "G37", "M35", "M37", "M45", "M56", "FX35", "FX37", "FX45", "FX50", "EX35", "EX37"
   ],
   "Acura": [
-    "ILX", "TLX", "RLX", "RDX", "MDX", "NSX", "Integra"
+    "ILX", "TLX", "TLX Type S", "RLX", "RDX", "MDX", "MDX Type S", "NSX", "Integra", "Integra Type S",
+    "TSX", "TL", "RL", "RSX", "Legend", "Vigor", "CL", "ZDX"
   ],
   "Cadillac": [
-    "ATS", "CTS", "CT4", "CT5", "XT4", "XT5", "XT6", "Escalade", "Eldorado"
+    "ATS", "ATS-V", "CTS", "CTS-V", "CT4", "CT4-V", "CT5", "CT5-V", "XT4", "XT5", "XT6", 
+    "Escalade", "Escalade ESV", "Eldorado", "DeVille", "STS", "DTS", "XLR", "SRX", "ELR", "Lyriq"
   ],
   "Chevrolet": [
-    "Spark", "Sonic", "Cruze", "Malibu", "Impala", "Camaro", "Corvette", 
-    "Trax", "Equinox", "Traverse", "Tahoe", "Suburban", "Silverado", "Colorado"
+    "Spark", "Sonic", "Cruze", "Malibu", "Impala", "Camaro", "Camaro SS", "Camaro ZL1", "Corvette", "Corvette Z06", "Corvette ZR1",
+    "Trax", "Equinox", "Blazer", "Traverse", "Tahoe", "Suburban", "Silverado 1500", "Silverado 2500HD", "Silverado 3500HD", 
+    "Colorado", "Express", "Bolt EV", "Bolt EUV", "Avalanche", "S-10", "SSR"
   ],
   "Mazda": [
-    "Mazda2", "Mazda3", "Mazda6", "CX-3", "CX-30", "CX-5", "CX-9", "MX-5 Miata", "CX-50"
+    "Mazda2", "Mazda3", "Mazda3 MPS", "Mazda6", "Mazda6 MPS", "CX-3", "CX-30", "CX-5", "CX-7", "CX-9", "CX-50", "CX-60", "CX-70", "CX-90",
+    "MX-5 Miata", "MX-5 RF", "MX-30", "RX-7", "RX-8", "Tribute", "B-Series", "MPV", "Premacy", "Demio"
   ],
   "Subaru": [
-    "Impreza", "Legacy", "Outback", "Forester", "Ascent", "WRX", "BRZ", "Crosstrek"
+    "Impreza", "Impreza WRX", "Legacy", "Legacy GT", "Outback", "Outback XT", "Forester", "Forester XT", "Ascent", 
+    "WRX", "WRX STI", "BRZ", "Crosstrek", "XV", "Tribeca", "Baja", "SVX", "Solterra"
   ],
   "Mitsubishi": [
-    "Mirage", "Lancer", "Eclipse Cross", "Outlander", "Pajero", "ASX", "L200"
+    "Mirage", "Lancer", "Lancer Evolution", "Eclipse", "Eclipse Cross", "Outlander", "Outlander PHEV", "Pajero", "Pajero Sport", 
+    "ASX", "L200", "Triton", "Galant", "Diamante", "3000GT", "Montero", "Endeavor", "Raider"
   ],
   "Volvo": [
-    "S60", "S90", "V60", "V90", "XC40", "XC60", "XC90", "C40", "EX30", "EX90"
+    "S60", "S60 Polestar", "S90", "S90 Recharge", "V60", "V60 Polestar", "V90", "V90 Cross Country", 
+    "XC40", "XC40 Recharge", "XC60", "XC60 Recharge", "XC90", "XC90 Recharge", "C40", "EX30", "EX90",
+    "S40", "S80", "V40", "V50", "V70", "850", "940", "960", "240", "740"
   ],
   "Jaguar": [
-    "XE", "XF", "XJ", "F-Pace", "E-Pace", "I-Pace", "F-Type"
+    "XE", "XE SV Project 8", "XF", "XF Sportbrake", "XJ", "XJR", "F-Pace", "F-Pace SVR", "E-Pace", "I-Pace", 
+    "F-Type", "F-Type R", "F-Type SVR", "XK", "XKR", "S-Type", "X-Type", "XJS"
   ],
   "Land Rover": [
-    "Defender", "Discovery", "Discovery Sport", "Range Rover", "Range Rover Sport", 
-    "Range Rover Velar", "Range Rover Evoque"
+    "Defender", "Defender 90", "Defender 110", "Defender 130", "Discovery", "Discovery Sport", "Discovery 3", "Discovery 4",
+    "Range Rover", "Range Rover Sport", "Range Rover Sport SVR", "Range Rover Velar", "Range Rover Evoque", 
+    "Range Rover Autobiography", "Freelander", "LR2", "LR3", "LR4"
   ],
   "Porsche": [
-    "911", "718 Boxster", "718 Cayman", "Panamera", "Cayenne", "Macan", "Taycan"
+    "911", "911 Turbo", "911 GT3", "911 GT2 RS", "911 Carrera", "718 Boxster", "718 Cayman", "718 Spyder", "718 GT4",
+    "Panamera", "Panamera Turbo", "Panamera GTS", "Cayenne", "Cayenne Turbo", "Cayenne GTS", "Macan", "Macan GTS", "Macan Turbo",
+    "Taycan", "Taycan Turbo", "Taycan Cross Turismo", "Carrera GT", "918 Spyder", "Boxster", "Cayman"
   ],
   "Tesla": [
-    "Model S", "Model 3", "Model X", "Model Y", "Cybertruck", "Roadster"
+    "Model S", "Model S Plaid", "Model 3", "Model 3 Performance", "Model X", "Model X Plaid", 
+    "Model Y", "Model Y Performance", "Cybertruck", "Roadster", "Semi"
   ],
   "Lada": [
-    "Granta", "Vesta", "Largus", "XRAY", "Niva", "Kalina", "Priora", "2107", "2110", "2114"
+    "Granta", "Granta Sport", "Vesta", "Vesta SW", "Vesta Cross", "Largus", "Largus Cross", 
+    "XRAY", "XRAY Cross", "Niva", "Niva Travel", "Niva Urban", "Kalina", "Priora", "2107", "2110", "2114"
   ],
   "ВАЗ": [
     "2101", "2102", "2103", "2104", "2105", "2106", "2107", "2108", "2109", "2110", 
