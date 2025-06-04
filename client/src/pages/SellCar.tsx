@@ -22,7 +22,10 @@ export default function SellCar() {
     fuelType: "",
     transmission: "",
     engineVolume: "",
-    customsCleared: ""
+    customsCleared: "",
+    recycled: "",
+    technicalInspectionValid: "",
+    technicalInspectionDate: ""
   });
   
   const [availableModels, setAvailableModels] = useState<string[]>([]);
@@ -241,7 +244,7 @@ export default function SellCar() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                   <Label>Растаможен</Label>
                   <div className="flex gap-2 mt-2">
@@ -263,7 +266,65 @@ export default function SellCar() {
                     </Button>
                   </div>
                 </div>
+
+                <div>
+                  <Label>Утилизация</Label>
+                  <div className="flex gap-2 mt-2">
+                    <Button
+                      type="button"
+                      variant={formData.recycled === "yes" ? "default" : "outline"}
+                      className="flex-1"
+                      onClick={() => handleInputChange("recycled", "yes")}
+                    >
+                      Есть
+                    </Button>
+                    <Button
+                      type="button"
+                      variant={formData.recycled === "no" ? "default" : "outline"}
+                      className="flex-1"
+                      onClick={() => handleInputChange("recycled", "no")}
+                    >
+                      Нет
+                    </Button>
+                  </div>
+                </div>
+
+                <div>
+                  <Label>Техосмотр</Label>
+                  <div className="flex gap-2 mt-2">
+                    <Button
+                      type="button"
+                      variant={formData.technicalInspectionValid === "yes" ? "default" : "outline"}
+                      className="flex-1"
+                      onClick={() => handleInputChange("technicalInspectionValid", "yes")}
+                    >
+                      Есть
+                    </Button>
+                    <Button
+                      type="button"
+                      variant={formData.technicalInspectionValid === "no" ? "default" : "outline"}
+                      className="flex-1"
+                      onClick={() => handleInputChange("technicalInspectionValid", "no")}
+                    >
+                      Нет
+                    </Button>
+                  </div>
+                </div>
               </div>
+
+              {/* Поле даты техосмотра, показывается только если техосмотр есть */}
+              {formData.technicalInspectionValid === "yes" && (
+                <div>
+                  <Label htmlFor="technicalInspectionDate">Действие техосмотра до</Label>
+                  <Input
+                    id="technicalInspectionDate"
+                    type="date"
+                    value={formData.technicalInspectionDate}
+                    onChange={(e) => handleInputChange("technicalInspectionDate", e.target.value)}
+                    placeholder="ДД.ММ.ГГГГ"
+                  />
+                </div>
+              )}
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
