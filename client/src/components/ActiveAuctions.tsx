@@ -120,14 +120,6 @@ export function ActiveAuctions() {
         </div>
       )}
       
-      {/* Show message when all auctions are loaded */}
-      {!hasMore && !loadingMore && displayedAuctions.length > 0 && (
-        <div className="text-center mt-8 p-4 bg-gray-100 rounded-lg">
-          <p className="text-gray-600">Все доступные автомобили загружены</p>
-          <p className="text-sm text-gray-500 mt-1">Всего: {displayedAuctions.length} автомобилей</p>
-        </div>
-      )}
-      
       {/* Show message when no auctions available */}
       {displayedAuctions.length === 0 && !loading && (
         <div className="text-center mt-8 p-8 bg-gray-50 rounded-lg">
