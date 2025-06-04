@@ -1,5 +1,5 @@
 import { Link, useLocation } from "wouter";
-import { Home, Gavel, Search, Plus, User } from "lucide-react";
+import { Home, Gavel, Heart, Plus, User } from "lucide-react";
 
 export function BottomNavigation() {
   const [location] = useLocation();
@@ -8,7 +8,7 @@ export function BottomNavigation() {
     { path: "/home", icon: Home, label: "Главная" },
     { path: "/auctions", icon: Gavel, label: "Аукционы" },
     { path: "/sell", icon: Plus, label: "Продать", isCenter: true },
-    { path: "/search", icon: Search, label: "Поиск" },
+    { path: "/favorites", icon: Heart, label: "Избранное" },
     { path: "/profile", icon: User, label: "Профиль" },
   ];
 

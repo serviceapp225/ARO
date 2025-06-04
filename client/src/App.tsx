@@ -8,7 +8,7 @@ import { AuctionProvider } from "@/contexts/AuctionContext";
 import HomePage from "@/pages/HomePage";
 import AuctionFeed from "@/pages/AuctionFeed";
 import AuctionDetail from "@/pages/AuctionDetail";
-import Search from "@/pages/Search";
+import Favorites from "@/pages/Favorites";
 import SellCar from "@/pages/SellCar";
 import MyBids from "@/pages/MyBids";
 import Profile from "@/pages/Profile";
@@ -26,7 +26,7 @@ function Router() {
         <Route path="/home" component={HomePage} />
         <Route path="/auctions" component={AuctionFeed} />
         <Route path="/auction/:id" component={AuctionDetail} />
-        <Route path="/search" component={Search} />
+        <Route path="/favorites" component={Favorites} />
         <Route path="/sell" component={SellCar} />
         <Route path="/bids" component={MyBids} />
         <Route path="/profile" component={Profile} />
