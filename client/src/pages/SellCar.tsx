@@ -259,7 +259,7 @@ export default function SellCar() {
                   <Input
                     id="price"
                     type="number"
-                    placeholder="15000"
+                    placeholder="0"
                     value={formData.price}
                     onChange={(e) => handleInputChange("price", e.target.value)}
                     required
@@ -271,7 +271,7 @@ export default function SellCar() {
                   <Input
                     id="reservePrice"
                     type="number"
-                    placeholder="18000"
+                    placeholder="0"
                     value={formData.reservePrice}
                     onChange={(e) => handleInputChange("reservePrice", e.target.value)}
                   />
