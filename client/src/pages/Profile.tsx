@@ -68,7 +68,7 @@ export default function Profile() {
                   </button>
                 </div>
                 <p className="text-gray-600 text-sm mb-1">{user.email}</p>
-                <p className="text-gray-600 text-sm">+7 (999) 123-45-67</p>
+                <p className="text-gray-600 text-sm">+992 (90) 123-45-67</p>
               </div>
             </div>
           </div>
