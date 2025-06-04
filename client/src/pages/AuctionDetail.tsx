@@ -145,122 +145,194 @@ export default function AuctionDetail() {
           </div>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Характеристики автомобиля</CardTitle>
+        <Card className="overflow-hidden">
+          <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50 border-b">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                <Car className="w-5 h-5 text-blue-600" />
+              </div>
+              <div>
+                <CardTitle className="text-xl text-gray-900">Характеристики автомобиля</CardTitle>
+                <p className="text-sm text-gray-600 mt-1">Полная информация о транспортном средстве</p>
+              </div>
+            </div>
           </CardHeader>
-          <CardContent>
-            <div className="mb-4">
-              <h1 className="text-2xl font-bold text-gray-900 mb-1">
-                {auction.year} {auction.make} {auction.model}
-              </h1>
-              <Badge variant="secondary" className="bg-green-100 text-green-800">
-                Активный
-              </Badge>
+          <CardContent className="p-6">
+            {/* Заголовок автомобиля */}
+            <div className="mb-6 p-4 bg-gray-50 rounded-xl">
+              <div className="flex items-center justify-between mb-2">
+                <h1 className="text-2xl font-bold text-gray-900">
+                  {auction.year} {auction.make} {auction.model}
+                </h1>
+                <Badge className="bg-green-100 text-green-800 border-green-200">
+                  Активный
+                </Badge>
+              </div>
+              <div className="flex items-center gap-2">
+                <Badge variant="outline" className="font-mono text-blue-700 bg-blue-50 border-blue-200">
+                  Лот № {mockAuction.specifications.lotNumber}
+                </Badge>
+                <Badge variant="outline" className={`${mockAuction.specifications.customsCleared ? 'text-green-700 bg-green-50 border-green-200' : 'text-red-700 bg-red-50 border-red-200'}`}>
+                  {mockAuction.specifications.customsCleared ? '✓ Растаможен' : '✗ Не растаможен'}
+                </Badge>
+              </div>
             </div>
 
-            <div className="grid grid-cols-1 gap-3 text-sm">
-              <div className="flex justify-between py-2 border-b border-gray-100">
-                <span className="text-gray-600">Номер лота:</span>
-                <span className="font-medium font-mono">{mockAuction.specifications.lotNumber}</span>
+            {/* Основные характеристики */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Основная информация */}
+              <div className="space-y-4">
+                <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                  <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                  Основная информация
+                </h3>
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center py-2 px-3 rounded-lg bg-white border border-gray-100">
+                    <span className="text-gray-600 font-medium">Год выпуска</span>
+                    <span className="font-semibold text-gray-900">{auction.year}</span>
+                  </div>
+                  <div className="flex justify-between items-center py-2 px-3 rounded-lg bg-white border border-gray-100">
+                    <span className="text-gray-600 font-medium">Пробег</span>
+                    <span className="font-semibold text-gray-900">{auction.mileage.toLocaleString()} км</span>
+                  </div>
+                  <div className="flex justify-between items-center py-2 px-3 rounded-lg bg-white border border-gray-100">
+                    <span className="text-gray-600 font-medium">Состояние</span>
+                    <span className="font-semibold text-green-600">{mockAuction.specifications.condition}</span>
+                  </div>
+                  <div className="flex justify-between items-center py-2 px-3 rounded-lg bg-white border border-gray-100">
+                    <span className="text-gray-600 font-medium">Город</span>
+                    <span className="font-semibold text-gray-900">{mockAuction.specifications.city}</span>
+                  </div>
+                </div>
               </div>
-              <div className="flex justify-between py-2 border-b border-gray-100">
-                <span className="text-gray-600">Год выпуска:</span>
-                <span className="font-medium">{auction.year}</span>
+
+              {/* Технические характеристики */}
+              <div className="space-y-4">
+                <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                  Технические характеристики
+                </h3>
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center py-2 px-3 rounded-lg bg-white border border-gray-100">
+                    <span className="text-gray-600 font-medium">Двигатель</span>
+                    <span className="font-semibold text-gray-900">{mockAuction.specifications.engine}</span>
+                  </div>
+                  <div className="flex justify-between items-center py-2 px-3 rounded-lg bg-white border border-gray-100">
+                    <span className="text-gray-600 font-medium">КПП</span>
+                    <span className="font-semibold text-gray-900">{mockAuction.specifications.transmission}</span>
+                  </div>
+                  <div className="flex justify-between items-center py-2 px-3 rounded-lg bg-white border border-gray-100">
+                    <span className="text-gray-600 font-medium">Привод</span>
+                    <span className="font-semibold text-gray-900">{mockAuction.specifications.drivetrain}</span>
+                  </div>
+                  <div className="flex justify-between items-center py-2 px-3 rounded-lg bg-white border border-gray-100">
+                    <span className="text-gray-600 font-medium">Топливо</span>
+                    <span className="font-semibold text-gray-900">{mockAuction.specifications.fuelType}</span>
+                  </div>
+                </div>
               </div>
-              <div className="flex justify-between py-2 border-b border-gray-100">
-                <span className="text-gray-600">Пробег:</span>
-                <span className="font-medium">{auction.mileage.toLocaleString()} км</span>
+            </div>
+
+            {/* Дополнительная информация */}
+            <div className="mt-6 space-y-4">
+              <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                Дополнительная информация
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div className="flex justify-between items-center py-2 px-3 rounded-lg bg-white border border-gray-100">
+                  <span className="text-gray-600 font-medium">Кузов</span>
+                  <span className="font-semibold text-gray-900">{mockAuction.specifications.bodyType}</span>
+                </div>
+                <div className="flex justify-between items-center py-2 px-3 rounded-lg bg-white border border-gray-100">
+                  <span className="text-gray-600 font-medium">Цвет</span>
+                  <span className="font-semibold text-gray-900">{mockAuction.specifications.color}</span>
+                </div>
+                <div className="flex justify-between items-center py-2 px-3 rounded-lg bg-white border border-gray-100">
+                  <span className="text-gray-600 font-medium">VIN</span>
+                  <span className="font-semibold text-gray-900 font-mono text-sm">{mockAuction.specifications.vin}</span>
+                </div>
               </div>
-              <div className="flex justify-between py-2 border-b border-gray-100">
-                <span className="text-gray-600">Двигатель:</span>
-                <span className="font-medium">{mockAuction.specifications.engine}</span>
-              </div>
-              <div className="flex justify-between py-2 border-b border-gray-100">
-                <span className="text-gray-600">КПП:</span>
-                <span className="font-medium">{mockAuction.specifications.transmission}</span>
-              </div>
-              <div className="flex justify-between py-2 border-b border-gray-100">
-                <span className="text-gray-600">Привод:</span>
-                <span className="font-medium">{mockAuction.specifications.drivetrain}</span>
-              </div>
-              <div className="flex justify-between py-2 border-b border-gray-100">
-                <span className="text-gray-600">Топливо:</span>
-                <span className="font-medium">{mockAuction.specifications.fuelType}</span>
-              </div>
-              <div className="flex justify-between py-2 border-b border-gray-100">
-                <span className="text-gray-600">Кузов:</span>
-                <span className="font-medium">{mockAuction.specifications.bodyType}</span>
-              </div>
-              <div className="flex justify-between py-2 border-b border-gray-100">
-                <span className="text-gray-600">Цвет:</span>
-                <span className="font-medium">{mockAuction.specifications.color}</span>
-              </div>
-              <div className="flex justify-between py-2 border-b border-gray-100">
-                <span className="text-gray-600">Город:</span>
-                <span className="font-medium">{mockAuction.specifications.city}</span>
-              </div>
-              <div className="flex justify-between py-2 border-b border-gray-100">
-                <span className="text-gray-600">Состояние:</span>
-                <span className="font-medium">{mockAuction.specifications.condition}</span>
-              </div>
-              <div className="flex justify-between py-2 border-b border-gray-100">
-                <span className="text-gray-600">VIN:</span>
-                <span className="font-medium font-mono">{mockAuction.specifications.vin}</span>
-              </div>
-              <div className="flex justify-between py-2 border-b border-gray-100">
-                <span className="text-gray-600">Растаможен:</span>
-                <span className={`font-medium ${mockAuction.specifications.customsCleared ? 'text-green-600' : 'text-red-600'}`}>
-                  {mockAuction.specifications.customsCleared ? 'Да' : 'Нет'}
-                </span>
-              </div>
-              <div className="flex justify-between py-2">
-                <span className="text-gray-600">Ставки:</span>
-                <span className="font-medium">{auction.bidCount}</span>
+            </div>
+
+            {/* Статистика аукциона */}
+            <div className="mt-6 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-100">
+              <h3 className="font-semibold text-gray-900 mb-3">Статистика аукциона</h3>
+              <div className="flex items-center justify-between">
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-blue-600">{auction.bidCount}</div>
+                  <div className="text-sm text-gray-600">Ставок</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-green-600">${auction.currentBid.toLocaleString()}</div>
+                  <div className="text-sm text-gray-600">Текущая ставка</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-purple-600">{mockAuction.views}</div>
+                  <div className="text-sm text-gray-600">Просмотров</div>
+                </div>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-lg">
-              <Clock className="w-5 h-5" />
-              Время до окончания аукциона
-            </CardTitle>
+        <Card className="overflow-hidden bg-gradient-to-br from-red-50 to-orange-50 border-red-100">
+          <CardHeader className="bg-gradient-to-r from-red-500 to-orange-500 text-white">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
+                <Clock className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <CardTitle className="text-xl text-white">Время до окончания аукциона</CardTitle>
+                <p className="text-white/80 text-sm mt-1">Не упустите свой шанс!</p>
+              </div>
+            </div>
           </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-4 gap-4 text-center">
-              <div className="bg-blue-600 text-white rounded-lg p-4">
-                <div className="text-2xl font-bold">{timeLeft.days}</div>
-                <div className="text-sm">дней</div>
+          <CardContent className="p-6">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+              <div className="bg-gradient-to-br from-red-500 to-red-600 text-white rounded-xl p-4 shadow-lg">
+                <div className="text-3xl font-bold mb-1">{timeLeft.days}</div>
+                <div className="text-sm opacity-90">дней</div>
               </div>
-              <div className="bg-blue-600 text-white rounded-lg p-4">
-                <div className="text-2xl font-bold">{timeLeft.hours}</div>
-                <div className="text-sm">часов</div>
+              <div className="bg-gradient-to-br from-orange-500 to-orange-600 text-white rounded-xl p-4 shadow-lg">
+                <div className="text-3xl font-bold mb-1">{timeLeft.hours}</div>
+                <div className="text-sm opacity-90">часов</div>
               </div>
-              <div className="bg-blue-600 text-white rounded-lg p-4">
-                <div className="text-2xl font-bold">{timeLeft.minutes}</div>
-                <div className="text-sm">минут</div>
+              <div className="bg-gradient-to-br from-amber-500 to-amber-600 text-white rounded-xl p-4 shadow-lg">
+                <div className="text-3xl font-bold mb-1">{timeLeft.minutes}</div>
+                <div className="text-sm opacity-90">минут</div>
               </div>
-              <div className="bg-blue-600 text-white rounded-lg p-4">
-                <div className="text-2xl font-bold">{timeLeft.seconds}</div>
-                <div className="text-sm">секунд</div>
+              <div className="bg-gradient-to-br from-yellow-500 to-yellow-600 text-white rounded-xl p-4 shadow-lg animate-pulse">
+                <div className="text-3xl font-bold mb-1">{timeLeft.seconds}</div>
+                <div className="text-sm opacity-90">секунд</div>
               </div>
+            </div>
+            <div className="mt-4 text-center">
+              <p className="text-red-600 font-medium text-sm">
+                ⏰ Аукцион завершится автоматически
+              </p>
             </div>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Текущая ставка</CardTitle>
+        <Card className="overflow-hidden bg-gradient-to-br from-green-50 to-emerald-50 border-green-100">
+          <CardHeader className="bg-gradient-to-r from-green-500 to-emerald-500 text-white">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
+                <Users className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <CardTitle className="text-xl text-white">Текущая ставка</CardTitle>
+                <p className="text-white/80 text-sm mt-1">Сделайте свою ставку сейчас</p>
+              </div>
+            </div>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="text-center">
-              <div className="text-3xl font-bold text-green-600">
+          <CardContent className="p-6">
+            <div className="text-center mb-6">
+              <div className="text-4xl font-bold text-green-600 mb-2">
                 ${auction.currentBid.toLocaleString()}
               </div>
-              <p className="text-gray-600 text-sm">
+              <p className="text-gray-600 text-sm bg-gray-50 rounded-lg px-3 py-2 inline-block">
                 Следующая ставка от ${(auction.currentBid + 500).toLocaleString()}
               </p>
               
@@ -268,38 +340,63 @@ export default function AuctionDetail() {
               <div className="mt-4 pt-4 border-t border-gray-100">
                 {mockAuction.hasReserve ? (
                   <div className="space-y-2">
-                    <div className={`text-sm font-medium ${mockAuction.reserveMet ? 'text-green-600' : 'text-orange-600'}`}>
+                    <div className={`text-sm font-medium px-3 py-2 rounded-lg ${mockAuction.reserveMet ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'}`}>
                       {mockAuction.reserveMet ? (
                         <>✓ Резервная цена достигнута</>
                       ) : (
                         <>⚠ Резервная цена не достигнута</>
                       )}
                     </div>
-
                   </div>
                 ) : (
-                  <div className="text-sm font-medium text-blue-600">
+                  <div className="text-sm font-medium bg-blue-100 text-blue-700 px-3 py-2 rounded-lg inline-block">
                     🔥 Продажа без резерва!
                   </div>
                 )}
               </div>
             </div>
             
-            <div className="flex gap-2">
-              <Input
-                type="number"
-                placeholder="Введите вашу ставку"
-                value={bidAmount}
-                onChange={(e) => setBidAmount(e.target.value)}
-                className="flex-1"
-              />
-              <Button 
-                onClick={handlePlaceBid}
-                disabled={!bidAmount || parseInt(bidAmount) <= auction.currentBid}
-                className="bg-green-600 hover:bg-green-700"
-              >
-                Сделать ставку
-              </Button>
+            <div className="space-y-4">
+              <div className="flex gap-3">
+                <Input
+                  type="number"
+                  placeholder="Введите вашу ставку"
+                  value={bidAmount}
+                  onChange={(e) => setBidAmount(e.target.value)}
+                  className="flex-1 text-lg font-semibold"
+                />
+                <Button 
+                  onClick={handlePlaceBid}
+                  disabled={!bidAmount || parseInt(bidAmount) <= auction.currentBid}
+                  className="bg-green-600 hover:bg-green-700 text-white px-6"
+                >
+                  Сделать ставку
+                </Button>
+              </div>
+              
+              <div className="grid grid-cols-3 gap-2">
+                <Button 
+                  variant="outline" 
+                  onClick={() => setBidAmount((auction.currentBid + 500).toString())}
+                  className="text-sm"
+                >
+                  +$500
+                </Button>
+                <Button 
+                  variant="outline" 
+                  onClick={() => setBidAmount((auction.currentBid + 1000).toString())}
+                  className="text-sm"
+                >
+                  +$1,000
+                </Button>
+                <Button 
+                  variant="outline" 
+                  onClick={() => setBidAmount((auction.currentBid + 2500).toString())}
+                  className="text-sm"
+                >
+                  +$2,500
+                </Button>
+              </div>
             </div>
           </CardContent>
         </Card>
