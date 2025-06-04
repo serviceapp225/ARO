@@ -140,7 +140,9 @@ export function ActiveAuctions({ searchQuery = "" }: ActiveAuctionsProps) {
                     ? 'bg-purple-100 text-purple-700' 
                     : 'bg-gray-100 text-gray-700'
                 }`}>
-                  {auction.technicalInspectionValid ? '🔧 Техосмотр' : '❌ Нет техосмотра'}
+                  {auction.technicalInspectionValid 
+                    ? `🔧 до ${auction.technicalInspectionDate}` 
+                    : '❌ Нет техосмотра'}
                 </span>
               </div>
               <div className="mb-2">

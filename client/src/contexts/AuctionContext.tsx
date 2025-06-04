@@ -17,6 +17,7 @@ interface Auction {
   customsCleared: boolean;
   recycled: boolean;
   technicalInspectionValid: boolean;
+  technicalInspectionDate?: string;
 }
 
 interface AuctionContextType {
@@ -50,7 +51,8 @@ export function AuctionProvider({ children }: { children: ReactNode }) {
         status: 'active',
         customsCleared: true,
         recycled: true,
-        technicalInspectionValid: true
+        technicalInspectionValid: true,
+        technicalInspectionDate: '08/04/2026'
       },
       {
         id: '2',
@@ -66,7 +68,8 @@ export function AuctionProvider({ children }: { children: ReactNode }) {
         status: 'active',
         customsCleared: false,
         recycled: false,
-        technicalInspectionValid: true
+        technicalInspectionValid: true,
+        technicalInspectionDate: '15/11/2025'
       },
       {
         id: '3',
@@ -82,7 +85,8 @@ export function AuctionProvider({ children }: { children: ReactNode }) {
         status: 'active',
         customsCleared: true,
         recycled: true,
-        technicalInspectionValid: false
+        technicalInspectionValid: false,
+        technicalInspectionDate: undefined
       }
     ];
 
