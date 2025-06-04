@@ -44,9 +44,20 @@ export default function Profile() {
 
       <main className="container mx-auto px-4 py-6">
         <div className="max-w-2xl mx-auto">
-          {/* Profile Header with Name and Phone Only */}
+          {/* Profile Header with Photo, Name and Phone */}
           <div className="bg-white rounded-2xl p-6 mb-6 shadow-sm">
             <div className="text-center">
+              {/* Profile Photo */}
+              <div className="relative inline-block mb-4">
+                <div className="w-24 h-24 bg-gray-200 rounded-full flex items-center justify-center overflow-hidden mx-auto">
+                  <User className="w-12 h-12 text-gray-600" />
+                </div>
+                <button className="absolute bottom-0 right-0 w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
+                  <Camera className="w-4 h-4 text-white" />
+                </button>
+              </div>
+              
+              {/* Name and Phone */}
               <h2 className="text-2xl font-bold text-gray-900 mb-2">
                 {user.email?.split('@')[0] || 'Пользователь'}
               </h2>
