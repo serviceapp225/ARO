@@ -203,6 +203,8 @@ export default function SellCar() {
                     <SelectContent>
                       <SelectItem value="gasoline">Бензин</SelectItem>
                       <SelectItem value="diesel">Дизель</SelectItem>
+                      <SelectItem value="gas">Газ</SelectItem>
+                      <SelectItem value="gas_gasoline">Газ+бензин</SelectItem>
                       <SelectItem value="hybrid">Гибрид</SelectItem>
                       <SelectItem value="electric">Электро</SelectItem>
                     </SelectContent>
