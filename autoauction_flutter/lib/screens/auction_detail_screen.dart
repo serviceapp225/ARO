@@ -101,17 +101,14 @@ class _AuctionDetailScreenState extends State<AuctionDetailScreen>
             // Car Image
             _buildCarImage(),
             
-            // Car Title and Basic Info
-            _buildCarTitle(),
+            // Car Specifications
+            _buildSpecifications(),
             
             // Countdown Timer
             _buildCountdownTimer(),
             
             // Current Bid and Bidding
             _buildBiddingSection(),
-            
-            // Car Specifications
-            _buildSpecifications(),
             
             // Bidding History
             _buildBiddingHistory(),

@@ -121,48 +121,75 @@ export default function AuctionDetail() {
         </Card>
 
         <Card>
-          <CardContent className="p-6">
-            <div className="flex justify-between items-start mb-4">
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900">
-                  {auction.year} {auction.make} {auction.model}
-                </h1>
-                <div className="mt-3 space-y-2">
-                  <p className="text-gray-600 flex items-center gap-2">
-                    <Calendar className="w-4 h-4" />
-                    Год выпуска: {auction.year}
-                  </p>
-                  <p className="text-gray-600 flex items-center gap-2">
-                    <Gauge className="w-4 h-4" />
-                    Пробег: {auction.mileage.toLocaleString()} км
-                  </p>
-                  <p className="text-gray-600 flex items-center gap-2">
-                    <Car className="w-4 h-4" />
-                    Двигатель: {mockAuction.specifications.engine}
-                  </p>
-                  <p className="text-gray-600 flex items-center gap-2">
-                    <Users className="w-4 h-4" />
-                    Коробка передач: {mockAuction.specifications.transmission}
-                  </p>
-                  <p className="text-gray-600 flex items-center gap-2">
-                    <Car className="w-4 h-4" />
-                    Привод: {mockAuction.specifications.drivetrain}
-                  </p>
-                </div>
-              </div>
+          <CardHeader>
+            <CardTitle>Характеристики автомобиля</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="mb-4">
+              <h1 className="text-2xl font-bold text-gray-900 mb-1">
+                {auction.year} {auction.make} {auction.model}
+              </h1>
               <Badge variant="secondary" className="bg-green-100 text-green-800">
                 Активный
               </Badge>
             </div>
-            
-            <div className="grid grid-cols-2 gap-4 text-sm mt-4 pt-4 border-t border-gray-100">
-              <div className="flex items-center gap-2">
-                <Eye className="w-4 h-4 text-gray-500" />
-                <span className="text-gray-600">Просмотров: {mockAuction.views}</span>
+
+            <div className="grid grid-cols-1 gap-3 text-sm">
+              <div className="flex justify-between py-2 border-b border-gray-100">
+                <span className="text-gray-600">Год выпуска:</span>
+                <span className="font-medium">{auction.year}</span>
               </div>
-              <div className="flex items-center gap-2">
-                <Users className="w-4 h-4 text-gray-500" />
-                <span className="text-gray-600">Ставки: {auction.bidCount}</span>
+              <div className="flex justify-between py-2 border-b border-gray-100">
+                <span className="text-gray-600">Пробег:</span>
+                <span className="font-medium">{auction.mileage.toLocaleString()} км</span>
+              </div>
+              <div className="flex justify-between py-2 border-b border-gray-100">
+                <span className="text-gray-600">Двигатель:</span>
+                <span className="font-medium">{mockAuction.specifications.engine}</span>
+              </div>
+              <div className="flex justify-between py-2 border-b border-gray-100">
+                <span className="text-gray-600">КПП:</span>
+                <span className="font-medium">{mockAuction.specifications.transmission}</span>
+              </div>
+              <div className="flex justify-between py-2 border-b border-gray-100">
+                <span className="text-gray-600">Привод:</span>
+                <span className="font-medium">{mockAuction.specifications.drivetrain}</span>
+              </div>
+              <div className="flex justify-between py-2 border-b border-gray-100">
+                <span className="text-gray-600">Топливо:</span>
+                <span className="font-medium">{mockAuction.specifications.fuelType}</span>
+              </div>
+              <div className="flex justify-between py-2 border-b border-gray-100">
+                <span className="text-gray-600">Цвет:</span>
+                <span className="font-medium">{mockAuction.specifications.color}</span>
+              </div>
+              <div className="flex justify-between py-2 border-b border-gray-100">
+                <span className="text-gray-600">Состояние:</span>
+                <span className="font-medium">{mockAuction.specifications.condition}</span>
+              </div>
+              <div className="flex justify-between py-2 border-b border-gray-100">
+                <span className="text-gray-600">VIN:</span>
+                <span className="font-medium font-mono">{mockAuction.specifications.vin}</span>
+              </div>
+              <div className="flex justify-between py-2 border-b border-gray-100">
+                <span className="text-gray-600">Владельцев:</span>
+                <span className="font-medium">{mockAuction.specifications.previousOwners}</span>
+              </div>
+              <div className="flex justify-between py-2 border-b border-gray-100">
+                <span className="text-gray-600">Аварии:</span>
+                <span className="font-medium text-green-600">{mockAuction.specifications.accidents}</span>
+              </div>
+              <div className="flex justify-between py-2 border-b border-gray-100">
+                <span className="text-gray-600">Сервис:</span>
+                <span className="font-medium text-green-600">{mockAuction.specifications.serviceHistory}</span>
+              </div>
+              <div className="flex justify-between py-2 border-b border-gray-100">
+                <span className="text-gray-600">Просмотров:</span>
+                <span className="font-medium">{mockAuction.views}</span>
+              </div>
+              <div className="flex justify-between py-2">
+                <span className="text-gray-600">Ставки:</span>
+                <span className="font-medium">{auction.bidCount}</span>
               </div>
             </div>
           </CardContent>
@@ -230,55 +257,7 @@ export default function AuctionDetail() {
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Характеристики автомобиля</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 gap-3 text-sm">
-              <div className="flex justify-between py-2 border-b border-gray-100">
-                <span className="text-gray-600">Двигатель:</span>
-                <span className="font-medium">{mockAuction.specifications.engine}</span>
-              </div>
-              <div className="flex justify-between py-2 border-b border-gray-100">
-                <span className="text-gray-600">КПП:</span>
-                <span className="font-medium">{mockAuction.specifications.transmission}</span>
-              </div>
-              <div className="flex justify-between py-2 border-b border-gray-100">
-                <span className="text-gray-600">Привод:</span>
-                <span className="font-medium">{mockAuction.specifications.drivetrain}</span>
-              </div>
-              <div className="flex justify-between py-2 border-b border-gray-100">
-                <span className="text-gray-600">Топливо:</span>
-                <span className="font-medium">{mockAuction.specifications.fuelType}</span>
-              </div>
-              <div className="flex justify-between py-2 border-b border-gray-100">
-                <span className="text-gray-600">Цвет:</span>
-                <span className="font-medium">{mockAuction.specifications.color}</span>
-              </div>
-              <div className="flex justify-between py-2 border-b border-gray-100">
-                <span className="text-gray-600">Состояние:</span>
-                <span className="font-medium">{mockAuction.specifications.condition}</span>
-              </div>
-              <div className="flex justify-between py-2 border-b border-gray-100">
-                <span className="text-gray-600">VIN:</span>
-                <span className="font-medium font-mono">{mockAuction.specifications.vin}</span>
-              </div>
-              <div className="flex justify-between py-2 border-b border-gray-100">
-                <span className="text-gray-600">Владельцев:</span>
-                <span className="font-medium">{mockAuction.specifications.previousOwners}</span>
-              </div>
-              <div className="flex justify-between py-2 border-b border-gray-100">
-                <span className="text-gray-600">Аварии:</span>
-                <span className="font-medium text-green-600">{mockAuction.specifications.accidents}</span>
-              </div>
-              <div className="flex justify-between py-2">
-                <span className="text-gray-600">Сервис:</span>
-                <span className="font-medium text-green-600">{mockAuction.specifications.serviceHistory}</span>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+
 
         <Card>
           <CardHeader>
