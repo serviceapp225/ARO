@@ -225,7 +225,7 @@ class _AnnouncementBanners extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      'Все автомобили проходят проверку',
+                      'Проходят проверку',
                       style: TextStyle(
                         color: Colors.green.shade600,
                         fontSize: 14,
