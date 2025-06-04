@@ -7,7 +7,11 @@ import { useAuctions } from '@/contexts/AuctionContext';
 import { useLocation } from 'wouter';
 import { useState, useEffect } from 'react';
 
-export function ActiveAuctions() {
+interface ActiveAuctionsProps {
+  searchQuery?: string;
+}
+
+export function ActiveAuctions({ searchQuery = "" }: ActiveAuctionsProps) {
   const { auctions, loading } = useAuctions();
   const [, setLocation] = useLocation();
   const [page, setPage] = useState(1);

@@ -14,10 +14,7 @@ export default function HomePage() {
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    if (searchQuery.trim()) {
-      // Переходим на страницу аукционов с параметром поиска
-      setLocation(`/auctions?search=${encodeURIComponent(searchQuery)}`);
-    }
+    // Поиск будет обрабатываться компонентом ActiveAuctions
   };
 
   return (
@@ -107,7 +104,7 @@ export default function HomePage() {
           <h2 className="text-xl font-bold text-gray-900 mb-4">
             Активные аукционы
           </h2>
-          <ActiveAuctions />
+          <ActiveAuctions searchQuery={searchQuery} />
         </section>
       </main>
     </div>

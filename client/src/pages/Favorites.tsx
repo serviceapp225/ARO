@@ -30,7 +30,7 @@ export default function Favorites() {
   const [favorites, setFavorites] = useState<FavoriteCar[]>([
     {
       id: "1",
-      lotNumber: "LOT-001",
+      lotNumber: "001",
       make: "Toyota",
       model: "Camry",
       year: 2020,
@@ -47,7 +47,7 @@ export default function Favorites() {
     },
     {
       id: "2", 
-      lotNumber: "LOT-002",
+      lotNumber: "002",
       make: "Honda",
       model: "CR-V",
       year: 2019,
@@ -64,7 +64,7 @@ export default function Favorites() {
     },
     {
       id: "3",
-      lotNumber: "LOT-003",
+      lotNumber: "003",
       make: "BMW",
       model: "X3",
       year: 2021,

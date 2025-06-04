@@ -36,7 +36,7 @@ export function AuctionProvider({ children }: { children: ReactNode }) {
     const demoAuctions: Auction[] = [
       {
         id: '1',
-        lotNumber: 'LOT-001',
+        lotNumber: '001',
         make: 'Toyota',
         model: 'Camry',
         year: 2020,
@@ -50,7 +50,7 @@ export function AuctionProvider({ children }: { children: ReactNode }) {
       },
       {
         id: '2',
-        lotNumber: 'LOT-002',
+        lotNumber: '002',
         make: 'Honda',
         model: 'CR-V',
         year: 2019,
@@ -64,7 +64,7 @@ export function AuctionProvider({ children }: { children: ReactNode }) {
       },
       {
         id: '3',
-        lotNumber: 'LOT-003',
+        lotNumber: '003',
         make: 'BMW',
         model: 'X3',
         year: 2021,
