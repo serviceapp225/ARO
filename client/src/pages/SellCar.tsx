@@ -75,7 +75,7 @@ export default function SellCar() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Upload className="w-5 h-5" />
-                Загрузите фото (до 5 штук)
+                Загрузите фото
               </CardTitle>
             </CardHeader>
             <CardContent>
