@@ -294,30 +294,7 @@ export default function AuctionDetail() {
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Информация о продавце</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              <div className="flex justify-between">
-                <span className="text-gray-600">Продавец:</span>
-                <span className="font-medium">{mockAuction.seller}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600">Местоположение:</span>
-                <span className="font-medium">{mockAuction.location}</span>
-              </div>
-            </div>
-            <Button 
-              onClick={handleWhatsAppContact}
-              className="w-full mt-4 bg-green-600 hover:bg-green-700"
-            >
-              <Phone className="w-4 h-4 mr-2" />
-              Связаться с продавцом
-            </Button>
-          </CardContent>
-        </Card>
+
       </main>
     </div>
   );

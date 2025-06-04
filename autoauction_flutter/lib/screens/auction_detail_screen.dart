@@ -112,9 +112,6 @@ class _AuctionDetailScreenState extends State<AuctionDetailScreen>
             
             // Bidding History
             _buildBiddingHistory(),
-            
-            // Seller Information
-            _buildSellerInfo(),
           ],
         ),
       ),
@@ -644,91 +641,7 @@ class _AuctionDetailScreenState extends State<AuctionDetailScreen>
     );
   }
 
-  Widget _buildSellerInfo() {
-    return Container(
-      margin: const EdgeInsets.all(16),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
-            spreadRadius: 1,
-            blurRadius: 3,
-            offset: const Offset(0, 1),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Информация о продавце',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          const SizedBox(height: 16),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'Продавец:',
-                style: TextStyle(color: Colors.grey[600]),
-              ),
-              Flexible(
-                child: Text(
-                  carData['seller'],
-                  style: const TextStyle(fontWeight: FontWeight.w500),
-                  textAlign: TextAlign.right,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'Местоположение:',
-                style: TextStyle(color: Colors.grey[600]),
-              ),
-              Flexible(
-                child: Text(
-                  carData['location'],
-                  style: const TextStyle(fontWeight: FontWeight.w500),
-                  textAlign: TextAlign.right,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton.icon(
-              onPressed: () {
-                // Open WhatsApp or phone
-              },
-              icon: const Icon(Icons.phone, color: Colors.white),
-              label: const Text(
-                'Связаться с продавцом',
-                style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
-              ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.green[600],
-                padding: const EdgeInsets.symmetric(vertical: 12),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+
 
   Widget _buildBottomBiddingBar() {
     return Container(
