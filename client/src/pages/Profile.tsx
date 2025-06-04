@@ -9,7 +9,6 @@ export default function Profile() {
   const menuItems = [
     { icon: Globe, label: "Поменять язык", action: () => console.log("Язык") },
     { icon: Bell, label: "Уведомления", action: () => console.log("Уведомления") },
-    { icon: Heart, label: "Мой Вишлист", action: () => console.log("Вишлист") },
     { icon: HelpCircle, label: "Помощь", action: () => console.log("Помощь") },
     { icon: FileText, label: "Документы", action: () => console.log("Документы") },
   ];
