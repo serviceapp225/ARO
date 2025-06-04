@@ -403,37 +403,79 @@ export default function AuctionDetail() {
 
 
 
-        <Card>
-          <CardHeader>
-            <CardTitle>История ставок</CardTitle>
+        <Card className="overflow-hidden bg-gradient-to-br from-purple-50 to-indigo-50 border-purple-100">
+          <CardHeader className="bg-gradient-to-r from-purple-500 to-indigo-500 text-white">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
+                <Users className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <CardTitle className="text-xl text-white">История ставок</CardTitle>
+                <p className="text-white/80 text-sm mt-1">Активность участников аукциона</p>
+              </div>
+            </div>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-6">
             <div className="space-y-3">
               {biddingHistory.map((bid, index) => (
                 <div 
                   key={index}
-                  className={`flex justify-between items-center p-3 rounded-lg ${
-                    bid.isWinning ? 'bg-green-50 border border-green-200' : 'bg-gray-50'
+                  className={`flex justify-between items-center p-4 rounded-xl transition-all duration-200 ${
+                    bid.isWinning 
+                      ? 'bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-200 shadow-md' 
+                      : 'bg-white border border-gray-100 hover:shadow-sm'
                   }`}
                 >
-                  <div>
-                    <div className="font-medium text-gray-900 flex items-center gap-2">
-                      {bid.bidder}
-                      {bid.isWinning && (
-                        <Badge className="bg-green-600 text-white text-xs">
-                          Лидирует
-                        </Badge>
-                      )}
+                  <div className="flex items-center gap-3">
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm ${
+                      bid.isWinning ? 'bg-green-500' : 'bg-gray-400'
+                    }`}>
+                      #{index + 1}
                     </div>
-                    <div className="text-sm text-gray-600">{bid.time}</div>
+                    <div>
+                      <div className="font-semibold text-gray-900 flex items-center gap-2">
+                        {bid.bidder}
+                        {bid.isWinning && (
+                          <Badge className="bg-green-600 text-white text-xs px-2 py-1">
+                            👑 Лидирует
+                          </Badge>
+                        )}
+                      </div>
+                      <div className="text-sm text-gray-500 flex items-center gap-1">
+                        <Clock className="w-3 h-3" />
+                        {bid.time}
+                      </div>
+                    </div>
                   </div>
-                  <div className={`text-lg font-bold ${
-                    bid.isWinning ? 'text-green-600' : 'text-gray-900'
-                  }`}>
-                    ${bid.amount.toLocaleString()}
+                  <div className="text-right">
+                    <div className={`text-xl font-bold ${
+                      bid.isWinning ? 'text-green-600' : 'text-gray-900'
+                    }`}>
+                      ${bid.amount.toLocaleString()}
+                    </div>
+                    {index === 0 && (
+                      <div className="text-xs text-green-600 font-medium">
+                        Текущая ставка
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}
+            </div>
+            
+            {/* Статистика участников */}
+            <div className="mt-6 p-4 bg-white rounded-xl border border-purple-100">
+              <h4 className="font-semibold text-gray-900 mb-3">Статистика участников</h4>
+              <div className="grid grid-cols-2 gap-4 text-center">
+                <div>
+                  <div className="text-2xl font-bold text-purple-600">{biddingHistory.length}</div>
+                  <div className="text-sm text-gray-600">Всего ставок</div>
+                </div>
+                <div>
+                  <div className="text-2xl font-bold text-indigo-600">{new Set(biddingHistory.map(bid => bid.bidder)).size}</div>
+                  <div className="text-sm text-gray-600">Участников</div>
+                </div>
+              </div>
             </div>
           </CardContent>
         </Card>
