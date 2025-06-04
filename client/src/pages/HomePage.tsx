@@ -2,6 +2,7 @@ import { MessageCircle, Search, Timer, Shield, Car } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ActiveAuctions } from "@/components/ActiveAuctions";
+import { AdvertisementBanner } from "@/components/AdvertisementBanner";
 
 export default function HomePage() {
   return (
@@ -24,26 +25,9 @@ export default function HomePage() {
           </Button>
         </div>
 
-        {/* Large Advertisement Banners */}
+        {/* Dynamic Advertisement Banner */}
         <div className="space-y-4">
-          {/* Main Premium Banner */}
-          <div className="relative h-44 bg-gradient-to-br from-blue-600 to-purple-700 rounded-2xl p-6 text-white overflow-hidden">
-            <div className="absolute right-[-20px] top-[-10px]">
-              <Car className="w-28 h-28 text-white opacity-20" />
-            </div>
-            <div className="relative z-10 space-y-2">
-              <h2 className="text-2xl font-bold">ПРЕМИУМ АУКЦИОН</h2>
-              <p className="text-white/80 text-base leading-relaxed">
-                Эксклюзивные автомобили<br />
-                от проверенных дилеров
-              </p>
-              <div className="mt-4">
-                <span className="bg-white text-blue-700 px-4 py-2 rounded-full text-sm font-bold">
-                  Участвовать →
-                </span>
-              </div>
-            </div>
-          </div>
+          <AdvertisementBanner />
 
 
 
