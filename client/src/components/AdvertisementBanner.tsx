@@ -94,8 +94,8 @@ export function AdvertisementBanner() {
           backgroundImage: `url('https://images.unsplash.com/photo-1525609004556-c46c7d6cf023?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80')`
         }}
       ></div>
-      {/* Dark overlay with gradient */}
-      <div className={`absolute inset-0 bg-gradient-to-br ${currentBanner.gradient} bg-opacity-60 rounded-2xl`}></div>
+      {/* Dark overlay */}
+      <div className="absolute inset-0 bg-black bg-opacity-50 rounded-2xl"></div>
       
       {/* Icon overlay */}
       <div className="absolute right-[-10px] top-[-5px] opacity-20">
