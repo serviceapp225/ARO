@@ -17,7 +17,13 @@ export default function Search() {
     yearTo: "",
     bodyType: "",
     fuelType: "",
-    transmission: ""
+    transmission: "",
+    engineVolumeFrom: "",
+    engineVolumeTo: "",
+    mileageFrom: "",
+    mileageTo: "",
+    priceFrom: "",
+    priceTo: ""
   });
   const currentYear = new Date().getFullYear();
   const years = Array.from({ length: currentYear - 1970 + 1 }, (_, i) => (currentYear - i).toString());
@@ -49,7 +55,13 @@ export default function Search() {
       yearTo: "",
       bodyType: "",
       fuelType: "",
-      transmission: ""
+      transmission: "",
+      engineVolumeFrom: "",
+      engineVolumeTo: "",
+      mileageFrom: "",
+      mileageTo: "",
+      priceFrom: "",
+      priceTo: ""
     });
   };
 
@@ -258,6 +270,107 @@ export default function Search() {
                 </div>
               </div>
 
+              <div className="space-y-2">
+                <Label>Объем двигателя (л)</Label>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="flex gap-2">
+                    <Input
+                      type="number"
+                      step="0.1"
+                      placeholder="От"
+                      value={searchFilters.engineVolumeFrom}
+                      onChange={(e) => handleFilterChange("engineVolumeFrom", e.target.value)}
+                    />
+                    {searchFilters.engineVolumeFrom && (
+                      <Button variant="ghost" size="sm" onClick={() => clearFilter("engineVolumeFrom")}>
+                        <X className="w-4 h-4" />
+                      </Button>
+                    )}
+                  </div>
+                  
+                  <div className="flex gap-2">
+                    <Input
+                      type="number"
+                      step="0.1"
+                      placeholder="До"
+                      value={searchFilters.engineVolumeTo}
+                      onChange={(e) => handleFilterChange("engineVolumeTo", e.target.value)}
+                    />
+                    {searchFilters.engineVolumeTo && (
+                      <Button variant="ghost" size="sm" onClick={() => clearFilter("engineVolumeTo")}>
+                        <X className="w-4 h-4" />
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Пробег (км)</Label>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="flex gap-2">
+                    <Input
+                      type="number"
+                      placeholder="От"
+                      value={searchFilters.mileageFrom}
+                      onChange={(e) => handleFilterChange("mileageFrom", e.target.value)}
+                    />
+                    {searchFilters.mileageFrom && (
+                      <Button variant="ghost" size="sm" onClick={() => clearFilter("mileageFrom")}>
+                        <X className="w-4 h-4" />
+                      </Button>
+                    )}
+                  </div>
+                  
+                  <div className="flex gap-2">
+                    <Input
+                      type="number"
+                      placeholder="До"
+                      value={searchFilters.mileageTo}
+                      onChange={(e) => handleFilterChange("mileageTo", e.target.value)}
+                    />
+                    {searchFilters.mileageTo && (
+                      <Button variant="ghost" size="sm" onClick={() => clearFilter("mileageTo")}>
+                        <X className="w-4 h-4" />
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Цена ($)</Label>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="flex gap-2">
+                    <Input
+                      type="number"
+                      placeholder="От"
+                      value={searchFilters.priceFrom}
+                      onChange={(e) => handleFilterChange("priceFrom", e.target.value)}
+                    />
+                    {searchFilters.priceFrom && (
+                      <Button variant="ghost" size="sm" onClick={() => clearFilter("priceFrom")}>
+                        <X className="w-4 h-4" />
+                      </Button>
+                    )}
+                  </div>
+                  
+                  <div className="flex gap-2">
+                    <Input
+                      type="number"
+                      placeholder="До"
+                      value={searchFilters.priceTo}
+                      onChange={(e) => handleFilterChange("priceTo", e.target.value)}
+                    />
+                    {searchFilters.priceTo && (
+                      <Button variant="ghost" size="sm" onClick={() => clearFilter("priceTo")}>
+                        <X className="w-4 h-4" />
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              </div>
+
               <Button onClick={handleSearch} className="w-full bg-red-600 hover:bg-red-700 text-lg py-3">
                 <SearchIcon className="w-5 h-5 mr-2" />
                 Найти автомобили
@@ -279,7 +392,13 @@ export default function Search() {
                       yearTo: "Год по", 
                       bodyType: "Кузов",
                       fuelType: "Топливо",
-                      transmission: "КПП"
+                      transmission: "КПП",
+                      engineVolumeFrom: "Объем с",
+                      engineVolumeTo: "Объем до",
+                      mileageFrom: "Пробег с",
+                      mileageTo: "Пробег до",
+                      priceFrom: "Цена с",
+                      priceTo: "Цена до"
                     };
                     return (
                       <Badge key={key} variant="secondary" className="gap-1">
