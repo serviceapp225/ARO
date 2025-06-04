@@ -132,7 +132,7 @@ export function ActiveAuctions({ searchQuery = "" }: ActiveAuctionsProps) {
                     ? 'bg-blue-100 text-blue-700' 
                     : 'bg-orange-100 text-orange-700'
                 }`}>
-                  {auction.recycled ? 'Утилизация есть' : 'Утилизация нет'}
+                  {auction.recycled ? 'Утилизация: есть' : 'Утилизация: нет'}
                 </span>
                 
                 <span className={`text-xs px-2 py-1 rounded-full ${
