@@ -30,7 +30,7 @@ export default function Favorites() {
   const [favorites, setFavorites] = useState<FavoriteCar[]>([
     {
       id: "1",
-      lotNumber: "001",
+      lotNumber: "847293",
       make: "Toyota",
       model: "Camry",
       year: 2020,
