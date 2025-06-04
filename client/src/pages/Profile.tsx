@@ -44,32 +44,13 @@ export default function Profile() {
 
       <main className="container mx-auto px-4 py-6">
         <div className="max-w-2xl mx-auto">
-          {/* Profile Header with Photo, Name, Phone */}
+          {/* Profile Header with Name and Phone Only */}
           <div className="bg-white rounded-2xl p-6 mb-6 shadow-sm">
-            <div className="flex items-center gap-4 mb-6">
-              {/* Profile Photo */}
-              <div className="relative">
-                <div className="w-20 h-20 bg-gray-200 rounded-full flex items-center justify-center overflow-hidden">
-                  <User className="w-10 h-10 text-gray-600" />
-                </div>
-                <button className="absolute bottom-0 right-0 w-7 h-7 bg-blue-600 rounded-full flex items-center justify-center">
-                  <Camera className="w-4 h-4 text-white" />
-                </button>
-              </div>
-              
-              {/* Name and Info */}
-              <div className="flex-1">
-                <div className="flex items-center gap-2 mb-1">
-                  <h2 className="text-xl font-bold text-gray-900">
-                    {user.email?.split('@')[0] || 'Пользователь'}
-                  </h2>
-                  <button className="text-blue-600">
-                    <Edit className="w-4 h-4" />
-                  </button>
-                </div>
-                <p className="text-gray-600 text-sm mb-1">{user.email}</p>
-                <p className="text-gray-600 text-sm">+992 (90) 123-45-67</p>
-              </div>
+            <div className="text-center">
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                {user.email?.split('@')[0] || 'Пользователь'}
+              </h2>
+              <p className="text-gray-600 text-lg">+992 (90) 123-45-67</p>
             </div>
           </div>
 
