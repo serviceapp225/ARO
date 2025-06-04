@@ -195,10 +195,6 @@ export default function AuctionDetail() {
                   {mockAuction.specifications.customsCleared ? 'Да' : 'Нет'}
                 </span>
               </div>
-              <div className="flex justify-between py-2 border-b border-gray-100">
-                <span className="text-gray-600">Просмотров:</span>
-                <span className="font-medium">{mockAuction.views}</span>
-              </div>
               <div className="flex justify-between py-2">
                 <span className="text-gray-600">Ставки:</span>
                 <span className="font-medium">{auction.bidCount}</span>
