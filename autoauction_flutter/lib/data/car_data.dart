@@ -2,11 +2,14 @@ class CarData {
   static const Map<String, List<String>> carMakesModels = {
     "BMW": [
       "1 Series", "2 Series", "3 Series", "4 Series", "5 Series", "6 Series", "7 Series", "8 Series",
-      "X1", "X2", "X3", "X4", "X5", "X6", "X7", "Z4", "i3", "i4", "iX", "M2", "M3", "M4", "M5", "M8"
+      "X1", "X2", "X3", "X4", "X5", "X6", "X7", "XM", "Z3", "Z4", "Z8", "i3", "i4", "i7", "iX", "iX1", "iX3",
+      "M1", "M2", "M3", "M4", "M5", "M6", "M8", "1M", "X3 M", "X4 M", "X5 M", "X6 M"
     ],
     "Mercedes-Benz": [
       "A-Class", "B-Class", "C-Class", "CLA", "CLS", "E-Class", "S-Class", "G-Class", "GLA", "GLB", 
-      "GLC", "GLE", "GLS", "SL", "SLC", "AMG GT", "EQS", "EQC", "EQA", "EQB", "Maybach S-Class"
+      "GLC", "GLE", "GLS", "SL", "SLC", "SLK", "AMG GT", "EQS", "EQC", "EQA", "EQB", "EQE", "EQV",
+      "Maybach S-Class", "Maybach GLS", "AMG A35", "AMG A45", "AMG C43", "AMG C63", "AMG E53", "AMG E63",
+      "AMG GLA35", "AMG GLA45", "AMG GLC43", "AMG GLC63", "AMG GLE53", "AMG GLE63", "AMG S63", "AMG G63"
     ],
     "Audi": [
       "A1", "A3", "A4", "A5", "A6", "A7", "A8", "Q2", "Q3", "Q4 e-tron", "Q5", "Q7", "Q8", 
