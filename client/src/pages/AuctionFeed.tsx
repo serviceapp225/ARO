@@ -31,7 +31,7 @@ export default function AuctionFeed() {
   const years = Array.from({ length: currentYear - 1970 + 1 }, (_, i) => (currentYear - i).toString());
   
   const bodyTypes = ["Седан", "Кроссовер", "Внедорожник", "Хэтчбек", "Универсал", "Минивен", "Купе", "Кабриолет", "Пикап"];
-  const fuelTypes = ["Бензин", "Дизель", "Гибрид", "Электро"];
+  const fuelTypes = ["Бензин", "Дизель", "Газ", "Газ+Бензин", "Гибрид", "Электро"];
   const transmissions = ["Автомат", "Механика", "Вариатор"];
 
   const handleFilterChange = (field: string, value: string) => {
