@@ -1,49 +1,88 @@
-import { MessageCircle } from "lucide-react";
+import { MessageCircle, Search, Timer, Shield, Car } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ActiveAuctions } from "@/components/ActiveAuctions";
-import { BrandCarousel } from "@/components/BrandCarousel";
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen bg-neutral-50 pb-20">
+    <div className="min-h-screen bg-gray-50 pb-20">
       {/* Header with App Name and WhatsApp */}
-      <header className="bg-white shadow-sm border-b border-neutral-200">
+      <header className="bg-white shadow-sm border-b border-gray-200">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-primary">AUTOAUCTION</h1>
-          <Button variant="ghost" size="sm" className="text-green-600">
-            <MessageCircle className="w-5 h-5" />
-          </Button>
+          <h1 className="text-2xl font-bold text-gray-900">AUTOAUCTION</h1>
+          <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+            <MessageCircle className="w-5 h-5 text-green-600" />
+          </div>
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-6 space-y-8">
-        {/* Announcement Banner */}
-        <Card className="bg-gradient-to-r from-blue-50 to-blue-100 border-blue-200">
-          <CardContent className="p-6 text-center">
-            <h2 className="text-lg font-semibold text-blue-900 mb-2">
-              Добро пожаловать на аукцион автомобилей!
-            </h2>
-            <p className="text-blue-700">
-              Найдите автомобиль своей мечты или продайте свой по лучшей цене
-            </p>
-          </CardContent>
-        </Card>
+      <main className="container mx-auto px-4 py-6 space-y-6">
+        {/* Search Section */}
+        <div className="space-y-3">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+            <input
+              type="text"
+              placeholder="Search cars, brands, or models..."
+              className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg bg-white shadow-sm"
+            />
+          </div>
+          <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3">
+            Sell Your Car
+          </Button>
+        </div>
 
-        {/* Current Auctions Section */}
+        {/* Large Advertisement Banners */}
+        <div className="space-y-4">
+          {/* Main Premium Banner */}
+          <div className="relative h-44 bg-gradient-to-br from-blue-600 to-purple-700 rounded-2xl p-6 text-white overflow-hidden">
+            <div className="absolute right-[-20px] top-[-10px]">
+              <Car className="w-28 h-28 text-white opacity-20" />
+            </div>
+            <div className="relative z-10 space-y-2">
+              <h2 className="text-2xl font-bold">ПРЕМИУМ АУКЦИОН</h2>
+              <p className="text-white/80 text-base leading-relaxed">
+                Эксклюзивные автомобили<br />
+                от проверенных дилеров
+              </p>
+              <div className="mt-4">
+                <span className="bg-white text-blue-700 px-4 py-2 rounded-full text-sm font-bold">
+                  Участвовать →
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Hot Lots Banner */}
+          <div className="bg-gradient-to-r from-orange-400 to-red-500 rounded-xl p-4 text-white">
+            <div className="flex items-center space-x-3">
+              <Timer className="w-6 h-6" />
+              <div className="flex-1">
+                <h3 className="font-bold text-lg">Горячие лоты!</h3>
+                <p className="text-sm text-white/80">12 автомобилей заканчиваются через 2 часа</p>
+              </div>
+              <span className="text-white/80">›</span>
+            </div>
+          </div>
+
+          {/* Security Banner */}
+          <div className="bg-green-50 border border-green-200 rounded-xl p-4">
+            <div className="flex items-center space-x-3">
+              <Shield className="w-6 h-6 text-green-600" />
+              <div className="flex-1">
+                <h3 className="font-bold text-green-800 text-lg">Безопасные сделки</h3>
+                <p className="text-sm text-green-600">Все автомобили проходят проверку</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Active Auctions Section */}
         <section>
-          <h2 className="text-xl font-bold text-neutral-900 mb-6">
-            Текущие аукционы
+          <h2 className="text-xl font-bold text-gray-900 mb-4">
+            Active Auctions
           </h2>
           <ActiveAuctions />
-        </section>
-
-        {/* Popular Brands Section */}
-        <section>
-          <h2 className="text-xl font-bold text-neutral-900 mb-6">
-            Популярные марки
-          </h2>
-          <BrandCarousel />
         </section>
       </main>
     </div>
