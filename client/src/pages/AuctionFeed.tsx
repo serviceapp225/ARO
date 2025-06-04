@@ -11,7 +11,7 @@ export default function AuctionFeed() {
       {/* Header */}
       <header className="bg-white shadow-sm border-b border-neutral-200">
         <div className="container mx-auto px-4 py-4">
-          <h1 className="text-2xl font-bold text-neutral-900">Машины</h1>
+          <h1 className="text-2xl font-bold text-neutral-900">Активные аукционы</h1>
         </div>
       </header>
 
