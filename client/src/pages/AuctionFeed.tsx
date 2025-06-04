@@ -258,65 +258,7 @@ export default function AuctionFeed() {
               </div>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Пробег (км)
-              </label>
-              <div className="grid grid-cols-2 gap-4">
-                <Select value={searchFilters.mileageFrom} onValueChange={(value) => handleFilterChange("mileageFrom", value)}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="От" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="0">0</SelectItem>
-                    <SelectItem value="25000">25,000</SelectItem>
-                    <SelectItem value="50000">50,000</SelectItem>
-                    <SelectItem value="75000">75,000</SelectItem>
-                    <SelectItem value="100000">100,000</SelectItem>
-                    <SelectItem value="150000">150,000</SelectItem>
-                    <SelectItem value="200000">200,000</SelectItem>
-                    <SelectItem value="250000">250,000</SelectItem>
-                  </SelectContent>
-                </Select>
-                
-                <Select value={searchFilters.mileageTo} onValueChange={(value) => handleFilterChange("mileageTo", value)}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="До" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="25000">25,000</SelectItem>
-                    <SelectItem value="50000">50,000</SelectItem>
-                    <SelectItem value="75000">75,000</SelectItem>
-                    <SelectItem value="100000">100,000</SelectItem>
-                    <SelectItem value="150000">150,000</SelectItem>
-                    <SelectItem value="200000">200,000</SelectItem>
-                    <SelectItem value="250000">250,000</SelectItem>
-                    <SelectItem value="300000">300,000</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Цена ($)
-              </label>
-              <div className="grid grid-cols-2 gap-4">
-                <Input
-                  type="number"
-                  placeholder="От"
-                  value={searchFilters.priceFrom}
-                  onChange={(e) => handleFilterChange("priceFrom", e.target.value)}
-                />
-                
-                <Input
-                  type="number"
-                  placeholder="До"
-                  value={searchFilters.priceTo}
-                  onChange={(e) => handleFilterChange("priceTo", e.target.value)}
-                />
-              </div>
-            </div>
           </div>
         </div>
 
