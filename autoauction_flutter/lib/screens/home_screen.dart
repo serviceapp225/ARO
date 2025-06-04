@@ -213,25 +213,13 @@ class _AnnouncementBanners extends StatelessWidget {
               ),
               const SizedBox(width: 12),
               Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Безопасные сделки',
-                      style: TextStyle(
-                        color: Colors.green.shade800,
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    Text(
-                      'Проходят проверку',
-                      style: TextStyle(
-                        color: Colors.green.shade600,
-                        fontSize: 14,
-                      ),
-                    ),
-                  ],
+                child: Text(
+                  'Безопасные сделки',
+                  style: TextStyle(
+                    color: Colors.green.shade800,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
             ],

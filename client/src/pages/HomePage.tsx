@@ -53,7 +53,6 @@ export default function HomePage() {
               <Shield className="w-6 h-6 text-green-600" />
               <div className="flex-1">
                 <h3 className="font-bold text-green-800 text-lg">Безопасные сделки</h3>
-                <p className="text-sm text-green-600">Проходят проверку</p>
               </div>
             </div>
           </div>
