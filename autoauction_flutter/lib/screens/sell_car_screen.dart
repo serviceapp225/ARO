@@ -59,26 +59,47 @@ class _SellCarScreenState extends State<SellCarScreen> {
               Row(
                 children: [
                   Expanded(
-                    child: TextFormField(
-                      controller: _makeController,
+                    child: DropdownButtonFormField<String>(
+                      value: _selectedMake,
                       decoration: const InputDecoration(
                         labelText: 'Make',
                         border: OutlineInputBorder(),
-                        hintText: 'e.g. BMW',
                       ),
-                      validator: (value) => value?.isEmpty ?? true ? 'Required' : null,
+                      hint: const Text('Select Make'),
+                      items: CarData.carMakes.map((make) => DropdownMenuItem(
+                        value: make,
+                        child: Text(make),
+                      )).toList(),
+                      onChanged: (value) {
+                        setState(() {
+                          _selectedMake = value;
+                          _selectedModel = null; // Reset model when make changes
+                        });
+                      },
+                      validator: (value) => value == null ? 'Required' : null,
                     ),
                   ),
                   const SizedBox(width: 16),
                   Expanded(
-                    child: TextFormField(
-                      controller: _modelController,
+                    child: DropdownButtonFormField<String>(
+                      value: _selectedModel,
                       decoration: const InputDecoration(
                         labelText: 'Model',
                         border: OutlineInputBorder(),
-                        hintText: 'e.g. X5',
                       ),
-                      validator: (value) => value?.isEmpty ?? true ? 'Required' : null,
+                      hint: Text(_selectedMake == null ? 'Select Make First' : 'Select Model'),
+                      items: _selectedMake == null 
+                        ? null 
+                        : CarData.getModelsForMake(_selectedMake!).map((model) => DropdownMenuItem(
+                            value: model,
+                            child: Text(model),
+                          )).toList(),
+                      onChanged: _selectedMake == null ? null : (value) {
+                        setState(() {
+                          _selectedModel = value;
+                        });
+                      },
+                      validator: (value) => value == null ? 'Required' : null,
                     ),
                   ),
                 ],
