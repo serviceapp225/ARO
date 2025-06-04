@@ -11,7 +11,7 @@ class _SearchScreenState extends State<SearchScreen> {
   final TextEditingController _searchController = TextEditingController();
   String _selectedMake = 'All Makes';
   RangeValues _priceRange = const RangeValues(0, 100000);
-  int _selectedYear = 2020;
+  int _selectedYear = 1970;
   String _sortBy = 'Price: Low to High';
 
   final List<String> _carMakes = [
