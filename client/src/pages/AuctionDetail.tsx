@@ -20,6 +20,12 @@ export default function AuctionDetail() {
   });
 
   // Mock auction data with detailed specifications
+  const getConditionByMileage = (miles: number) => {
+    if (miles <= 10000) return "Новое";
+    if (miles <= 50000) return "Хорошее";
+    return "Удовлетворительное";
+  };
+
   const mockAuction = {
     id: id,
     make: "BMW",
@@ -38,11 +44,9 @@ export default function AuctionDetail() {
       fuelType: "Бензин",
       bodyType: "Кроссовер",
       color: "Черный металлик",
-      condition: "Отличное",
-      vin: "WBXPC9C59WP123456",
-      previousOwners: 1,
-      accidents: "Без аварий",
-      serviceHistory: "Полная история обслуживания"
+      city: "Москва",
+      condition: getConditionByMileage(45000),
+      vin: "WBXPC9C59WP123456"
     },
     seller: "Официальный дилер BMW",
     location: "Москва, Россия",
@@ -169,24 +173,16 @@ export default function AuctionDetail() {
                 <span className="font-medium">{mockAuction.specifications.color}</span>
               </div>
               <div className="flex justify-between py-2 border-b border-gray-100">
+                <span className="text-gray-600">Город:</span>
+                <span className="font-medium">{mockAuction.specifications.city}</span>
+              </div>
+              <div className="flex justify-between py-2 border-b border-gray-100">
                 <span className="text-gray-600">Состояние:</span>
                 <span className="font-medium">{mockAuction.specifications.condition}</span>
               </div>
               <div className="flex justify-between py-2 border-b border-gray-100">
                 <span className="text-gray-600">VIN:</span>
                 <span className="font-medium font-mono">{mockAuction.specifications.vin}</span>
-              </div>
-              <div className="flex justify-between py-2 border-b border-gray-100">
-                <span className="text-gray-600">Владельцев:</span>
-                <span className="font-medium">{mockAuction.specifications.previousOwners}</span>
-              </div>
-              <div className="flex justify-between py-2 border-b border-gray-100">
-                <span className="text-gray-600">Аварии:</span>
-                <span className="font-medium text-green-600">{mockAuction.specifications.accidents}</span>
-              </div>
-              <div className="flex justify-between py-2 border-b border-gray-100">
-                <span className="text-gray-600">Сервис:</span>
-                <span className="font-medium text-green-600">{mockAuction.specifications.serviceHistory}</span>
               </div>
               <div className="flex justify-between py-2 border-b border-gray-100">
                 <span className="text-gray-600">Просмотров:</span>

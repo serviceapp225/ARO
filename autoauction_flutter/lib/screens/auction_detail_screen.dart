@@ -31,11 +31,9 @@ class _AuctionDetailScreenState extends State<AuctionDetailScreen>
       'fuelType': 'Бензин',
       'bodyType': 'Кроссовер',
       'color': 'Черный металлик',
-      'condition': 'Отличное',
-      'vin': 'WBXPC9C59WP123456',
-      'previousOwners': 1,
-      'accidents': 'Без аварий',
-      'serviceHistory': 'Полная история обслуживания'
+      'city': 'Москва',
+      'condition': 'Хорошее',
+      'vin': 'WBXPC9C59WP123456'
     },
     'seller': 'Официальный дилер BMW',
     'location': 'Москва, Россия',
@@ -533,11 +531,9 @@ class _AuctionDetailScreenState extends State<AuctionDetailScreen>
       case 'fuelType': return 'Топливо:';
       case 'bodyType': return 'Кузов:';
       case 'color': return 'Цвет:';
+      case 'city': return 'Город:';
       case 'condition': return 'Состояние:';
       case 'vin': return 'VIN:';
-      case 'previousOwners': return 'Владельцев:';
-      case 'accidents': return 'Аварии:';
-      case 'serviceHistory': return 'Сервис:';
       default: return key;
     }
   }
