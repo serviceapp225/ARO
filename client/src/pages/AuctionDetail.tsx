@@ -168,12 +168,18 @@ export default function AuctionDetail() {
                   Активный
                 </Badge>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 <Badge variant="outline" className="font-mono text-blue-700 bg-blue-50 border-blue-200">
                   Лот № {mockAuction.specifications.lotNumber}
                 </Badge>
                 <Badge variant="outline" className={`${mockAuction.specifications.customsCleared ? 'text-green-700 bg-green-50 border-green-200' : 'text-red-700 bg-red-50 border-red-200'}`}>
                   {mockAuction.specifications.customsCleared ? '✓ Растаможен' : '✗ Не растаможен'}
+                </Badge>
+                <Badge variant="outline" className={`${auction.recycled ? 'text-blue-700 bg-blue-50 border-blue-200' : 'text-orange-700 bg-orange-50 border-orange-200'}`}>
+                  {auction.recycled ? '♻ Утилизация' : '⚠ Без утилизации'}
+                </Badge>
+                <Badge variant="outline" className={`${auction.technicalInspectionValid ? 'text-purple-700 bg-purple-50 border-purple-200' : 'text-gray-700 bg-gray-50 border-gray-200'}`}>
+                  {auction.technicalInspectionValid ? '🔧 Техосмотр' : '❌ Нет техосмотра'}
                 </Badge>
               </div>
             </div>

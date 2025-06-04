@@ -15,6 +15,8 @@ interface Auction {
   endTime: Date;
   status: 'active' | 'ended';
   customsCleared: boolean;
+  recycled: boolean;
+  technicalInspectionValid: boolean;
 }
 
 interface AuctionContextType {
@@ -46,7 +48,9 @@ export function AuctionProvider({ children }: { children: ReactNode }) {
         bidCount: 23,
         endTime: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000),
         status: 'active',
-        customsCleared: true
+        customsCleared: true,
+        recycled: true,
+        technicalInspectionValid: true
       },
       {
         id: '2',
@@ -60,7 +64,9 @@ export function AuctionProvider({ children }: { children: ReactNode }) {
         bidCount: 18,
         endTime: new Date(Date.now() + 1 * 24 * 60 * 60 * 1000),
         status: 'active',
-        customsCleared: false
+        customsCleared: false,
+        recycled: false,
+        technicalInspectionValid: true
       },
       {
         id: '3',
@@ -74,7 +80,9 @@ export function AuctionProvider({ children }: { children: ReactNode }) {
         bidCount: 12,
         endTime: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
         status: 'active',
-        customsCleared: true
+        customsCleared: true,
+        recycled: true,
+        technicalInspectionValid: false
       }
     ];
 
