@@ -21,37 +21,55 @@ export default function HomePage() {
       <main className="container mx-auto px-4 py-6 space-y-6">
         {/* Sell Car Section */}
         <div className="relative h-44 bg-gradient-to-br from-emerald-500 via-teal-600 to-cyan-700 rounded-2xl p-6 text-white overflow-hidden shadow-2xl">
-          {/* Car Background */}
-          <div className="absolute right-0 top-1/2 -translate-y-1/2 opacity-20">
-            <svg className="w-96 h-48" viewBox="0 0 400 200" fill="none">
-              {/* Car Body */}
-              <path d="M50 140 L70 110 L130 100 L200 95 L270 100 L320 120 L350 150 L320 170 L270 165 L200 165 L130 165 L70 165 Z" fill="white"/>
-              
-              {/* Wheels */}
-              <circle cx="120" cy="165" r="18" fill="white"/>
-              <circle cx="120" cy="165" r="12" fill="none" stroke="white" strokeWidth="2" opacity="0.7"/>
-              <circle cx="280" cy="165" r="18" fill="white"/>
-              <circle cx="280" cy="165" r="12" fill="none" stroke="white" strokeWidth="2" opacity="0.7"/>
-              
-              {/* Car Details */}
-              <path d="M80 130 L110 115 L180 110 L250 115 L300 135" stroke="white" strokeWidth="3" opacity="0.8"/>
-              
-              {/* Windows */}
-              <rect x="140" y="115" width="35" height="25" rx="3" fill="white" opacity="0.6"/>
-              <rect x="185" y="115" width="35" height="25" rx="3" fill="white" opacity="0.6"/>
-              <rect x="230" y="115" width="25" height="25" rx="3" fill="white" opacity="0.6"/>
-              
-              {/* Headlights */}
-              <ellipse cx="60" cy="135" rx="8" ry="12" fill="white" opacity="0.9"/>
-              <ellipse cx="340" cy="145" rx="6" ry="8" fill="white" opacity="0.7"/>
-              
-              {/* Grille */}
-              <rect x="45" y="130" width="20" height="15" fill="white" opacity="0.8"/>
-              <line x1="48" y1="133" x2="62" y2="133" stroke="white" strokeWidth="1" opacity="0.6"/>
-              <line x1="48" y1="138" x2="62" y2="138" stroke="white" strokeWidth="1" opacity="0.6"/>
-              <line x1="48" y1="143" x2="62" y2="143" stroke="white" strokeWidth="1" opacity="0.6"/>
-            </svg>
-          </div>
+          {/* Car Background Image */}
+          <div 
+            className="absolute right-0 top-0 w-full h-full opacity-30 bg-cover bg-center bg-no-repeat rounded-2xl"
+            style={{
+              backgroundImage: `url('data:image/svg+xml;base64,${btoa(`
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 400" fill="none">
+                  <defs>
+                    <linearGradient id="carGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" style="stop-color:rgba(255,255,255,0.8)" />
+                      <stop offset="50%" style="stop-color:rgba(255,255,255,0.6)" />
+                      <stop offset="100%" style="stop-color:rgba(255,255,255,0.4)" />
+                    </linearGradient>
+                  </defs>
+                  
+                  <!-- Modern Car Silhouette -->
+                  <path d="M100 280 L140 220 L260 200 L400 190 L540 200 L640 240 L700 300 L640 340 L540 330 L400 330 L260 330 L140 330 Z" fill="url(#carGradient)"/>
+                  
+                  <!-- Wheels -->
+                  <circle cx="240" cy="330" r="36" fill="rgba(255,255,255,0.9)"/>
+                  <circle cx="240" cy="330" r="24" fill="none" stroke="rgba(255,255,255,0.7)" stroke-width="4"/>
+                  <circle cx="560" cy="330" r="36" fill="rgba(255,255,255,0.9)"/>
+                  <circle cx="560" cy="330" r="24" fill="none" stroke="rgba(255,255,255,0.7)" stroke-width="4"/>
+                  
+                  <!-- Car Body Details -->
+                  <path d="M160 260 L220 230 L360 220 L500 230 L600 270" stroke="rgba(255,255,255,0.8)" stroke-width="6"/>
+                  
+                  <!-- Windows -->
+                  <path d="M220 250 L280 225 L360 220 L440 225 L500 250 L480 270 L400 270 L280 270 Z" fill="rgba(255,255,255,0.6)"/>
+                  
+                  <!-- Windshield -->
+                  <path d="M150 270 L210 235 L280 230 L270 270 L200 280 Z" fill="rgba(255,255,255,0.5)"/>
+                  
+                  <!-- Headlights -->
+                  <ellipse cx="120" cy="260" rx="16" ry="24" fill="rgba(255,255,255,0.9)"/>
+                  <ellipse cx="680" cy="280" rx="12" ry="16" fill="rgba(255,255,255,0.8)"/>
+                  
+                  <!-- Grille -->
+                  <rect x="90" y="250" width="40" height="30" fill="rgba(255,255,255,0.8)"/>
+                  <line x1="96" y1="256" x2="124" y2="256" stroke="rgba(255,255,255,0.6)" stroke-width="2"/>
+                  <line x1="96" y1="266" x2="124" y2="266" stroke="rgba(255,255,255,0.6)" stroke-width="2"/>
+                  <line x1="96" y1="276" x2="124" y2="276" stroke="rgba(255,255,255,0.6)" stroke-width="2"/>
+                  
+                  <!-- Side Details -->
+                  <path d="M140 270 L180 260 L300 256 L440 260 L560 280" stroke="rgba(255,255,255,0.6)" stroke-width="2"/>
+                  <path d="M160 290 L200 285 L320 282 L460 285 L540 295" stroke="rgba(255,255,255,0.5)" stroke-width="2"/>
+                </svg>
+              `)}`
+            }}
+          ></div>
           
           {/* Content */}
           <div className="relative z-10 space-y-2">

@@ -87,36 +87,55 @@ export function AdvertisementBanner() {
 
   return (
     <div className={`relative h-44 bg-gradient-to-br ${currentBanner.gradient} rounded-2xl p-6 text-white overflow-hidden transition-all duration-500`}>
-      {/* Car Background */}
-      <div className="absolute right-0 top-1/2 -translate-y-1/2 opacity-15">
-        <svg className="w-80 h-40" viewBox="0 0 350 180" fill="none">
-          {/* Sports Car Body */}
-          <path d="M40 130 L55 105 L90 95 L150 90 L220 92 L280 100 L310 120 L320 140 L300 155 L280 150 L220 150 L150 150 L90 150 L55 150 Z" fill="white"/>
-          
-          {/* Wheels */}
-          <circle cx="105" cy="150" r="15" fill="white"/>
-          <circle cx="105" cy="150" r="10" fill="none" stroke="white" strokeWidth="2" opacity="0.8"/>
-          <circle cx="265" cy="150" r="15" fill="white"/>
-          <circle cx="265" cy="150" r="10" fill="none" stroke="white" strokeWidth="2" opacity="0.8"/>
-          
-          {/* Car Roof Line */}
-          <path d="M65 125 L95 110 L140 105 L200 107 L260 115 L290 130" stroke="white" strokeWidth="2" opacity="0.9"/>
-          
-          {/* Windows */}
-          <path d="M110 115 L140 108 L180 106 L220 108 L250 118 L240 125 L200 125 L140 125 Z" fill="white" opacity="0.7"/>
-          
-          {/* Windshield */}
-          <path d="M75 125 L105 112 L140 110 L135 125 L100 128 Z" fill="white" opacity="0.6"/>
-          
-          {/* Headlights */}
-          <ellipse cx="45" cy="125" rx="6" ry="10" fill="white" opacity="0.9"/>
-          <ellipse cx="315" cy="135" rx="4" ry="6" fill="white" opacity="0.8"/>
-          
-          {/* Side Details */}
-          <path d="M70 135 L90 130 L150 128 L220 130 L280 135" stroke="white" strokeWidth="1" opacity="0.6"/>
-          <path d="M80 140 L100 138 L160 136 L230 138 L270 142" stroke="white" strokeWidth="1" opacity="0.5"/>
-        </svg>
-      </div>
+      {/* Sports Car Background Image */}
+      <div 
+        className="absolute right-0 top-0 w-full h-full opacity-25 bg-cover bg-center bg-no-repeat rounded-2xl"
+        style={{
+          backgroundImage: `url('data:image/svg+xml;base64,${btoa(`
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 300" fill="none">
+              <defs>
+                <linearGradient id="sportsCarGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" style="stop-color:rgba(255,255,255,0.9)" />
+                  <stop offset="50%" style="stop-color:rgba(255,255,255,0.7)" />
+                  <stop offset="100%" style="stop-color:rgba(255,255,255,0.5)" />
+                </linearGradient>
+              </defs>
+              
+              <!-- Sports Car Silhouette -->
+              <path d="M80 200 L100 160 L140 140 L200 130 L300 128 L400 135 L480 155 L520 185 L500 220 L480 215 L400 215 L300 215 L200 215 L140 215 L100 215 Z" fill="url(#sportsCarGradient)"/>
+              
+              <!-- Low Profile Wheels -->
+              <circle cx="180" cy="215" r="25" fill="rgba(255,255,255,0.95)"/>
+              <circle cx="180" cy="215" r="18" fill="none" stroke="rgba(255,255,255,0.8)" stroke-width="3"/>
+              <circle cx="420" cy="215" r="25" fill="rgba(255,255,255,0.95)"/>
+              <circle cx="420" cy="215" r="18" fill="none" stroke="rgba(255,255,255,0.8)" stroke-width="3"/>
+              
+              <!-- Sporty Roof Line -->
+              <path d="M110 180 L150 155 L220 145 L320 143 L420 150 L470 175" stroke="rgba(255,255,255,0.9)" stroke-width="4"/>
+              
+              <!-- Sleek Windows -->
+              <path d="M160 165 L200 150 L280 148 L360 150 L420 165 L400 180 L320 180 L200 180 Z" fill="rgba(255,255,255,0.7)"/>
+              
+              <!-- Angular Windshield -->}
+              <path d="M120 185 L160 160 L200 155 L195 185 L150 190 Z" fill="rgba(255,255,255,0.6)"/>
+              
+              <!-- Aggressive Headlights -->
+              <polygon points="90,185 110,175 115,190 95,195" fill="rgba(255,255,255,0.95)"/>
+              <polygon points="505,195 515,185 520,200 510,205" fill="rgba(255,255,255,0.9)"/>
+              
+              <!-- Sport Grille -->
+              <rect x="70" y="180" width="25" height="20" fill="rgba(255,255,255,0.9)"/>
+              <line x1="73" y1="184" x2="92" y2="184" stroke="rgba(255,255,255,0.7)" stroke-width="1.5"/>
+              <line x1="73" y1="190" x2="92" y2="190" stroke="rgba(255,255,255,0.7)" stroke-width="1.5"/>
+              <line x1="73" y1="196" x2="92" y2="196" stroke="rgba(255,255,255,0.7)" stroke-width="1.5"/>
+              
+              <!-- Aerodynamic Side Lines -->
+              <path d="M110 190 L140 185 L220 182 L340 185 L450 195" stroke="rgba(255,255,255,0.7)" stroke-width="2"/>
+              <path d="M130 200 L160 198 L240 196 L360 198 L430 202" stroke="rgba(255,255,255,0.6)" stroke-width="1.5"/>
+            </svg>
+          `)}`
+        }}
+      ></div>
       
       {/* Icon overlay */}
       <div className="absolute right-[-10px] top-[-5px] opacity-20">
