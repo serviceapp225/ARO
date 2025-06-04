@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { CAR_MAKES_MODELS, getModelsForMake } from "../../../shared/car-data";
 
 export default function SellCar() {
   const [uploadedImages, setUploadedImages] = useState<string[]>([]);
@@ -16,11 +17,14 @@ export default function SellCar() {
     year: "",
     mileage: "",
     price: "",
+    reservePrice: "",
     description: "",
     bodyType: "",
     fuelType: "",
     transmission: ""
   });
+  
+  const [availableModels, setAvailableModels] = useState<string[]>([]);
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
@@ -38,6 +42,13 @@ export default function SellCar() {
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+    
+    // When make changes, update available models and reset model selection
+    if (field === "make") {
+      const models = getModelsForMake(value);
+      setAvailableModels(models);
+      setFormData(prev => ({ ...prev, model: "" }));
+    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -125,27 +136,25 @@ export default function SellCar() {
                       <SelectValue placeholder="Выберите марку" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="toyota">Toyota</SelectItem>
-                      <SelectItem value="bmw">BMW</SelectItem>
-                      <SelectItem value="mercedes">Mercedes-Benz</SelectItem>
-                      <SelectItem value="audi">Audi</SelectItem>
-                      <SelectItem value="volkswagen">Volkswagen</SelectItem>
-                      <SelectItem value="honda">Honda</SelectItem>
-                      <SelectItem value="hyundai">Hyundai</SelectItem>
-                      <SelectItem value="kia">Kia</SelectItem>
+                      {Object.keys(CAR_MAKES_MODELS).map(make => (
+                        <SelectItem key={make} value={make}>{make}</SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
 
                 <div>
                   <Label htmlFor="model">Модель</Label>
-                  <Input
-                    id="model"
-                    placeholder="Модель автомобиля"
-                    value={formData.model}
-                    onChange={(e) => handleInputChange("model", e.target.value)}
-                    required
-                  />
+                  <Select value={formData.model} onValueChange={(value) => handleInputChange("model", value)} disabled={!formData.make}>
+                    <SelectTrigger>
+                      <SelectValue placeholder={formData.make ? "Выберите модель" : "Сначала выберите марку"} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {availableModels.map(model => (
+                        <SelectItem key={model} value={model}>{model}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
 
@@ -157,7 +166,7 @@ export default function SellCar() {
                       <SelectValue placeholder="Год" />
                     </SelectTrigger>
                     <SelectContent>
-                      {Array.from({ length: 25 }, (_, i) => 2024 - i).map(year => (
+                      {Array.from({ length: 55 }, (_, i) => 2025 - i).map(year => (
                         <SelectItem key={year} value={year.toString()}>{year}</SelectItem>
                       ))}
                     </SelectContent>
@@ -225,16 +234,30 @@ export default function SellCar() {
                 </div>
               </div>
 
-              <div>
-                <Label htmlFor="price">Стартовая цена ($)</Label>
-                <Input
-                  id="price"
-                  type="number"
-                  placeholder="15000"
-                  value={formData.price}
-                  onChange={(e) => handleInputChange("price", e.target.value)}
-                  required
-                />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="price">Стартовая цена ($)</Label>
+                  <Input
+                    id="price"
+                    type="number"
+                    placeholder="15000"
+                    value={formData.price}
+                    onChange={(e) => handleInputChange("price", e.target.value)}
+                    required
+                  />
+                </div>
+                
+                <div>
+                  <Label htmlFor="reservePrice">Резервная цена ($)</Label>
+                  <Input
+                    id="reservePrice"
+                    type="number"
+                    placeholder="18000"
+                    value={formData.reservePrice}
+                    onChange={(e) => handleInputChange("reservePrice", e.target.value)}
+                  />
+                  <p className="text-xs text-gray-500 mt-1">Минимальная цена для продажи (не видна покупателям)</p>
+                </div>
               </div>
 
               <div>
