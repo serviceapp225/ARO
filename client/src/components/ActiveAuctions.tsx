@@ -90,6 +90,11 @@ export function ActiveAuctions() {
               </Button>
             </div>
             <CardContent className="p-3">
+              <div className="mb-1">
+                <span className="text-xs font-mono bg-gray-100 text-gray-700 px-2 py-1 rounded">
+                  {auction.lotNumber}
+                </span>
+              </div>
               <h3 className="text-sm font-bold text-gray-900 mb-1 truncate">
                 {auction.year} {auction.make} {auction.model}
               </h3>

@@ -8,6 +8,7 @@ import { useLocation } from "wouter";
 
 interface FavoriteCar {
   id: string;
+  lotNumber: string;
   make: string;
   model: string;
   year: number;
@@ -29,6 +30,7 @@ export default function Favorites() {
   const [favorites, setFavorites] = useState<FavoriteCar[]>([
     {
       id: "1",
+      lotNumber: "LOT-001",
       make: "Toyota",
       model: "Camry",
       year: 2020,
@@ -45,6 +47,7 @@ export default function Favorites() {
     },
     {
       id: "2", 
+      lotNumber: "LOT-002",
       make: "Honda",
       model: "CR-V",
       year: 2019,
@@ -61,6 +64,7 @@ export default function Favorites() {
     },
     {
       id: "3",
+      lotNumber: "LOT-003",
       make: "BMW",
       model: "X3",
       year: 2021,
@@ -190,6 +194,11 @@ export default function Favorites() {
                   <CardContent className="p-4">
                     <div className="space-y-3">
                       <div>
+                        <div className="flex items-center gap-2 mb-1">
+                          <Badge variant="outline" className="text-xs font-mono">
+                            {car.lotNumber}
+                          </Badge>
+                        </div>
                         <h3 className="font-semibold text-lg text-neutral-900">
                           {car.make} {car.model}
                         </h3>

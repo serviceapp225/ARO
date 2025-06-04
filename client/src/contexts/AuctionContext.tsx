@@ -4,6 +4,7 @@ import { db } from '@/lib/firebase';
 
 interface Auction {
   id: string;
+  lotNumber: string;
   make: string;
   model: string;
   year: number;
@@ -35,12 +36,13 @@ export function AuctionProvider({ children }: { children: ReactNode }) {
     const demoAuctions: Auction[] = [
       {
         id: '1',
-        make: 'BMW',
-        model: 'X5',
+        lotNumber: 'LOT-001',
+        make: 'Toyota',
+        model: 'Camry',
         year: 2020,
         mileage: 45000,
         photos: ['/car1.jpg'],
-        currentBid: 47500,
+        currentBid: 17800,
         bidCount: 23,
         endTime: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000),
         status: 'active',
@@ -48,12 +50,13 @@ export function AuctionProvider({ children }: { children: ReactNode }) {
       },
       {
         id: '2',
-        make: 'Mercedes',
-        model: 'C-Class',
-        year: 2021,
-        mileage: 32000,
+        lotNumber: 'LOT-002',
+        make: 'Honda',
+        model: 'CR-V',
+        year: 2019,
+        mileage: 52000,
         photos: ['/car2.jpg'],
-        currentBid: 35000,
+        currentBid: 21200,
         bidCount: 18,
         endTime: new Date(Date.now() + 1 * 24 * 60 * 60 * 1000),
         status: 'active',
@@ -61,12 +64,13 @@ export function AuctionProvider({ children }: { children: ReactNode }) {
       },
       {
         id: '3',
-        make: 'Audi',
-        model: 'A4',
-        year: 2019,
-        mileage: 55000,
+        lotNumber: 'LOT-003',
+        make: 'BMW',
+        model: 'X3',
+        year: 2021,
+        mileage: 28000,
         photos: ['/car3.jpg'],
-        currentBid: 28000,
+        currentBid: 34200,
         bidCount: 12,
         endTime: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
         status: 'active',
