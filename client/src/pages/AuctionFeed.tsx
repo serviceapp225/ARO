@@ -81,24 +81,14 @@ export default function AuctionFeed() {
         {/* Filter Section */}
         <div className="bg-white rounded-2xl p-4 mb-6 shadow-sm">
           {/* Filter Header */}
-          <div className="flex items-center justify-between mb-6">
-            <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-              <Filter className="w-5 h-5" />
-              Параметры поиска
-              {hasActiveFilters && (
-                <Badge variant="secondary" className="ml-2">
-                  {Object.values(searchFilters).filter(Boolean).length}
-                </Badge>
-              )}
-            </h3>
-
-            {hasActiveFilters && (
+          {hasActiveFilters && (
+            <div className="flex justify-end mb-6">
               <Button variant="ghost" onClick={clearFilters} className="text-sm">
                 <X className="w-4 h-4 mr-1" />
                 Очистить все
               </Button>
-            )}
-          </div>
+            </div>
+          )}
 
           {/* All Filters Visible */}
           <div className="space-y-6">
