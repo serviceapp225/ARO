@@ -15,17 +15,8 @@ export function FlutterPreview() {
           </div>
         </div>
 
-        {/* Search Section */}
-        <div className="px-4 pb-4 space-y-3">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-            <input
-              type="text"
-              placeholder="Search cars, brands, or models..."
-              className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg bg-white"
-              readOnly
-            />
-          </div>
+        {/* Sell Car Section */}
+        <div className="px-4 pb-4">
           <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3">
             Sell Your Car
           </Button>
