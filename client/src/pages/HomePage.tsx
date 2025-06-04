@@ -61,7 +61,7 @@ export default function HomePage() {
         {/* Active Auctions Section */}
         <section>
           <h2 className="text-xl font-bold text-gray-900 mb-4">
-            Active Auctions
+            Машины
           </h2>
           <ActiveAuctions />
         </section>
