@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Search, Filter, X } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
@@ -6,8 +6,10 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { ActiveAuctions } from "@/components/ActiveAuctions";
 import { CAR_MAKES, getModelsForMake } from "@shared/car-data";
+import { useLocation } from "wouter";
 
 export default function AuctionFeed() {
+  const [location] = useLocation();
   const [sortBy, setSortBy] = useState("new");
   const [showFilters, setShowFilters] = useState(false);
   const [searchFilters, setSearchFilters] = useState({
@@ -27,6 +29,15 @@ export default function AuctionFeed() {
     priceTo: "",
     customsCleared: ""
   });
+
+  // Обработка параметров поиска из URL
+  useEffect(() => {
+    const searchParams = new URLSearchParams(location.split('?')[1] || '');
+    const searchQuery = searchParams.get('search');
+    if (searchQuery) {
+      setSearchFilters(prev => ({ ...prev, query: searchQuery }));
+    }
+  }, [location]);
 
   const currentYear = new Date().getFullYear();
   const years = Array.from({ length: currentYear - 1970 + 1 }, (_, i) => (currentYear - i).toString());

@@ -6,15 +6,17 @@ import { ActiveAuctions } from "@/components/ActiveAuctions";
 import { AdvertisementBanner } from "@/components/AdvertisementBanner";
 import { Link } from "wouter";
 import { useState } from "react";
+import { useLocation } from "wouter";
 
 export default function HomePage() {
   const [searchQuery, setSearchQuery] = useState("");
+  const [, setLocation] = useLocation();
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-      console.log("Поиск:", searchQuery);
-      // Здесь будет логика поиска
+      // Переходим на страницу аукционов с параметром поиска
+      setLocation(`/auctions?search=${encodeURIComponent(searchQuery)}`);
     }
   };
 
