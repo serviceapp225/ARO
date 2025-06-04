@@ -489,16 +489,7 @@ class _AuctionDetailScreenState extends State<AuctionDetailScreen>
                             ),
                           ],
                         ),
-                        if (!carData['reserveMet']) ...[
-                          const SizedBox(height: 8),
-                          Text(
-                            'Резервная цена: \$${carData['reservePrice'].toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]},')}',
-                            style: TextStyle(
-                              color: Colors.grey[600],
-                              fontSize: 12,
-                            ),
-                          ),
-                        ],
+
                       ],
                     ) :
                     Row(

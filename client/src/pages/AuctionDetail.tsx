@@ -253,11 +253,7 @@ export default function AuctionDetail() {
                         <>⚠ Резервная цена не достигнута</>
                       )}
                     </div>
-                    {!mockAuction.reserveMet && (
-                      <p className="text-xs text-gray-500">
-                        Резервная цена: ${mockAuction.reservePrice.toLocaleString()}
-                      </p>
-                    )}
+
                   </div>
                 ) : (
                   <div className="text-sm font-medium text-blue-600">
