@@ -452,7 +452,7 @@ export class MemStorage implements IStorage {
   // Car alerts operations
   async getCarAlertsByUser(userId: number): Promise<CarAlert[]> {
     return Array.from(this.carAlerts.values())
-      .filter(a => a.userId === userId && a.isActive)
+      .filter(a => a.userId === userId)
       .sort((a, b) => new Date(b.createdAt!).getTime() - new Date(a.createdAt!).getTime());
   }
 
