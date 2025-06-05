@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { ActiveAuctions } from "@/components/ActiveAuctions";
+import SearchAlertButton from "@/components/SearchAlertButton";
 import { CAR_MAKES, getModelsForMake } from "@shared/car-data";
 import { useLocation } from "wouter";
 
@@ -297,6 +298,21 @@ export default function AuctionFeed() {
 
         {/* Auctions Grid */}
         <ActiveAuctions />
+
+        {/* Notification Button when filters are active */}
+        {hasActiveFilters && (
+          <div className="mt-8 p-6 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
+            <div className="text-center">
+              <h3 className="text-lg font-medium text-gray-900 mb-2">
+                Хотите получать уведомления о новых машинах?
+              </h3>
+              <p className="text-gray-600 mb-4">
+                Мы отправим уведомление, когда появятся автомобили по вашим параметрам
+              </p>
+              <SearchAlertButton searchFilters={searchFilters} />
+            </div>
+          </div>
+        )}
       </main>
     </div>
   );
