@@ -52,13 +52,13 @@ export function CountdownTimer({ endTime, size = 'small', onTimeUp }: CountdownT
       <div className={`bg-gradient-to-r ${getColorClass()} text-white p-6 rounded-2xl text-center ${timeLeft.total < 300000 ? 'animate-pulse' : ''}`}>
         <div className="text-sm mb-2">Auction Ends In</div>
         <div className="text-3xl font-bold font-mono mb-2">
-          {timeLeft.days > 0 && `${timeLeft.days}d `}
+          {timeLeft.days > 0 && `${timeLeft.days}д `}
           {formatTime(timeLeft.hours)}:{formatTime(timeLeft.minutes)}:{formatTime(timeLeft.seconds)}
         </div>
         <div className="text-sm opacity-90">
           {timeLeft.days > 0 && `${timeLeft.days} дней `}
           {timeLeft.hours > 0 && `${timeLeft.hours} часов `}
-          {timeLeft.minutes} минут
+          {timeLeft.minutes} минут {timeLeft.seconds} секунд
         </div>
       </div>
     );
@@ -69,7 +69,7 @@ export function CountdownTimer({ endTime, size = 'small', onTimeUp }: CountdownT
       <Clock className="w-3 h-3 inline mr-1" />
       {timeLeft.days > 0 ? `${timeLeft.days}д ` : ''}
       {timeLeft.hours > 0 ? `${timeLeft.hours}ч ` : ''}
-      {timeLeft.minutes}м
+      {timeLeft.minutes}м {timeLeft.seconds}с
     </div>
   );
 }
