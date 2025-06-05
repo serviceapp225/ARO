@@ -3,11 +3,42 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useUserData } from "@/contexts/UserDataContext";
 import { User, Globe, Bell, Heart, HelpCircle, FileText, LogOut, Camera, Edit, ChevronRight, MessageCircle, Building2, UserCheck } from "lucide-react";
 import { Link, useLocation } from "wouter";
+import { useRef } from "react";
 
 export default function Profile() {
   const { user, logout } = useAuth();
-  const { userData } = useUserData();
+  const { userData, updateUserData } = useUserData();
   const [, setLocation] = useLocation();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handlePhotoSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      // Проверяем тип файла
+      if (!file.type.startsWith('image/')) {
+        alert('Пожалуйста, выберите файл изображения');
+        return;
+      }
+      
+      // Проверяем размер файла (максимум 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        alert('Размер файла не должен превышать 5MB');
+        return;
+      }
+
+      // Создаем URL для отображения изображения
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const imageDataUrl = e.target?.result as string;
+        updateUserData({ profilePhoto: imageDataUrl });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleCameraClick = () => {
+    fileInputRef.current?.click();
+  };
   
   const menuItems = [
     { icon: User, label: "Мои данные", action: () => setLocation("/user-data") },
