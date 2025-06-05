@@ -7,6 +7,7 @@ import { useAuctions } from '@/contexts/AuctionContext';
 import { useLocation } from 'wouter';
 import { useState, useEffect } from 'react';
 import CarAlertButton from './CarAlertButton';
+import SearchAlertButton from './SearchAlertButton';
 
 interface ActiveAuctionsProps {
   searchQuery?: string;
@@ -180,8 +181,27 @@ export function ActiveAuctions({ searchQuery = "" }: ActiveAuctionsProps) {
       {displayedAuctions.length === 0 && !loading && (
         <div className="text-center mt-8 p-8 bg-gray-50 rounded-lg">
           <Car className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-          <p className="text-gray-600 text-lg mb-2">Нет активных аукционов</p>
-          <p className="text-gray-500 text-sm">Новые автомобили появятся скоро</p>
+          {searchQuery.trim() ? (
+            <>
+              <p className="text-gray-600 text-lg mb-2">Не найдено автомобилей</p>
+              <p className="text-gray-500 text-sm mb-4">
+                По запросу "{searchQuery}" ничего не найдено
+              </p>
+              <div className="max-w-sm mx-auto">
+                <SearchAlertButton 
+                  searchFilters={{ 
+                    brand: searchQuery.toLowerCase(),
+                    model: ""
+                  }} 
+                />
+              </div>
+            </>
+          ) : (
+            <>
+              <p className="text-gray-600 text-lg mb-2">Нет активных аукционов</p>
+              <p className="text-gray-500 text-sm">Новые автомобили появятся скоро</p>
+            </>
+          )}
         </div>
       )}
     </div>
