@@ -323,6 +323,72 @@ export class MemStorage implements IStorage {
     };
     this.carListings.set(listing8.id, listing8);
 
+    const listing9: CarListing = {
+      id: this.currentListingId++,
+      sellerId: sellerUser.id,
+      make: "Ford",
+      model: "Mustang",
+      year: 2021,
+      mileage: 15000,
+      vin: "1FA6P8TH5M5123456",
+      description: "Iconic Ford Mustang GT with V8 engine. Performance package with Brembo brakes and sport-tuned suspension.",
+      startingPrice: "42000.00",
+      currentBid: "45600.00",
+      photos: [
+        "https://images.unsplash.com/photo-1544636331-e26879cd4d9b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"
+      ],
+      auctionDuration: 168,
+      status: "active",
+      auctionStartTime: now,
+      auctionEndTime: new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000),
+      createdAt: now
+    };
+    this.carListings.set(listing9.id, listing9);
+
+    const listing10: CarListing = {
+      id: this.currentListingId++,
+      sellerId: sellerUser.id,
+      make: "Volkswagen",
+      model: "Golf",
+      year: 2020,
+      mileage: 28500,
+      vin: "WVWZZZ1JZYW123456",
+      description: "Efficient Volkswagen Golf with TSI engine. European engineering with excellent build quality and fuel economy.",
+      startingPrice: "24000.00",
+      currentBid: "26800.00",
+      photos: [
+        "https://images.unsplash.com/photo-1606016159991-80729d1d2989?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"
+      ],
+      auctionDuration: 120,
+      status: "active",
+      auctionStartTime: now,
+      auctionEndTime: new Date(now.getTime() + 5 * 24 * 60 * 60 * 1000),
+      createdAt: now
+    };
+    this.carListings.set(listing10.id, listing10);
+
+    const listing11: CarListing = {
+      id: this.currentListingId++,
+      sellerId: sellerUser.id,
+      make: "Hyundai",
+      model: "Tucson",
+      year: 2022,
+      mileage: 12000,
+      vin: "KM8J3CA46NU123456",
+      description: "Modern Hyundai Tucson with advanced safety features. Spacious interior with latest infotainment system and comprehensive warranty.",
+      startingPrice: "29000.00",
+      currentBid: "31500.00",
+      photos: [
+        "https://images.unsplash.com/photo-1605559424843-9e4c228bf1c2?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"
+      ],
+      auctionDuration: 144,
+      status: "active",
+      auctionStartTime: now,
+      auctionEndTime: new Date(now.getTime() + 6 * 24 * 60 * 60 * 1000),
+      createdAt: now
+    };
+    this.carListings.set(listing11.id, listing11);
+
     // Create sample bids
     const bid1: Bid = {
       id: this.currentBidId++,
