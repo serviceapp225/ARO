@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserData } from "@/contexts/UserDataContext";
-import { User, Globe, Bell, Heart, HelpCircle, FileText, LogOut, Camera, Edit, ChevronRight, MessageCircle } from "lucide-react";
+import { User, Globe, Bell, Heart, HelpCircle, FileText, LogOut, Camera, Edit, ChevronRight, MessageCircle, Building2, UserCheck } from "lucide-react";
 import { Link, useLocation } from "wouter";
 
 export default function Profile() {
@@ -65,7 +65,23 @@ export default function Profile() {
               <h2 className="text-2xl font-bold text-gray-900 mb-2">
                 {userData.fullName || user.email?.split('@')[0] || 'Пользователь'}
               </h2>
-              <p className="text-gray-600 text-lg">{userData.phoneNumber}</p>
+              <p className="text-gray-600 text-lg mb-3">{userData.phoneNumber}</p>
+              
+              {/* Account Type Badge */}
+              <div className="flex items-center justify-center">
+                <div className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
+                  userData.accountType === 'dealer' 
+                    ? 'bg-blue-100 text-blue-800' 
+                    : 'bg-green-100 text-green-800'
+                }`}>
+                  {userData.accountType === 'dealer' ? (
+                    <Building2 className="w-4 h-4 mr-2" />
+                  ) : (
+                    <UserCheck className="w-4 h-4 mr-2" />
+                  )}
+                  {userData.accountType === 'dealer' ? 'Дилер' : 'Частное лицо'}
+                </div>
+              </div>
             </div>
           </div>
 

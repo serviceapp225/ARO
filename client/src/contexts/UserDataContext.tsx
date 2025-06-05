@@ -5,6 +5,7 @@ interface UserDataContextType {
     fullName: string;
     phoneNumber: string;
     email: string;
+    accountType: 'dealer' | 'individual';
     passportFront: File | null;
     passportBack: File | null;
   };
@@ -18,6 +19,7 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
     fullName: "",
     phoneNumber: "+992 (90) 123-45-67",
     email: "",
+    accountType: 'individual' as 'dealer' | 'individual',
     passportFront: null as File | null,
     passportBack: null as File | null,
   });
@@ -32,6 +34,7 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
           ...prev,
           fullName: parsed.fullName || "",
           email: parsed.email || "",
+          accountType: parsed.accountType || 'individual',
         }));
       } catch (error) {
         console.error('Error loading user data:', error);
@@ -47,6 +50,7 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
       const dataToSave = {
         fullName: newData.fullName,
         email: newData.email,
+        accountType: newData.accountType,
       };
       localStorage.setItem('userData', JSON.stringify(dataToSave));
       
