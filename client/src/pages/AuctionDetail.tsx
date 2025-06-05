@@ -278,41 +278,31 @@ export default function AuctionDetail() {
           </CardContent>
         </Card>
 
-        <Card className="overflow-hidden bg-gradient-to-br from-red-50 to-orange-50 border-red-100">
-          <CardHeader className="bg-gradient-to-r from-red-500 to-orange-500 text-white">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
-                <Clock className="w-5 h-5 text-white" />
-              </div>
-              <div>
-                <CardTitle className="text-xl text-white">Время до окончания аукциона</CardTitle>
-                <p className="text-white/80 text-sm mt-1">Не упустите свой шанс!</p>
-              </div>
-            </div>
+        <Card className="bg-white border border-gray-200 shadow-sm">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-lg text-gray-900 flex items-center gap-2">
+              <Clock className="w-5 h-5 text-blue-600" />
+              Время до окончания
+            </CardTitle>
           </CardHeader>
-          <CardContent className="p-6">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-              <div className="bg-gradient-to-br from-red-500 to-red-600 text-white rounded-xl p-4 shadow-lg">
-                <div className="text-3xl font-bold mb-1">{timeLeft.days}</div>
-                <div className="text-sm opacity-90">дней</div>
+          <CardContent className="pt-0">
+            <div className="grid grid-cols-4 gap-3 text-center">
+              <div className="bg-gray-50 rounded-lg p-3 border">
+                <div className="text-xl font-bold text-gray-900">{timeLeft.days}</div>
+                <div className="text-xs text-gray-600">дней</div>
               </div>
-              <div className="bg-gradient-to-br from-orange-500 to-orange-600 text-white rounded-xl p-4 shadow-lg">
-                <div className="text-3xl font-bold mb-1">{timeLeft.hours}</div>
-                <div className="text-sm opacity-90">часов</div>
+              <div className="bg-gray-50 rounded-lg p-3 border">
+                <div className="text-xl font-bold text-gray-900">{timeLeft.hours}</div>
+                <div className="text-xs text-gray-600">часов</div>
               </div>
-              <div className="bg-gradient-to-br from-amber-500 to-amber-600 text-white rounded-xl p-4 shadow-lg">
-                <div className="text-3xl font-bold mb-1">{timeLeft.minutes}</div>
-                <div className="text-sm opacity-90">минут</div>
+              <div className="bg-gray-50 rounded-lg p-3 border">
+                <div className="text-xl font-bold text-gray-900">{timeLeft.minutes}</div>
+                <div className="text-xs text-gray-600">минут</div>
               </div>
-              <div className="bg-gradient-to-br from-yellow-500 to-yellow-600 text-white rounded-xl p-4 shadow-lg animate-pulse">
-                <div className="text-3xl font-bold mb-1">{timeLeft.seconds}</div>
-                <div className="text-sm opacity-90">секунд</div>
+              <div className="bg-blue-50 rounded-lg p-3 border border-blue-200">
+                <div className="text-xl font-bold text-blue-600">{timeLeft.seconds}</div>
+                <div className="text-xs text-blue-600">секунд</div>
               </div>
-            </div>
-            <div className="mt-4 text-center">
-              <p className="text-red-600 font-medium text-sm">
-                ⏰ Аукцион завершится автоматически
-              </p>
             </div>
           </CardContent>
         </Card>
