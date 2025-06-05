@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertCarListingSchema, insertBidSchema, insertFavoriteSchema } from "@shared/schema";
+import { insertCarListingSchema, insertBidSchema, insertFavoriteSchema, insertNotificationSchema, insertCarAlertSchema } from "@shared/schema";
 import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -216,6 +216,90 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(user);
     } catch (error) {
       res.status(500).json({ error: "Failed to update user status" });
+    }
+  });
+
+  // Notifications routes
+  app.get("/api/notifications/:userId", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      const notifications = await storage.getNotificationsByUser(userId);
+      res.json(notifications);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch notifications" });
+    }
+  });
+
+  app.post("/api/notifications", async (req, res) => {
+    try {
+      const validatedData = insertNotificationSchema.parse(req.body);
+      const notification = await storage.createNotification(validatedData);
+      res.status(201).json(notification);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: "Invalid notification data", details: error.errors });
+      }
+      res.status(500).json({ error: "Failed to create notification" });
+    }
+  });
+
+  app.patch("/api/notifications/:id/read", async (req, res) => {
+    try {
+      const notificationId = parseInt(req.params.id);
+      const success = await storage.markNotificationAsRead(notificationId);
+      if (!success) {
+        return res.status(404).json({ error: "Notification not found" });
+      }
+      res.status(204).send();
+    } catch (error) {
+      res.status(500).json({ error: "Failed to mark notification as read" });
+    }
+  });
+
+  app.get("/api/notifications/:userId/unread-count", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      const count = await storage.getUnreadNotificationCount(userId);
+      res.json({ count });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch unread count" });
+    }
+  });
+
+  // Car alerts routes
+  app.get("/api/car-alerts/:userId", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      const alerts = await storage.getCarAlertsByUser(userId);
+      res.json(alerts);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch car alerts" });
+    }
+  });
+
+  app.post("/api/car-alerts", async (req, res) => {
+    try {
+      const validatedData = insertCarAlertSchema.parse(req.body);
+      const alert = await storage.createCarAlert(validatedData);
+      res.status(201).json(alert);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: "Invalid alert data", details: error.errors });
+      }
+      res.status(500).json({ error: "Failed to create alert" });
+    }
+  });
+
+  app.delete("/api/car-alerts/:id", async (req, res) => {
+    try {
+      const alertId = parseInt(req.params.id);
+      const success = await storage.deleteCarAlert(alertId);
+      if (!success) {
+        return res.status(404).json({ error: "Alert not found" });
+      }
+      res.status(204).send();
+    } catch (error) {
+      res.status(500).json({ error: "Failed to delete alert" });
     }
   });
 

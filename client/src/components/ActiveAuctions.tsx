@@ -6,6 +6,7 @@ import { ImageCarousel } from './ImageCarousel';
 import { useAuctions } from '@/contexts/AuctionContext';
 import { useLocation } from 'wouter';
 import { useState, useEffect } from 'react';
+import CarAlertButton from './CarAlertButton';
 
 interface ActiveAuctionsProps {
   searchQuery?: string;
@@ -96,13 +97,19 @@ export function ActiveAuctions({ searchQuery = "" }: ActiveAuctionsProps) {
               <div className="absolute top-2 left-2">
                 <CountdownTimer endTime={auction.endTime} size="small" />
               </div>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="absolute top-2 right-2 w-6 h-6 bg-black/50 text-white hover:bg-black/70"
-              >
-                <Heart className="h-3 w-3" />
-              </Button>
+              <div className="absolute top-2 right-2 flex gap-1">
+                <div onClick={(e) => e.stopPropagation()}>
+                  <CarAlertButton make={auction.make} model={auction.model} />
+                </div>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="w-6 h-6 bg-black/50 text-white hover:bg-black/70"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <Heart className="h-3 w-3" />
+                </Button>
+              </div>
             </div>
             <CardContent className="p-3">
               <div className="mb-1">
