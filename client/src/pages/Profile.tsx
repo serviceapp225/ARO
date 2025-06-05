@@ -65,7 +65,8 @@ export default function Profile() {
               <h2 className="text-2xl font-bold text-gray-900 mb-2">
                 {userData.fullName || user.email?.split('@')[0] || 'Пользователь'}
               </h2>
-              <p className="text-gray-600 text-lg">{userData.phoneNumber}</p>
+              <p className="text-gray-600 text-lg mb-1">{userData.phoneNumber}</p>
+              <p className="text-gray-500 text-sm">Номер регистрации</p>
             </div>
           </div>
 
