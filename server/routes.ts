@@ -8,8 +8,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Car listing routes
   app.get("/api/listings", async (req, res) => {
     try {
-      const { status = "active", limit = 20 } = req.query;
-      const listings = await storage.getListingsByStatus(status as string, Number(limit));
+      const { status = "active", limit } = req.query;
+      const listings = await storage.getListingsByStatus(
+        status as string, 
+        limit ? Number(limit) : undefined
+      );
       res.json(listings);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch listings" });

@@ -456,10 +456,11 @@ export class MemStorage implements IStorage {
     return this.carListings.get(id);
   }
 
-  async getListingsByStatus(status: string, limit: number = 20): Promise<CarListing[]> {
-    return Array.from(this.carListings.values())
-      .filter(listing => listing.status === status)
-      .slice(0, limit);
+  async getListingsByStatus(status: string, limit?: number): Promise<CarListing[]> {
+    const listings = Array.from(this.carListings.values())
+      .filter(listing => listing.status === status);
+    
+    return limit ? listings.slice(0, limit) : listings;
   }
 
   async getListingsBySeller(sellerId: number): Promise<CarListing[]> {
