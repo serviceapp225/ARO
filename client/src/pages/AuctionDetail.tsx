@@ -264,7 +264,7 @@ export default function AuctionDetail() {
             {/* Статистика аукциона */}
             <div className="mt-6 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-100">
               <h3 className="font-semibold text-gray-900 mb-3">Статистика аукциона</h3>
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-center gap-16">
                 <div className="text-center">
                   <div className="text-2xl font-bold text-blue-600">{auction.bidCount}</div>
                   <div className="text-sm text-gray-600">Ставок</div>
@@ -272,10 +272,6 @@ export default function AuctionDetail() {
                 <div className="text-center">
                   <div className="text-2xl font-bold text-green-600">${auction.currentBid.toLocaleString()}</div>
                   <div className="text-sm text-gray-600">Текущая ставка</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-purple-600">{mockAuction.views}</div>
-                  <div className="text-sm text-gray-600">Просмотров</div>
                 </div>
               </div>
             </div>
