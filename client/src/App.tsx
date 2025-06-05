@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { AuctionProvider } from "@/contexts/AuctionContext";
 import { UserDataProvider } from "@/contexts/UserDataContext";
+import { AlertsProvider } from "@/contexts/AlertsContext";
 import HomePage from "@/pages/HomePage";
 import AuctionFeed from "@/pages/AuctionFeed";
 import AuctionDetail from "@/pages/AuctionDetail";
