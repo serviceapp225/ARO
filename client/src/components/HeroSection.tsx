@@ -3,13 +3,16 @@ import { Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 
-export function HeroSection() {
+interface HeroSectionProps {
+  onSearch: (query: string) => void;
+}
+
+export function HeroSection({ onSearch }: HeroSectionProps) {
   const [searchQuery, setSearchQuery] = useState('');
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle search functionality
-    console.log('Searching for:', searchQuery);
+    onSearch(searchQuery);
   };
 
   return (
