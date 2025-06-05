@@ -1,14 +1,15 @@
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { User, Globe, Bell, Heart, HelpCircle, FileText, LogOut, Camera, Edit, ChevronRight, MessageCircle } from "lucide-react";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 
 export default function Profile() {
   const { user, logout } = useAuth();
+  const [, setLocation] = useLocation();
   
   const menuItems = [
     { icon: Globe, label: "Поменять язык", action: () => console.log("Язык") },
-    { icon: Bell, label: "Уведомления", action: () => console.log("Уведомления") },
+    { icon: Bell, label: "Уведомления", action: () => setLocation("/notifications") },
     { icon: HelpCircle, label: "Помощь", action: () => console.log("Помощь") },
     { icon: FileText, label: "Документы", action: () => console.log("Документы") },
     { icon: MessageCircle, label: "Связаться с оператором", action: () => window.open("https://wa.me/992900000000", "_blank") },
