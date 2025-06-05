@@ -243,6 +243,10 @@ export class MemStorage implements IStorage {
       status: "active",
       auctionStartTime: now,
       auctionEndTime: new Date(now.getTime() + 5 * 24 * 60 * 60 * 1000),
+      customsCleared: true,
+      recycled: false,
+      technicalInspectionValid: true,
+      technicalInspectionDate: "2025-11-10",
       createdAt: now
     };
     this.carListings.set(listing4.id, listing4);

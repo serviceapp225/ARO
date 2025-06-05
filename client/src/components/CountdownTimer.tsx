@@ -9,11 +9,12 @@ interface CountdownTimerProps {
 
 export function CountdownTimer({ endTime, size = 'small', onTimeUp }: CountdownTimerProps) {
   const [timeLeft, setTimeLeft] = useState<{
+    days: number;
     hours: number;
     minutes: number;
     seconds: number;
     total: number;
-  }>({ hours: 0, minutes: 0, seconds: 0, total: 0 });
+  }>({ days: 0, hours: 0, minutes: 0, seconds: 0, total: 0 });
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -21,17 +22,18 @@ export function CountdownTimer({ endTime, size = 'small', onTimeUp }: CountdownT
       const distance = endTime.getTime() - now;
 
       if (distance < 0) {
-        setTimeLeft({ hours: 0, minutes: 0, seconds: 0, total: 0 });
+        setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0, total: 0 });
         onTimeUp?.();
         clearInterval(timer);
         return;
       }
 
-      const hours = Math.floor(distance / (1000 * 60 * 60));
+      const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
       const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
       const seconds = Math.floor((distance % (1000 * 60)) / 1000);
 
-      setTimeLeft({ hours, minutes, seconds, total: distance });
+      setTimeLeft({ days, hours, minutes, seconds, total: distance });
     }, 1000);
 
     return () => clearInterval(timer);
@@ -50,11 +52,13 @@ export function CountdownTimer({ endTime, size = 'small', onTimeUp }: CountdownT
       <div className={`bg-gradient-to-r ${getColorClass()} text-white p-6 rounded-2xl text-center ${timeLeft.total < 300000 ? 'animate-pulse' : ''}`}>
         <div className="text-sm mb-2">Auction Ends In</div>
         <div className="text-3xl font-bold font-mono mb-2">
+          {timeLeft.days > 0 && `${timeLeft.days}d `}
           {formatTime(timeLeft.hours)}:{formatTime(timeLeft.minutes)}:{formatTime(timeLeft.seconds)}
         </div>
         <div className="text-sm opacity-90">
-          {timeLeft.hours > 0 && `${timeLeft.hours} hours `}
-          {timeLeft.minutes} minutes
+          {timeLeft.days > 0 && `${timeLeft.days} дней `}
+          {timeLeft.hours > 0 && `${timeLeft.hours} часов `}
+          {timeLeft.minutes} минут
         </div>
       </div>
     );
@@ -63,8 +67,9 @@ export function CountdownTimer({ endTime, size = 'small', onTimeUp }: CountdownT
   return (
     <div className={`bg-red-600 text-white px-3 py-1 rounded-full text-sm font-semibold ${timeLeft.total < 300000 ? 'animate-pulse' : ''}`}>
       <Clock className="w-3 h-3 inline mr-1" />
-      {timeLeft.hours > 0 ? `${timeLeft.hours}h ` : ''}
-      {timeLeft.minutes}m left
+      {timeLeft.days > 0 ? `${timeLeft.days}д ` : ''}
+      {timeLeft.hours > 0 ? `${timeLeft.hours}ч ` : ''}
+      {timeLeft.minutes}м
     </div>
   );
 }
