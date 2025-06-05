@@ -1,6 +1,5 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { collection, query, where, onSnapshot, orderBy, limit } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { useQuery } from '@tanstack/react-query';
 
 interface Auction {
   id: string;
@@ -14,10 +13,6 @@ interface Auction {
   bidCount: number;
   endTime: Date;
   status: 'active' | 'ended';
-  customsCleared: boolean;
-  recycled: boolean;
-  technicalInspectionValid: boolean;
-  technicalInspectionDate?: string;
 }
 
 interface AuctionContextType {
@@ -30,78 +25,30 @@ interface AuctionContextType {
 const AuctionContext = createContext<AuctionContextType | undefined>(undefined);
 
 export function AuctionProvider({ children }: { children: ReactNode }) {
-  const [auctions, setAuctions] = useState<Auction[]>([]);
-  const [loading, setLoading] = useState(true);
   const [selectedAuction, setSelectedAuction] = useState<Auction | null>(null);
 
-  useEffect(() => {
-    // Temporary demo data - will be replaced with real API
-    const demoAuctions: Auction[] = [
-      {
-        id: '1',
-        lotNumber: '847293',
-        make: 'Toyota',
-        model: 'Camry',
-        year: 2020,
-        mileage: 45000,
-        photos: ['/car1.jpg'],
-        currentBid: 17800,
-        bidCount: 23,
-        endTime: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000),
-        status: 'active',
-        customsCleared: true,
-        recycled: true,
-        technicalInspectionValid: true,
-        technicalInspectionDate: '08/04/2026'
-      },
-      {
-        id: '2',
-        lotNumber: '561847',
-        make: 'Honda',
-        model: 'CR-V',
-        year: 2019,
-        mileage: 52000,
-        photos: ['/car2.jpg'],
-        currentBid: 21200,
-        bidCount: 18,
-        endTime: new Date(Date.now() + 1 * 24 * 60 * 60 * 1000),
-        status: 'active',
-        customsCleared: false,
-        recycled: false,
-        technicalInspectionValid: true,
-        technicalInspectionDate: '15/11/2025'
-      },
-      {
-        id: '3',
-        lotNumber: '329054',
-        make: 'BMW',
-        model: 'X3',
-        year: 2021,
-        mileage: 28000,
-        photos: ['/car3.jpg'],
-        currentBid: 34200,
-        bidCount: 12,
-        endTime: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
-        status: 'active',
-        customsCleared: true,
-        recycled: true,
-        technicalInspectionValid: false,
-        technicalInspectionDate: undefined
-      }
-    ];
+  // Fetch real data from API
+  const { data: listings, isLoading } = useQuery({
+    queryKey: ['/api/listings'],
+    select: (data: any[]) => data.map(listing => ({
+      id: listing.id.toString(),
+      lotNumber: `LOT${listing.id.toString().padStart(6, '0')}`,
+      make: listing.make,
+      model: listing.model,
+      year: listing.year,
+      mileage: listing.mileage,
+      photos: listing.photos || [],
+      currentBid: parseFloat(listing.currentBid || listing.startingPrice),
+      bidCount: Math.floor(Math.random() * 25) + 1, // Mock bid count for now
+      endTime: new Date(listing.auctionEndTime),
+      status: listing.status as 'active' | 'ended'
+    }))
+  });
 
-    // Simulate loading delay
-    setTimeout(() => {
-      setAuctions(demoAuctions);
-      setLoading(false);
-    }, 1000);
-
-    // Firebase integration will be enabled when keys are configured
-    // return () => {}; // No cleanup needed for demo data
-  }, []);
+  const auctions = listings || [];
 
   return (
-    <AuctionContext.Provider value={{ auctions, loading, selectedAuction, setSelectedAuction }}>
+    <AuctionContext.Provider value={{ auctions, loading: isLoading, selectedAuction, setSelectedAuction }}>
       {children}
     </AuctionContext.Provider>
   );
