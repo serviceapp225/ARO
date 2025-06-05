@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { ActiveAuctions } from "@/components/ActiveAuctions";
+import SearchAlertButton from "@/components/SearchAlertButton";
 import { CAR_MAKES, getModelsForMake } from "@shared/car-data";
 
 export default function Search() {
@@ -433,10 +434,32 @@ export default function Search() {
           )}
 
           <div>
-            <h2 className="text-xl font-bold text-neutral-900 mb-6">
-              Результаты поиска
-            </h2>
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-bold text-neutral-900">
+                Результаты поиска
+              </h2>
+              {activeFiltersCount > 0 && (
+                <div className="w-64">
+                  <SearchAlertButton searchFilters={searchFilters} />
+                </div>
+              )}
+            </div>
             <ActiveAuctions />
+            
+            {/* Показать кнопку уведомления, если есть фильтры но мало результатов */}
+            {activeFiltersCount > 0 && (
+              <div className="mt-8 p-6 bg-gray-50 rounded-lg text-center">
+                <h3 className="text-lg font-medium text-gray-900 mb-2">
+                  Не нашли подходящий автомобиль?
+                </h3>
+                <p className="text-gray-600 mb-4">
+                  Создайте уведомление и мы сообщим, когда появится автомобиль с нужными параметрами
+                </p>
+                <div className="max-w-sm mx-auto">
+                  <SearchAlertButton searchFilters={searchFilters} />
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </main>
