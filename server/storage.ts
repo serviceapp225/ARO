@@ -481,6 +481,7 @@ export class MemStorage implements IStorage {
     const listing14: CarListing = {
       id: this.currentListingId++,
       sellerId: sellerUser.id,
+      lotNumber: "012346",
       make: "Infiniti",
       model: "Q50",
       year: 2019,
