@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ArrowLeft, User, Phone, Mail, Upload, Camera, Edit, Save, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,22 +6,19 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useLocation } from "wouter";
 import { useToast } from "@/hooks/use-toast";
+import { useUserData } from "@/contexts/UserDataContext";
 
 export default function UserData() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
+  const { userData, updateUserData } = useUserData();
   const [isEditing, setIsEditing] = useState(false);
-  
-  // Mock данные пользователя - в реальном приложении будут из контекста
-  const [userData, setUserData] = useState({
-    fullName: "",
-    phoneNumber: "+992 (90) 123-45-67",
-    email: "",
-    passportFront: null as File | null,
-    passportBack: null as File | null,
-  });
-
   const [tempData, setTempData] = useState(userData);
+
+  // Синхронизируем tempData с userData при изменениях
+  useEffect(() => {
+    setTempData(userData);
+  }, [userData]);
 
   const handleFileUpload = (type: 'front' | 'back') => (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -32,10 +29,9 @@ export default function UserData() {
           [type === 'front' ? 'passportFront' : 'passportBack']: file
         }));
       } else {
-        setUserData(prev => ({
-          ...prev,
+        updateUserData({
           [type === 'front' ? 'passportFront' : 'passportBack']: file
-        }));
+        });
       }
       
       toast({
@@ -47,7 +43,7 @@ export default function UserData() {
   };
 
   const handleSave = () => {
-    setUserData(tempData);
+    updateUserData(tempData);
     setIsEditing(false);
     toast({
       title: "Данные сохранены",
