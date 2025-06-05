@@ -10,8 +10,8 @@ export default function Profile() {
   const menuItems = [
     { icon: Globe, label: "Поменять язык", action: () => setLocation("/language") },
     { icon: Bell, label: "Уведомления", action: () => setLocation("/notifications") },
-    { icon: HelpCircle, label: "Помощь", action: () => console.log("Помощь") },
-    { icon: FileText, label: "Документы", action: () => console.log("Документы") },
+    { icon: HelpCircle, label: "Правила и условия", action: () => setLocation("/terms") },
+    { icon: FileText, label: "Политика конфиденциальности", action: () => setLocation("/privacy") },
     { icon: MessageCircle, label: "Связаться с оператором", action: () => window.open("https://wa.me/992900000000", "_blank") },
   ];
 

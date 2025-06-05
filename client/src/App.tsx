@@ -14,6 +14,8 @@ import MyBids from "@/pages/MyBids";
 import Profile from "@/pages/Profile";
 import Notifications from "@/pages/Notifications";
 import LanguageSelector from "@/components/LanguageSelector";
+import Terms from "@/pages/Terms";
+import Privacy from "@/pages/Privacy";
 import Login from "@/pages/Login";
 import AdminPanel from "@/pages/AdminPanel";
 import NotFound from "@/pages/not-found";
@@ -34,6 +36,8 @@ function Router() {
         <Route path="/profile" component={Profile} />
         <Route path="/notifications" component={Notifications} />
         <Route path="/language" component={LanguageSelector} />
+        <Route path="/terms" component={Terms} />
+        <Route path="/privacy" component={Privacy} />
         <Route path="/login" component={Login} />
         <Route path="/admin" component={AdminPanel} />
         <Route path="/flutter-preview" component={FlutterPreview} />
