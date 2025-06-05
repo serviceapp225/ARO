@@ -149,7 +149,7 @@ export default function SearchAlertButton({ searchFilters = {} }: SearchAlertBut
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="">Все модели</SelectItem>
+                        <SelectItem value="all">Все модели</SelectItem>
                         {getModelsForMake(
                           CAR_MAKES.find(make => make.toLowerCase() === (selectedMake || form.watch("make"))) || ''
                         ).map((model) => (
@@ -209,7 +209,7 @@ export default function SearchAlertButton({ searchFilters = {} }: SearchAlertBut
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="">Любой</SelectItem>
+                        <SelectItem value="any">Любой</SelectItem>
                         {currentYearOptions.reverse().map((year) => (
                           <SelectItem key={year} value={year.toString()}>
                             {year}
@@ -235,7 +235,7 @@ export default function SearchAlertButton({ searchFilters = {} }: SearchAlertBut
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="">Любой</SelectItem>
+                        <SelectItem value="any">Любой</SelectItem>
                         {currentYearOptions.map((year) => (
                           <SelectItem key={year} value={year.toString()}>
                             {year}
