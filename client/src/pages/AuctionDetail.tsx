@@ -454,21 +454,6 @@ export default function AuctionDetail() {
                 </div>
               ))}
             </div>
-            
-            {/* Статистика участников */}
-            <div className="mt-6 p-4 bg-white rounded-xl border border-purple-100">
-              <h4 className="font-semibold text-gray-900 mb-3">Статистика участников</h4>
-              <div className="grid grid-cols-2 gap-4 text-center">
-                <div>
-                  <div className="text-2xl font-bold text-purple-600">{biddingHistory.length}</div>
-                  <div className="text-sm text-gray-600">Всего ставок</div>
-                </div>
-                <div>
-                  <div className="text-2xl font-bold text-indigo-600">{new Set(biddingHistory.map(bid => bid.bidder)).size}</div>
-                  <div className="text-sm text-gray-600">Участников</div>
-                </div>
-              </div>
-            </div>
           </CardContent>
         </Card>
 
