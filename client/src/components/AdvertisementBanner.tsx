@@ -105,7 +105,7 @@ export function AdvertisementBanner() {
       <div 
         className="absolute inset-0 bg-cover bg-center bg-no-repeat rounded-2xl transition-all duration-500"
         style={{
-          backgroundImage: `url('https://images.unsplash.com/photo-1503376780353-7e6692767b70?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80')`
+          backgroundImage: `url('${getBannerImage(currentBanner.id)}')`
         }}
       ></div>
       {/* Dark overlay */}
