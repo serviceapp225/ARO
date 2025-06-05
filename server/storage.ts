@@ -3,6 +3,8 @@ import {
   carListings, 
   bids, 
   favorites,
+  notifications,
+  carAlerts,
   type User, 
   type InsertUser,
   type CarListing,
@@ -10,7 +12,11 @@ import {
   type Bid,
   type InsertBid,
   type Favorite,
-  type InsertFavorite
+  type InsertFavorite,
+  type Notification,
+  type InsertNotification,
+  type CarAlert,
+  type InsertCarAlert
 } from "@shared/schema";
 
 // Enhanced storage interface for car auction functionality
@@ -48,6 +54,18 @@ export interface IStorage {
   createFavorite(favorite: InsertFavorite): Promise<Favorite>;
   deleteFavorite(id: number): Promise<boolean>;
 
+  // Notifications operations
+  getNotificationsByUser(userId: number): Promise<Notification[]>;
+  createNotification(notification: InsertNotification): Promise<Notification>;
+  markNotificationAsRead(id: number): Promise<boolean>;
+  getUnreadNotificationCount(userId: number): Promise<number>;
+
+  // Car alerts operations
+  getCarAlertsByUser(userId: number): Promise<CarAlert[]>;
+  createCarAlert(alert: InsertCarAlert): Promise<CarAlert>;
+  deleteCarAlert(id: number): Promise<boolean>;
+  checkAlertsForNewListing(listing: CarListing): Promise<CarAlert[]>;
+
   // Admin operations
   getAdminStats(): Promise<{
     pendingListings: number;
@@ -62,20 +80,28 @@ export class MemStorage implements IStorage {
   private carListings: Map<number, CarListing>;
   private bids: Map<number, Bid>;
   private favorites: Map<number, Favorite>;
+  private notifications: Map<number, Notification>;
+  private carAlerts: Map<number, CarAlert>;
   private currentUserId: number;
   private currentListingId: number;
   private currentBidId: number;
   private currentFavoriteId: number;
+  private currentNotificationId: number;
+  private currentCarAlertId: number;
 
   constructor() {
     this.users = new Map();
     this.carListings = new Map();
     this.bids = new Map();
     this.favorites = new Map();
+    this.notifications = new Map();
+    this.carAlerts = new Map();
     this.currentUserId = 1;
     this.currentListingId = 1;
     this.currentBidId = 1;
     this.currentFavoriteId = 1;
+    this.currentNotificationId = 1;
+    this.currentCarAlertId = 1;
 
     // Initialize with some sample data for development
     this.initializeSampleData();
@@ -389,6 +415,86 @@ export class MemStorage implements IStorage {
 
   async deleteFavorite(id: number): Promise<boolean> {
     return this.favorites.delete(id);
+  }
+
+  // Notifications operations
+  async getNotificationsByUser(userId: number): Promise<Notification[]> {
+    return Array.from(this.notifications.values())
+      .filter(n => n.userId === userId)
+      .sort((a, b) => new Date(b.createdAt!).getTime() - new Date(a.createdAt!).getTime());
+  }
+
+  async createNotification(insertNotification: InsertNotification): Promise<Notification> {
+    const notification: Notification = {
+      id: this.currentNotificationId++,
+      ...insertNotification,
+      createdAt: new Date()
+    };
+    this.notifications.set(notification.id, notification);
+    return notification;
+  }
+
+  async markNotificationAsRead(id: number): Promise<boolean> {
+    const notification = this.notifications.get(id);
+    if (notification) {
+      notification.isRead = true;
+      return true;
+    }
+    return false;
+  }
+
+  async getUnreadNotificationCount(userId: number): Promise<number> {
+    return Array.from(this.notifications.values())
+      .filter(n => n.userId === userId && !n.isRead)
+      .length;
+  }
+
+  // Car alerts operations
+  async getCarAlertsByUser(userId: number): Promise<CarAlert[]> {
+    return Array.from(this.carAlerts.values())
+      .filter(a => a.userId === userId && a.isActive)
+      .sort((a, b) => new Date(b.createdAt!).getTime() - new Date(a.createdAt!).getTime());
+  }
+
+  async createCarAlert(insertAlert: InsertCarAlert): Promise<CarAlert> {
+    const alert: CarAlert = {
+      id: this.currentCarAlertId++,
+      ...insertAlert,
+      createdAt: new Date()
+    };
+    this.carAlerts.set(alert.id, alert);
+    return alert;
+  }
+
+  async deleteCarAlert(id: number): Promise<boolean> {
+    return this.carAlerts.delete(id);
+  }
+
+  async checkAlertsForNewListing(listing: CarListing): Promise<CarAlert[]> {
+    const matchingAlerts: CarAlert[] = [];
+    
+    for (const alert of this.carAlerts.values()) {
+      if (!alert.isActive) continue;
+      
+      // Check make match
+      if (alert.make.toLowerCase() !== listing.make.toLowerCase()) continue;
+      
+      // Check model match if specified
+      if (alert.model && alert.model.toLowerCase() !== listing.model.toLowerCase()) continue;
+      
+      // Check price range if specified
+      const listingPrice = parseFloat(listing.startingPrice);
+      if (alert.minPrice && listingPrice < parseFloat(alert.minPrice)) continue;
+      if (alert.maxPrice && listingPrice > parseFloat(alert.maxPrice)) continue;
+      
+      // Check year range if specified
+      if (alert.minYear && listing.year < alert.minYear) continue;
+      if (alert.maxYear && listing.year > alert.maxYear) continue;
+      
+      matchingAlerts.push(alert);
+    }
+    
+    return matchingAlerts;
   }
 
   // Admin operations

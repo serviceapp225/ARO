@@ -46,6 +46,30 @@ export const favorites = pgTable("favorites", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+export const notifications = pgTable("notifications", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull(),
+  type: text("type").notNull(), // 'new_car', 'bid_update', 'auction_ending'
+  title: text("title").notNull(),
+  message: text("message").notNull(),
+  isRead: boolean("is_read").default(false),
+  listingId: integer("listing_id"), // optional, for car-related notifications
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const carAlerts = pgTable("car_alerts", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull(),
+  make: text("make").notNull(),
+  model: text("model"), // optional, can be null for all models of a make
+  minPrice: numeric("min_price", { precision: 12, scale: 2 }),
+  maxPrice: numeric("max_price", { precision: 12, scale: 2 }),
+  maxYear: integer("max_year"),
+  minYear: integer("min_year"),
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
   createdAt: true,
@@ -70,6 +94,16 @@ export const insertFavoriteSchema = createInsertSchema(favorites).omit({
   createdAt: true,
 });
 
+export const insertNotificationSchema = createInsertSchema(notifications).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertCarAlertSchema = createInsertSchema(carAlerts).omit({
+  id: true,
+  createdAt: true,
+});
+
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
 export type InsertCarListing = z.infer<typeof insertCarListingSchema>;
@@ -78,3 +112,7 @@ export type InsertBid = z.infer<typeof insertBidSchema>;
 export type Bid = typeof bids.$inferSelect;
 export type InsertFavorite = z.infer<typeof insertFavoriteSchema>;
 export type Favorite = typeof favorites.$inferSelect;
+export type InsertNotification = z.infer<typeof insertNotificationSchema>;
+export type Notification = typeof notifications.$inferSelect;
+export type InsertCarAlert = z.infer<typeof insertCarAlertSchema>;
+export type CarAlert = typeof carAlerts.$inferSelect;
