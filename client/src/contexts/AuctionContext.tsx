@@ -13,6 +13,10 @@ interface Auction {
   bidCount: number;
   endTime: Date;
   status: 'active' | 'ended';
+  customsCleared: boolean;
+  recycled: boolean;
+  technicalInspectionValid: boolean;
+  technicalInspectionDate?: string;
 }
 
 interface AuctionContextType {
@@ -41,7 +45,11 @@ export function AuctionProvider({ children }: { children: ReactNode }) {
       currentBid: parseFloat(listing.currentBid || listing.startingPrice),
       bidCount: Math.floor(Math.random() * 25) + 1, // Mock bid count for now
       endTime: new Date(listing.auctionEndTime),
-      status: listing.status as 'active' | 'ended'
+      status: listing.status as 'active' | 'ended',
+      customsCleared: listing.customsCleared || false,
+      recycled: listing.recycled || false,
+      technicalInspectionValid: listing.technicalInspectionValid || false,
+      technicalInspectionDate: listing.technicalInspectionDate
     }))
   });
 

@@ -209,6 +209,10 @@ export class MemStorage implements IStorage {
       status: "active",
       auctionStartTime: now,
       auctionEndTime: new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000),
+      customsCleared: true,
+      recycled: false,
+      technicalInspectionValid: true,
+      technicalInspectionDate: "2025-12-15",
       createdAt: now
     };
     this.carListings.set(listing3.id, listing3);
@@ -297,6 +301,10 @@ export class MemStorage implements IStorage {
       status: "active",
       auctionStartTime: now,
       auctionEndTime: new Date(now.getTime() + 8 * 24 * 60 * 60 * 1000),
+      customsCleared: true,
+      recycled: true,
+      technicalInspectionValid: true,
+      technicalInspectionDate: "2026-01-25",
       createdAt: now
     };
     this.carListings.set(listing7.id, listing7);

@@ -28,6 +28,10 @@ export const carListings = pgTable("car_listings", {
   status: text("status").notNull().default("pending"), // 'pending', 'active', 'ended', 'rejected'
   auctionStartTime: timestamp("auction_start_time"),
   auctionEndTime: timestamp("auction_end_time"),
+  customsCleared: boolean("customs_cleared").default(false),
+  recycled: boolean("recycled").default(false),
+  technicalInspectionValid: boolean("technical_inspection_valid").default(false),
+  technicalInspectionDate: text("technical_inspection_date"),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
