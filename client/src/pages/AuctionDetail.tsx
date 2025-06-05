@@ -18,6 +18,7 @@ export default function AuctionDetail() {
     minutes: 0,
     seconds: 0
   });
+  const [auctionEndTime, setAuctionEndTime] = useState<Date | null>(null);
 
   // Mock auction data with detailed specifications
   const getConditionByMileage = (miles: number) => {
@@ -84,10 +85,19 @@ export default function AuctionDetail() {
     { bidder: "Игорь З.", amount: 43500, time: "5 часов назад", isWinning: false },
   ];
 
+  // Инициализация времени окончания аукциона
+  useEffect(() => {
+    if (!auctionEndTime) {
+      const endTime = auction?.endTime || mockAuction.endTime;
+      setAuctionEndTime(endTime);
+    }
+  }, [auction, auctionEndTime]);
+
   useEffect(() => {
     const calculateTimeLeft = () => {
-      const endTime = auction?.endTime || mockAuction.endTime;
-      const difference = endTime.getTime() - new Date().getTime();
+      if (!auctionEndTime) return;
+      
+      const difference = auctionEndTime.getTime() - new Date().getTime();
       
       if (difference > 0) {
         setTimeLeft({
@@ -102,13 +112,35 @@ export default function AuctionDetail() {
     calculateTimeLeft();
     const timer = setInterval(calculateTimeLeft, 1000);
     return () => clearInterval(timer);
-  }, [id]); // Changed dependency to id instead of auction.endTime
+  }, [auctionEndTime]);
+
+  // Функция для автоматического продления времени аукциона при ставке в последнюю минуту
+  const extendAuctionIfNeeded = () => {
+    if (auctionEndTime) {
+      const timeRemaining = auctionEndTime.getTime() - new Date().getTime();
+      const oneMinute = 60 * 1000; // 60 секунд в миллисекундах
+      
+      if (timeRemaining <= oneMinute && timeRemaining > 0) {
+        // Продлеваем аукцион на 3 минуты от текущего времени
+        const newEndTime = new Date(new Date().getTime() + 3 * 60 * 1000);
+        setAuctionEndTime(newEndTime);
+        console.log("Аукцион продлен на 3 минуты из-за ставки в последнюю минуту");
+      }
+    }
+  };
 
   const handlePlaceBid = () => {
     if (parseInt(bidAmount) > auction.currentBid) {
+      extendAuctionIfNeeded();
       console.log("Placing bid:", bidAmount);
       setBidAmount("");
     }
+  };
+
+  const handleQuickBid = (amount: number) => {
+    const newBidAmount = auction.currentBid + amount;
+    extendAuctionIfNeeded();
+    setBidAmount(newBidAmount.toString());
   };
 
   const handleWhatsAppContact = () => {
@@ -369,21 +401,21 @@ export default function AuctionDetail() {
               <div className="grid grid-cols-3 gap-2">
                 <Button 
                   variant="outline" 
-                  onClick={() => setBidAmount((auction.currentBid + 500).toString())}
+                  onClick={() => handleQuickBid(500)}
                   className="text-sm"
                 >
                   +$500
                 </Button>
                 <Button 
                   variant="outline" 
-                  onClick={() => setBidAmount((auction.currentBid + 1000).toString())}
+                  onClick={() => handleQuickBid(1000)}
                   className="text-sm"
                 >
                   +$1,000
                 </Button>
                 <Button 
                   variant="outline" 
-                  onClick={() => setBidAmount((auction.currentBid + 2500).toString())}
+                  onClick={() => handleQuickBid(2500)}
                   className="text-sm"
                 >
                   +$2,500
