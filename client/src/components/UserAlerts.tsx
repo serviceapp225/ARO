@@ -1,70 +1,31 @@
-import { useState } from "react";
 import { Bell, Trash2, Car } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
-
-interface CarAlert {
-  id: number;
-  make: string;
-  model: string | null;
-  minPrice: string | null;
-  maxPrice: string | null;
-  minYear: number | null;
-  maxYear: number | null;
-  isActive: boolean;
-  createdAt: string;
-}
+import { useAlerts } from "@/contexts/AlertsContext";
 
 export function UserAlerts() {
-  const queryClient = useQueryClient();
+  const { alerts, removeAlert, toggleAlert } = useAlerts();
   const { toast } = useToast();
-  
-  // Mock user ID - в реальном приложении будет из контекста авторизации
-  const userId = 1;
 
-  const { data: alerts = [], isLoading } = useQuery({
-    queryKey: ['/api/car-alerts', userId],
-    queryFn: async () => {
-      const response = await fetch(`/api/car-alerts?userId=${userId}`);
-      if (!response.ok) {
-        throw new Error('Ошибка загрузки уведомлений');
-      }
-      return response.json();
-    },
-  });
+  const handleDeleteAlert = (alertId: number) => {
+    removeAlert(alertId);
+    toast({
+      title: "Уведомление удалено",
+      description: "Уведомление успешно удалено",
+    });
+  };
 
-  const deleteAlertMutation = useMutation({
-    mutationFn: async (alertId: number) => {
-      const response = await fetch(`/api/car-alerts/${alertId}`, {
-        method: 'DELETE',
-      });
+  const handleToggleAlert = (alertId: number) => {
+    toggleAlert(alertId);
+    toast({
+      title: "Статус изменен",
+      description: "Статус уведомления обновлен",
+    });
+  };
 
-      if (!response.ok) {
-        throw new Error('Ошибка удаления уведомления');
-      }
-
-      return response.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/car-alerts'] });
-      toast({
-        title: "Уведомление удалено",
-        description: "Уведомление успешно удалено",
-      });
-    },
-    onError: () => {
-      toast({
-        title: "Ошибка",
-        description: "Не удалось удалить уведомление",
-        variant: "destructive",
-      });
-    }
-  });
-
-  const formatAlertDescription = (alert: CarAlert): string => {
+  const formatAlertDescription = (alert: any): string => {
     const parts = [];
     
     parts.push(alert.make.toUpperCase());
@@ -96,22 +57,22 @@ export function UserAlerts() {
     return parts.join(' • ');
   };
 
-  if (isLoading) {
+  if (alerts.length === 0) {
     return (
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Bell className="h-5 w-5" />
-            Мои уведомления
+          <CardTitle className="flex items-center space-x-2">
+            <Bell className="w-5 h-5" />
+            <span>Уведомления</span>
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-3">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="animate-pulse">
-                <div className="h-16 bg-gray-200 rounded-lg" />
-              </div>
-            ))}
+          <div className="text-center py-8">
+            <Car className="w-12 h-12 mx-auto text-gray-400 mb-4" />
+            <p className="text-gray-500 mb-4">У вас пока нет активных уведомлений</p>
+            <p className="text-sm text-gray-400">
+              Создайте уведомление для отслеживания интересующих вас автомобилей
+            </p>
           </div>
         </CardContent>
       </Card>
@@ -121,57 +82,54 @@ export function UserAlerts() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Bell className="h-5 w-5" />
-          Мои уведомления
-          <Badge variant="secondary">{alerts.length}</Badge>
+        <CardTitle className="flex items-center justify-between">
+          <div className="flex items-center space-x-2">
+            <Bell className="w-5 h-5" />
+            <span>Уведомления</span>
+            <Badge variant="secondary" className="ml-2">
+              {alerts.length}
+            </Badge>
+          </div>
         </CardTitle>
       </CardHeader>
-      <CardContent>
-        {alerts.length === 0 ? (
-          <div className="text-center py-8">
-            <Car className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-            <p className="text-gray-500 mb-2">У вас нет активных уведомлений</p>
-            <p className="text-sm text-gray-400">
-              Создайте уведомление на странице поиска автомобилей
-            </p>
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {alerts.map((alert) => (
-              <div
-                key={alert.id}
-                className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50"
-              >
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-1">
-                    <Bell className="h-4 w-4 text-blue-600" />
-                    <span className="font-medium text-gray-900">
-                      {formatAlertDescription(alert)}
-                    </span>
-                    {alert.isActive && (
-                      <Badge className="bg-green-100 text-green-700">
-                        Активно
-                      </Badge>
-                    )}
-                  </div>
-                  <p className="text-sm text-gray-500">
-                    Создано: {new Date(alert.createdAt).toLocaleDateString('ru-RU')}
-                  </p>
-                </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => deleteAlertMutation.mutate(alert.id)}
-                  disabled={deleteAlertMutation.isPending}
-                  className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
+      <CardContent className="space-y-4">
+        {alerts.map((alert) => (
+          <div
+            key={alert.id}
+            className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors"
+          >
+            <div className="flex-1">
+              <div className="flex items-center space-x-2 mb-2">
+                <Car className="w-4 h-4 text-blue-600" />
+                <span className="font-medium text-gray-900">
+                  {formatAlertDescription(alert)}
+                </span>
+                <Badge variant={alert.isActive ? "default" : "secondary"}>
+                  {alert.isActive ? "Активно" : "Отключено"}
+                </Badge>
               </div>
-            ))}
+              <p className="text-sm text-gray-500">
+                Создано {new Date(alert.createdAt).toLocaleDateString('ru-RU')}
+              </p>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handleToggleAlert(alert.id)}
+              >
+                {alert.isActive ? "Отключить" : "Включить"}
+              </Button>
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={() => handleDeleteAlert(alert.id)}
+              >
+                <Trash2 className="w-4 h-4" />
+              </Button>
+            </div>
           </div>
-        )}
+        ))}
       </CardContent>
     </Card>
   );

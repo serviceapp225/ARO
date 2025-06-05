@@ -58,10 +58,12 @@ function App() {
       <TooltipProvider>
         <AuthProvider>
           <UserDataProvider>
-            <AuctionProvider>
-              <Toaster />
-              <Router />
-            </AuctionProvider>
+            <AlertsProvider>
+              <AuctionProvider>
+                <Toaster />
+                <Router />
+              </AuctionProvider>
+            </AlertsProvider>
           </UserDataProvider>
         </AuthProvider>
       </TooltipProvider>

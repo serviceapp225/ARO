@@ -15,6 +15,7 @@ export const users = pgTable("users", {
 export const carListings = pgTable("car_listings", {
   id: serial("id").primaryKey(),
   sellerId: integer("seller_id").notNull(),
+  lotNumber: text("lot_number").notNull(),
   make: text("make").notNull(),
   model: text("model").notNull(),
   year: integer("year").notNull(),
