@@ -339,6 +339,7 @@ export class MemStorage implements IStorage {
     const listing8: CarListing = {
       id: this.currentListingId++,
       sellerId: sellerUser.id,
+      lotNumber: "456789",
       make: "Lexus",
       model: "RX",
       year: 2020,
@@ -365,6 +366,7 @@ export class MemStorage implements IStorage {
     const listing9: CarListing = {
       id: this.currentListingId++,
       sellerId: sellerUser.id,
+      lotNumber: "567891",
       make: "Ford",
       model: "Mustang",
       year: 2021,
@@ -387,6 +389,7 @@ export class MemStorage implements IStorage {
     const listing10: CarListing = {
       id: this.currentListingId++,
       sellerId: sellerUser.id,
+      lotNumber: "678902",
       make: "Volkswagen",
       model: "Golf",
       year: 2020,
@@ -409,6 +412,7 @@ export class MemStorage implements IStorage {
     const listing11: CarListing = {
       id: this.currentListingId++,
       sellerId: sellerUser.id,
+      lotNumber: "789013",
       make: "Hyundai",
       model: "Tucson",
       year: 2022,
@@ -431,6 +435,7 @@ export class MemStorage implements IStorage {
     const listing12: CarListing = {
       id: this.currentListingId++,
       sellerId: sellerUser.id,
+      lotNumber: "890124",
       make: "Mazda",
       model: "CX-5",
       year: 2021,
@@ -453,6 +458,7 @@ export class MemStorage implements IStorage {
     const listing13: CarListing = {
       id: this.currentListingId++,
       sellerId: sellerUser.id,
+      lotNumber: "901235",
       make: "Subaru",
       model: "Outback",
       year: 2020,
