@@ -1,10 +1,12 @@
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
+import { useUserData } from "@/contexts/UserDataContext";
 import { User, Globe, Bell, Heart, HelpCircle, FileText, LogOut, Camera, Edit, ChevronRight, MessageCircle } from "lucide-react";
 import { Link, useLocation } from "wouter";
 
 export default function Profile() {
   const { user, logout } = useAuth();
+  const { userData } = useUserData();
   const [, setLocation] = useLocation();
   
   const menuItems = [
@@ -61,9 +63,9 @@ export default function Profile() {
               
               {/* Name and Phone */}
               <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                {user.email?.split('@')[0] || 'Пользователь'}
+                {userData.fullName || user.email?.split('@')[0] || 'Пользователь'}
               </h2>
-              <p className="text-gray-600 text-lg">+992 (90) 123-45-67</p>
+              <p className="text-gray-600 text-lg">{userData.phoneNumber}</p>
             </div>
           </div>
 

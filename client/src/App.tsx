@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { AuctionProvider } from "@/contexts/AuctionContext";
+import { UserDataProvider } from "@/contexts/UserDataContext";
 import HomePage from "@/pages/HomePage";
 import AuctionFeed from "@/pages/AuctionFeed";
 import AuctionDetail from "@/pages/AuctionDetail";
@@ -55,10 +56,12 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <AuthProvider>
-          <AuctionProvider>
-            <Toaster />
-            <Router />
-          </AuctionProvider>
+          <UserDataProvider>
+            <AuctionProvider>
+              <Toaster />
+              <Router />
+            </AuctionProvider>
+          </UserDataProvider>
         </AuthProvider>
       </TooltipProvider>
     </QueryClientProvider>
