@@ -1,6 +1,20 @@
 import { useState, useEffect } from "react";
 import { Car, Star, Trophy, Zap, Shield, Gift } from "lucide-react";
 
+// Function to get banner images
+const getBannerImage = (bannerId: number) => {
+  const images = [
+    'https://images.unsplash.com/photo-1503376780353-7e6692767b70?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80', // Blue sports car
+    'https://images.unsplash.com/photo-1542282088-fe8426682b8f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80', // Green SUV
+    'https://images.unsplash.com/photo-1619767886558-efdc259cde1a?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80', // Orange/red car
+    'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80', // Purple luxury car
+    'https://images.unsplash.com/photo-1494976388531-d1058494cdd8?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80', // Indigo classic car
+    'https://images.unsplash.com/photo-1601362840469-51e4d8d58785?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80', // Yellow car
+    'https://images.unsplash.com/photo-1525609004556-c46c7d6cf023?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'  // Emerald car
+  ];
+  return images[(bannerId - 1) % images.length];
+};
+
 const bannerVariants = [
   {
     id: 1,
@@ -87,11 +101,11 @@ export function AdvertisementBanner() {
 
   return (
     <div className="relative h-44 rounded-2xl p-6 text-white overflow-hidden transition-all duration-500 shadow-2xl">
-      {/* Dark Car Background Image */}
+      {/* Dynamic Car Background Images */}
       <div 
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat rounded-2xl"
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat rounded-2xl transition-all duration-500"
         style={{
-          backgroundImage: `url('https://images.unsplash.com/photo-1525609004556-c46c7d6cf023?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80')`
+          backgroundImage: `url('https://images.unsplash.com/photo-1503376780353-7e6692767b70?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80')`
         }}
       ></div>
       {/* Dark overlay */}

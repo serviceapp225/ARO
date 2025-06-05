@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
-import { User, Globe, Bell, Heart, HelpCircle, FileText, LogOut, Camera, Edit, ChevronRight } from "lucide-react";
+import { User, Globe, Bell, Heart, HelpCircle, FileText, LogOut, Camera, Edit, ChevronRight, MessageCircle } from "lucide-react";
 import { Link } from "wouter";
 
 export default function Profile() {
@@ -11,6 +11,7 @@ export default function Profile() {
     { icon: Bell, label: "Уведомления", action: () => console.log("Уведомления") },
     { icon: HelpCircle, label: "Помощь", action: () => console.log("Помощь") },
     { icon: FileText, label: "Документы", action: () => console.log("Документы") },
+    { icon: MessageCircle, label: "Связаться с оператором", action: () => window.open("https://wa.me/992900000000", "_blank") },
   ];
 
   if (!user) {
