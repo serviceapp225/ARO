@@ -204,26 +204,6 @@ export function ActiveAuctions({ searchQuery = "" }: ActiveAuctionsProps) {
           )}
         </div>
       )}
-      
-      {/* Кнопка уведомлений на основе поиска */}
-      {searchQuery.trim() && displayedAuctions.length > 0 && (
-        <div className="mt-8 p-6 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
-          <div className="text-center">
-            <h3 className="text-lg font-medium text-gray-900 mb-2">
-              Хотите получать уведомления?
-            </h3>
-            <p className="text-gray-600 mb-4">
-              Мы отправим уведомление, когда появятся новые автомобили по запросу "{searchQuery}"
-            </p>
-            <SearchAlertButton 
-              searchFilters={{ 
-                brand: searchQuery.toLowerCase(),
-                model: ""
-              }} 
-            />
-          </div>
-        </div>
-      )}
     </div>
   );
 }
