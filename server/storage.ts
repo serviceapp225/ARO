@@ -213,6 +213,116 @@ export class MemStorage implements IStorage {
     };
     this.carListings.set(listing3.id, listing3);
 
+    const listing4: CarListing = {
+      id: this.currentListingId++,
+      sellerId: sellerUser.id,
+      make: "Mercedes-Benz",
+      model: "C-Class",
+      year: 2020,
+      mileage: 25000,
+      vin: "WDDGF8AB5LR123456",
+      description: "Elegant Mercedes-Benz C-Class with premium interior and advanced safety features. Excellent condition with full service records.",
+      startingPrice: "45000.00",
+      currentBid: "48500.00",
+      photos: [
+        "https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"
+      ],
+      auctionDuration: 120,
+      status: "active",
+      auctionStartTime: now,
+      auctionEndTime: new Date(now.getTime() + 5 * 24 * 60 * 60 * 1000),
+      createdAt: now
+    };
+    this.carListings.set(listing4.id, listing4);
+
+    const listing5: CarListing = {
+      id: this.currentListingId++,
+      sellerId: sellerUser.id,
+      make: "Audi",
+      model: "A4",
+      year: 2019,
+      mileage: 32000,
+      vin: "WAUFNAF45KN123456",
+      description: "Sporty Audi A4 with quattro all-wheel drive. Premium Plus package with navigation and leather interior.",
+      startingPrice: "38000.00",
+      currentBid: "41200.00",
+      photos: [
+        "https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"
+      ],
+      auctionDuration: 96,
+      status: "active",
+      auctionStartTime: now,
+      auctionEndTime: new Date(now.getTime() + 4 * 24 * 60 * 60 * 1000),
+      createdAt: now
+    };
+    this.carListings.set(listing5.id, listing5);
+
+    const listing6: CarListing = {
+      id: this.currentListingId++,
+      sellerId: sellerUser.id,
+      make: "Toyota",
+      model: "Camry",
+      year: 2022,
+      mileage: 18000,
+      vin: "4T1C11AK5NU123456",
+      description: "Reliable Toyota Camry Hybrid with excellent fuel economy. Like-new condition with remaining factory warranty.",
+      startingPrice: "28000.00",
+      currentBid: "30500.00",
+      photos: [
+        "https://images.unsplash.com/photo-1621007947382-bb3c3994e3fb?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"
+      ],
+      auctionDuration: 144,
+      status: "active",
+      auctionStartTime: now,
+      auctionEndTime: new Date(now.getTime() + 6 * 24 * 60 * 60 * 1000),
+      createdAt: now
+    };
+    this.carListings.set(listing6.id, listing6);
+
+    const listing7: CarListing = {
+      id: this.currentListingId++,
+      sellerId: sellerUser.id,
+      make: "Honda",
+      model: "CR-V",
+      year: 2021,
+      mileage: 22000,
+      vin: "7FARW2H85ME123456",
+      description: "Versatile Honda CR-V SUV with all-wheel drive. Perfect for families with excellent safety ratings and cargo space.",
+      startingPrice: "32000.00",
+      currentBid: "34800.00",
+      photos: [
+        "https://images.unsplash.com/photo-1609521263047-f8f205293f24?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"
+      ],
+      auctionDuration: 192,
+      status: "active",
+      auctionStartTime: now,
+      auctionEndTime: new Date(now.getTime() + 8 * 24 * 60 * 60 * 1000),
+      createdAt: now
+    };
+    this.carListings.set(listing7.id, listing7);
+
+    const listing8: CarListing = {
+      id: this.currentListingId++,
+      sellerId: sellerUser.id,
+      make: "Lexus",
+      model: "RX",
+      year: 2020,
+      mileage: 28000,
+      vin: "2T2BZMCA5LC123456",
+      description: "Luxury Lexus RX 350 with premium amenities. Heated and ventilated seats, mark levinson sound system, and more.",
+      startingPrice: "52000.00",
+      currentBid: "55400.00",
+      photos: [
+        "https://images.unsplash.com/photo-1606611013875-74d6b4ade6e8?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"
+      ],
+      auctionDuration: 216,
+      status: "active",
+      auctionStartTime: now,
+      auctionEndTime: new Date(now.getTime() + 9 * 24 * 60 * 60 * 1000),
+      createdAt: now
+    };
+    this.carListings.set(listing8.id, listing8);
+
     // Create sample bids
     const bid1: Bid = {
       id: this.currentBidId++,

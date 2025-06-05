@@ -85,11 +85,29 @@ export default function Profile() {
               {/* Profile Photo */}
               <div className="relative inline-block mb-4">
                 <div className="w-24 h-24 bg-gray-200 rounded-full flex items-center justify-center overflow-hidden mx-auto">
-                  <User className="w-12 h-12 text-gray-600" />
+                  {userData.profilePhoto ? (
+                    <img 
+                      src={userData.profilePhoto} 
+                      alt="Фото профиля" 
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <User className="w-12 h-12 text-gray-600" />
+                  )}
                 </div>
-                <button className="absolute bottom-0 right-0 w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
+                <button 
+                  onClick={handleCameraClick}
+                  className="absolute bottom-0 right-0 w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center hover:bg-blue-700 transition-colors"
+                >
                   <Camera className="w-4 h-4 text-white" />
                 </button>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handlePhotoSelect}
+                  className="hidden"
+                />
               </div>
               
               {/* Name and Phone */}
