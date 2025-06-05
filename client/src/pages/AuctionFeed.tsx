@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { ActiveAuctions } from "@/components/ActiveAuctions";
-import SearchAlertButton from "@/components/SearchAlertButton";
+import SimpleAlertButton from "@/components/SimpleAlertButton";
 import { CAR_MAKES, getModelsForMake } from "@shared/car-data";
 import { useLocation } from "wouter";
 
@@ -309,7 +309,7 @@ export default function AuctionFeed() {
               <p className="text-gray-600 mb-4">
                 Мы отправим уведомление, когда появятся автомобили по вашим параметрам
               </p>
-              <SearchAlertButton searchFilters={searchFilters} />
+              <SimpleAlertButton searchFilters={searchFilters} />
             </div>
           </div>
         )}
