@@ -8,7 +8,7 @@ export default function Profile() {
   const [, setLocation] = useLocation();
   
   const menuItems = [
-    { icon: Globe, label: "Поменять язык", action: () => console.log("Язык") },
+    { icon: Globe, label: "Поменять язык", action: () => setLocation("/language") },
     { icon: Bell, label: "Уведомления", action: () => setLocation("/notifications") },
     { icon: HelpCircle, label: "Помощь", action: () => console.log("Помощь") },
     { icon: FileText, label: "Документы", action: () => console.log("Документы") },

@@ -13,6 +13,7 @@ import SellCar from "@/pages/SellCar";
 import MyBids from "@/pages/MyBids";
 import Profile from "@/pages/Profile";
 import Notifications from "@/pages/Notifications";
+import LanguageSelector from "@/components/LanguageSelector";
 import Login from "@/pages/Login";
 import AdminPanel from "@/pages/AdminPanel";
 import NotFound from "@/pages/not-found";
@@ -32,6 +33,7 @@ function Router() {
         <Route path="/bids" component={MyBids} />
         <Route path="/profile" component={Profile} />
         <Route path="/notifications" component={Notifications} />
+        <Route path="/language" component={LanguageSelector} />
         <Route path="/login" component={Login} />
         <Route path="/admin" component={AdminPanel} />
         <Route path="/flutter-preview" component={FlutterPreview} />
