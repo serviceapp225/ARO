@@ -389,6 +389,72 @@ export class MemStorage implements IStorage {
     };
     this.carListings.set(listing11.id, listing11);
 
+    const listing12: CarListing = {
+      id: this.currentListingId++,
+      sellerId: sellerUser.id,
+      make: "Mazda",
+      model: "CX-5",
+      year: 2021,
+      mileage: 19000,
+      vin: "JM3KFBCM1L0123456",
+      description: "Stylish Mazda CX-5 with SKYACTIV technology. All-wheel drive with premium interior and advanced safety features.",
+      startingPrice: "31000.00",
+      currentBid: "33200.00",
+      photos: [
+        "https://images.unsplash.com/photo-1605559911888-ae4ceb6e4b3c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"
+      ],
+      auctionDuration: 96,
+      status: "active",
+      auctionStartTime: now,
+      auctionEndTime: new Date(now.getTime() + 4 * 24 * 60 * 60 * 1000),
+      createdAt: now
+    };
+    this.carListings.set(listing12.id, listing12);
+
+    const listing13: CarListing = {
+      id: this.currentListingId++,
+      sellerId: sellerUser.id,
+      make: "Subaru",
+      model: "Outback",
+      year: 2020,
+      mileage: 35000,
+      vin: "4S4BSANC8L3123456",
+      description: "Adventure-ready Subaru Outback with symmetrical all-wheel drive. Perfect for outdoor enthusiasts with excellent ground clearance.",
+      startingPrice: "26000.00",
+      currentBid: "28400.00",
+      photos: [
+        "https://images.unsplash.com/photo-1544829099-b9a0c5303bea?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"
+      ],
+      auctionDuration: 168,
+      status: "active",
+      auctionStartTime: now,
+      auctionEndTime: new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000),
+      createdAt: now
+    };
+    this.carListings.set(listing13.id, listing13);
+
+    const listing14: CarListing = {
+      id: this.currentListingId++,
+      sellerId: sellerUser.id,
+      make: "Infiniti",
+      model: "Q50",
+      year: 2019,
+      mileage: 42000,
+      vin: "JN1EV7AR5KM123456",
+      description: "Luxury Infiniti Q50 with twin-turbo V6 engine. Premium leather interior with advanced driver assistance systems.",
+      startingPrice: "35000.00",
+      currentBid: "37800.00",
+      photos: [
+        "https://images.unsplash.com/photo-1563720360172-67b8f3dce741?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"
+      ],
+      auctionDuration: 120,
+      status: "active",
+      auctionStartTime: now,
+      auctionEndTime: new Date(now.getTime() + 5 * 24 * 60 * 60 * 1000),
+      createdAt: now
+    };
+    this.carListings.set(listing14.id, listing14);
+
     // Create sample bids
     const bid1: Bid = {
       id: this.currentBidId++,
