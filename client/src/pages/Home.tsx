@@ -5,6 +5,7 @@ import { ActiveAuctions } from '@/components/ActiveAuctions';
 import { SellYourCar } from '@/components/SellYourCar';
 import { Footer } from '@/components/Footer';
 import { AuctionDetailModal } from '@/components/AuctionDetailModal';
+import FloatingNotificationButton from '@/components/FloatingNotificationButton';
 
 export default function Home() {
   return (
@@ -16,6 +17,7 @@ export default function Home() {
       <SellYourCar />
       <Footer />
       <AuctionDetailModal />
+      <FloatingNotificationButton />
     </div>
   );
 }
