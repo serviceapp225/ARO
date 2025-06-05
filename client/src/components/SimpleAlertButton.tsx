@@ -55,6 +55,7 @@ export default function SimpleAlertButton({ searchFilters = {} }: SimpleAlertBut
       toast({
         title: "Уведомление создано",
         description: "Мы сообщим вам о новых автомобилях по вашим параметрам",
+        duration: 3000,
       });
       
       // Сбрасываем состояние через 3 секунды
