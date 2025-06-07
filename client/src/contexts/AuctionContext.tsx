@@ -36,7 +36,7 @@ export function AuctionProvider({ children }: { children: ReactNode }) {
     queryKey: ['/api/listings'],
     select: (data: any[]) => data.map(listing => ({
       id: listing.id.toString(),
-      lotNumber: `LOT${listing.id.toString().padStart(6, '0')}`,
+      lotNumber: listing.lotNumber, // Используем реальный номер лота из базы данных
       make: listing.make,
       model: listing.model,
       year: listing.year,

@@ -18,6 +18,7 @@ import {
   type CarAlert,
   type InsertCarAlert
 } from "@shared/schema";
+import { generateUniqueLotNumber } from './utils/lotNumberGenerator';
 
 // Enhanced storage interface for car auction functionality
 export interface IStorage {
