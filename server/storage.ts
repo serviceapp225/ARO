@@ -586,9 +586,17 @@ export class MemStorage implements IStorage {
     const now = new Date();
     const auctionEndTime = new Date(now.getTime() + insertListing.auctionDuration * 60 * 60 * 1000);
     
+    // Генерируем уникальный номер лота, если он не предоставлен
+    let lotNumber = insertListing.lotNumber;
+    if (!lotNumber) {
+      const existingLotNumbers = Array.from(this.carListings.values()).map(listing => listing.lotNumber);
+      lotNumber = generateUniqueLotNumber(existingLotNumbers);
+    }
+    
     const listing: CarListing = {
       ...insertListing,
       id,
+      lotNumber,
       currentBid: null,
       status: "pending",
       auctionStartTime: null,
