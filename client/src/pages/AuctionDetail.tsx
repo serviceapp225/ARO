@@ -202,7 +202,7 @@ export default function AuctionDetail() {
               </div>
               <div className="flex flex-wrap items-center gap-2">
                 <Badge variant="outline" className="font-mono text-blue-700 bg-blue-50 border-blue-200">
-                  Лот № {mockAuction.specifications.lotNumber}
+                  Лот № {auction.lotNumber}
                 </Badge>
                 <Badge variant="outline" className={`${mockAuction.specifications.customsCleared ? 'text-green-700 bg-green-50 border-green-200' : 'text-red-700 bg-red-50 border-red-200'}`}>
                   {mockAuction.specifications.customsCleared ? '✓ Растаможен' : '✗ Не растаможен'}
