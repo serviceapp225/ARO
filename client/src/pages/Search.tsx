@@ -11,6 +11,7 @@ import SearchAlertButton from "@/components/SearchAlertButton";
 import { CAR_MAKES, getModelsForMake } from "@shared/car-data";
 
 export default function Search() {
+  const [searchQuery, setSearchQuery] = useState("");
   const [searchFilters, setSearchFilters] = useState({
     brand: "",
     model: "",
@@ -101,6 +102,33 @@ export default function Search() {
               </div>
             </CardHeader>
             <CardContent className="space-y-6">
+              {/* Поиск по номеру лота и названию */}
+              <div className="space-y-2">
+                <Label>Поиск по номеру лота или названию автомобиля</Label>
+                <div className="relative">
+                  <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <Input
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Введите номер лота (например: 724583) или название автомобиля (Toyota Camry)"
+                    className="pl-10"
+                  />
+                  {searchQuery && (
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="absolute right-2 top-1/2 transform -translate-y-1/2"
+                      onClick={() => setSearchQuery("")}
+                    >
+                      <X className="w-4 h-4" />
+                    </Button>
+                  )}
+                </div>
+                <p className="text-sm text-gray-500">
+                  Введите 6-значный номер лота для быстрого поиска или название автомобиля
+                </p>
+              </div>
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>Марка</Label>
@@ -444,7 +472,7 @@ export default function Search() {
                 </div>
               )}
             </div>
-            <ActiveAuctions />
+            <ActiveAuctions searchQuery={searchQuery} />
             
             {/* Показать кнопку уведомления, если есть фильтры но мало результатов */}
             {activeFiltersCount > 0 && (
