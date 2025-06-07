@@ -65,11 +65,11 @@ export function CountdownTimer({ endTime, size = 'small', onTimeUp }: CountdownT
   }
 
   return (
-    <div className={`bg-red-600 text-white px-3 py-1 rounded-full text-sm font-semibold ${timeLeft.total < 300000 ? 'animate-pulse' : ''}`}>
-      <Clock className="w-3 h-3 inline mr-1" />
+    <div className={`bg-red-600 text-white px-2 py-0.5 rounded-full text-xs font-semibold ${timeLeft.total < 300000 ? 'animate-pulse' : ''}`}>
+      <Clock className="w-2.5 h-2.5 inline mr-0.5" />
       {timeLeft.days > 0 ? `${timeLeft.days}д ` : ''}
       {timeLeft.hours > 0 ? `${timeLeft.hours}ч ` : ''}
-      {timeLeft.minutes}м {timeLeft.seconds}с
+      {timeLeft.minutes}м
     </div>
   );
 }
