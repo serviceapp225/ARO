@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Car } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface ImageCarouselProps {
@@ -10,11 +10,20 @@ interface ImageCarouselProps {
 
 export function ImageCarousel({ images, alt, className = "" }: ImageCarouselProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [imageError, setImageError] = useState(false);
 
-  if (!images || images.length === 0) {
+  const handleImageError = () => {
+    setImageError(true);
+  };
+
+  const handleImageLoad = () => {
+    setImageError(false);
+  };
+
+  if (!images || images.length === 0 || imageError) {
     return (
-      <div className={`bg-neutral-200 flex items-center justify-center ${className}`}>
-        <p className="text-neutral-500">No images available</p>
+      <div className={`bg-gray-200 flex items-center justify-center ${className}`}>
+        <Car className="w-8 h-8 text-gray-400" />
       </div>
     );
   }
@@ -37,6 +46,8 @@ export function ImageCarousel({ images, alt, className = "" }: ImageCarouselProp
         src={images[currentIndex]} 
         alt={`${alt} - Image ${currentIndex + 1}`}
         className="w-full h-full object-cover"
+        onError={handleImageError}
+        onLoad={handleImageLoad}
       />
       
       {images.length > 1 && (

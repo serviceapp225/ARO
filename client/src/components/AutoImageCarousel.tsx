@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Car } from 'lucide-react';
 
 interface AutoImageCarouselProps {
   images: string[];
@@ -14,6 +15,8 @@ export function AutoImageCarousel({
   autoPlayInterval = 3000 
 }: AutoImageCarouselProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [imageError, setImageError] = useState(false);
+  const [loadedImages, setLoadedImages] = useState<Set<number>>(new Set());
 
   useEffect(() => {
     if (!images || images.length <= 1) return;
@@ -37,10 +40,19 @@ export function AutoImageCarousel({
     };
   }, [images, autoPlayInterval]);
 
-  if (!images || images.length === 0) {
+  const handleImageError = () => {
+    setImageError(true);
+  };
+
+  const handleImageLoad = () => {
+    setLoadedImages(prev => new Set(prev).add(currentIndex));
+    setImageError(false);
+  };
+
+  if (!images || images.length === 0 || imageError) {
     return (
-      <div className={`bg-neutral-200 flex items-center justify-center ${className}`}>
-        <p className="text-neutral-500">No images available</p>
+      <div className={`bg-gray-200 flex items-center justify-center ${className}`}>
+        <Car className="w-8 h-8 text-gray-400" />
       </div>
     );
   }
@@ -51,6 +63,8 @@ export function AutoImageCarousel({
         src={images[currentIndex]} 
         alt={`${alt} - Image ${currentIndex + 1}`}
         className="w-full h-full object-cover transition-opacity duration-500"
+        onError={handleImageError}
+        onLoad={handleImageLoad}
       />
       
       {/* Индикаторы точек (только для отображения) */}
