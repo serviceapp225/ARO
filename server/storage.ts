@@ -410,6 +410,10 @@ export class MemStorage implements IStorage {
       status: "active",
       auctionStartTime: now,
       auctionEndTime: new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000),
+      customsCleared: true,
+      recycled: false,
+      technicalInspectionValid: true,
+      technicalInspectionDate: "2024-01-15",
       createdAt: now
     };
     this.carListings.set(listing9.id, listing9);
@@ -437,6 +441,10 @@ export class MemStorage implements IStorage {
       status: "active",
       auctionStartTime: now,
       auctionEndTime: new Date(now.getTime() + 5 * 24 * 60 * 60 * 1000),
+      customsCleared: true,
+      recycled: false,
+      technicalInspectionValid: true,
+      technicalInspectionDate: "2024-02-20",
       createdAt: now
     };
     this.carListings.set(listing10.id, listing10);
@@ -464,6 +472,10 @@ export class MemStorage implements IStorage {
       status: "active",
       auctionStartTime: now,
       auctionEndTime: new Date(now.getTime() + 6 * 24 * 60 * 60 * 1000),
+      customsCleared: false,
+      recycled: true,
+      technicalInspectionValid: true,
+      technicalInspectionDate: "2024-03-10",
       createdAt: now
     };
     this.carListings.set(listing11.id, listing11);
@@ -491,6 +503,10 @@ export class MemStorage implements IStorage {
       status: "active",
       auctionStartTime: now,
       auctionEndTime: new Date(now.getTime() + 4 * 24 * 60 * 60 * 1000),
+      customsCleared: true,
+      recycled: false,
+      technicalInspectionValid: false,
+      technicalInspectionDate: null,
       createdAt: now
     };
     this.carListings.set(listing12.id, listing12);
@@ -518,6 +534,10 @@ export class MemStorage implements IStorage {
       status: "active",
       auctionStartTime: now,
       auctionEndTime: new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000),
+      customsCleared: true,
+      recycled: false,
+      technicalInspectionValid: true,
+      technicalInspectionDate: "2024-04-05",
       createdAt: now
     };
     this.carListings.set(listing13.id, listing13);
@@ -535,12 +555,20 @@ export class MemStorage implements IStorage {
       startingPrice: "35000.00",
       currentBid: "37800.00",
       photos: [
-        "https://images.unsplash.com/photo-1563720360172-67b8f3dce741?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"
+        "https://images.unsplash.com/photo-1563720360172-67b8f3dce741?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
+        "https://images.unsplash.com/photo-1485463611174-f302f6a5c1c9?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
+        "https://images.unsplash.com/photo-1578662996442-48f60103fc96?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
+        "https://images.unsplash.com/photo-1502877338535-766e1452684a?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
+        "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"
       ],
       auctionDuration: 120,
       status: "active",
       auctionStartTime: now,
       auctionEndTime: new Date(now.getTime() + 5 * 24 * 60 * 60 * 1000),
+      customsCleared: false,
+      recycled: true,
+      technicalInspectionValid: false,
+      technicalInspectionDate: null,
       createdAt: now
     };
     this.carListings.set(listing14.id, listing14);
