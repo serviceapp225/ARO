@@ -92,9 +92,11 @@ export function ActiveAuctions({ searchQuery = "" }: ActiveAuctionsProps) {
             onClick={() => setLocation(`/auction/${auction.id}`)}
           >
             <div className="relative">
-              <div className="h-32 bg-gray-200 flex items-center justify-center">
-                <Car className="w-8 h-8 text-gray-400" />
-              </div>
+              <ImageCarousel 
+                images={auction.photos} 
+                alt={`${auction.year} ${auction.make} ${auction.model}`}
+                className="h-32"
+              />
               <div className="absolute top-2 left-2">
                 <CountdownTimer endTime={auction.endTime} size="small" />
               </div>

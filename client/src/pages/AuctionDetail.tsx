@@ -168,8 +168,12 @@ export default function AuctionDetail() {
 
       <main className="container mx-auto px-4 py-6 space-y-6">
         <Card className="overflow-hidden">
-          <div className="relative h-64 bg-gray-200 flex items-center justify-center">
-            <Car className="w-16 h-16 text-gray-400" />
+          <div className="relative h-64">
+            <ImageCarousel 
+              images={auction.photos} 
+              alt={`${auction.year} ${auction.make} ${auction.model}`}
+              className="h-64"
+            />
             <div className="absolute top-4 right-4 bg-black/50 text-white px-2 py-1 rounded text-sm flex items-center gap-1">
               <Eye className="w-4 h-4" />
               {mockAuction.views}
