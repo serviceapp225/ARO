@@ -253,11 +253,11 @@ export class MemStorage implements IStorage {
       startingPrice: "45000.00",
       currentBid: "48500.00",
       photos: [
-        "https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
-        "https://images.unsplash.com/photo-1605559424843-9e4c228bf1c2?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
-        "https://images.unsplash.com/photo-1617654112299-0c8f6f56d25c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
-        "https://images.unsplash.com/photo-1551063632-1b81f2326e39?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
-        "https://images.unsplash.com/photo-1593941707882-a5bac6861d75?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"
+        "https://picsum.photos/800/600?random=1",
+        "https://picsum.photos/800/600?random=2",
+        "https://picsum.photos/800/600?random=3",
+        "https://picsum.photos/800/600?random=4",
+        "https://picsum.photos/800/600?random=5"
       ],
       auctionDuration: 120,
       status: "active",
@@ -400,11 +400,11 @@ export class MemStorage implements IStorage {
       startingPrice: "42000.00",
       currentBid: "45600.00",
       photos: [
-        "https://images.unsplash.com/photo-1544636331-e26879cd4d9b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
-        "https://images.unsplash.com/photo-1580414155951-82c80babed4d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
-        "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
-        "https://images.unsplash.com/photo-1621135802920-133df287f89c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
-        "https://images.unsplash.com/photo-1584464491033-06628f3a6b7b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"
+        "https://picsum.photos/seed/car1/800/600",
+        "https://picsum.photos/seed/car2/800/600",
+        "https://picsum.photos/seed/car3/800/600",
+        "https://picsum.photos/seed/car4/800/600",
+        "https://picsum.photos/seed/car5/800/600"
       ],
       auctionDuration: 168,
       status: "active",
@@ -431,11 +431,11 @@ export class MemStorage implements IStorage {
       startingPrice: "24000.00",
       currentBid: "26800.00",
       photos: [
-        "https://images.unsplash.com/photo-1606016159991-80729d1d2989?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
-        "https://images.unsplash.com/photo-1605559424843-9e4c228bf1c2?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
-        "https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
-        "https://images.unsplash.com/photo-1503376780353-7e6692767b70?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
-        "https://images.unsplash.com/photo-1486496146582-9ffcd0b2b2b7?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"
+        "https://picsum.photos/seed/vw1/800/600",
+        "https://picsum.photos/seed/vw2/800/600",
+        "https://picsum.photos/seed/vw3/800/600",
+        "https://picsum.photos/seed/vw4/800/600",
+        "https://picsum.photos/seed/vw5/800/600"
       ],
       auctionDuration: 120,
       status: "active",
@@ -462,11 +462,11 @@ export class MemStorage implements IStorage {
       startingPrice: "29000.00",
       currentBid: "31500.00",
       photos: [
-        "https://images.unsplash.com/photo-1605559424843-9e4c228bf1c2?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
-        "https://images.unsplash.com/photo-1583121274602-3e2820c69888?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
-        "https://images.unsplash.com/photo-1520031441872-265e4ff79de1?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
-        "https://images.unsplash.com/photo-1542282088-fe8426682b8f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
-        "https://images.unsplash.com/photo-1494976688443-703c4b58365d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"
+        "https://picsum.photos/seed/hyundai1/800/600",
+        "https://picsum.photos/seed/hyundai2/800/600",
+        "https://picsum.photos/seed/hyundai3/800/600",
+        "https://picsum.photos/seed/hyundai4/800/600",
+        "https://picsum.photos/seed/hyundai5/800/600"
       ],
       auctionDuration: 144,
       status: "active",
@@ -493,11 +493,11 @@ export class MemStorage implements IStorage {
       startingPrice: "31000.00",
       currentBid: "33200.00",
       photos: [
-        "https://images.unsplash.com/photo-1605559911888-ae4ceb6e4b3c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
-        "https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
-        "https://images.unsplash.com/photo-1502877338535-766e1452684a?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
-        "https://images.unsplash.com/photo-1570294647918-99c741e70ad4?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
-        "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"
+        "https://picsum.photos/seed/mazda1/800/600",
+        "https://picsum.photos/seed/mazda2/800/600",
+        "https://picsum.photos/seed/mazda3/800/600",
+        "https://picsum.photos/seed/mazda4/800/600",
+        "https://picsum.photos/seed/mazda5/800/600"
       ],
       auctionDuration: 96,
       status: "active",
@@ -524,11 +524,11 @@ export class MemStorage implements IStorage {
       startingPrice: "26000.00",
       currentBid: "28400.00",
       photos: [
-        "https://images.unsplash.com/photo-1544829099-b9a0c5303bea?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
-        "https://images.unsplash.com/photo-1449824913935-59a10b8d2000?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
-        "https://images.unsplash.com/photo-1503736334956-4c8f8e92946d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
-        "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
-        "https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"
+        "https://picsum.photos/seed/subaru1/800/600",
+        "https://picsum.photos/seed/subaru2/800/600",
+        "https://picsum.photos/seed/subaru3/800/600",
+        "https://picsum.photos/seed/subaru4/800/600",
+        "https://picsum.photos/seed/subaru5/800/600"
       ],
       auctionDuration: 168,
       status: "active",
@@ -555,11 +555,11 @@ export class MemStorage implements IStorage {
       startingPrice: "35000.00",
       currentBid: "37800.00",
       photos: [
-        "https://images.unsplash.com/photo-1563720360172-67b8f3dce741?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
-        "https://images.unsplash.com/photo-1485463611174-f302f6a5c1c9?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
-        "https://images.unsplash.com/photo-1578662996442-48f60103fc96?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
-        "https://images.unsplash.com/photo-1502877338535-766e1452684a?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
-        "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"
+        "https://picsum.photos/seed/infiniti1/800/600",
+        "https://picsum.photos/seed/infiniti2/800/600",
+        "https://picsum.photos/seed/infiniti3/800/600",
+        "https://picsum.photos/seed/infiniti4/800/600",
+        "https://picsum.photos/seed/infiniti5/800/600"
       ],
       auctionDuration: 120,
       status: "active",
