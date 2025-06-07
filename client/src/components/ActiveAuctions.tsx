@@ -2,7 +2,7 @@ import { Heart, Clock, Car } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { CountdownTimer } from './CountdownTimer';
-import { ImageCarousel } from './ImageCarousel';
+import { AutoImageCarousel } from './AutoImageCarousel';
 import { useAuctions } from '@/contexts/AuctionContext';
 import { useLocation } from 'wouter';
 import { useState, useEffect } from 'react';
@@ -92,10 +92,11 @@ export function ActiveAuctions({ searchQuery = "" }: ActiveAuctionsProps) {
             onClick={() => setLocation(`/auction/${auction.id}`)}
           >
             <div className="relative">
-              <ImageCarousel 
+              <AutoImageCarousel 
                 images={auction.photos} 
                 alt={`${auction.year} ${auction.make} ${auction.model}`}
                 className="h-32"
+                autoPlayInterval={3000}
               />
               <div className="absolute top-2 left-2">
                 <CountdownTimer endTime={auction.endTime} size="small" />

@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { useAuctions } from "@/contexts/AuctionContext";
+import { AutoImageCarousel } from "@/components/AutoImageCarousel";
 import { useState, useEffect } from "react";
 
 export default function AuctionDetail() {
@@ -169,10 +170,11 @@ export default function AuctionDetail() {
       <main className="container mx-auto px-4 py-6 space-y-6">
         <Card className="overflow-hidden">
           <div className="relative h-64">
-            <ImageCarousel 
+            <AutoImageCarousel 
               images={auction.photos} 
               alt={`${auction.year} ${auction.make} ${auction.model}`}
               className="h-64"
+              autoPlayInterval={3000}
             />
             <div className="absolute top-4 right-4 bg-black/50 text-white px-2 py-1 rounded text-sm flex items-center gap-1">
               <Eye className="w-4 h-4" />
