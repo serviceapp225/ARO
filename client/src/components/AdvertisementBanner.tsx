@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface Advertisement {
@@ -57,15 +56,7 @@ export function AdvertisementBanner() {
     return () => clearInterval(interval);
   }, [isAutoPlay]);
 
-  const goToPrevious = () => {
-    setCurrentIndex((prev) => 
-      prev === 0 ? advertisements.length - 1 : prev - 1
-    );
-  };
 
-  const goToNext = () => {
-    setCurrentIndex((prev) => (prev + 1) % advertisements.length);
-  };
 
   const currentAd = advertisements[currentIndex];
 
@@ -106,39 +97,17 @@ export function AdvertisementBanner() {
         </div>
       </div>
 
-      {/* Навигация */}
-      <div className="absolute inset-y-0 left-0 flex items-center">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={goToPrevious}
-          className="ml-2 bg-black/20 text-white hover:bg-black/30 rounded-full w-8 h-8 p-0"
-        >
-          <ChevronLeft className="w-4 h-4" />
-        </Button>
-      </div>
-      
-      <div className="absolute inset-y-0 right-0 flex items-center">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={goToNext}
-          className="mr-2 bg-black/20 text-white hover:bg-black/30 rounded-full w-8 h-8 p-0"
-        >
-          <ChevronRight className="w-4 h-4" />
-        </Button>
-      </div>
 
-      {/* Индикаторы */}
+
+      {/* Индикаторы (только для отображения) */}
       <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
         {advertisements.map((_, index) => (
-          <button
+          <div
             key={index}
-            onClick={() => setCurrentIndex(index)}
             className={`w-2 h-2 rounded-full transition-all duration-200 ${
               index === currentIndex 
                 ? 'bg-white scale-125' 
-                : 'bg-white/50 hover:bg-white/70'
+                : 'bg-white/50'
             }`}
           />
         ))}
