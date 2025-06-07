@@ -253,11 +253,11 @@ export class MemStorage implements IStorage {
       startingPrice: "45000.00",
       currentBid: "48500.00",
       photos: [
-        "https://picsum.photos/800/600?random=1",
-        "https://picsum.photos/800/600?random=2",
-        "https://picsum.photos/800/600?random=3",
-        "https://picsum.photos/800/600?random=4",
-        "https://picsum.photos/800/600?random=5"
+        "https://cdn.pixabay.com/photo/2016/04/01/09/11/car-1299173_960_720.jpg",
+        "https://cdn.pixabay.com/photo/2017/08/06/15/13/mercedes-2593571_960_720.jpg",
+        "https://cdn.pixabay.com/photo/2016/05/06/16/32/car-1376190_960_720.jpg",
+        "https://cdn.pixabay.com/photo/2017/11/09/01/49/ferrari-458-spider-2932191_960_720.jpg",
+        "https://cdn.pixabay.com/photo/2018/02/21/08/40/mercedes-3169357_960_720.jpg"
       ],
       auctionDuration: 120,
       status: "active",
@@ -400,11 +400,11 @@ export class MemStorage implements IStorage {
       startingPrice: "42000.00",
       currentBid: "45600.00",
       photos: [
-        "https://picsum.photos/seed/car1/800/600",
-        "https://picsum.photos/seed/car2/800/600",
-        "https://picsum.photos/seed/car3/800/600",
-        "https://picsum.photos/seed/car4/800/600",
-        "https://picsum.photos/seed/car5/800/600"
+        "https://cdn.pixabay.com/photo/2016/11/29/09/16/ford-mustang-1868815_960_720.jpg",
+        "https://cdn.pixabay.com/photo/2017/04/20/20/09/ford-2245874_960_720.jpg",
+        "https://cdn.pixabay.com/photo/2018/04/04/16/32/ford-mustang-3290466_960_720.jpg",
+        "https://cdn.pixabay.com/photo/2016/04/01/09/11/car-1299173_960_720.jpg",
+        "https://cdn.pixabay.com/photo/2017/08/06/15/13/mercedes-2593571_960_720.jpg"
       ],
       auctionDuration: 168,
       status: "active",
@@ -431,11 +431,11 @@ export class MemStorage implements IStorage {
       startingPrice: "24000.00",
       currentBid: "26800.00",
       photos: [
-        "https://picsum.photos/seed/vw1/800/600",
-        "https://picsum.photos/seed/vw2/800/600",
-        "https://picsum.photos/seed/vw3/800/600",
-        "https://picsum.photos/seed/vw4/800/600",
-        "https://picsum.photos/seed/vw5/800/600"
+        "https://cdn.pixabay.com/photo/2016/12/07/21/50/volkswagen-1890744_960_720.jpg",
+        "https://cdn.pixabay.com/photo/2017/05/13/12/40/fashion-2307471_960_720.jpg",
+        "https://cdn.pixabay.com/photo/2016/11/22/23/44/porsche-1851246_960_720.jpg",
+        "https://cdn.pixabay.com/photo/2017/08/10/02/05/audi-2618189_960_720.jpg",
+        "https://cdn.pixabay.com/photo/2016/02/13/13/11/oldtimer-1197800_960_720.jpg"
       ],
       auctionDuration: 120,
       status: "active",
@@ -462,11 +462,11 @@ export class MemStorage implements IStorage {
       startingPrice: "29000.00",
       currentBid: "31500.00",
       photos: [
-        "https://picsum.photos/seed/hyundai1/800/600",
-        "https://picsum.photos/seed/hyundai2/800/600",
-        "https://picsum.photos/seed/hyundai3/800/600",
-        "https://picsum.photos/seed/hyundai4/800/600",
-        "https://picsum.photos/seed/hyundai5/800/600"
+        "https://cdn.pixabay.com/photo/2017/08/10/02/05/audi-2618189_960_720.jpg",
+        "https://cdn.pixabay.com/photo/2016/11/22/23/44/porsche-1851246_960_720.jpg",
+        "https://cdn.pixabay.com/photo/2017/04/20/20/09/ford-2245874_960_720.jpg",
+        "https://cdn.pixabay.com/photo/2016/02/13/13/11/oldtimer-1197800_960_720.jpg",
+        "https://cdn.pixabay.com/photo/2017/08/06/15/13/mercedes-2593571_960_720.jpg"
       ],
       auctionDuration: 144,
       status: "active",
@@ -493,11 +493,11 @@ export class MemStorage implements IStorage {
       startingPrice: "31000.00",
       currentBid: "33200.00",
       photos: [
-        "https://picsum.photos/seed/mazda1/800/600",
-        "https://picsum.photos/seed/mazda2/800/600",
-        "https://picsum.photos/seed/mazda3/800/600",
-        "https://picsum.photos/seed/mazda4/800/600",
-        "https://picsum.photos/seed/mazda5/800/600"
+        "https://cdn.pixabay.com/photo/2016/11/29/08/41/auto-1868726_960_720.jpg",
+        "https://cdn.pixabay.com/photo/2017/03/27/14/56/auto-2179220_960_720.jpg",
+        "https://cdn.pixabay.com/photo/2016/12/07/21/50/volkswagen-1890744_960_720.jpg",
+        "https://cdn.pixabay.com/photo/2018/01/15/22/25/bmw-3085396_960_720.jpg",
+        "https://cdn.pixabay.com/photo/2016/04/01/09/11/car-1299173_960_720.jpg"
       ],
       auctionDuration: 96,
       status: "active",
@@ -524,11 +524,11 @@ export class MemStorage implements IStorage {
       startingPrice: "26000.00",
       currentBid: "28400.00",
       photos: [
-        "https://picsum.photos/seed/subaru1/800/600",
-        "https://picsum.photos/seed/subaru2/800/600",
-        "https://picsum.photos/seed/subaru3/800/600",
-        "https://picsum.photos/seed/subaru4/800/600",
-        "https://picsum.photos/seed/subaru5/800/600"
+        "https://cdn.pixabay.com/photo/2017/07/16/10/43/subaru-2509611_960_720.jpg",
+        "https://cdn.pixabay.com/photo/2016/12/07/21/50/volkswagen-1890744_960_720.jpg",
+        "https://cdn.pixabay.com/photo/2017/08/10/02/05/audi-2618189_960_720.jpg",
+        "https://cdn.pixabay.com/photo/2016/11/22/23/44/porsche-1851246_960_720.jpg",
+        "https://cdn.pixabay.com/photo/2018/01/15/22/25/bmw-3085396_960_720.jpg"
       ],
       auctionDuration: 168,
       status: "active",
@@ -555,11 +555,11 @@ export class MemStorage implements IStorage {
       startingPrice: "35000.00",
       currentBid: "37800.00",
       photos: [
-        "https://picsum.photos/seed/infiniti1/800/600",
-        "https://picsum.photos/seed/infiniti2/800/600",
-        "https://picsum.photos/seed/infiniti3/800/600",
-        "https://picsum.photos/seed/infiniti4/800/600",
-        "https://picsum.photos/seed/infiniti5/800/600"
+        "https://cdn.pixabay.com/photo/2016/11/29/09/16/ford-mustang-1868815_960_720.jpg",
+        "https://cdn.pixabay.com/photo/2017/03/27/14/56/auto-2179220_960_720.jpg",
+        "https://cdn.pixabay.com/photo/2016/11/29/08/41/auto-1868726_960_720.jpg",
+        "https://cdn.pixabay.com/photo/2017/08/06/15/13/mercedes-2593571_960_720.jpg",
+        "https://cdn.pixabay.com/photo/2018/01/15/22/25/bmw-3085396_960_720.jpg"
       ],
       auctionDuration: 120,
       status: "active",
