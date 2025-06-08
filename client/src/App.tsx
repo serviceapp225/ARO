@@ -25,10 +25,12 @@ import AdminPanel from "@/pages/AdminPanel";
 import NotFound from "@/pages/not-found";
 import { FlutterPreview } from "@/pages/FlutterPreview";
 import { BottomNavigation } from "@/components/BottomNavigation";
+import { ScrollToTop } from "@/components/ScrollToTop";
 
 function Router() {
   return (
     <>
+      <ScrollToTop />
       <Switch>
         <Route path="/" component={HomePage} />
         <Route path="/home" component={HomePage} />
