@@ -1,5 +1,5 @@
 import { useParams, useLocation } from "wouter";
-import { ArrowLeft, Heart, MessageCircle, Eye, Car, Calendar, Gauge, Users, Phone, Clock } from "lucide-react";
+import { ArrowLeft, Heart, MessageCircle, Eye, Car, Calendar, Gauge, Users, Phone, Clock, X, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -20,6 +20,8 @@ export default function AuctionDetail() {
     seconds: 0
   });
   const [auctionEndTime, setAuctionEndTime] = useState<Date | null>(null);
+  const [isGalleryOpen, setIsGalleryOpen] = useState(false);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   // Mock auction data with detailed specifications
   const getConditionByMileage = (miles: number) => {
@@ -53,6 +55,9 @@ export default function AuctionDetail() {
       endTime: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000),
       photos: ['/car1.jpg', '/car2.jpg', '/car3.jpg'],
       status: 'active' as const,
+      recycled: false,
+      technicalInspectionValid: true,
+      technicalInspectionDate: "2025-12-31",
       specifications: {
         lotNumber: car.lotNumber,
         engine: car.engine,
@@ -148,6 +153,53 @@ export default function AuctionDetail() {
     window.open(`https://wa.me/?text=Интересует автомобиль ${auction.year} ${auction.make} ${auction.model}`, '_blank');
   };
 
+  const openGallery = (index: number) => {
+    setCurrentImageIndex(index);
+    setIsGalleryOpen(true);
+  };
+
+  const closeGallery = () => {
+    setIsGalleryOpen(false);
+  };
+
+  const nextImage = () => {
+    setCurrentImageIndex((prev) => 
+      prev === auction.photos.length - 1 ? 0 : prev + 1
+    );
+  };
+
+  const prevImage = () => {
+    setCurrentImageIndex((prev) => 
+      prev === 0 ? auction.photos.length - 1 : prev - 1
+    );
+  };
+
+  const handleKeyDown = (e: KeyboardEvent) => {
+    if (!isGalleryOpen) return;
+    
+    if (e.key === 'Escape') {
+      closeGallery();
+    } else if (e.key === 'ArrowLeft') {
+      prevImage();
+    } else if (e.key === 'ArrowRight') {
+      nextImage();
+    }
+  };
+
+  useEffect(() => {
+    if (isGalleryOpen) {
+      document.addEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = 'unset';
+    };
+  }, [isGalleryOpen]);
+
   return (
     <div className="min-h-screen bg-gray-50 pb-20">
       <header className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-40">
@@ -170,15 +222,23 @@ export default function AuctionDetail() {
       <main className="container mx-auto px-4 py-6 space-y-6">
         <Card className="overflow-hidden">
           <div className="relative h-64">
-            <AutoImageCarousel 
-              images={auction.photos} 
-              alt={`${auction.year} ${auction.make} ${auction.model}`}
-              className="h-64"
-              autoPlayInterval={3000}
-            />
+            <div 
+              className="h-64 cursor-pointer"
+              onClick={() => openGallery(0)}
+            >
+              <AutoImageCarousel 
+                images={auction.photos} 
+                alt={`${auction.year} ${auction.make} ${auction.model}`}
+                className="h-64"
+                autoPlayInterval={3000}
+              />
+            </div>
             <div className="absolute top-4 right-4 bg-black/50 text-white px-2 py-1 rounded text-sm flex items-center gap-1">
               <Eye className="w-4 h-4" />
               {mockAuction.views}
+            </div>
+            <div className="absolute bottom-4 left-4 bg-black/50 text-white px-2 py-1 rounded text-sm">
+              Нажмите для просмотра галереи
             </div>
           </div>
         </Card>
@@ -213,11 +273,11 @@ export default function AuctionDetail() {
                 <Badge variant="outline" className={`${mockAuction.specifications.customsCleared ? 'text-green-700 bg-green-50 border-green-200' : 'text-red-700 bg-red-50 border-red-200'}`}>
                   {mockAuction.specifications.customsCleared ? '✓ Растаможен' : '✗ Не растаможен'}
                 </Badge>
-                <Badge variant="outline" className={`${auction.recycled ? 'text-blue-700 bg-blue-50 border-blue-200' : 'text-orange-700 bg-orange-50 border-orange-200'}`}>
-                  {auction.recycled ? 'Утилизация: есть' : 'Утилизация: нет'}
+                <Badge variant="outline" className={`${(auction as any).recycled ? 'text-blue-700 bg-blue-50 border-blue-200' : 'text-orange-700 bg-orange-50 border-orange-200'}`}>
+                  {(auction as any).recycled ? 'Утилизация: есть' : 'Утилизация: нет'}
                 </Badge>
-                <Badge variant="outline" className={`${auction.technicalInspectionValid ? 'text-purple-700 bg-purple-50 border-purple-200' : 'text-gray-700 bg-gray-50 border-gray-200'}`}>
-                  {auction.technicalInspectionValid ? `Техосмотр до ${auction.technicalInspectionDate}` : 'Техосмотр: нет'}
+                <Badge variant="outline" className={`${(auction as any).technicalInspectionValid ? 'text-purple-700 bg-purple-50 border-purple-200' : 'text-gray-700 bg-gray-50 border-gray-200'}`}>
+                  {(auction as any).technicalInspectionValid ? `Техосмотр до ${(auction as any).technicalInspectionDate}` : 'Техосмотр: нет'}
                 </Badge>
               </div>
             </div>
@@ -497,6 +557,80 @@ export default function AuctionDetail() {
 
 
       </main>
+
+      {/* Полноэкранная галерея */}
+      {isGalleryOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-90 z-50 flex items-center justify-center">
+          <div className="relative w-full h-full flex items-center justify-center">
+            {/* Кнопка закрытия */}
+            <Button
+              variant="ghost"
+              size="sm"
+              className="absolute top-4 right-4 z-60 text-white hover:bg-white/20"
+              onClick={closeGallery}
+            >
+              <X className="w-6 h-6" />
+            </Button>
+
+            {/* Кнопка предыдущего изображения */}
+            <Button
+              variant="ghost"
+              size="sm"
+              className="absolute left-4 top-1/2 -translate-y-1/2 z-60 text-white hover:bg-white/20"
+              onClick={prevImage}
+            >
+              <ChevronLeft className="w-8 h-8" />
+            </Button>
+
+            {/* Кнопка следующего изображения */}
+            <Button
+              variant="ghost"
+              size="sm"
+              className="absolute right-4 top-1/2 -translate-y-1/2 z-60 text-white hover:bg-white/20"
+              onClick={nextImage}
+            >
+              <ChevronRight className="w-8 h-8" />
+            </Button>
+
+            {/* Текущее изображение */}
+            <div className="w-full h-full flex items-center justify-center p-8">
+              <img
+                src={auction.photos[currentImageIndex]}
+                alt={`${auction.year} ${auction.make} ${auction.model} - фото ${currentImageIndex + 1}`}
+                className="max-w-full max-h-full object-contain"
+                onError={(e) => {
+                  e.currentTarget.style.display = 'none';
+                }}
+              />
+            </div>
+
+            {/* Индикатор текущего изображения */}
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2">
+              {auction.photos.map((_, index) => (
+                <button
+                  key={index}
+                  className={`w-3 h-3 rounded-full transition-all ${
+                    index === currentImageIndex 
+                      ? 'bg-white' 
+                      : 'bg-white/50 hover:bg-white/70'
+                  }`}
+                  onClick={() => setCurrentImageIndex(index)}
+                />
+              ))}
+            </div>
+
+            {/* Информация о фото */}
+            <div className="absolute bottom-16 left-1/2 -translate-x-1/2 text-white text-center">
+              <p className="text-lg font-medium">
+                {auction.year} {auction.make} {auction.model}
+              </p>
+              <p className="text-sm opacity-80">
+                Фото {currentImageIndex + 1} из {auction.photos.length}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
