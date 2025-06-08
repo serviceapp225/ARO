@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useLocation } from "wouter";
 import { useFavorites } from "@/contexts/FavoritesContext";
 import { useAuctions } from "@/contexts/AuctionContext";
+import { CountdownTimer } from "@/components/CountdownTimer";
 
 interface FavoriteCar {
   id: string;
@@ -141,12 +142,7 @@ export default function Favorites() {
                       </Button>
                     </div>
                     <div className="absolute bottom-3 left-3">
-                      <Badge variant="destructive" className="bg-red-600">
-                        {new Date(car.endTime) > new Date() ? 
-                          `${Math.ceil((new Date(car.endTime).getTime() - new Date().getTime()) / (1000 * 60 * 60))}ч` : 
-                          'Завершен'
-                        }
-                      </Badge>
+                      <CountdownTimer endTime={car.endTime} size="small" />
                     </div>
                   </div>
                   <CardContent className="p-4">
@@ -161,27 +157,23 @@ export default function Favorites() {
                           {car.make} {car.model}
                         </h3>
                         <p className="text-sm text-neutral-600">
-                          {car.year} • {car.mileage.toLocaleString()} км • {car.location}
+                          {car.year} • {car.mileage.toLocaleString()} км • Душанбе
                         </p>
                       </div>
 
                       <div className="flex flex-wrap gap-2">
                         <Badge variant="outline" className="text-xs">
-                          {car.bodyType}
+                          Седан
                         </Badge>
                         <Badge variant="outline" className="text-xs">
-                          {car.fuelType}
+                          Бензин
                         </Badge>
                         <Badge variant="outline" className="text-xs">
-                          {car.transmission}
+                          Автомат
                         </Badge>
                       </div>
 
                       <div className="space-y-2">
-                        <div className="flex justify-between items-center">
-                          <span className="text-sm text-neutral-600">Стартовая цена:</span>
-                          <span className="font-semibold">${formatPrice(car.price)}</span>
-                        </div>
                         <div className="flex justify-between items-center">
                           <span className="text-sm text-neutral-600">Текущая ставка:</span>
                           <span className="font-bold text-blue-600">${formatPrice(car.currentBid)}</span>
