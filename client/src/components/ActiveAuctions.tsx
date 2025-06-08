@@ -10,6 +10,21 @@ import { useState, useEffect } from 'react';
 import CarAlertButton from './CarAlertButton';
 import SearchAlertButton from './SearchAlertButton';
 
+// Helper function to format time remaining
+const formatTimeRemaining = (endTime: Date) => {
+  const now = new Date().getTime();
+  const distance = new Date(endTime).getTime() - now;
+  if (distance < 0) return 'Завершен';
+  
+  const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+  const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+  const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+  
+  if (days > 0) return `${days}д ${hours}ч`;
+  if (hours > 0) return `${hours}ч ${minutes}мин`;
+  return `${minutes}мин`;
+};
+
 interface ActiveAuctionsProps {
   searchQuery?: string;
 }
@@ -176,7 +191,19 @@ export function ActiveAuctions({ searchQuery = "" }: ActiveAuctionsProps) {
               <div className="flex justify-between items-center text-xs text-gray-500">
                 <span>{auction.bidCount} ставок</span>
                 <span className="bg-orange-100 text-orange-700 px-2 py-1 rounded">
-                  2h {Math.floor(Math.random() * 60)}m
+                  {(() => {
+                    const now = new Date().getTime();
+                    const distance = new Date(auction.endTime).getTime() - now;
+                    if (distance < 0) return 'Завершен';
+                    
+                    const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+                    const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                    const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                    
+                    if (days > 0) return `${days}д ${hours}ч`;
+                    if (hours > 0) return `${hours}ч ${minutes}мин`;
+                    return `${minutes}мин`;
+                  })()}
                 </span>
               </div>
             </CardContent>
