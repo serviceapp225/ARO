@@ -7,6 +7,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { AuctionProvider } from "@/contexts/AuctionContext";
 import { UserDataProvider } from "@/contexts/UserDataContext";
 import { AlertsProvider } from "@/contexts/AlertsContext";
+import { FavoritesProvider } from "@/contexts/FavoritesContext";
 import HomePage from "@/pages/HomePage";
 import AuctionFeed from "@/pages/AuctionFeed";
 import AuctionDetail from "@/pages/AuctionDetail";
@@ -59,10 +60,12 @@ function App() {
         <AuthProvider>
           <UserDataProvider>
             <AlertsProvider>
-              <AuctionProvider>
-                <Toaster />
-                <Router />
-              </AuctionProvider>
+              <FavoritesProvider>
+                <AuctionProvider>
+                  <Toaster />
+                  <Router />
+                </AuctionProvider>
+              </FavoritesProvider>
             </AlertsProvider>
           </UserDataProvider>
         </AuthProvider>

@@ -4,6 +4,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { CountdownTimer } from './CountdownTimer';
 import { AutoImageCarousel } from './AutoImageCarousel';
 import { useAuctions } from '@/contexts/AuctionContext';
+import { useFavorites } from '@/contexts/FavoritesContext';
 import { useLocation } from 'wouter';
 import { useState, useEffect } from 'react';
 import CarAlertButton from './CarAlertButton';

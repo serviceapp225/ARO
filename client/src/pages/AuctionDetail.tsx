@@ -5,12 +5,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { useAuctions } from "@/contexts/AuctionContext";
+import { useFavorites } from "@/contexts/FavoritesContext";
 import { AutoImageCarousel } from "@/components/AutoImageCarousel";
 import { useState, useEffect } from "react";
 
 export default function AuctionDetail() {
   const { id } = useParams();
   const { auctions } = useAuctions();
+  const { isFavorite, addToFavorites, removeFromFavorites } = useFavorites();
   const [, setLocation] = useLocation();
   const [bidAmount, setBidAmount] = useState("");
   const [timeLeft, setTimeLeft] = useState({
@@ -163,6 +165,15 @@ export default function AuctionDetail() {
     window.open(`https://wa.me/?text=Интересует автомобиль ${auction.year} ${auction.make} ${auction.model}`, '_blank');
   };
 
+  const handleToggleFavorite = () => {
+    const auctionId = id || "1";
+    if (isFavorite(auctionId)) {
+      removeFromFavorites(auctionId);
+    } else {
+      addToFavorites(auctionId);
+    }
+  };
+
   const openGallery = (index: number) => {
     setCurrentImageIndex(index);
     setIsGalleryOpen(true);
@@ -282,8 +293,8 @@ export default function AuctionDetail() {
             Назад
           </Button>
           <div className="flex items-center gap-2">
-            <Button variant="ghost" size="sm">
-              <Heart className="w-5 h-5" />
+            <Button variant="ghost" size="sm" onClick={handleToggleFavorite}>
+              <Heart className={`w-5 h-5 ${isFavorite(id || "1") ? 'fill-red-500 text-red-500' : 'text-gray-600'}`} />
             </Button>
             <Button variant="ghost" size="sm" onClick={handleWhatsAppContact}>
               <MessageCircle className="w-5 h-5" />
