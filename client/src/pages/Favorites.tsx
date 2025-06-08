@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useLocation } from "wouter";
+import { useFavorites } from "@/contexts/FavoritesContext";
+import { useAuctions } from "@/contexts/AuctionContext";
 
 interface FavoriteCar {
   id: string;
@@ -27,59 +29,12 @@ interface FavoriteCar {
 export default function Favorites() {
   const [sortBy, setSortBy] = useState("recent");
   const [, setLocation] = useLocation();
-  const [favorites, setFavorites] = useState<FavoriteCar[]>([
-    {
-      id: "1",
-      lotNumber: "847293",
-      make: "Toyota",
-      model: "Camry",
-      year: 2020,
-      price: 18500,
-      mileage: 45000,
-      bodyType: "Седан",
-      fuelType: "Бензин",
-      transmission: "Автомат",
-      image: "/api/placeholder/300/200",
-      timeLeft: "2ч 15м",
-      currentBid: 17800,
-      location: "Душанбе",
-      addedDate: "2024-01-15"
-    },
-    {
-      id: "2", 
-      lotNumber: "561847",
-      make: "Honda",
-      model: "CR-V",
-      year: 2019,
-      price: 22000,
-      mileage: 52000,
-      bodyType: "Кроссовер",
-      fuelType: "Бензин",
-      transmission: "Автомат",
-      image: "/api/placeholder/300/200",
-      timeLeft: "1д 5ч",
-      currentBid: 21200,
-      location: "Худжанд",
-      addedDate: "2024-01-14"
-    },
-    {
-      id: "3",
-      lotNumber: "329054",
-      make: "BMW",
-      model: "X3",
-      year: 2021,
-      price: 35000,
-      mileage: 28000,
-      bodyType: "Внедорожник",
-      fuelType: "Бензин",
-      transmission: "Автомат",
-      image: "/api/placeholder/300/200",
-      timeLeft: "3д 12ч",
-      currentBid: 34200,
-      location: "Душанбе",
-      addedDate: "2024-01-13"
-    }
-  ]);
+  const { getFavoritesList, removeFromFavorites } = useFavorites();
+  const { auctions } = useAuctions();
+  
+  // Get favorite auctions from the auction list
+  const favoriteIds = getFavoritesList();
+  const favoriteAuctions = auctions.filter(auction => favoriteIds.includes(auction.id));
 
   const removeFavorite = (id: string) => {
     setFavorites(prev => prev.filter(car => car.id !== id));

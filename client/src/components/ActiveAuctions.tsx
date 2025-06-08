@@ -16,6 +16,7 @@ interface ActiveAuctionsProps {
 
 export function ActiveAuctions({ searchQuery = "" }: ActiveAuctionsProps) {
   const { auctions, loading } = useAuctions();
+  const { isFavorite, addToFavorites, removeFromFavorites } = useFavorites();
   const [, setLocation] = useLocation();
   const [page, setPage] = useState(1);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -36,6 +37,15 @@ export function ActiveAuctions({ searchQuery = "" }: ActiveAuctionsProps) {
 
   // Calculate displayed auctions based on current page
   const displayedAuctions = filteredAuctions.slice(0, page * ITEMS_PER_PAGE);
+
+  const handleToggleFavorite = (auctionId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (isFavorite(auctionId)) {
+      removeFromFavorites(auctionId);
+    } else {
+      addToFavorites(auctionId);
+    }
+  };
 
   // Handle scroll to load more real data
   useEffect(() => {
@@ -110,9 +120,9 @@ export function ActiveAuctions({ searchQuery = "" }: ActiveAuctionsProps) {
                   variant="ghost"
                   size="icon"
                   className="w-6 h-6 bg-black/50 text-white hover:bg-black/70"
-                  onClick={(e) => e.stopPropagation()}
+                  onClick={(e) => handleToggleFavorite(auction.id, e)}
                 >
-                  <Heart className="h-3 w-3" />
+                  <Heart className={`h-3 w-3 ${isFavorite(auction.id) ? 'fill-red-500 text-red-500' : 'text-white'}`} />
                 </Button>
               </div>
             </div>
