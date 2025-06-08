@@ -22,6 +22,11 @@ export default function AuctionDetail() {
   const [auctionEndTime, setAuctionEndTime] = useState<Date | null>(null);
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [touchStart, setTouchStart] = useState<number | null>(null);
+  const [touchEnd, setTouchEnd] = useState<number | null>(null);
+  const [mouseStart, setMouseStart] = useState<number | null>(null);
+  const [mouseEnd, setMouseEnd] = useState<number | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
 
   // Mock auction data with detailed specifications
   const getConditionByMileage = (miles: number) => {
@@ -191,6 +196,69 @@ export default function AuctionDetail() {
     }
   };
 
+  // Минимальное расстояние для регистрации свайпа
+  const minSwipeDistance = 50;
+
+  const onTouchStart = (e: React.TouchEvent) => {
+    setTouchEnd(null);
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const onTouchMove = (e: React.TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const onTouchEnd = () => {
+    if (!touchStart || !touchEnd) return;
+    
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > minSwipeDistance;
+    const isRightSwipe = distance < -minSwipeDistance;
+
+    if (isLeftSwipe) {
+      nextImage();
+    }
+    if (isRightSwipe) {
+      prevImage();
+    }
+  };
+
+  // Обработчики мыши для десктопа
+  const onMouseDown = (e: React.MouseEvent) => {
+    setIsDragging(true);
+    setMouseEnd(null);
+    setMouseStart(e.clientX);
+  };
+
+  const onMouseMove = (e: React.MouseEvent) => {
+    if (!isDragging) return;
+    setMouseEnd(e.clientX);
+  };
+
+  const onMouseUp = () => {
+    if (!isDragging || !mouseStart || !mouseEnd) {
+      setIsDragging(false);
+      return;
+    }
+    
+    const distance = mouseStart - mouseEnd;
+    const isLeftDrag = distance > minSwipeDistance;
+    const isRightDrag = distance < -minSwipeDistance;
+
+    if (isLeftDrag) {
+      nextImage();
+    }
+    if (isRightDrag) {
+      prevImage();
+    }
+    
+    setIsDragging(false);
+  };
+
+  const onMouseLeave = () => {
+    setIsDragging(false);
+  };
+
   useEffect(() => {
     if (isGalleryOpen) {
       document.addEventListener('keydown', handleKeyDown);
@@ -244,6 +312,9 @@ export default function AuctionDetail() {
             </div>
             <div className="absolute bottom-4 left-4 bg-black/50 text-white px-2 py-1 rounded text-sm">
               Нажмите для просмотра галереи
+            </div>
+            <div className="absolute bottom-4 right-4 bg-black/50 text-white px-2 py-1 rounded text-sm">
+              {auction.photos.length} фото
             </div>
           </div>
         </Card>
@@ -598,14 +669,24 @@ export default function AuctionDetail() {
             </Button>
 
             {/* Текущее изображение */}
-            <div className="w-full h-full flex items-center justify-center p-8">
+            <div 
+              className={`w-full h-full flex items-center justify-center p-8 touch-none ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
+              onTouchStart={onTouchStart}
+              onTouchMove={onTouchMove}
+              onTouchEnd={onTouchEnd}
+              onMouseDown={onMouseDown}
+              onMouseMove={onMouseMove}
+              onMouseUp={onMouseUp}
+              onMouseLeave={onMouseLeave}
+            >
               <img
                 src={auction.photos[currentImageIndex]}
                 alt={`${auction.year} ${auction.make} ${auction.model} - фото ${currentImageIndex + 1}`}
-                className="max-w-full max-h-full object-contain"
+                className="max-w-full max-h-full object-contain select-none pointer-events-none"
                 onError={(e) => {
                   e.currentTarget.style.display = 'none';
                 }}
+                draggable={false}
               />
             </div>
 
@@ -631,6 +712,9 @@ export default function AuctionDetail() {
               </p>
               <p className="text-sm opacity-80">
                 Фото {currentImageIndex + 1} из {auction.photos.length}
+              </p>
+              <p className="text-xs opacity-60 mt-1">
+                Листайте пальцем или перетаскивайте мышью
               </p>
             </div>
           </div>
