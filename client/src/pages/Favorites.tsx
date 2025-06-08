@@ -37,7 +37,7 @@ export default function Favorites() {
   const favoriteAuctions = auctions.filter(auction => favoriteIds.includes(auction.id));
 
   const removeFavorite = (id: string) => {
-    setFavorites(prev => prev.filter(car => car.id !== id));
+    removeFromFavorites(id);
   };
 
   const goToAuction = (id: string) => {
@@ -48,19 +48,19 @@ export default function Favorites() {
     return new Intl.NumberFormat('ru-RU').format(price);
   };
 
-  const sortedFavorites = [...favorites].sort((a, b) => {
+  const sortedFavorites = [...favoriteAuctions].sort((a, b) => {
     switch (sortBy) {
       case "price-low":
-        return a.price - b.price;
+        return a.currentBid - b.currentBid;
       case "price-high":
-        return b.price - a.price;
+        return b.currentBid - a.currentBid;
       case "year-new":
         return b.year - a.year;
       case "year-old":
         return a.year - b.year;
       case "recent":
       default:
-        return new Date(b.addedDate).getTime() - new Date(a.addedDate).getTime();
+        return new Date(b.endTime).getTime() - new Date(a.endTime).getTime();
     }
   });
 
@@ -73,7 +73,7 @@ export default function Favorites() {
             <div>
               <h1 className="text-2xl font-bold text-neutral-900">Избранное</h1>
               <p className="text-neutral-600 mt-1">
-                {favorites.length} {favorites.length === 1 ? 'автомобиль' : 'автомобилей'}
+                {favoriteAuctions.length} {favoriteAuctions.length === 1 ? 'автомобиль' : 'автомобилей'}
               </p>
             </div>
             <Heart className="w-6 h-6 text-red-500 fill-current" />
@@ -82,7 +82,7 @@ export default function Favorites() {
       </header>
 
       <main className="container mx-auto px-4 py-6">
-        {favorites.length === 0 ? (
+        {favoriteAuctions.length === 0 ? (
           /* Empty State */
           <div className="text-center py-16">
             <Heart className="w-16 h-16 text-gray-300 mx-auto mb-4" />
@@ -123,7 +123,7 @@ export default function Favorites() {
                 <Card key={car.id} className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer" onClick={() => goToAuction(car.id)}>
                   <div className="relative">
                     <img
-                      src={car.image}
+                      src={car.photos[0] || "/api/placeholder/300/200"}
                       alt={`${car.make} ${car.model}`}
                       className="w-full h-48 object-cover"
                     />
@@ -142,7 +142,10 @@ export default function Favorites() {
                     </div>
                     <div className="absolute bottom-3 left-3">
                       <Badge variant="destructive" className="bg-red-600">
-                        {car.timeLeft}
+                        {new Date(car.endTime) > new Date() ? 
+                          `${Math.ceil((new Date(car.endTime).getTime() - new Date().getTime()) / (1000 * 60 * 60))}ч` : 
+                          'Завершен'
+                        }
                       </Badge>
                     </div>
                   </div>
