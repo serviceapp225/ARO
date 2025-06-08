@@ -91,6 +91,11 @@ export default function AuctionDetail() {
     { bidder: "Игорь З.", amount: 43500, time: "5 часов назад", isWinning: false },
   ];
 
+  // Прокрутка к верху страницы при загрузке
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
+
   // Инициализация времени окончания аукциона
   useEffect(() => {
     if (!auctionEndTime) {
