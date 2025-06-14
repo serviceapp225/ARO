@@ -143,9 +143,16 @@ export class MemStorage implements IStorage {
     };
     this.users.set(buyerUser.id, buyerUser);
 
-    // Create sample car listings
+    // Create sample car listings with fixed end times
     const now = new Date();
-    const futureDate = new Date(now.getTime() + 2 * 24 * 60 * 60 * 1000); // 2 days from now
+    
+    // Fixed auction end times to prevent timer reset on server restart
+    const auction1EndTime = new Date('2025-01-15T15:30:00Z'); // Fixed future date
+    const auction2EndTime = new Date('2025-01-16T18:45:00Z'); // Fixed future date
+    const auction3EndTime = new Date('2025-01-14T12:20:00Z'); // Fixed future date
+    const auction4EndTime = new Date('2025-01-17T10:15:00Z'); // Fixed future date
+    const auction5EndTime = new Date('2025-01-18T14:30:00Z'); // Fixed future date
+    const auction6EndTime = new Date('2025-01-19T16:45:00Z'); // Fixed future date
 
     const listing1: CarListing = {
       id: this.currentListingId++,
@@ -169,7 +176,7 @@ export class MemStorage implements IStorage {
       auctionDuration: 72,
       status: "active",
       auctionStartTime: now,
-      auctionEndTime: futureDate,
+      auctionEndTime: auction1EndTime,
       customsCleared: true,
       recycled: true,
       technicalInspectionValid: true,
@@ -200,7 +207,7 @@ export class MemStorage implements IStorage {
       auctionDuration: 168,
       status: "active",
       auctionStartTime: now,
-      auctionEndTime: new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000),
+      auctionEndTime: auction2EndTime,
       customsCleared: false,
       recycled: false,
       technicalInspectionValid: true,
@@ -231,7 +238,7 @@ export class MemStorage implements IStorage {
       auctionDuration: 72,
       status: "active",
       auctionStartTime: now,
-      auctionEndTime: new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000),
+      auctionEndTime: auction3EndTime,
       customsCleared: true,
       recycled: false,
       technicalInspectionValid: true,
