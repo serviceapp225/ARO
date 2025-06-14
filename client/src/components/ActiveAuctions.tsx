@@ -1,6 +1,7 @@
-import { Heart, Clock, Car } from 'lucide-react';
+import { Heart, Clock, Car, Filter } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { CountdownTimer } from './CountdownTimer';
 import { AutoImageCarousel } from './AutoImageCarousel';
 import { useAuctions } from '@/contexts/AuctionContext';
@@ -21,6 +22,7 @@ export function ActiveAuctions({ searchQuery = "" }: ActiveAuctionsProps) {
   const [page, setPage] = useState(1);
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
+  const [sortBy, setSortBy] = useState("recent");
 
   const ITEMS_PER_PAGE = 20;
 
@@ -35,8 +37,27 @@ export function ActiveAuctions({ searchQuery = "" }: ActiveAuctionsProps) {
     return lotMatch || carNameMatch;
   });
 
+  // Sort auctions based on selected criteria
+  const sortedAuctions = [...filteredAuctions].sort((a, b) => {
+    switch (sortBy) {
+      case "price-low":
+        return a.currentBid - b.currentBid;
+      case "price-high":
+        return b.currentBid - a.currentBid;
+      case "year-new":
+        return b.year - a.year;
+      case "year-old":
+        return a.year - b.year;
+      case "time-ending":
+        return new Date(a.endTime).getTime() - new Date(b.endTime).getTime();
+      case "recent":
+      default:
+        return new Date(b.endTime).getTime() - new Date(a.endTime).getTime();
+    }
+  });
+
   // Calculate displayed auctions based on current page
-  const displayedAuctions = filteredAuctions.slice(0, page * ITEMS_PER_PAGE);
+  const displayedAuctions = sortedAuctions.slice(0, page * ITEMS_PER_PAGE);
 
   const handleToggleFavorite = (auctionId: string, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -46,6 +67,12 @@ export function ActiveAuctions({ searchQuery = "" }: ActiveAuctionsProps) {
       addToFavorites(auctionId);
     }
   };
+
+  // Reset pagination when sorting changes
+  useEffect(() => {
+    setPage(1);
+    setHasMore(true);
+  }, [sortBy]);
 
   // Handle scroll to load more real data
   useEffect(() => {
@@ -60,7 +87,7 @@ export function ActiveAuctions({ searchQuery = "" }: ActiveAuctionsProps) {
         // Simulate API call delay
         setTimeout(() => {
           const nextPage = page + 1;
-          const totalAvailable = filteredAuctions.length;
+          const totalAvailable = sortedAuctions.length;
           
           if (nextPage * ITEMS_PER_PAGE >= totalAvailable) {
             setHasMore(false);
@@ -95,6 +122,26 @@ export function ActiveAuctions({ searchQuery = "" }: ActiveAuctionsProps) {
 
   return (
     <div className="mb-20">
+      {/* Sorting Controls */}
+      <div className="flex items-center justify-between mb-4 px-1">
+        <div className="flex items-center gap-2">
+          <Filter className="w-4 h-4 text-gray-500" />
+          <span className="text-sm text-gray-600">Сортировка:</span>
+        </div>
+        <Select value={sortBy} onValueChange={setSortBy}>
+          <SelectTrigger className="w-40 h-8 text-xs">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="recent">По умолчанию</SelectItem>
+            <SelectItem value="price-low">Дешевые</SelectItem>
+            <SelectItem value="price-high">Дорогие</SelectItem>
+            <SelectItem value="year-new">Новые</SelectItem>
+            <SelectItem value="year-old">Старые</SelectItem>
+            <SelectItem value="time-ending">Скоро закончатся</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
       <div className="grid grid-cols-2 gap-3">
         {displayedAuctions.map((auction, index) => (
           <Card
