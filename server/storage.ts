@@ -605,6 +605,23 @@ export class MemStorage implements IStorage {
       createdAt: new Date(now.getTime() - 5 * 60 * 1000) // 5 minutes ago
     };
     this.bids.set(bid2.id, bid2);
+
+    // Create sample favorites for testing notifications
+    const favorite1: Favorite = {
+      id: this.currentFavoriteId++,
+      userId: buyerUser.id,
+      listingId: listing2.id, // BMW M3
+      createdAt: new Date()
+    };
+    this.favorites.set(favorite1.id, favorite1);
+
+    const favorite2: Favorite = {
+      id: this.currentFavoriteId++,
+      userId: buyerUser.id,
+      listingId: listing3.id, // Tesla Model S
+      createdAt: new Date()
+    };
+    this.favorites.set(favorite2.id, favorite2);
   }
 
   // User operations

@@ -4,6 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { ActiveAuctions } from "@/components/ActiveAuctions";
 import { AdvertisementBanner } from "@/components/AdvertisementBanner";
+import { TopHeader } from "@/components/TopHeader";
 import { Link } from "wouter";
 import { useState } from "react";
 import { useLocation } from "wouter";
@@ -19,10 +20,11 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-gray-50 pb-20">
-      {/* Header with App Name and WhatsApp */}
-      <header className="bg-white shadow-sm border-b border-gray-200">
-        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-gray-900">AUTOAUCTION</h1>
+      <TopHeader />
+      
+      {/* WhatsApp Contact Section */}
+      <div className="bg-white border-b border-gray-200 px-4 py-2">
+        <div className="flex justify-end">
           <a 
             href="https://wa.me/992900000000" 
             target="_blank" 
@@ -32,7 +34,7 @@ export default function HomePage() {
             <MessageCircle className="w-5 h-5 text-green-600" />
           </a>
         </div>
-      </header>
+      </div>
 
       <main className="container mx-auto px-4 py-6 space-y-6">
         {/* Search Section */}
