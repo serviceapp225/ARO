@@ -21,13 +21,7 @@ export function CountdownTimer({ endTime, size = 'small', onTimeUp }: CountdownT
       const now = new Date().getTime();
       const distance = endTime.getTime() - now;
 
-      // Debug logging
-      console.log('Timer debug:', {
-        now: new Date(now).toISOString(),
-        endTime: endTime.toISOString(),
-        distance: distance,
-        distanceHours: Math.floor(distance / (1000 * 60 * 60))
-      });
+
 
       if (distance < 0) {
         setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0, total: 0 });
