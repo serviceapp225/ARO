@@ -89,6 +89,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Update listing's current bid
       await storage.updateListingCurrentBid(listingId, validatedData.amount);
       
+      // Get the listing information for notifications
+      const listing = await storage.getListing(listingId);
+      if (listing) {
+        // Find users who have this listing in favorites
+        const usersWithFavorite = await storage.getUsersWithFavoriteListing(listingId);
+        
+        // Send notifications to users with this listing in favorites (excluding the bidder)
+        for (const userId of usersWithFavorite) {
+          if (userId !== validatedData.bidderId) {
+            await storage.createNotification({
+              userId,
+              title: "Новая ставка на избранный автомобиль",
+              message: `Новая ставка $${validatedData.amount} на ${listing.make} ${listing.model} ${listing.year}`,
+              type: "bid_update",
+              listingId: listingId,
+              isRead: false
+            });
+          }
+        }
+      }
+      
       res.status(201).json(bid);
     } catch (error) {
       if (error instanceof z.ZodError) {

@@ -54,6 +54,7 @@ export interface IStorage {
   getFavoritesByUser(userId: number): Promise<Favorite[]>;
   createFavorite(favorite: InsertFavorite): Promise<Favorite>;
   deleteFavorite(id: number): Promise<boolean>;
+  getUsersWithFavoriteListing(listingId: number): Promise<number[]>;
 
   // Notifications operations
   getNotificationsByUser(userId: number): Promise<Notification[]>;
@@ -797,6 +798,12 @@ export class MemStorage implements IStorage {
 
   async deleteFavorite(id: number): Promise<boolean> {
     return this.favorites.delete(id);
+  }
+
+  async getUsersWithFavoriteListing(listingId: number): Promise<number[]> {
+    return Array.from(this.favorites.values())
+      .filter(favorite => favorite.listingId === listingId)
+      .map(favorite => favorite.userId);
   }
 
   // Notifications operations
