@@ -153,6 +153,12 @@ export class MemStorage implements IStorage {
     const auction4EndTime = new Date('2025-01-17T10:15:00Z'); // Fixed future date
     const auction5EndTime = new Date('2025-01-18T14:30:00Z'); // Fixed future date
     const auction6EndTime = new Date('2025-01-19T16:45:00Z'); // Fixed future date
+    const auction7EndTime = new Date('2025-01-20T11:00:00Z'); // Fixed future date
+    const auction8EndTime = new Date('2025-01-21T13:15:00Z'); // Fixed future date
+    const auction9EndTime = new Date('2025-01-22T17:30:00Z'); // Fixed future date
+    const auction10EndTime = new Date('2025-01-23T09:45:00Z'); // Fixed future date
+    const auction11EndTime = new Date('2025-01-24T15:20:00Z'); // Fixed future date
+    const auction12EndTime = new Date('2025-01-25T19:10:00Z'); // Fixed future date
 
     const listing1: CarListing = {
       id: this.currentListingId++,
@@ -269,7 +275,7 @@ export class MemStorage implements IStorage {
       auctionDuration: 120,
       status: "active",
       auctionStartTime: now,
-      auctionEndTime: new Date(now.getTime() + 5 * 24 * 60 * 60 * 1000),
+      auctionEndTime: auction4EndTime,
       customsCleared: true,
       recycled: false,
       technicalInspectionValid: true,
@@ -300,7 +306,7 @@ export class MemStorage implements IStorage {
       auctionDuration: 96,
       status: "active",
       auctionStartTime: now,
-      auctionEndTime: new Date(now.getTime() + 4 * 24 * 60 * 60 * 1000),
+      auctionEndTime: auction5EndTime,
       customsCleared: true,
       recycled: true,
       technicalInspectionValid: false,
@@ -331,7 +337,7 @@ export class MemStorage implements IStorage {
       auctionDuration: 144,
       status: "active",
       auctionStartTime: now,
-      auctionEndTime: new Date(now.getTime() + 6 * 24 * 60 * 60 * 1000),
+      auctionEndTime: auction6EndTime,
       customsCleared: false,
       recycled: false,
       technicalInspectionValid: true,
@@ -358,7 +364,7 @@ export class MemStorage implements IStorage {
       auctionDuration: 192,
       status: "active",
       auctionStartTime: now,
-      auctionEndTime: new Date(now.getTime() + 8 * 24 * 60 * 60 * 1000),
+      auctionEndTime: auction7EndTime,
       customsCleared: true,
       recycled: true,
       technicalInspectionValid: true,
@@ -385,7 +391,7 @@ export class MemStorage implements IStorage {
       auctionDuration: 216,
       status: "active",
       auctionStartTime: now,
-      auctionEndTime: new Date(now.getTime() + 9 * 24 * 60 * 60 * 1000),
+      auctionEndTime: auction8EndTime,
       customsCleared: false,
       recycled: true,
       technicalInspectionValid: false,
@@ -416,7 +422,7 @@ export class MemStorage implements IStorage {
       auctionDuration: 168,
       status: "active",
       auctionStartTime: now,
-      auctionEndTime: new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000),
+      auctionEndTime: auction9EndTime,
       customsCleared: true,
       recycled: false,
       technicalInspectionValid: true,
@@ -447,7 +453,7 @@ export class MemStorage implements IStorage {
       auctionDuration: 120,
       status: "active",
       auctionStartTime: now,
-      auctionEndTime: new Date(now.getTime() + 5 * 24 * 60 * 60 * 1000),
+      auctionEndTime: auction4EndTime,
       customsCleared: true,
       recycled: false,
       technicalInspectionValid: true,
@@ -478,7 +484,7 @@ export class MemStorage implements IStorage {
       auctionDuration: 144,
       status: "active",
       auctionStartTime: now,
-      auctionEndTime: new Date(now.getTime() + 6 * 24 * 60 * 60 * 1000),
+      auctionEndTime: auction6EndTime,
       customsCleared: false,
       recycled: true,
       technicalInspectionValid: true,
@@ -509,7 +515,7 @@ export class MemStorage implements IStorage {
       auctionDuration: 96,
       status: "active",
       auctionStartTime: now,
-      auctionEndTime: new Date(now.getTime() + 4 * 24 * 60 * 60 * 1000),
+      auctionEndTime: auction5EndTime,
       customsCleared: true,
       recycled: false,
       technicalInspectionValid: false,
@@ -540,7 +546,7 @@ export class MemStorage implements IStorage {
       auctionDuration: 168,
       status: "active",
       auctionStartTime: now,
-      auctionEndTime: new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000),
+      auctionEndTime: auction9EndTime,
       customsCleared: true,
       recycled: false,
       technicalInspectionValid: true,
@@ -571,7 +577,7 @@ export class MemStorage implements IStorage {
       auctionDuration: 120,
       status: "active",
       auctionStartTime: now,
-      auctionEndTime: new Date(now.getTime() + 5 * 24 * 60 * 60 * 1000),
+      auctionEndTime: auction4EndTime,
       customsCleared: false,
       recycled: true,
       technicalInspectionValid: false,
