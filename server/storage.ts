@@ -147,18 +147,18 @@ export class MemStorage implements IStorage {
     const now = new Date();
     
     // Fixed auction end times to prevent timer reset on server restart
-    const auction1EndTime = new Date('2025-01-15T15:30:00Z'); // Fixed future date
-    const auction2EndTime = new Date('2025-01-16T18:45:00Z'); // Fixed future date
-    const auction3EndTime = new Date('2025-01-14T12:20:00Z'); // Fixed future date
-    const auction4EndTime = new Date('2025-01-17T10:15:00Z'); // Fixed future date
-    const auction5EndTime = new Date('2025-01-18T14:30:00Z'); // Fixed future date
-    const auction6EndTime = new Date('2025-01-19T16:45:00Z'); // Fixed future date
-    const auction7EndTime = new Date('2025-01-20T11:00:00Z'); // Fixed future date
-    const auction8EndTime = new Date('2025-01-21T13:15:00Z'); // Fixed future date
-    const auction9EndTime = new Date('2025-01-22T17:30:00Z'); // Fixed future date
-    const auction10EndTime = new Date('2025-01-23T09:45:00Z'); // Fixed future date
-    const auction11EndTime = new Date('2025-01-24T15:20:00Z'); // Fixed future date
-    const auction12EndTime = new Date('2025-01-25T19:10:00Z'); // Fixed future date
+    const auction1EndTime = new Date('2025-01-16T15:30:00Z'); // Fixed future date
+    const auction2EndTime = new Date('2025-01-17T18:45:00Z'); // Fixed future date
+    const auction3EndTime = new Date('2025-01-18T12:20:00Z'); // Fixed future date
+    const auction4EndTime = new Date('2025-01-19T10:15:00Z'); // Fixed future date
+    const auction5EndTime = new Date('2025-01-20T14:30:00Z'); // Fixed future date
+    const auction6EndTime = new Date('2025-01-21T16:45:00Z'); // Fixed future date
+    const auction7EndTime = new Date('2025-01-22T11:00:00Z'); // Fixed future date
+    const auction8EndTime = new Date('2025-01-23T13:15:00Z'); // Fixed future date
+    const auction9EndTime = new Date('2025-01-24T17:30:00Z'); // Fixed future date
+    const auction10EndTime = new Date('2025-01-25T09:45:00Z'); // Fixed future date
+    const auction11EndTime = new Date('2025-01-26T15:20:00Z'); // Fixed future date
+    const auction12EndTime = new Date('2025-01-27T19:10:00Z'); // Fixed future date
 
     const listing1: CarListing = {
       id: this.currentListingId++,
