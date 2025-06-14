@@ -202,11 +202,27 @@ export default function AuctionDetail() {
   };
 
   const handlePlaceBid = () => {
-    if (parseInt(bidAmount) > auction.currentBid) {
-      extendAuctionIfNeeded();
-      console.log("Placing bid:", bidAmount);
-      setBidAmount("");
+    if (!bidAmount || bidMutation.isPending) return;
+    
+    const bidValue = parseFloat(bidAmount);
+    const currentBidValue = currentAuction?.currentBid ? parseFloat(currentAuction.currentBid) : auction.currentBid;
+    
+    if (bidValue <= currentBidValue) {
+      toast({
+        title: "Ставка слишком низкая",
+        description: `Минимальная ставка: $${(currentBidValue + 100).toLocaleString()}`,
+        variant: "destructive",
+      });
+      return;
     }
+    
+    extendAuctionIfNeeded();
+    
+    // Place bid using real API with user ID 3 (buyer user)
+    bidMutation.mutate({
+      bidderId: 3,
+      amount: bidAmount
+    });
   };
 
   const handleQuickBid = (amount: number) => {
@@ -340,6 +356,12 @@ export default function AuctionDetail() {
 
   return (
     <div className="min-h-screen bg-gray-50 pb-20">
+      {/* Confetti Effect */}
+      <ConfettiEffect 
+        isActive={showConfetti} 
+        onComplete={() => setShowConfetti(false)} 
+      />
+      
       <header className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-40">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <Button variant="ghost" size="sm" onClick={() => window.history.back()}>
@@ -509,7 +531,14 @@ export default function AuctionDetail() {
                   <div className="text-sm text-gray-600">Ставок</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-green-600">${auction.currentBid.toLocaleString()}</div>
+                  <AnimatedPrice 
+                    value={currentAuction?.currentBid ? parseFloat(currentAuction.currentBid) : auction.currentBid}
+                    className="text-2xl font-bold text-green-600"
+                    onPriceUpdate={() => {
+                      // Additional celebration effects when price updates
+                      setTimeout(() => setShowConfetti(false), 3000);
+                    }}
+                  />
                   <div className="text-sm text-gray-600">Текущая ставка</div>
                 </div>
               </div>
@@ -598,10 +627,10 @@ export default function AuctionDetail() {
                 />
                 <Button 
                   onClick={handlePlaceBid}
-                  disabled={!bidAmount || parseInt(bidAmount) <= auction.currentBid}
+                  disabled={!bidAmount || bidMutation.isPending || parseInt(bidAmount) <= auction.currentBid}
                   className="bg-green-600 hover:bg-green-700 text-white px-6"
                 >
-                  Сделать ставку
+                  {bidMutation.isPending ? "Размещение..." : "Сделать ставку"}
                 </Button>
               </div>
               
