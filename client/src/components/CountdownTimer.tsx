@@ -69,7 +69,7 @@ export function CountdownTimer({ endTime, size = 'small', onTimeUp }: CountdownT
       <Clock className="w-2.5 h-2.5 inline mr-0.5" />
       {timeLeft.days > 0 ? `${timeLeft.days}д ` : ''}
       {timeLeft.hours > 0 ? `${timeLeft.hours}ч ` : ''}
-      {timeLeft.minutes}мин
+      {timeLeft.minutes}м {timeLeft.seconds}с
     </div>
   );
 }
