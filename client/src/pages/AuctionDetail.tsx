@@ -7,6 +7,10 @@ import { Input } from "@/components/ui/input";
 import { useAuctions } from "@/contexts/AuctionContext";
 import { useFavorites } from "@/contexts/FavoritesContext";
 import { AutoImageCarousel } from "@/components/AutoImageCarousel";
+import { ConfettiEffect } from "@/components/ConfettiEffect";
+import { AnimatedPrice } from "@/components/AnimatedPrice";
+import { useToast } from "@/hooks/use-toast";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
 
 export default function AuctionDetail() {
@@ -29,6 +33,56 @@ export default function AuctionDetail() {
   const [mouseStart, setMouseStart] = useState<number | null>(null);
   const [mouseEnd, setMouseEnd] = useState<number | null>(null);
   const [isDragging, setIsDragging] = useState(false);
+  const [showConfetti, setShowConfetti] = useState(false);
+  const [currentPrice, setCurrentPrice] = useState(0);
+  
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  // Fetch current auction data
+  const { data: currentAuction, refetch: refetchAuction } = useQuery({
+    queryKey: [`/api/listings/${id}`],
+    enabled: !!id,
+  });
+
+  // Bid mutation with celebration effects
+  const bidMutation = useMutation({
+    mutationFn: async (bidData: { bidderId: number; amount: string }) => {
+      const response = await fetch(`/api/listings/${id}/bids`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(bidData),
+      });
+      if (!response.ok) throw new Error('Failed to place bid');
+      return response.json();
+    },
+    onSuccess: (data, variables) => {
+      // Trigger celebration effects
+      setShowConfetti(true);
+      setCurrentPrice(parseFloat(variables.amount));
+      
+      // Show success toast
+      toast({
+        title: "🎉 Ставка принята!",
+        description: `Ваша ставка $${parseFloat(variables.amount).toLocaleString()} успешно размещена`,
+        duration: 5000,
+      });
+      
+      // Refetch auction data to get updated price
+      refetchAuction();
+      queryClient.invalidateQueries({ queryKey: ['/api/listings'] });
+      
+      // Reset bid amount
+      setBidAmount("");
+    },
+    onError: (error) => {
+      toast({
+        title: "Ошибка",
+        description: "Не удалось разместить ставку. Попробуйте снова.",
+        variant: "destructive",
+      });
+    },
+  });
 
   // Mock auction data with detailed specifications
   const getConditionByMileage = (miles: number) => {
