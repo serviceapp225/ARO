@@ -11,7 +11,6 @@ import { useLocation } from "wouter";
 
 export default function AuctionFeed() {
   const [location] = useLocation();
-  const [sortBy, setSortBy] = useState("new");
   const [showFilters, setShowFilters] = useState(false);
   const [searchFilters, setSearchFilters] = useState({
     query: "",
@@ -281,20 +280,7 @@ export default function AuctionFeed() {
           </div>
         </div>
 
-        {/* Sort Section */}
-        <div className="flex justify-end mb-6">
-          <Select value={sortBy} onValueChange={setSortBy}>
-            <SelectTrigger className="w-48">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="new">Новые</SelectItem>
-              <SelectItem value="ending">Заканчиваются</SelectItem>
-              <SelectItem value="price-low">Низкая цена</SelectItem>
-              <SelectItem value="price-high">Высокая цена</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+
 
         {/* Auctions Grid */}
         <ActiveAuctions />
