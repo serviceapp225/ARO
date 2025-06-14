@@ -205,7 +205,7 @@ export default function AuctionDetail() {
     if (!bidAmount || bidMutation.isPending) return;
     
     const bidValue = parseFloat(bidAmount);
-    const currentBidValue = currentAuction?.currentBid ? parseFloat(currentAuction.currentBid) : auction.currentBid;
+    const currentBidValue = (currentAuction as any)?.currentBid ? parseFloat((currentAuction as any).currentBid) : auction.currentBid;
     
     if (bidValue <= currentBidValue) {
       toast({
@@ -532,7 +532,7 @@ export default function AuctionDetail() {
                 </div>
                 <div className="text-center">
                   <AnimatedPrice 
-                    value={currentAuction?.currentBid ? parseFloat(currentAuction.currentBid) : auction.currentBid}
+                    value={(currentAuction as any)?.currentBid ? parseFloat((currentAuction as any).currentBid) : auction.currentBid}
                     className="text-2xl font-bold text-green-600"
                     onPriceUpdate={() => {
                       // Additional celebration effects when price updates
