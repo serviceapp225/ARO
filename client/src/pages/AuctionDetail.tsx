@@ -129,8 +129,27 @@ export default function AuctionDetail() {
   // Use real auction data from database
   const auction = currentAuction as any;
 
-  const currentBid = auction ? (auction.currentBid ? parseFloat(auction.currentBid) : parseFloat(auction.startingPrice)) : 0;
-  const condition = auction ? getConditionByMileage(auction.mileage) : "Неизвестно";
+  // Show loading state while auction data is loading
+  if (!auction) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-blue-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+        <div className="container mx-auto px-4 py-8">
+          <div className="text-center py-16">
+            <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+              Загрузка аукциона...
+            </h2>
+            <p className="text-gray-600 dark:text-gray-400">
+              Пожалуйста, подождите
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const currentBid = auction.currentBid ? parseFloat(auction.currentBid) : parseFloat(auction.startingPrice);
+  const condition = getConditionByMileage(auction.mileage);
 
   // Прокрутка к верху страницы при загрузке
   useEffect(() => {
@@ -429,8 +448,8 @@ export default function AuctionDetail() {
               onClick={() => openGallery(0)}
             >
               <AutoImageCarousel 
-                images={auction.imageUrl ? [auction.imageUrl] : []} 
-                alt={`${auction.year} ${auction.make} ${auction.model}`}
+                images={auction?.imageUrl ? [auction.imageUrl] : []} 
+                alt={`${auction?.year} ${auction?.make} ${auction?.model}`}
                 className="h-64"
                 autoPlayInterval={3000}
               />
@@ -440,7 +459,7 @@ export default function AuctionDetail() {
               Нажмите для просмотра галереи
             </div>
             <div className="absolute bottom-4 right-4 bg-black/50 text-white px-2 py-1 rounded text-sm">
-              {auction.imageUrl ? 1 : 0} фото
+              {auction?.imageUrl ? 1 : 0} фото
             </div>
           </div>
         </Card>
@@ -830,7 +849,7 @@ export default function AuctionDetail() {
               onMouseLeave={onMouseLeave}
             >
               <img
-                src={auction.imageUrl || ''}
+                src={auction?.imageUrl || ''}
                 alt={`${auction.year} ${auction.make} ${auction.model} - фото ${currentImageIndex + 1}`}
                 className="max-w-full max-h-full object-contain select-none pointer-events-none"
                 onError={(e) => {
@@ -852,10 +871,10 @@ export default function AuctionDetail() {
             {/* Информация о фото */}
             <div className="absolute bottom-16 left-1/2 -translate-x-1/2 text-white text-center">
               <p className="text-lg font-medium">
-                {auction.year} {auction.make} {auction.model}
+                {auction?.year} {auction?.make} {auction?.model}
               </p>
               <p className="text-sm opacity-80">
-                Фото 1 из {auction.imageUrl ? 1 : 0}
+                Фото 1 из {auction?.imageUrl ? 1 : 0}
               </p>
               <p className="text-xs opacity-60 mt-1">
                 Листайте пальцем или перетаскивайте мышью
