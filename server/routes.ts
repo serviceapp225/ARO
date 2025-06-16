@@ -78,6 +78,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/listings/:id/bids", async (req, res) => {
     try {
       const listingId = parseInt(req.params.id);
+      
+      // Check if auction exists and is still active
+      const listing = await storage.getListing(listingId);
+      if (!listing) {
+        return res.status(404).json({ error: "Аукцион не найден" });
+      }
+      
+      // Check if auction has ended
+      const now = new Date();
+      if (listing.auctionEndTime && listing.auctionEndTime <= now) {
+        return res.status(400).json({ error: "Аукцион завершен. Ставки больше не принимаются." });
+      }
+      
+      // Check if auction is active
+      if (listing.status !== 'active') {
+        return res.status(400).json({ error: "Аукцион неактивен" });
+      }
+      
       const bidData = {
         ...req.body,
         listingId
@@ -88,9 +106,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Update listing's current bid
       await storage.updateListingCurrentBid(listingId, validatedData.amount);
-      
-      // Get the listing information for notifications
-      const listing = await storage.getListing(listingId);
       if (listing) {
         // Find users who have this listing in favorites
         const usersWithFavorite = await storage.getUsersWithFavoriteListing(listingId);

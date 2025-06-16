@@ -63,7 +63,11 @@ export default function AuctionDetail() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(bidData),
       });
-      if (!response.ok) throw new Error('Failed to place bid');
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Failed to place bid');
+      }
       return response.json();
     },
     onSuccess: (data, variables) => {
@@ -91,13 +95,23 @@ export default function AuctionDetail() {
       // Reset bid amount
       setBidAmount("");
     },
-    onError: (error) => {
-      toast({
-        title: "Ошибка",
-        description: "Не удалось разместить ставку. Попробуйте снова.",
-        variant: "destructive",
-        duration: 3000,
-      });
+    onError: (error: Error) => {
+      // Check if auction ended
+      if (error.message.includes("завершен")) {
+        toast({
+          title: "Аукцион завершен",
+          description: "К сожалению, ваша ставка не была высокой. Аукцион уже завершен.",
+          variant: "destructive",
+          duration: 5000,
+        });
+      } else {
+        toast({
+          title: "Ошибка",
+          description: error.message || "Не удалось разместить ставку. Попробуйте снова.",
+          variant: "destructive",
+          duration: 3000,
+        });
+      }
     },
   });
 
@@ -270,6 +284,17 @@ export default function AuctionDetail() {
 
   const handlePlaceBid = () => {
     if (!bidAmount || bidMutation.isPending) return;
+    
+    // Check if auction has ended
+    if (auctionEndTime && auctionEndTime <= new Date()) {
+      toast({
+        title: "Аукцион завершен",
+        description: "К сожалению, ваша ставка не была высокой. Аукцион уже завершен.",
+        variant: "destructive",
+        duration: 5000,
+      });
+      return;
+    }
     
     const bidValue = parseFloat(bidAmount);
     const currentBidValue = (currentAuction as any)?.currentBid ? parseFloat((currentAuction as any).currentBid) : auction.currentBid;
