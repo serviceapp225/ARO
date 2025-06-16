@@ -15,8 +15,31 @@ export function CountdownTimer({ endTime, size = 'small', onTimeUp }: CountdownT
     seconds: number;
     total: number;
   }>({ days: 0, hours: 0, minutes: 0, seconds: 0, total: 0 });
+  const [isInitialized, setIsInitialized] = useState(false);
 
   useEffect(() => {
+    const calculateTime = () => {
+      const now = new Date().getTime();
+      const distance = endTime.getTime() - now;
+
+      if (distance < 0) {
+        setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0, total: 0 });
+        onTimeUp?.();
+        return;
+      }
+
+      const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+      setTimeLeft({ days, hours, minutes, seconds, total: distance });
+      if (!isInitialized) setIsInitialized(true);
+    };
+
+    // Calculate immediately on mount
+    calculateTime();
+
     const timer = setInterval(() => {
       const now = new Date().getTime();
       const distance = endTime.getTime() - now;
@@ -50,6 +73,20 @@ export function CountdownTimer({ endTime, size = 'small', onTimeUp }: CountdownT
   const formatTime = (num: number) => num.toString().padStart(2, '0');
 
   if (size === 'large') {
+    if (!isInitialized) {
+      return (
+        <div className="bg-gradient-to-r from-gray-400 to-gray-600 text-white p-6 rounded-2xl text-center animate-pulse">
+          <div className="text-sm mb-2">Загрузка времени...</div>
+          <div className="text-3xl font-bold font-mono mb-2">
+            --:--:--
+          </div>
+          <div className="text-sm opacity-90">
+            Инициализация таймера
+          </div>
+        </div>
+      );
+    }
+
     return (
       <div className={`bg-gradient-to-r ${getColorClass()} text-white p-6 rounded-2xl text-center ${timeLeft.total < 300000 ? 'animate-pulse' : ''}`}>
         <div className="text-sm mb-2">Auction Ends In</div>
@@ -62,6 +99,15 @@ export function CountdownTimer({ endTime, size = 'small', onTimeUp }: CountdownT
           {timeLeft.hours > 0 && `${timeLeft.hours} часов `}
           {timeLeft.minutes} минут {timeLeft.seconds} секунд
         </div>
+      </div>
+    );
+  }
+
+  if (!isInitialized) {
+    return (
+      <div className="bg-gray-400 text-white px-2 py-0.5 rounded-full text-xs font-semibold animate-pulse">
+        <Clock className="w-2.5 h-2.5 inline mr-0.5" />
+        --м --с
       </div>
     );
   }
