@@ -411,16 +411,46 @@ export default function AuctionDetail() {
                   <span className="text-sm">Пробег:</span>
                   <span className="font-medium">{auction.mileage.toLocaleString()} км</span>
                 </div>
+                <div className="flex items-center gap-3">
+                  <Settings className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm">Двигатель:</span>
+                  <span className="font-medium">{auction.engine || 'Не указан'}</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <Settings className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm">Трансмиссия:</span>
+                  <span className="font-medium">{auction.transmission || 'Не указана'}</span>
+                </div>
               </div>
               
               <div className="space-y-3">
+                <div className="flex items-center gap-3">
+                  <Fuel className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm">Топливо:</span>
+                  <span className="font-medium">{auction.fuelType || 'Не указано'}</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <Car className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm">Тип кузова:</span>
+                  <span className="font-medium">{auction.bodyType || 'Не указан'}</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <Palette className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm">Цвет:</span>
+                  <span className="font-medium">{auction.color || 'Не указан'}</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <MapPin className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm">Местоположение:</span>
+                  <span className="font-medium">{auction.location || 'Не указано'}</span>
+                </div>
                 <div className="flex items-center gap-3">
                   <Eye className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm">VIN:</span>
                   <span className="font-medium font-mono text-xs">{auction.vin || 'Не указан'}</span>
                 </div>
                 <div className="flex items-center gap-3">
-                  <MapPin className="h-4 w-4 text-muted-foreground" />
+                  <Settings className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm">Растаможен:</span>
                   <span className="font-medium">{auction.customsCleared ? 'Да' : 'Нет'}</span>
                 </div>

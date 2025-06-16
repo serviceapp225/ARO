@@ -33,6 +33,13 @@ export const carListings = pgTable("car_listings", {
   recycled: boolean("recycled").default(false),
   technicalInspectionValid: boolean("technical_inspection_valid").default(false),
   technicalInspectionDate: text("technical_inspection_date"),
+  // Additional car specifications
+  engine: text("engine"),
+  transmission: text("transmission"),
+  fuelType: text("fuel_type"),
+  bodyType: text("body_type"),
+  color: text("color"),
+  location: text("location"),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
