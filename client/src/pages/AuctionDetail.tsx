@@ -297,13 +297,13 @@ export default function AuctionDetail() {
 
   const nextImage = () => {
     setCurrentImageIndex((prev) => 
-      prev === auction.photos.length - 1 ? 0 : prev + 1
+      prev === 0 ? 0 : 0
     );
   };
 
   const prevImage = () => {
     setCurrentImageIndex((prev) => 
-      prev === 0 ? auction.photos.length - 1 : prev - 1
+      prev === 0 ? 0 : 0
     );
   };
 
@@ -429,7 +429,7 @@ export default function AuctionDetail() {
               onClick={() => openGallery(0)}
             >
               <AutoImageCarousel 
-                images={auction.photos} 
+                images={auction.imageUrl ? [auction.imageUrl] : []} 
                 alt={`${auction.year} ${auction.make} ${auction.model}`}
                 className="h-64"
                 autoPlayInterval={3000}
@@ -440,7 +440,7 @@ export default function AuctionDetail() {
               Нажмите для просмотра галереи
             </div>
             <div className="absolute bottom-4 right-4 bg-black/50 text-white px-2 py-1 rounded text-sm">
-              {auction.photos.length} фото
+              {auction.imageUrl ? 1 : 0} фото
             </div>
           </div>
         </Card>
@@ -830,7 +830,7 @@ export default function AuctionDetail() {
               onMouseLeave={onMouseLeave}
             >
               <img
-                src={auction.photos[currentImageIndex]}
+                src={auction.imageUrl || ''}
                 alt={`${auction.year} ${auction.make} ${auction.model} - фото ${currentImageIndex + 1}`}
                 className="max-w-full max-h-full object-contain select-none pointer-events-none"
                 onError={(e) => {
