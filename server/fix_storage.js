@@ -1,11 +1,10 @@
-const fs = require('fs');
-const path = require('path');
+import { readFileSync, writeFileSync, existsSync } from 'fs';
 
 // Простое решение для работы с файловой системой в ES модулях
-module.exports = {
+export default {
   saveData: (filePath, data) => {
     try {
-      fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
+      writeFileSync(filePath, JSON.stringify(data, null, 2));
       return true;
     } catch (error) {
       console.error('Error saving data:', error);
@@ -15,8 +14,8 @@ module.exports = {
   
   loadData: (filePath) => {
     try {
-      if (fs.existsSync(filePath)) {
-        const data = fs.readFileSync(filePath, 'utf8');
+      if (existsSync(filePath)) {
+        const data = readFileSync(filePath, 'utf8');
         return JSON.parse(data);
       }
       return null;
@@ -27,6 +26,6 @@ module.exports = {
   },
   
   fileExists: (filePath) => {
-    return fs.existsSync(filePath);
+    return existsSync(filePath);
   }
 };

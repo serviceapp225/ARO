@@ -112,61 +112,13 @@ export class MemStorage implements IStorage {
   }
 
   private loadData() {
-    try {
-      const fileHelper = require('./fix_storage.js');
-      const data = fileHelper.loadData(this.dataFile);
-      
-      if (data) {
-        // Load all data from file
-        this.users = new Map(data.users || []);
-        this.carListings = new Map(data.carListings?.map(([k, v]: [number, any]) => [k, { ...v, createdAt: new Date(v.createdAt), auctionStartTime: v.auctionStartTime ? new Date(v.auctionStartTime) : null, auctionEndTime: new Date(v.auctionEndTime) }]) || []);
-        this.bids = new Map(data.bids?.map(([k, v]: [number, any]) => [k, { ...v, createdAt: new Date(v.createdAt) }]) || []);
-        this.favorites = new Map(data.favorites?.map(([k, v]: [number, any]) => [k, { ...v, createdAt: new Date(v.createdAt) }]) || []);
-        this.notifications = new Map(data.notifications?.map(([k, v]: [number, any]) => [k, { ...v, createdAt: new Date(v.createdAt) }]) || []);
-        this.carAlerts = new Map(data.carAlerts || []);
-        
-        this.currentUserId = data.currentUserId || 1;
-        this.currentListingId = data.currentListingId || 1;
-        this.currentBidId = data.currentBidId || 1;
-        this.currentFavoriteId = data.currentFavoriteId || 1;
-        this.currentNotificationId = data.currentNotificationId || 1;
-        this.currentCarAlertId = data.currentCarAlertId || 1;
-        
-        console.log('Data loaded successfully from file');
-      } else {
-        console.log('No existing data file found, initializing with sample data');
-        this.initializeSampleData();
-        this.saveData();
-      }
-    } catch (error) {
-      console.error('Error loading data:', error);
-      this.initializeSampleData();
-      this.saveData();
-    }
+    // Временно отключаем файловое сохранение для стабильности
+    console.log('Initializing with sample data');
+    this.initializeSampleData();
   }
 
   private saveData() {
-    try {
-      const fileHelper = require('./fix_storage.js');
-      const data = {
-        users: Array.from(this.users.entries()),
-        carListings: Array.from(this.carListings.entries()),
-        bids: Array.from(this.bids.entries()),
-        favorites: Array.from(this.favorites.entries()),
-        notifications: Array.from(this.notifications.entries()),
-        carAlerts: Array.from(this.carAlerts.entries()),
-        currentUserId: this.currentUserId,
-        currentListingId: this.currentListingId,
-        currentBidId: this.currentBidId,
-        currentFavoriteId: this.currentFavoriteId,
-        currentNotificationId: this.currentNotificationId,
-        currentCarAlertId: this.currentCarAlertId
-      };
-      
-      fileHelper.saveData(this.dataFile, data);
-    } catch (error) {
-      console.error('Error saving data:', error);
-    }
+    // Временно отключено - будет реализовано позже
   }
 
   private initializeSampleData() {
@@ -732,8 +684,20 @@ export class MemStorage implements IStorage {
   }
 
   async getListingsByStatus(status: string, limit?: number): Promise<CarListing[]> {
+    const now = new Date();
     const listings = Array.from(this.carListings.values())
-      .filter(listing => listing.status === status);
+      .filter(listing => {
+        // Проверяем статус
+        if (listing.status !== status) return false;
+        
+        // Если аукцион активный, проверяем что время не истекло
+        if (status === 'active') {
+          return listing.auctionEndTime && listing.auctionEndTime > now;
+        }
+        
+        return true;
+      })
+      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
     
     return limit ? listings.slice(0, limit) : listings;
   }
@@ -800,9 +764,11 @@ export class MemStorage implements IStorage {
     maxPrice?: number;
     year?: number;
   }): Promise<CarListing[]> {
+    const now = new Date();
     return Array.from(this.carListings.values())
       .filter(listing => {
-        if (listing.status !== "active") return false;
+        // Проверяем что аукцион активный и не завершился
+        if (listing.status !== "active" || listing.auctionEndTime <= now) return false;
         
         if (filters.query) {
           const query = filters.query.toLowerCase();
@@ -859,8 +825,29 @@ export class MemStorage implements IStorage {
 
   // Favorites operations
   async getFavoritesByUser(userId: number): Promise<Favorite[]> {
-    return Array.from(this.favorites.values())
+    const now = new Date();
+    const userFavorites = Array.from(this.favorites.values())
       .filter(favorite => favorite.userId === userId);
+    
+    // Фильтруем избранные: оставляем активные аукционы и завершенные, где пользователь делал ставки
+    return userFavorites.filter(favorite => {
+      const listing = this.carListings.get(favorite.listingId);
+      if (!listing) return false;
+      
+      // Если аукцион активный и не завершился - оставляем
+      if (listing.status === 'active' && listing.auctionEndTime > now) {
+        return true;
+      }
+      
+      // Если аукцион завершился - проверяем, делал ли пользователь ставки
+      if (listing.auctionEndTime <= now) {
+        const userBids = Array.from(this.bids.values())
+          .filter(bid => bid.listingId === favorite.listingId && bid.bidderId === userId);
+        return userBids.length > 0;
+      }
+      
+      return false;
+    });
   }
 
   async createFavorite(insertFavorite: InsertFavorite): Promise<Favorite> {
