@@ -368,7 +368,7 @@ export default function AuctionDetail() {
             {/* Thumbnail Grid */}
             {auction.photos && auction.photos.length > 1 && (
               <div className="p-4 grid grid-cols-4 gap-2">
-                {auction.photos.slice(1, 5).map((photo: any, index: number) => (
+                {auction.photos.slice(1, 5).map((photo: string, index: number) => (
                   <img
                     key={index + 1}
                     src={photo}
