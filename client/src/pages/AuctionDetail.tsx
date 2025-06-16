@@ -74,7 +74,7 @@ export default function AuctionDetail() {
       toast({
         title: "🎉 Ставка принята!",
         description: `Ваша ставка $${parseFloat(variables.amount).toLocaleString()} успешно размещена`,
-        duration: 5000,
+        duration: 3000,
       });
       
       // Refetch auction data and bidding history to get updated price
@@ -90,6 +90,7 @@ export default function AuctionDetail() {
         title: "Ошибка",
         description: "Не удалось разместить ставку. Попробуйте снова.",
         variant: "destructive",
+        duration: 3000,
       });
     },
   });
@@ -229,6 +230,7 @@ export default function AuctionDetail() {
         title: "Ставка слишком низкая",
         description: `Минимальная ставка: $${(currentBidValue + 100).toLocaleString()}`,
         variant: "destructive",
+        duration: 3000,
       });
       return;
     }
