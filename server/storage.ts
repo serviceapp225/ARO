@@ -599,6 +599,35 @@ export class MemStorage implements IStorage {
     };
     this.carListings.set(listing14.id, listing14);
 
+    // Test auction that ends in 15 seconds for testing completed auction handling
+    const testEndTime = new Date(now.getTime() + 15 * 1000); // 15 seconds from now
+    const testListing: CarListing = {
+      id: this.currentListingId++,
+      sellerId: sellerUser.id,
+      lotNumber: "TEST001",
+      make: "Toyota",
+      model: "Test Camry",
+      year: 2023,
+      mileage: 5000,
+      vin: "TEST123456789",
+      description: "Test auction that will end in 15 seconds to verify completed auction handling.",
+      startingPrice: "25000.00",
+      currentBid: "27500.00",
+      photos: [
+        "https://cdn.pixabay.com/photo/2017/08/10/02/05/audi-2618189_960_720.jpg"
+      ],
+      auctionDuration: 0,
+      status: "active",
+      auctionStartTime: now,
+      auctionEndTime: testEndTime,
+      customsCleared: true,
+      recycled: false,
+      technicalInspectionValid: true,
+      technicalInspectionDate: "2025-12-31",
+      createdAt: now
+    };
+    this.carListings.set(testListing.id, testListing);
+
     // Create sample bids
     const bid1: Bid = {
       id: this.currentBidId++,
