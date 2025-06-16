@@ -629,10 +629,10 @@ export class MemStorage implements IStorage {
     };
     this.carListings.set(testListing.id, testListing);
 
-    // Create sample bids
+    // Create sample bids - using actual listing IDs after they've been created
     const bid1: Bid = {
       id: this.currentBidId++,
-      listingId: listing1.id,
+      listingId: 2, // First listing (Porsche 911)
       bidderId: buyerUser.id,
       amount: "145500.00",
       createdAt: new Date(now.getTime() - 2 * 60 * 1000) // 2 minutes ago
@@ -641,12 +641,49 @@ export class MemStorage implements IStorage {
 
     const bid2: Bid = {
       id: this.currentBidId++,
-      listingId: listing1.id,
+      listingId: 2, // First listing (Porsche 911)
       bidderId: buyerUser.id,
       amount: "145000.00",
       createdAt: new Date(now.getTime() - 5 * 60 * 1000) // 5 minutes ago
     };
     this.bids.set(bid2.id, bid2);
+
+    // Add more bids for Ford Mustang (listing 9)
+    const bid3: Bid = {
+      id: this.currentBidId++,
+      listingId: 9, // Ford Mustang
+      bidderId: buyerUser.id,
+      amount: "31000.00",
+      createdAt: new Date(now.getTime() - 1 * 60 * 1000) // 1 minute ago
+    };
+    this.bids.set(bid3.id, bid3);
+
+    const bid4: Bid = {
+      id: this.currentBidId++,
+      listingId: 9, // Ford Mustang
+      bidderId: buyerUser.id,
+      amount: "30500.00",
+      createdAt: new Date(now.getTime() - 3 * 60 * 1000) // 3 minutes ago
+    };
+    this.bids.set(bid4.id, bid4);
+
+    const bid5: Bid = {
+      id: this.currentBidId++,
+      listingId: 9, // Ford Mustang
+      bidderId: buyerUser.id,
+      amount: "30000.00",
+      createdAt: new Date(now.getTime() - 6 * 60 * 1000) // 6 minutes ago
+    };
+    this.bids.set(bid5.id, bid5);
+
+    const bid6: Bid = {
+      id: this.currentBidId++,
+      listingId: 9, // Ford Mustang
+      bidderId: buyerUser.id,
+      amount: "29500.00",
+      createdAt: new Date(now.getTime() - 8 * 60 * 1000) // 8 minutes ago
+    };
+    this.bids.set(bid6.id, bid6);
 
     // Create sample favorites for testing notifications
     const favorite1: Favorite = {
@@ -841,10 +878,8 @@ export class MemStorage implements IStorage {
   }
 
   async getBidCountForListing(listingId: number): Promise<number> {
-    const allBids = Array.from(this.bids.values());
-    const bidsForListing = allBids.filter(bid => bid.listingId === listingId);
-    console.log(`Total bids: ${allBids.length}, Bids for listing ${listingId}: ${bidsForListing.length}`);
-    return bidsForListing.length;
+    return Array.from(this.bids.values())
+      .filter(bid => bid.listingId === listingId).length;
   }
 
   async createBid(insertBid: InsertBid): Promise<Bid> {
