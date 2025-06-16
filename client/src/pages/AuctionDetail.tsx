@@ -1,25 +1,30 @@
-import { useState, useEffect, useCallback } from "react";
 import { useParams, useLocation } from "wouter";
+import { ArrowLeft, Heart, MessageCircle, Eye, Car, Calendar, Gauge, Users, Phone, Clock, X, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
-import { ArrowLeft, Heart, Share2, Eye, Car, Users, Calendar, MapPin, Fuel, Palette, Settings, Camera } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
-import { useFavorites } from "@/contexts/FavoritesContext";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import { useAuctions } from "@/contexts/AuctionContext";
-import { CountdownTimer } from "@/components/CountdownTimer";
+import { useFavorites } from "@/contexts/FavoritesContext";
+import { AutoImageCarousel } from "@/components/AutoImageCarousel";
 import { ConfettiEffect } from "@/components/ConfettiEffect";
+import { AnimatedPrice } from "@/components/AnimatedPrice";
+import { useToast } from "@/hooks/use-toast";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useState, useEffect } from "react";
 
 export default function AuctionDetail() {
   const { id } = useParams();
-  const [, setLocation] = useLocation();
-  const { isFavorite, addToFavorites, removeFromFavorites } = useFavorites();
   const { auctions } = useAuctions();
-  
+  const { isFavorite, addToFavorites, removeFromFavorites } = useFavorites();
+  const [, setLocation] = useLocation();
   const [bidAmount, setBidAmount] = useState("");
+  const [timeLeft, setTimeLeft] = useState({
+    days: 0,
+    hours: 0,
+    minutes: 0,
+    seconds: 0
+  });
   const [auctionEndTime, setAuctionEndTime] = useState<Date | null>(null);
   const [isTimerReady, setIsTimerReady] = useState(false);
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
@@ -48,8 +53,7 @@ export default function AuctionDetail() {
   });
 
   // Sort bids by amount (highest first) to show current winning bid at top
-  const sortedBids = Array.isArray(realBiddingHistory) ? 
-    (realBiddingHistory as any[]).sort((a, b) => parseFloat(b.amount) - parseFloat(a.amount)) : [];
+  const sortedBids = (realBiddingHistory as any[]).sort((a, b) => parseFloat(b.amount) - parseFloat(a.amount));
 
   // Bid mutation with celebration effects
   const bidMutation = useMutation({
@@ -79,14 +83,17 @@ export default function AuctionDetail() {
       // Show success toast
       toast({
         title: "🎉 Ставка принята!",
-        description: `Ваша ставка ${parseFloat(variables.amount).toLocaleString()} сом была успешно размещена.`,
-        duration: 4000,
+        description: `Ваша ставка $${parseFloat(variables.amount).toLocaleString()} успешно размещена`,
+        duration: 3000,
       });
       
       // Refetch auction data and bidding history to get updated price
       refetchAuction();
       queryClient.invalidateQueries({ queryKey: ['/api/listings'] });
       queryClient.invalidateQueries({ queryKey: [`/api/listings/${id}/bids`] });
+      
+      // Update auction context data for favorites page
+      queryClient.invalidateQueries({ queryKey: ['/api/listings'] });
       
       // Reset bid amount
       setBidAmount("");
@@ -118,110 +125,163 @@ export default function AuctionDetail() {
     return "Удовлетворительное";
   };
 
-  // Use only real auction data from the database
+  // Use real auction data from database
   const auction = currentAuction as any;
 
-  // Scroll to top on page load
+  // Прокрутка к верху страницы при загрузке
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, []);
 
-  // Initialize auction end time from real data
+  // Инициализация времени окончания аукциона
   useEffect(() => {
-    if (auction?.auctionEndTime && !auctionEndTime) {
+    if (!auctionEndTime && auction?.auctionEndTime) {
       const endTime = new Date(auction.auctionEndTime);
       setAuctionEndTime(endTime);
       setIsTimerReady(true);
     }
   }, [auction, auctionEndTime]);
 
-  // Handle auction end callback
-  const handleAuctionEnd = useCallback(() => {
+  // Функция для обработки окончания аукциона
+  const handleAuctionEnd = () => {
     const bidsArray = sortedBids || [];
     
     if (bidsArray.length === 0) {
-      // If no bids were placed, remove from favorites
+      // Если ставок не было, просто удаляем из избранного
       if (isFavorite(id!)) {
         removeFromFavorites(id!);
       }
       return;
     }
 
-    // Find highest bid (first in sorted array)
+    // Находим наивысшую ставку (первая в отсортированном массиве)
     const highestBid = bidsArray[0];
-    const currentUserId = 3; // Current user ID
+
+    // Проверяем, является ли текущий пользователь (ID 3) победителем
+    const currentUserId = 3;
     const isWinner = highestBid.bidderId === currentUserId;
 
     if (isWinner) {
-      // User won the auction
+      // Показываем сообщение о победе
       toast({
-        title: "🎉 Поздравляем! Вы выиграли аукцион!",
-        description: `Ваша ставка ${parseFloat(highestBid.amount).toLocaleString()} сом была наивысшей.`,
-        duration: 8000,
+        title: "🏆 Поздравляем! Вы победили!",
+        description: `Вы выиграли аукцион со ставкой $${parseFloat(highestBid.amount).toLocaleString()}`,
+        duration: 10000,
       });
-      setShowConfetti(true);
     } else {
-      // User didn't win, remove from favorites
+      // Удаляем из избранного, если пользователь не победил
       if (isFavorite(id!)) {
         removeFromFavorites(id!);
         toast({
           title: "Аукцион завершен",
-          description: "К сожалению, ваша ставка не была наивысшей. Аукцион завершен.",
-          variant: "destructive",
+          description: "К сожалению, вы не выиграли этот аукцион",
           duration: 5000,
         });
       }
     }
-  }, [sortedBids, id, isFavorite, removeFromFavorites, toast]);
+  };
 
-  // Handle bid submission
-  const handleBidSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  useEffect(() => {
+    const calculateTimeLeft = () => {
+      if (!auctionEndTime) return;
+      
+      const difference = auctionEndTime.getTime() - new Date().getTime();
+      
+      if (difference > 0) {
+        setTimeLeft({
+          days: Math.floor(difference / (1000 * 60 * 60 * 24)),
+          hours: Math.floor((difference / (1000 * 60 * 60)) % 24),
+          minutes: Math.floor((difference / 1000 / 60) % 60),
+          seconds: Math.floor((difference / 1000) % 60)
+        });
+      } else {
+        // Auction has ended - handle favorites management
+        handleAuctionEnd();
+      }
+    };
+
+    calculateTimeLeft();
+    const timer = setInterval(calculateTimeLeft, 1000);
+    return () => clearInterval(timer);
+  }, [auctionEndTime, handleAuctionEnd]);
+
+  // Функция для автоматического продления времени аукциона при ставке в последние секунды
+  const extendAuctionIfNeeded = () => {
+    if (auctionEndTime) {
+      const timeRemaining = auctionEndTime.getTime() - new Date().getTime();
+      const tenSeconds = 10 * 1000; // 10 секунд в миллисекундах
+      
+      if (timeRemaining <= tenSeconds && timeRemaining > 0) {
+        // Продлеваем аукцион на 10 секунд от текущего времени окончания
+        const newEndTime = new Date(auctionEndTime.getTime() + tenSeconds);
+        setAuctionEndTime(newEndTime);
+        
+        toast({
+          title: "⏰ Аукцион продлен!",
+          description: "Время продлено на 10 секунд из-за новой ставки",
+          duration: 3000,
+        });
+        
+        console.log("Аукцион продлен на 10 секунд из-за ставки в последние 10 секунд");
+      }
+    }
+  };
+
+  const handlePlaceBid = () => {
+    if (!bidAmount || bidMutation.isPending) return;
     
-    if (!bidAmount || !auction) return;
-    
-    const newBidAmount = parseFloat(bidAmount);
-    const currentHighestBid = auction.currentBid ? parseFloat(auction.currentBid) : parseFloat(auction.startingPrice);
-    
-    if (newBidAmount <= currentHighestBid) {
+    // Check if auction has ended
+    if (auctionEndTime && auctionEndTime <= new Date()) {
       toast({
-        title: "Неверная ставка",
-        description: `Ставка должна быть больше текущей цены ${currentHighestBid.toLocaleString()} сом`,
+        title: "Аукцион завершен",
+        description: "К сожалению, ваша ставка не была высокой. Аукцион уже завершен.",
         variant: "destructive",
+        duration: 5000,
       });
       return;
     }
-
-    // Place the bid using current user ID (3)
+    
+    const bidValue = parseFloat(bidAmount);
+    const currentBidValue = (currentAuction as any)?.currentBid ? parseFloat((currentAuction as any).currentBid) : auction.currentBid;
+    
+    if (bidValue <= currentBidValue) {
+      toast({
+        title: "Ставка слишком низкая",
+        description: `Минимальная ставка: $${(currentBidValue + 100).toLocaleString()}`,
+        variant: "destructive",
+        duration: 3000,
+      });
+      return;
+    }
+    
+    extendAuctionIfNeeded();
+    
+    // Place bid using real API with user ID 3 (buyer user)
     bidMutation.mutate({
       bidderId: 3,
       amount: bidAmount
     });
   };
 
-  // Handle favorite toggle
-  const handleFavoriteToggle = () => {
-    if (!id) return;
-    
-    if (isFavorite(id)) {
-      removeFromFavorites(id);
-      toast({
-        title: "Удалено из избранного",
-        description: "Аукцион удален из ваших избранных",
-      });
+  const handleQuickBid = (amount: number) => {
+    const newBidAmount = auction.currentBid + amount;
+    extendAuctionIfNeeded();
+    setBidAmount(newBidAmount.toString());
+  };
+
+  const handleWhatsAppContact = () => {
+    window.open(`https://wa.me/?text=Интересует автомобиль ${auction.year} ${auction.make} ${auction.model}`, '_blank');
+  };
+
+  const handleToggleFavorite = () => {
+    const auctionId = id || "1";
+    if (isFavorite(auctionId)) {
+      removeFromFavorites(auctionId);
     } else {
-      addToFavorites(id);
-      toast({
-        title: "Добавлено в избранное",
-        description: "Аукцион добавлен в ваши избранные",
-      });
+      addToFavorites(auctionId);
     }
   };
 
-  // Navigation handlers
-  const goBack = () => setLocation("/");
-
-  // Image gallery handlers
   const openGallery = (index: number) => {
     setCurrentImageIndex(index);
     setIsGalleryOpen(true);
@@ -232,415 +292,576 @@ export default function AuctionDetail() {
   };
 
   const nextImage = () => {
-    if (auction?.photos) {
-      setCurrentImageIndex((prev) => (prev + 1) % auction.photos.length);
-    }
+    setCurrentImageIndex((prev) => 
+      prev === auction.photos.length - 1 ? 0 : prev + 1
+    );
   };
 
   const prevImage = () => {
-    if (auction?.photos) {
-      setCurrentImageIndex((prev) => (prev - 1 + auction.photos.length) % auction.photos.length);
+    setCurrentImageIndex((prev) => 
+      prev === 0 ? auction.photos.length - 1 : prev - 1
+    );
+  };
+
+  const handleKeyDown = (e: KeyboardEvent) => {
+    if (!isGalleryOpen) return;
+    
+    if (e.key === 'Escape') {
+      closeGallery();
+    } else if (e.key === 'ArrowLeft') {
+      prevImage();
+    } else if (e.key === 'ArrowRight') {
+      nextImage();
     }
   };
 
-  // Touch and mouse handlers for gallery
-  const handleTouchStart = (e: React.TouchEvent) => {
+  // Минимальное расстояние для регистрации свайпа
+  const minSwipeDistance = 50;
+
+  const onTouchStart = (e: React.TouchEvent) => {
     setTouchEnd(null);
     setTouchStart(e.targetTouches[0].clientX);
   };
 
-  const handleTouchMove = (e: React.TouchEvent) => {
+  const onTouchMove = (e: React.TouchEvent) => {
     setTouchEnd(e.targetTouches[0].clientX);
   };
 
-  const handleTouchEnd = () => {
+  const onTouchEnd = () => {
     if (!touchStart || !touchEnd) return;
     
     const distance = touchStart - touchEnd;
-    const isLeftSwipe = distance > 50;
-    const isRightSwipe = distance < -50;
+    const isLeftSwipe = distance > minSwipeDistance;
+    const isRightSwipe = distance < -minSwipeDistance;
 
-    if (isLeftSwipe) nextImage();
-    if (isRightSwipe) prevImage();
+    if (isLeftSwipe) {
+      nextImage();
+    }
+    if (isRightSwipe) {
+      prevImage();
+    }
   };
 
-  const handleMouseDown = (e: React.MouseEvent) => {
+  // Обработчики мыши для десктопа
+  const onMouseDown = (e: React.MouseEvent) => {
+    setIsDragging(true);
     setMouseEnd(null);
     setMouseStart(e.clientX);
-    setIsDragging(true);
   };
 
-  const handleMouseMove = (e: React.MouseEvent) => {
+  const onMouseMove = (e: React.MouseEvent) => {
     if (!isDragging) return;
     setMouseEnd(e.clientX);
   };
 
-  const handleMouseUp = () => {
-    if (!mouseStart || !mouseEnd || !isDragging) {
+  const onMouseUp = () => {
+    if (!isDragging || !mouseStart || !mouseEnd) {
       setIsDragging(false);
       return;
     }
     
     const distance = mouseStart - mouseEnd;
-    const isLeftDrag = distance > 50;
-    const isRightDrag = distance < -50;
+    const isLeftDrag = distance > minSwipeDistance;
+    const isRightDrag = distance < -minSwipeDistance;
 
-    if (isLeftDrag) nextImage();
-    if (isRightDrag) prevImage();
+    if (isLeftDrag) {
+      nextImage();
+    }
+    if (isRightDrag) {
+      prevImage();
+    }
     
     setIsDragging(false);
   };
 
-  if (!auction) {
-    return (
-      <div className="min-h-screen bg-background p-4">
-        <div className="max-w-6xl mx-auto">
-          <Button variant="ghost" onClick={goBack} className="mb-4">
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Назад к аукционам
-          </Button>
-          <div className="text-center py-8">
-            <p className="text-muted-foreground">Аукцион не найден</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  const onMouseLeave = () => {
+    setIsDragging(false);
+  };
 
-  const currentHighestBid = auction.currentBid ? parseFloat(auction.currentBid) : parseFloat(auction.startingPrice);
-  const condition = getConditionByMileage(auction.mileage);
+  useEffect(() => {
+    if (isGalleryOpen) {
+      document.addEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = 'unset';
+    };
+  }, [isGalleryOpen]);
 
   return (
-    <div className="min-h-screen bg-background">
-      {showConfetti && <ConfettiEffect isActive={showConfetti} />}
+    <div className="min-h-screen bg-gray-50 pb-20">
+      {/* Confetti Effect */}
+      <ConfettiEffect 
+        isActive={showConfetti} 
+        onComplete={() => setShowConfetti(false)} 
+      />
       
-      {/* Header */}
-      <div className="bg-white dark:bg-gray-900 border-b sticky top-0 z-40">
-        <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
-          <Button variant="ghost" onClick={goBack}>
-            <ArrowLeft className="h-4 w-4 mr-2" />
+      <header className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-40">
+        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+          <Button variant="ghost" size="sm" onClick={() => window.history.back()}>
+            <ArrowLeft className="w-5 h-5 mr-2" />
             Назад
           </Button>
-          
           <div className="flex items-center gap-2">
-            <Button variant="ghost" size="sm">
-              <Share2 className="h-4 w-4" />
+            <Button variant="ghost" size="sm" onClick={handleToggleFavorite}>
+              <Heart className={`w-5 h-5 ${isFavorite(id || "1") ? 'fill-red-500 text-red-500' : 'text-gray-600'}`} />
             </Button>
-            <Button 
-              variant="ghost" 
-              size="sm"
-              onClick={handleFavoriteToggle}
-            >
-              <Heart className={`h-4 w-4 ${isFavorite(id!) ? 'fill-red-500 text-red-500' : ''}`} />
+            <Button variant="ghost" size="sm" onClick={handleWhatsAppContact}>
+              <MessageCircle className="w-5 h-5" />
             </Button>
           </div>
         </div>
-      </div>
+      </header>
 
-      <div className="max-w-6xl mx-auto p-4 grid lg:grid-cols-3 gap-6">
-        {/* Left Column - Images */}
-        <div className="lg:col-span-2">
-          <div className="bg-white dark:bg-gray-900 rounded-lg overflow-hidden">
-            {/* Main Image */}
-            <div className="relative aspect-video bg-gray-100 dark:bg-gray-800">
-              {auction.photos && auction.photos.length > 0 ? (
-                <img
-                  src={auction.photos[0]}
-                  alt={`${auction.make} ${auction.model}`}
-                  className="w-full h-full object-cover cursor-pointer"
-                  onClick={() => openGallery(0)}
-                />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center">
-                  <Car className="h-16 w-16 text-gray-400" />
-                </div>
-              )}
-              
-              {/* Image Counter */}
-              {auction.photos && auction.photos.length > 1 && (
-                <div className="absolute top-4 right-4 bg-black/50 text-white px-3 py-1 rounded-full text-sm flex items-center gap-1">
-                  <Camera className="h-3 w-3" />
-                  {auction.photos.length}
-                </div>
-              )}
+      <main className="container mx-auto px-4 py-6 space-y-6">
+        <Card className="overflow-hidden">
+          <div className="relative h-64">
+            <div 
+              className="h-64 cursor-pointer"
+              onClick={() => openGallery(0)}
+            >
+              <AutoImageCarousel 
+                images={auction.photos} 
+                alt={`${auction.year} ${auction.make} ${auction.model}`}
+                className="h-64"
+                autoPlayInterval={3000}
+              />
             </div>
 
-            {/* Thumbnail Grid */}
-            {auction.photos && auction.photos.length > 1 && (
-              <div className="p-4 grid grid-cols-4 gap-2">
-                {auction.photos.slice(1, 5).map((photo: string, index: number) => (
-                  <img
-                    key={index + 1}
-                    src={photo}
-                    alt={`${auction.make} ${auction.model} ${index + 2}`}
-                    className="aspect-video object-cover rounded cursor-pointer hover:opacity-80 transition-opacity"
-                    onClick={() => openGallery(index + 1)}
+            <div className="absolute bottom-4 left-4 bg-black/50 text-white px-2 py-1 rounded text-sm">
+              Нажмите для просмотра галереи
+            </div>
+            <div className="absolute bottom-4 right-4 bg-black/50 text-white px-2 py-1 rounded text-sm">
+              {auction.photos.length} фото
+            </div>
+          </div>
+        </Card>
+
+        <Card className="overflow-hidden">
+          <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50 border-b">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                <Car className="w-5 h-5 text-blue-600" />
+              </div>
+              <div>
+                <CardTitle className="text-xl text-gray-900">Характеристики автомобиля</CardTitle>
+                <p className="text-sm text-gray-600 mt-1">Полная информация о транспортном средстве</p>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="p-6">
+            {/* Заголовок автомобиля */}
+            <div className="mb-6 p-4 bg-gray-50 rounded-xl">
+              <div className="flex items-center justify-between mb-2">
+                <h1 className="text-2xl font-bold text-gray-900">
+                  {auction.year} {auction.make} {auction.model}
+                </h1>
+                <Badge className="bg-green-100 text-green-800 border-green-200">
+                  Активный
+                </Badge>
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                <Badge variant="outline" className="font-mono text-blue-700 bg-blue-50 border-blue-200">
+                  Лот № {auction.lotNumber}
+                </Badge>
+                <Badge variant="outline" className={`${auction.customsCleared ? 'text-green-700 bg-green-50 border-green-200' : 'text-red-700 bg-red-50 border-red-200'}`}>
+                  {auction.customsCleared ? '✓ Растаможен' : '✗ Не растаможен'}
+                </Badge>
+                <Badge variant="outline" className={`${(auction as any).recycled ? 'text-blue-700 bg-blue-50 border-blue-200' : 'text-orange-700 bg-orange-50 border-orange-200'}`}>
+                  {(auction as any).recycled ? 'Утилизация: есть' : 'Утилизация: нет'}
+                </Badge>
+                <Badge variant="outline" className={`${(auction as any).technicalInspectionValid ? 'text-purple-700 bg-purple-50 border-purple-200' : 'text-gray-700 bg-gray-50 border-gray-200'}`}>
+                  {(auction as any).technicalInspectionValid ? `Техосмотр до ${(auction as any).technicalInspectionDate}` : 'Техосмотр: нет'}
+                </Badge>
+              </div>
+            </div>
+
+            {/* Основные характеристики */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Основная информация */}
+              <div className="space-y-4">
+                <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                  <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                  Основная информация
+                </h3>
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center py-2 px-3 rounded-lg bg-white border border-gray-100">
+                    <span className="text-gray-600 font-medium">Год выпуска</span>
+                    <span className="font-semibold text-gray-900">{auction.year}</span>
+                  </div>
+                  <div className="flex justify-between items-center py-2 px-3 rounded-lg bg-white border border-gray-100">
+                    <span className="text-gray-600 font-medium">Пробег</span>
+                    <span className="font-semibold text-gray-900">{auction.mileage.toLocaleString()} км</span>
+                  </div>
+                  <div className="flex justify-between items-center py-2 px-3 rounded-lg bg-white border border-gray-100">
+                    <span className="text-gray-600 font-medium">Состояние</span>
+                    <span className="font-semibold text-green-600">{condition}</span>
+                  </div>
+                  <div className="flex justify-between items-center py-2 px-3 rounded-lg bg-white border border-gray-100">
+                    <span className="text-gray-600 font-medium">Город</span>
+                    <span className="font-semibold text-gray-900">{mockAuction.specifications.city}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Технические характеристики */}
+              <div className="space-y-4">
+                <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                  Технические характеристики
+                </h3>
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center py-2 px-3 rounded-lg bg-white border border-gray-100">
+                    <span className="text-gray-600 font-medium">Двигатель</span>
+                    <span className="font-semibold text-gray-900">{mockAuction.specifications.engine}</span>
+                  </div>
+                  <div className="flex justify-between items-center py-2 px-3 rounded-lg bg-white border border-gray-100">
+                    <span className="text-gray-600 font-medium">КПП</span>
+                    <span className="font-semibold text-gray-900">{mockAuction.specifications.transmission}</span>
+                  </div>
+                  <div className="flex justify-between items-center py-2 px-3 rounded-lg bg-white border border-gray-100">
+                    <span className="text-gray-600 font-medium">Привод</span>
+                    <span className="font-semibold text-gray-900">{mockAuction.specifications.drivetrain}</span>
+                  </div>
+                  <div className="flex justify-between items-center py-2 px-3 rounded-lg bg-white border border-gray-100">
+                    <span className="text-gray-600 font-medium">Топливо</span>
+                    <span className="font-semibold text-gray-900">{mockAuction.specifications.fuelType}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Дополнительная информация */}
+            <div className="mt-6 space-y-4">
+              <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                Дополнительная информация
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div className="flex justify-between items-center py-2 px-3 rounded-lg bg-white border border-gray-100">
+                  <span className="text-gray-600 font-medium">Кузов</span>
+                  <span className="font-semibold text-gray-900">{mockAuction.specifications.bodyType}</span>
+                </div>
+                <div className="flex justify-between items-center py-2 px-3 rounded-lg bg-white border border-gray-100">
+                  <span className="text-gray-600 font-medium">Цвет</span>
+                  <span className="font-semibold text-gray-900">{mockAuction.specifications.color}</span>
+                </div>
+                <div className="flex justify-between items-center py-2 px-3 rounded-lg bg-white border border-gray-100">
+                  <span className="text-gray-600 font-medium">VIN</span>
+                  <span className="font-semibold text-gray-900 font-mono text-sm">{mockAuction.specifications.vin}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Статистика аукциона */}
+            <div className="mt-6 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-100">
+              <h3 className="font-semibold text-gray-900 mb-3">Статистика аукциона</h3>
+              <div className="flex items-center justify-center gap-16">
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-blue-600">{auction.bidCount}</div>
+                  <div className="text-sm text-gray-600">Ставок</div>
+                </div>
+                <div className="text-center">
+                  <AnimatedPrice 
+                    value={(currentAuction as any)?.currentBid ? parseFloat((currentAuction as any).currentBid) : auction.currentBid}
+                    className="text-2xl font-bold text-green-600"
+                    onPriceUpdate={() => {
+                      // Additional celebration effects when price updates
+                      setTimeout(() => setShowConfetti(false), 3000);
+                    }}
                   />
+                  <div className="text-sm text-gray-600">Текущая ставка</div>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-white border border-gray-200 shadow-sm">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-lg text-gray-900 flex items-center gap-2">
+              <Clock className="w-5 h-5 text-blue-600" />
+              Время до окончания
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="pt-0">
+            {!isTimerReady ? (
+              <div className="grid grid-cols-4 gap-3 text-center">
+                {[...Array(4)].map((_, i) => (
+                  <div key={i} className="bg-gray-50 rounded-lg p-3 border">
+                    <div className="text-xl font-bold text-gray-400 animate-pulse">--</div>
+                    <div className="text-xs text-gray-400">загрузка</div>
+                  </div>
                 ))}
               </div>
+            ) : (
+              <div className="grid grid-cols-4 gap-3 text-center">
+                <div className="bg-gray-50 rounded-lg p-3 border">
+                  <div className="text-xl font-bold text-gray-900">{timeLeft.days}</div>
+                  <div className="text-xs text-gray-600">дней</div>
+                </div>
+                <div className="bg-gray-50 rounded-lg p-3 border">
+                  <div className="text-xl font-bold text-gray-900">{timeLeft.hours}</div>
+                  <div className="text-xs text-gray-600">часов</div>
+                </div>
+                <div className="bg-gray-50 rounded-lg p-3 border">
+                  <div className="text-xl font-bold text-gray-900">{timeLeft.minutes}</div>
+                  <div className="text-xs text-gray-600">минут</div>
+                </div>
+                <div className="bg-blue-50 rounded-lg p-3 border border-blue-200">
+                  <div className="text-xl font-bold text-blue-600">{timeLeft.seconds}</div>
+                  <div className="text-xs text-blue-600">секунд</div>
+                </div>
+              </div>
             )}
-          </div>
+          </CardContent>
+        </Card>
 
-          {/* Car Details */}
-          <Card className="mt-6">
-            <CardHeader>
-              <CardTitle className="flex items-center justify-between">
-                <span>Характеристики автомобиля</span>
-                <Badge variant="outline">{condition}</Badge>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="grid md:grid-cols-2 gap-4">
-              <div className="space-y-3">
-                <div className="flex items-center gap-3">
-                  <Car className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm">Марка:</span>
-                  <span className="font-medium">{auction.make}</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <Car className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm">Модель:</span>
-                  <span className="font-medium">{auction.model}</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <Calendar className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm">Год:</span>
-                  <span className="font-medium">{auction.year}</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <Settings className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm">Пробег:</span>
-                  <span className="font-medium">{auction.mileage.toLocaleString()} км</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <Settings className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm">Двигатель:</span>
-                  <span className="font-medium">{auction.engine || 'Не указан'}</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <Settings className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm">Трансмиссия:</span>
-                  <span className="font-medium">{auction.transmission || 'Не указана'}</span>
-                </div>
+        <Card className="overflow-hidden bg-gradient-to-br from-green-50 to-emerald-50 border-green-100">
+          <CardHeader className="bg-gradient-to-r from-green-500 to-emerald-500 text-white">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
+                <Users className="w-5 h-5 text-white" />
               </div>
+              <div>
+                <CardTitle className="text-xl text-white">Текущая ставка</CardTitle>
+                <p className="text-white/80 text-sm mt-1">Сделайте свою ставку сейчас</p>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="p-6">
+            <div className="text-center mb-6">
+              <div className="text-4xl font-bold text-green-600 mb-2">
+                ${auction.currentBid.toLocaleString()}
+              </div>
+              <p className="text-gray-600 text-sm bg-gray-50 rounded-lg px-3 py-2 inline-block">
+                Следующая ставка от ${(auction.currentBid + 500).toLocaleString()}
+              </p>
               
-              <div className="space-y-3">
-                <div className="flex items-center gap-3">
-                  <Fuel className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm">Топливо:</span>
-                  <span className="font-medium">{auction.fuelType || 'Не указано'}</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <Car className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm">Тип кузова:</span>
-                  <span className="font-medium">{auction.bodyType || 'Не указан'}</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <Palette className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm">Цвет:</span>
-                  <span className="font-medium">{auction.color || 'Не указан'}</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <MapPin className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm">Местоположение:</span>
-                  <span className="font-medium">{auction.location || 'Не указано'}</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <Eye className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm">VIN:</span>
-                  <span className="font-medium font-mono text-xs">{auction.vin || 'Не указан'}</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <Settings className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm">Растаможен:</span>
-                  <span className="font-medium">{auction.customsCleared ? 'Да' : 'Нет'}</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <Settings className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm">Техосмотр:</span>
-                  <span className="font-medium">{auction.technicalInspectionValid ? 'Действителен' : 'Не действителен'}</span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Description */}
-          {auction.description && (
-            <Card className="mt-6">
-              <CardHeader>
-                <CardTitle>Описание</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground leading-relaxed">
-                  {auction.description}
-                </p>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Bidding History */}
-          <Card className="mt-6">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Users className="h-5 w-5" />
-                История ставок ({sortedBids.length})
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {sortedBids.length === 0 ? (
-                <p className="text-muted-foreground text-center py-4">
-                  Ставок пока нет. Станьте первым!
-                </p>
-              ) : (
-                <div className="space-y-3">
-                  {sortedBids.slice(0, 5).map((bid: any, index: number) => (
-                    <div key={bid.id} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded">
-                      <div className="flex items-center gap-3">
-                        <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-medium ${
-                          index === 0 ? 'bg-green-500' : 'bg-blue-500'
-                        }`}>
-                          {index + 1}
-                        </div>
-                        <div>
-                          <p className="font-medium">Ставка #{bid.id}</p>
-                          <p className="text-sm text-muted-foreground">
-                            {new Date(bid.createdAt).toLocaleString('ru-RU')}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <p className="font-bold text-lg">{parseFloat(bid.amount).toLocaleString()} сом</p>
-                        {index === 0 && (
-                          <Badge variant="default" className="text-xs">
-                            Лидирует
-                          </Badge>
-                        )}
-                      </div>
+              {/* Reserve Price Information */}
+              <div className="mt-4 pt-4 border-t border-gray-100">
+                {mockAuction.hasReserve ? (
+                  <div className="space-y-2">
+                    <div className={`text-sm font-medium px-3 py-2 rounded-lg ${mockAuction.reserveMet ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'}`}>
+                      {mockAuction.reserveMet ? (
+                        <>✓ Резервная цена достигнута</>
+                      ) : (
+                        <>⚠ Резервная цена не достигнута</>
+                      )}
                     </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Right Column - Bidding */}
-        <div className="space-y-6">
-          {/* Auction Info Card */}
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <Badge variant="outline">Лот #{auction.lotNumber}</Badge>
-                <Badge variant="secondary">Активный</Badge>
-              </div>
-              <CardTitle className="text-xl">
-                {auction.make} {auction.model}
-              </CardTitle>
-              <p className="text-muted-foreground">Год: {auction.year}</p>
-            </CardHeader>
-            
-            <CardContent className="space-y-4">
-              {/* Timer */}
-              <div className="text-center">
-                <p className="text-sm text-muted-foreground mb-2">Аукцион завершится через:</p>
-                {isTimerReady && auctionEndTime && (
-                  <CountdownTimer 
-                    endTime={auctionEndTime} 
-                    onTimeUp={handleAuctionEnd}
-                  />
+                  </div>
+                ) : (
+                  <div className="text-sm font-medium bg-blue-100 text-blue-700 px-3 py-2 rounded-lg inline-block">
+                    🔥 Продажа без резерва!
+                  </div>
                 )}
               </div>
-
-              <Separator />
-
-              {/* Current Price */}
-              <div className="text-center">
-                <p className="text-sm text-muted-foreground">Текущая цена</p>
-                <p className="text-3xl font-bold text-green-600">
-                  {currentHighestBid.toLocaleString()} сом
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  Ставок: {sortedBids.length}
-                </p>
-              </div>
-
-              <Separator />
-
-              {/* Bid Form */}
-              <form onSubmit={handleBidSubmit} className="space-y-3">
-                <div>
-                  <label className="text-sm font-medium">Ваша ставка</label>
-                  <Input
-                    type="number"
-                    placeholder={`Минимум ${(currentHighestBid + 100).toLocaleString()}`}
-                    value={bidAmount}
-                    onChange={(e) => setBidAmount(e.target.value)}
-                    className="mt-1"
-                    min={currentHighestBid + 100}
-                    step="100"
-                  />
-                </div>
-                
+            </div>
+            
+            <div className="space-y-4">
+              <div className="flex gap-3">
+                <Input
+                  type="number"
+                  placeholder="Введите вашу ставку"
+                  value={bidAmount}
+                  onChange={(e) => setBidAmount(e.target.value)}
+                  className="flex-1 text-lg font-semibold"
+                />
                 <Button 
-                  type="submit" 
-                  className="w-full" 
-                  size="lg"
-                  disabled={bidMutation.isPending || !bidAmount}
+                  onClick={handlePlaceBid}
+                  disabled={!bidAmount || bidMutation.isPending || parseInt(bidAmount) <= auction.currentBid}
+                  className="bg-green-600 hover:bg-green-700 text-white px-6"
                 >
                   {bidMutation.isPending ? "Размещение..." : "Сделать ставку"}
                 </Button>
-              </form>
-
-              <div className="text-xs text-muted-foreground space-y-1">
-                <p>• Ставка должна превышать текущую цену минимум на 100 сом</p>
-                <p>• Отозвать ставку невозможно</p>
-                <p>• Победитель определяется наивысшей ставкой</p>
               </div>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
+              
+              <div className="grid grid-cols-3 gap-2">
+                <Button 
+                  variant="outline" 
+                  onClick={() => handleQuickBid(500)}
+                  className="text-sm"
+                >
+                  +$500
+                </Button>
+                <Button 
+                  variant="outline" 
+                  onClick={() => handleQuickBid(1000)}
+                  className="text-sm"
+                >
+                  +$1,000
+                </Button>
+                <Button 
+                  variant="outline" 
+                  onClick={() => handleQuickBid(2500)}
+                  className="text-sm"
+                >
+                  +$2,500
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
-      {/* Image Gallery Modal */}
-      {isGalleryOpen && auction.photos && (
-        <div className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center">
+
+
+        <Card className="overflow-hidden bg-gradient-to-br from-purple-50 to-indigo-50 border-purple-100">
+          <CardHeader className="bg-gradient-to-r from-purple-500 to-indigo-500 text-white">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
+                <Users className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <CardTitle className="text-xl text-white">История ставок</CardTitle>
+                <p className="text-white/80 text-sm mt-1">Активность участников аукциона</p>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="p-6">
+            <div className="space-y-3">
+              {sortedBids.length > 0 ? sortedBids.map((bid: any, index: number) => (
+                <div 
+                  key={bid.id || index}
+                  className={`flex justify-between items-center p-4 rounded-xl transition-all duration-200 ${
+                    index === 0
+                      ? 'bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-200 shadow-md' 
+                      : 'bg-white border border-gray-100 hover:shadow-sm'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm ${
+                      index === 0 ? 'bg-green-500' : 'bg-gray-400'
+                    }`}>
+                      #{index + 1}
+                    </div>
+                    <div>
+                      <div className="font-semibold text-gray-900 flex items-center gap-2">
+                        {bid.bidderId === 3 ? 'Покупатель (Вы)' : `Участник ${bid.bidderId}`}
+                        {index === 0 && (
+                          <Badge className="bg-green-600 text-white text-xs px-2 py-1">
+                            👑 Лидирует
+                          </Badge>
+                        )}
+                      </div>
+                      <div className="text-sm text-gray-500 flex items-center gap-1">
+                        <Clock className="w-3 h-3" />
+                        {new Date(bid.createdAt).toLocaleString('ru-RU')}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className={`text-xl font-bold ${
+                      index === 0 ? 'text-green-600' : 'text-gray-900'
+                    }`}>
+                      ${parseFloat(bid.amount).toLocaleString()}
+                    </div>
+                    {index === 0 && (
+                      <div className="text-xs text-green-600 font-medium">
+                        Текущая ставка
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )) : (
+                <div className="text-center py-8 text-gray-500">
+                  <Users className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+                  <p>Пока нет ставок</p>
+                  <p className="text-sm">Станьте первым участником!</p>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
+
+      </main>
+
+      {/* Полноэкранная галерея */}
+      {isGalleryOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-90 z-50 flex items-center justify-center">
           <div className="relative w-full h-full flex items-center justify-center">
-            <button
+            {/* Кнопка закрытия */}
+            <Button
+              variant="ghost"
+              size="sm"
+              className="absolute top-4 right-4 z-60 text-white hover:bg-white/20"
               onClick={closeGallery}
-              className="absolute top-4 right-4 text-white z-10 bg-black/50 p-2 rounded-full hover:bg-black/70"
             >
-              ✕
-            </button>
-            
-            <button
+              <X className="w-6 h-6" />
+            </Button>
+
+            {/* Кнопка предыдущего изображения */}
+            <Button
+              variant="ghost"
+              size="sm"
+              className="absolute left-4 top-1/2 -translate-y-1/2 z-60 text-white hover:bg-white/20"
               onClick={prevImage}
-              className="absolute left-4 text-white z-10 bg-black/50 p-2 rounded-full hover:bg-black/70"
             >
-              ←
-            </button>
-            
-            <button
+              <ChevronLeft className="w-8 h-8" />
+            </Button>
+
+            {/* Кнопка следующего изображения */}
+            <Button
+              variant="ghost"
+              size="sm"
+              className="absolute right-4 top-1/2 -translate-y-1/2 z-60 text-white hover:bg-white/20"
               onClick={nextImage}
-              className="absolute right-4 text-white z-10 bg-black/50 p-2 rounded-full hover:bg-black/70"
             >
-              →
-            </button>
+              <ChevronRight className="w-8 h-8" />
+            </Button>
 
-            <img
-              src={auction.photos[currentImageIndex]}
-              alt={`${auction.make} ${auction.model}`}
-              className="max-w-full max-h-full object-contain cursor-grab"
-              onTouchStart={handleTouchStart}
-              onTouchMove={handleTouchMove}
-              onTouchEnd={handleTouchEnd}
-              onMouseDown={handleMouseDown}
-              onMouseMove={handleMouseMove}
-              onMouseUp={handleMouseUp}
-              onMouseLeave={handleMouseUp}
-              draggable={false}
-            />
+            {/* Текущее изображение */}
+            <div 
+              className={`w-full h-full flex items-center justify-center p-8 touch-none ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
+              onTouchStart={onTouchStart}
+              onTouchMove={onTouchMove}
+              onTouchEnd={onTouchEnd}
+              onMouseDown={onMouseDown}
+              onMouseMove={onMouseMove}
+              onMouseUp={onMouseUp}
+              onMouseLeave={onMouseLeave}
+            >
+              <img
+                src={auction.photos[currentImageIndex]}
+                alt={`${auction.year} ${auction.make} ${auction.model} - фото ${currentImageIndex + 1}`}
+                className="max-w-full max-h-full object-contain select-none pointer-events-none"
+                onError={(e) => {
+                  e.currentTarget.style.display = 'none';
+                }}
+                draggable={false}
+              />
+            </div>
 
-            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-white bg-black/50 px-3 py-1 rounded">
-              {currentImageIndex + 1} / {auction.photos.length}
+            {/* Индикатор текущего изображения */}
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2">
+              {auction.photos.map((_, index) => (
+                <button
+                  key={index}
+                  className={`w-3 h-3 rounded-full transition-all ${
+                    index === currentImageIndex 
+                      ? 'bg-white' 
+                      : 'bg-white/50 hover:bg-white/70'
+                  }`}
+                  onClick={() => setCurrentImageIndex(index)}
+                />
+              ))}
+            </div>
+
+            {/* Информация о фото */}
+            <div className="absolute bottom-16 left-1/2 -translate-x-1/2 text-white text-center">
+              <p className="text-lg font-medium">
+                {auction.year} {auction.make} {auction.model}
+              </p>
+              <p className="text-sm opacity-80">
+                Фото {currentImageIndex + 1} из {auction.photos.length}
+              </p>
+              <p className="text-xs opacity-60 mt-1">
+                Листайте пальцем или перетаскивайте мышью
+              </p>
             </div>
           </div>
         </div>
