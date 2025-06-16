@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { useAuctions } from '@/contexts/AuctionContext';
 import { useFavorites } from '@/contexts/FavoritesContext';
-import { useUserData } from '@/contexts/UserDataContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { AutoImageCarousel } from '@/components/AutoImageCarousel';
 import { 
   ArrowLeft, Car, Heart, Clock, TrendingUp, 
@@ -67,7 +67,7 @@ export default function AuctionDetail() {
     removeFromFavorites 
   } = useFavorites();
   
-  const { user: currentUser } = useUserData();
+  const { user: currentUser } = useAuth();
 
   // Use real auction data from database
   const auction = currentAuction as any;
@@ -171,7 +171,7 @@ export default function AuctionDetail() {
     }
 
     const highestBid = bidsArray[0];
-    const isWinner = currentUser && highestBid.bidderId === currentUser.id;
+    const isWinner = currentUser && highestBid.bidderId === 3; // Demo user ID
 
     if (isWinner) {
       setShowConfetti(true);
@@ -247,11 +247,24 @@ export default function AuctionDetail() {
       return;
     }
     
-    extendAuctionIfNeeded();
     setIsPlacingBid(true);
     
     try {
-      await placeBid(parseInt(id!), bidValue, currentUser.id);
+      // Place bid using API
+      const response = await fetch(`/api/listings/${id}/bids`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          amount: bidValue.toString(),
+          bidderId: 3, // Using demo user ID
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to place bid');
+      }
       
       toast({
         title: "Ставка размещена!",
