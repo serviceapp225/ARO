@@ -128,6 +128,9 @@ export default function AuctionDetail() {
   // Use real auction data from database
   const auction = currentAuction as any;
 
+  const currentBid = auction ? (auction.currentBid ? parseFloat(auction.currentBid) : parseFloat(auction.startingPrice)) : 0;
+  const condition = auction ? getConditionByMileage(auction.mileage) : "Неизвестно";
+
   // Прокрутка к верху страницы при загрузке
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -644,10 +647,10 @@ export default function AuctionDetail() {
               
               {/* Reserve Price Information */}
               <div className="mt-4 pt-4 border-t border-gray-100">
-                {mockAuction.hasReserve ? (
+                {false ? (
                   <div className="space-y-2">
-                    <div className={`text-sm font-medium px-3 py-2 rounded-lg ${mockAuction.reserveMet ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'}`}>
-                      {mockAuction.reserveMet ? (
+                    <div className={`text-sm font-medium px-3 py-2 rounded-lg bg-orange-100 text-orange-700`}>
+                      {false ? (
                         <>✓ Резервная цена достигнута</>
                       ) : (
                         <>⚠ Резервная цена не достигнута</>
@@ -838,17 +841,11 @@ export default function AuctionDetail() {
 
             {/* Индикатор текущего изображения */}
             <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2">
-              {auction.photos.map((_, index) => (
+              {auction.imageUrl && (
                 <button
-                  key={index}
-                  className={`w-3 h-3 rounded-full transition-all ${
-                    index === currentImageIndex 
-                      ? 'bg-white' 
-                      : 'bg-white/50 hover:bg-white/70'
-                  }`}
-                  onClick={() => setCurrentImageIndex(index)}
+                  className="w-3 h-3 rounded-full bg-white transition-all"
                 />
-              ))}
+              )}
             </div>
 
             {/* Информация о фото */}
@@ -857,7 +854,7 @@ export default function AuctionDetail() {
                 {auction.year} {auction.make} {auction.model}
               </p>
               <p className="text-sm opacity-80">
-                Фото {currentImageIndex + 1} из {auction.photos.length}
+                Фото {activeImageIndex + 1} из {auction.imageUrl ? 1 : 0}
               </p>
               <p className="text-xs opacity-60 mt-1">
                 Листайте пальцем или перетаскивайте мышью
