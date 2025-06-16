@@ -144,8 +144,7 @@ export default function AuctionDetail() {
         customsCleared: true
       },
       seller: `Официальный дилер ${car.make}`,
-      location: car.location,
-      views: 342
+      location: car.location
     };
   };
 
@@ -412,10 +411,7 @@ export default function AuctionDetail() {
                 autoPlayInterval={3000}
               />
             </div>
-            <div className="absolute top-4 right-4 bg-black/50 text-white px-2 py-1 rounded text-sm flex items-center gap-1">
-              <Eye className="w-4 h-4" />
-              {mockAuction.views}
-            </div>
+
             <div className="absolute bottom-4 left-4 bg-black/50 text-white px-2 py-1 rounded text-sm">
               Нажмите для просмотра галереи
             </div>
