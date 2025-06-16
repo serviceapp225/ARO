@@ -160,7 +160,7 @@ export class MemStorage implements IStorage {
     const now = new Date();
     
     // Fixed auction end times to prevent timer reset on server restart
-    const auction1EndTime = new Date('2025-06-16T15:30:00Z'); // Fixed future date
+    const auction1EndTime = new Date('2025-06-16T13:30:00Z'); // Завершенный аукцион для теста
     const auction2EndTime = new Date('2025-06-17T18:45:00Z'); // Fixed future date
     const auction3EndTime = new Date('2025-06-18T12:20:00Z'); // Fixed future date
     const auction4EndTime = new Date('2025-06-19T10:15:00Z'); // Fixed future date
@@ -768,7 +768,7 @@ export class MemStorage implements IStorage {
     return Array.from(this.carListings.values())
       .filter(listing => {
         // Проверяем что аукцион активный и не завершился
-        if (listing.status !== "active" || listing.auctionEndTime <= now) return false;
+        if (listing.status !== "active" || !listing.auctionEndTime || listing.auctionEndTime <= now) return false;
         
         if (filters.query) {
           const query = filters.query.toLowerCase();
@@ -835,12 +835,12 @@ export class MemStorage implements IStorage {
       if (!listing) return false;
       
       // Если аукцион активный и не завершился - оставляем
-      if (listing.status === 'active' && listing.auctionEndTime > now) {
+      if (listing.status === 'active' && listing.auctionEndTime && listing.auctionEndTime > now) {
         return true;
       }
       
       // Если аукцион завершился - проверяем, делал ли пользователь ставки
-      if (listing.auctionEndTime <= now) {
+      if (listing.auctionEndTime && listing.auctionEndTime <= now) {
         const userBids = Array.from(this.bids.values())
           .filter(bid => bid.listingId === favorite.listingId && bid.bidderId === userId);
         return userBids.length > 0;
