@@ -38,6 +38,9 @@ app.use((req, res, next) => {
 });
 
 (async () => {
+  // Initialize database with sample data
+  await initializeDatabaseWithSampleData();
+  
   const server = await registerRoutes(app);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {

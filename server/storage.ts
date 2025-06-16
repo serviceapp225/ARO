@@ -99,9 +99,9 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getListingsByStatus(status: string, limit?: number): Promise<CarListing[]> {
-    let query = db.select().from(carListings).where(eq(carListings.status, status));
+    const query = db.select().from(carListings).where(eq(carListings.status, status));
     if (limit) {
-      query = query.limit(limit);
+      return await query.limit(limit);
     }
     return await query;
   }
