@@ -8,8 +8,7 @@ import { useAuctions } from '@/contexts/AuctionContext';
 import { useFavorites } from '@/contexts/FavoritesContext';
 import { useLocation } from 'wouter';
 import { useState, useEffect } from 'react';
-import CarAlertButton from './CarAlertButton';
-import SearchAlertButton from './SearchAlertButton';
+
 
 interface ActiveAuctionsProps {
   searchQuery?: string;
@@ -160,9 +159,6 @@ export function ActiveAuctions({ searchQuery = "" }: ActiveAuctionsProps) {
                 <CountdownTimer endTime={auction.endTime} size="small" />
               </div>
               <div className="absolute top-2 right-2 flex gap-1">
-                <div onClick={(e) => e.stopPropagation()}>
-                  <CarAlertButton make={auction.make} model={auction.model} />
-                </div>
                 <Button
                   variant="ghost"
                   size="icon"

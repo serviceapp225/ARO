@@ -43,7 +43,6 @@ export default function Profile() {
   const menuItems = [
     { icon: User, label: "Мои данные", action: () => setLocation("/user-data") },
     { icon: Globe, label: "Поменять язык", action: () => setLocation("/language") },
-    { icon: Bell, label: "Уведомления", action: () => setLocation("/notifications") },
     { icon: HelpCircle, label: "Правила и условия", action: () => setLocation("/terms") },
     { icon: FileText, label: "Политика конфиденциальности", action: () => setLocation("/privacy") },
     { icon: MessageCircle, label: "Связаться с оператором", action: () => window.open("https://wa.me/992900000000", "_blank") },
