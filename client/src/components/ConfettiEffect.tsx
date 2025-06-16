@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 
 interface ConfettiEffectProps {
   isActive: boolean;
@@ -65,7 +65,7 @@ export function ConfettiEffect({ isActive, onComplete }: ConfettiEffectProps) {
       clearInterval(interval);
       clearTimeout(timeout);
     };
-  }, [isActive, onComplete]);
+  }, [isActive]); // Removed onComplete from dependencies to prevent infinite loop
 
   if (!isActive || particles.length === 0) return null;
 
