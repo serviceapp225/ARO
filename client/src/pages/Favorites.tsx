@@ -36,14 +36,14 @@ export default function Favorites() {
   // Auto-refresh data when favorites page is accessed
   useEffect(() => {
     refreshAuctions();
-  }, [refreshAuctions]);
+  }, []); // Empty dependency array to run only once on mount
   
   // Get favorite auctions from the auction list
   const favoriteIds = getFavoritesList();
   const favoriteAuctions = auctions.filter(auction => favoriteIds.includes(auction.id));
   
   // Helper function to check if auction is completed
-  const isAuctionCompleted = (endTime: string) => {
+  const isAuctionCompleted = (endTime: Date | string) => {
     return new Date(endTime) <= new Date();
   };
 

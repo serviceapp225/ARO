@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, ReactNode } from 'react';
+import { createContext, useContext, useState, ReactNode, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { queryClient } from '@/lib/queryClient';
 
@@ -57,9 +57,9 @@ export function AuctionProvider({ children }: { children: ReactNode }) {
 
   const auctions = listings || [];
 
-  const refreshAuctions = () => {
+  const refreshAuctions = useCallback(() => {
     refetch();
-  };
+  }, [refetch]);
 
   return (
     <AuctionContext.Provider value={{ auctions, loading: isLoading, selectedAuction, setSelectedAuction, refreshAuctions }}>
