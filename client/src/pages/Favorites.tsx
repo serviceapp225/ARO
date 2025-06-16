@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Heart, Trash2, Filter } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -31,7 +31,12 @@ export default function Favorites() {
   const [sortBy, setSortBy] = useState("recent");
   const [, setLocation] = useLocation();
   const { getFavoritesList, removeFromFavorites } = useFavorites();
-  const { auctions } = useAuctions();
+  const { auctions, refreshAuctions } = useAuctions();
+  
+  // Auto-refresh data when favorites page is accessed
+  useEffect(() => {
+    refreshAuctions();
+  }, [refreshAuctions]);
   
   // Get favorite auctions from the auction list
   const favoriteIds = getFavoritesList();

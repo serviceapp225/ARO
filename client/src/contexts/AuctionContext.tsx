@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, ReactNode } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { queryClient } from '@/lib/queryClient';
 
 interface Auction {
   id: string;
@@ -24,6 +25,7 @@ interface AuctionContextType {
   loading: boolean;
   selectedAuction: Auction | null;
   setSelectedAuction: (auction: Auction | null) => void;
+  refreshAuctions: () => void;
 }
 
 const AuctionContext = createContext<AuctionContextType | undefined>(undefined);
@@ -32,7 +34,7 @@ export function AuctionProvider({ children }: { children: ReactNode }) {
   const [selectedAuction, setSelectedAuction] = useState<Auction | null>(null);
 
   // Fetch real data from API
-  const { data: listings, isLoading } = useQuery({
+  const { data: listings, isLoading, refetch } = useQuery({
     queryKey: ['/api/listings'],
     select: (data: any[]) => data.map(listing => ({
       id: listing.id.toString(),
@@ -55,8 +57,12 @@ export function AuctionProvider({ children }: { children: ReactNode }) {
 
   const auctions = listings || [];
 
+  const refreshAuctions = () => {
+    refetch();
+  };
+
   return (
-    <AuctionContext.Provider value={{ auctions, loading: isLoading, selectedAuction, setSelectedAuction }}>
+    <AuctionContext.Provider value={{ auctions, loading: isLoading, selectedAuction, setSelectedAuction, refreshAuctions }}>
       {children}
     </AuctionContext.Provider>
   );

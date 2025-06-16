@@ -92,6 +92,9 @@ export default function AuctionDetail() {
       queryClient.invalidateQueries({ queryKey: ['/api/listings'] });
       queryClient.invalidateQueries({ queryKey: [`/api/listings/${id}/bids`] });
       
+      // Update auction context data for favorites page
+      queryClient.invalidateQueries({ queryKey: ['/api/listings'] });
+      
       // Reset bid amount
       setBidAmount("");
     },
