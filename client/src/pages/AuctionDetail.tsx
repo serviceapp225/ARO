@@ -196,17 +196,24 @@ export default function AuctionDetail() {
     return () => clearInterval(timer);
   }, [auctionEndTime]);
 
-  // Функция для автоматического продления времени аукциона при ставке в последнюю минуту
+  // Функция для автоматического продления времени аукциона при ставке в последние секунды
   const extendAuctionIfNeeded = () => {
     if (auctionEndTime) {
       const timeRemaining = auctionEndTime.getTime() - new Date().getTime();
-      const oneMinute = 60 * 1000; // 60 секунд в миллисекундах
+      const tenSeconds = 10 * 1000; // 10 секунд в миллисекундах
       
-      if (timeRemaining <= oneMinute && timeRemaining > 0) {
-        // Продлеваем аукцион на 3 минуты от текущего времени
-        const newEndTime = new Date(new Date().getTime() + 3 * 60 * 1000);
+      if (timeRemaining <= tenSeconds && timeRemaining > 0) {
+        // Продлеваем аукцион на 10 секунд от текущего времени окончания
+        const newEndTime = new Date(auctionEndTime.getTime() + tenSeconds);
         setAuctionEndTime(newEndTime);
-        console.log("Аукцион продлен на 3 минуты из-за ставки в последнюю минуту");
+        
+        toast({
+          title: "⏰ Аукцион продлен!",
+          description: "Время продлено на 10 секунд из-за новой ставки",
+          duration: 3000,
+        });
+        
+        console.log("Аукцион продлен на 10 секунд из-за ставки в последние 10 секунд");
       }
     }
   };
