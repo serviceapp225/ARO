@@ -26,6 +26,7 @@ export default function AuctionDetail() {
     seconds: 0
   });
   const [auctionEndTime, setAuctionEndTime] = useState<Date | null>(null);
+  const [isTimerReady, setIsTimerReady] = useState(false);
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [touchStart, setTouchStart] = useState<number | null>(null);
@@ -170,10 +171,12 @@ export default function AuctionDetail() {
   // Инициализация времени окончания аукциона
   useEffect(() => {
     if (!auctionEndTime) {
-      const endTime = auction?.endTime || mockAuction.endTime;
+      const endTime = (currentAuction as any)?.auctionEndTime ? new Date((currentAuction as any).auctionEndTime) : 
+                     auction?.endTime || mockAuction.endTime;
       setAuctionEndTime(endTime);
+      setIsTimerReady(true);
     }
-  }, [auction, auctionEndTime]);
+  }, [auction, currentAuction, auctionEndTime]);
 
   useEffect(() => {
     const calculateTimeLeft = () => {
@@ -569,24 +572,35 @@ export default function AuctionDetail() {
             </CardTitle>
           </CardHeader>
           <CardContent className="pt-0">
-            <div className="grid grid-cols-4 gap-3 text-center">
-              <div className="bg-gray-50 rounded-lg p-3 border">
-                <div className="text-xl font-bold text-gray-900">{timeLeft.days}</div>
-                <div className="text-xs text-gray-600">дней</div>
+            {!isTimerReady ? (
+              <div className="grid grid-cols-4 gap-3 text-center">
+                {[...Array(4)].map((_, i) => (
+                  <div key={i} className="bg-gray-50 rounded-lg p-3 border">
+                    <div className="text-xl font-bold text-gray-400 animate-pulse">--</div>
+                    <div className="text-xs text-gray-400">загрузка</div>
+                  </div>
+                ))}
               </div>
-              <div className="bg-gray-50 rounded-lg p-3 border">
-                <div className="text-xl font-bold text-gray-900">{timeLeft.hours}</div>
-                <div className="text-xs text-gray-600">часов</div>
+            ) : (
+              <div className="grid grid-cols-4 gap-3 text-center">
+                <div className="bg-gray-50 rounded-lg p-3 border">
+                  <div className="text-xl font-bold text-gray-900">{timeLeft.days}</div>
+                  <div className="text-xs text-gray-600">дней</div>
+                </div>
+                <div className="bg-gray-50 rounded-lg p-3 border">
+                  <div className="text-xl font-bold text-gray-900">{timeLeft.hours}</div>
+                  <div className="text-xs text-gray-600">часов</div>
+                </div>
+                <div className="bg-gray-50 rounded-lg p-3 border">
+                  <div className="text-xl font-bold text-gray-900">{timeLeft.minutes}</div>
+                  <div className="text-xs text-gray-600">минут</div>
+                </div>
+                <div className="bg-blue-50 rounded-lg p-3 border border-blue-200">
+                  <div className="text-xl font-bold text-blue-600">{timeLeft.seconds}</div>
+                  <div className="text-xs text-blue-600">секунд</div>
+                </div>
               </div>
-              <div className="bg-gray-50 rounded-lg p-3 border">
-                <div className="text-xl font-bold text-gray-900">{timeLeft.minutes}</div>
-                <div className="text-xs text-gray-600">минут</div>
-              </div>
-              <div className="bg-blue-50 rounded-lg p-3 border border-blue-200">
-                <div className="text-xl font-bold text-blue-600">{timeLeft.seconds}</div>
-                <div className="text-xs text-blue-600">секунд</div>
-              </div>
-            </div>
+            )}
           </CardContent>
         </Card>
 
