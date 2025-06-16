@@ -1,26 +1,7 @@
-import { 
-  users, 
-  carListings, 
-  bids, 
-  favorites,
-  notifications,
-  carAlerts,
-  type User, 
-  type InsertUser,
-  type CarListing,
-  type InsertCarListing,
-  type Bid,
-  type InsertBid,
-  type Favorite,
-  type InsertFavorite,
-  type Notification,
-  type InsertNotification,
-  type CarAlert,
-  type InsertCarAlert
-} from "@shared/schema";
-import { generateUniqueLotNumber } from './utils/lotNumberGenerator';
+import { users, carListings, bids, favorites, notifications, carAlerts, type User, type InsertUser, type CarListing, type InsertCarListing, type Bid, type InsertBid, type Favorite, type InsertFavorite, type Notification, type InsertNotification, type CarAlert, type InsertCarAlert } from "@shared/schema";
+import { db } from "./db";
+import { eq, and, desc, sql, or, ilike } from "drizzle-orm";
 
-// Enhanced storage interface for car auction functionality
 export interface IStorage {
   // User operations
   getUser(id: number): Promise<User | undefined>;
@@ -78,750 +59,78 @@ export interface IStorage {
   }>;
 }
 
-export class MemStorage implements IStorage {
-  private users: Map<number, User>;
-  private carListings: Map<number, CarListing>;
-  private bids: Map<number, Bid>;
-  private favorites: Map<number, Favorite>;
-  private notifications: Map<number, Notification>;
-  private carAlerts: Map<number, CarAlert>;
-  private currentUserId: number;
-  private currentListingId: number;
-  private currentBidId: number;
-  private currentFavoriteId: number;
-  private currentNotificationId: number;
-  private currentCarAlertId: number;
-  private dataFile: string;
-
-  constructor() {
-    this.dataFile = './server/data.json';
-    this.users = new Map();
-    this.carListings = new Map();
-    this.bids = new Map();
-    this.favorites = new Map();
-    this.notifications = new Map();
-    this.carAlerts = new Map();
-    this.currentUserId = 1;
-    this.currentListingId = 1;
-    this.currentBidId = 1;
-    this.currentFavoriteId = 1;
-    this.currentNotificationId = 1;
-    this.currentCarAlertId = 1;
-
-    // Load existing data or initialize with sample data
-    this.loadData();
-  }
-
-  private loadData() {
-    // Временно отключаем файловое сохранение для стабильности
-    console.log('Initializing with sample data');
-    this.initializeSampleData();
-  }
-
-  private saveData() {
-    // Временно отключено - будет реализовано позже
-  }
-
-  private initializeSampleData() {
-    // Create sample users
-    const adminUser: User = {
-      id: this.currentUserId++,
-      email: "admin@carauctionapp.com",
-      username: "admin",
-      role: "admin",
-      profilePhoto: null,
-      isActive: true,
-      createdAt: new Date()
-    };
-    this.users.set(adminUser.id, adminUser);
-
-    const sellerUser: User = {
-      id: this.currentUserId++,
-      email: "seller@example.com",
-      username: "car_seller_pro",
-      role: "seller",
-      profilePhoto: null,
-      isActive: true,
-      createdAt: new Date()
-    };
-    this.users.set(sellerUser.id, sellerUser);
-
-    const buyerUser: User = {
-      id: this.currentUserId++,
-      email: "buyer@example.com",
-      username: "auction_bidder",
-      role: "buyer",
-      profilePhoto: null,
-      isActive: true,
-      createdAt: new Date()
-    };
-    this.users.set(buyerUser.id, buyerUser);
-
-    // Create sample car listings with fixed end times
-    const now = new Date();
-    
-    // Fixed auction end times to prevent timer reset on server restart
-    const auction1EndTime = new Date('2025-06-16T13:30:00Z'); // Завершенный аукцион для теста
-    const auction2EndTime = new Date('2025-06-17T18:45:00Z'); // Fixed future date
-    const auction3EndTime = new Date('2025-06-18T12:20:00Z'); // Fixed future date
-    const auction4EndTime = new Date('2025-06-19T10:15:00Z'); // Fixed future date
-    const auction5EndTime = new Date('2025-06-20T14:30:00Z'); // Fixed future date
-    const auction6EndTime = new Date('2025-06-21T16:45:00Z'); // Fixed future date
-    const auction7EndTime = new Date('2025-06-22T11:00:00Z'); // Fixed future date
-    const auction8EndTime = new Date('2025-06-23T13:15:00Z'); // Fixed future date
-    const auction9EndTime = new Date('2025-06-24T17:30:00Z'); // Fixed future date
-    const auction10EndTime = new Date('2025-06-25T09:45:00Z'); // Fixed future date
-    const auction11EndTime = new Date('2025-06-26T15:20:00Z'); // Fixed future date
-    const auction12EndTime = new Date('2025-06-27T19:10:00Z'); // Fixed future date
-
-    const listing1: CarListing = {
-      id: this.currentListingId++,
-      sellerId: sellerUser.id,
-      lotNumber: "724583",
-      make: "Porsche",
-      model: "911 Turbo S",
-      year: 2020,
-      mileage: 15000,
-      vin: "WP0AB2A95LS123456",
-      description: "This stunning 2020 Porsche 911 Turbo S is a true masterpiece of automotive engineering. With only 15,000 carefully driven miles, this vehicle represents the pinnacle of sports car performance. Features include adaptive suspension, ceramic brakes, and a premium sound system.",
-      startingPrice: "140000.00",
-      currentBid: "145500.00",
-      photos: [
-        "https://images.unsplash.com/photo-1544636331-e26879cd4d9b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
-        "https://images.unsplash.com/photo-1563720223185-11003d516935?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
-        "https://images.unsplash.com/photo-1594736797933-d0d3c6db4497?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
-        "https://images.unsplash.com/photo-1555215695-3004980ad54e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
-        "https://images.unsplash.com/photo-1502877338535-766e1452684a?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"
-      ],
-      auctionDuration: 72,
-      status: "active",
-      auctionStartTime: now,
-      auctionEndTime: auction1EndTime,
-      customsCleared: true,
-      recycled: true,
-      technicalInspectionValid: true,
-      technicalInspectionDate: "2026-03-15",
-      createdAt: now
-    };
-    this.carListings.set(listing1.id, listing1);
-
-    const listing2: CarListing = {
-      id: this.currentListingId++,
-      sellerId: sellerUser.id,
-      lotNumber: "892456",
-      make: "BMW",
-      model: "M3",
-      year: 2019,
-      mileage: 22000,
-      vin: "WBA3B1C50EK123456",
-      description: "Exceptional BMW M3 with performance package. Well maintained with full service history. This vehicle offers the perfect balance of luxury and performance.",
-      startingPrice: "70000.00",
-      currentBid: "75000.00",
-      photos: [
-        "https://images.unsplash.com/photo-1555215695-3004980ad54e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
-        "https://images.unsplash.com/photo-1617531653332-bd46c24f2068?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
-        "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
-        "https://images.unsplash.com/photo-1502877338535-766e1452684a?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
-        "https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"
-      ],
-      auctionDuration: 168,
-      status: "active",
-      auctionStartTime: now,
-      auctionEndTime: auction2EndTime,
-      customsCleared: false,
-      recycled: false,
-      technicalInspectionValid: true,
-      technicalInspectionDate: "2025-08-20",
-      createdAt: now
-    };
-    this.carListings.set(listing2.id, listing2);
-
-    const listing3: CarListing = {
-      id: this.currentListingId++,
-      sellerId: sellerUser.id,
-      lotNumber: "156789",
-      make: "Tesla",
-      model: "Model S",
-      year: 2021,
-      mileage: 8500,
-      vin: "5YJ3E1EA5LF123456",
-      description: "Nearly new Tesla Model S with Autopilot and premium interior. Exceptional electric performance with cutting-edge technology.",
-      startingPrice: "80000.00",
-      currentBid: "85000.00",
-      photos: [
-        "https://images.unsplash.com/photo-1536700503339-1e4b06520771?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
-        "https://images.unsplash.com/photo-1560958089-b8a1929cea89?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
-        "https://images.unsplash.com/photo-1571068316344-75bc76f77890?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
-        "https://images.unsplash.com/photo-1593941707882-a5bac6861d75?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
-        "https://images.unsplash.com/photo-1581540222194-0def2dda95b8?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"
-      ],
-      auctionDuration: 72,
-      status: "active",
-      auctionStartTime: now,
-      auctionEndTime: auction3EndTime,
-      customsCleared: true,
-      recycled: false,
-      technicalInspectionValid: true,
-      technicalInspectionDate: "2025-12-15",
-      createdAt: now
-    };
-    this.carListings.set(listing3.id, listing3);
-
-    const listing4: CarListing = {
-      id: this.currentListingId++,
-      sellerId: sellerUser.id,
-      lotNumber: "349821",
-      make: "Mercedes-Benz",
-      model: "C-Class",
-      year: 2020,
-      mileage: 25000,
-      vin: "WDDGF8AB5LR123456",
-      description: "Elegant Mercedes-Benz C-Class with premium interior and advanced safety features. Excellent condition with full service records.",
-      startingPrice: "45000.00",
-      currentBid: "48500.00",
-      photos: [
-        "https://cdn.pixabay.com/photo/2016/04/01/09/11/car-1299173_960_720.jpg",
-        "https://cdn.pixabay.com/photo/2017/08/06/15/13/mercedes-2593571_960_720.jpg",
-        "https://cdn.pixabay.com/photo/2016/05/06/16/32/car-1376190_960_720.jpg",
-        "https://cdn.pixabay.com/photo/2017/11/09/01/49/ferrari-458-spider-2932191_960_720.jpg",
-        "https://cdn.pixabay.com/photo/2018/02/21/08/40/mercedes-3169357_960_720.jpg"
-      ],
-      auctionDuration: 120,
-      status: "active",
-      auctionStartTime: now,
-      auctionEndTime: auction4EndTime,
-      customsCleared: true,
-      recycled: false,
-      technicalInspectionValid: true,
-      technicalInspectionDate: "2025-11-10",
-      createdAt: now
-    };
-    this.carListings.set(listing4.id, listing4);
-
-    const listing5: CarListing = {
-      id: this.currentListingId++,
-      sellerId: sellerUser.id,
-      lotNumber: "567890",
-      make: "Audi",
-      model: "A4",
-      year: 2019,
-      mileage: 32000,
-      vin: "WAUFNAF45KN123456",
-      description: "Sporty Audi A4 with quattro all-wheel drive. Premium Plus package with navigation and leather interior.",
-      startingPrice: "38000.00",
-      currentBid: "41200.00",
-      photos: [
-        "https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
-        "https://images.unsplash.com/photo-1563720223185-11003d516935?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
-        "https://images.unsplash.com/photo-1605559424843-9e4c228bf1c2?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
-        "https://images.unsplash.com/photo-1617531653332-bd46c24f2068?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
-        "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"
-      ],
-      auctionDuration: 96,
-      status: "active",
-      auctionStartTime: now,
-      auctionEndTime: auction5EndTime,
-      customsCleared: true,
-      recycled: true,
-      technicalInspectionValid: false,
-      technicalInspectionDate: null,
-      createdAt: now
-    };
-    this.carListings.set(listing5.id, listing5);
-
-    const listing6: CarListing = {
-      id: this.currentListingId++,
-      sellerId: sellerUser.id,
-      lotNumber: "234567",
-      make: "Toyota",
-      model: "Camry",
-      year: 2022,
-      mileage: 18000,
-      vin: "4T1C11AK5NU123456",
-      description: "Reliable Toyota Camry Hybrid with excellent fuel economy. Like-new condition with remaining factory warranty.",
-      startingPrice: "28000.00",
-      currentBid: "30500.00",
-      photos: [
-        "https://images.unsplash.com/photo-1621007947382-bb3c3994e3fb?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
-        "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
-        "https://images.unsplash.com/photo-1563720223185-11003d516935?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
-        "https://images.unsplash.com/photo-1605559424843-9e4c228bf1c2?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
-        "https://images.unsplash.com/photo-1502877338535-766e1452684a?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"
-      ],
-      auctionDuration: 144,
-      status: "active",
-      auctionStartTime: now,
-      auctionEndTime: auction6EndTime,
-      customsCleared: false,
-      recycled: false,
-      technicalInspectionValid: true,
-      technicalInspectionDate: "2025-09-30",
-      createdAt: now
-    };
-    this.carListings.set(listing6.id, listing6);
-
-    const listing7: CarListing = {
-      id: this.currentListingId++,
-      sellerId: sellerUser.id,
-      lotNumber: "345678",
-      make: "Honda",
-      model: "CR-V",
-      year: 2021,
-      mileage: 22000,
-      vin: "7FARW2H85ME123456",
-      description: "Versatile Honda CR-V SUV with all-wheel drive. Perfect for families with excellent safety ratings and cargo space.",
-      startingPrice: "32000.00",
-      currentBid: "34800.00",
-      photos: [
-        "https://images.unsplash.com/photo-1609521263047-f8f205293f24?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"
-      ],
-      auctionDuration: 192,
-      status: "active",
-      auctionStartTime: now,
-      auctionEndTime: auction7EndTime,
-      customsCleared: true,
-      recycled: true,
-      technicalInspectionValid: true,
-      technicalInspectionDate: "2026-01-25",
-      createdAt: now
-    };
-    this.carListings.set(listing7.id, listing7);
-
-    const listing8: CarListing = {
-      id: this.currentListingId++,
-      sellerId: sellerUser.id,
-      lotNumber: "456789",
-      make: "Lexus",
-      model: "RX",
-      year: 2020,
-      mileage: 28000,
-      vin: "2T2BZMCA5LC123456",
-      description: "Luxury Lexus RX 350 with premium amenities. Heated and ventilated seats, mark levinson sound system, and more.",
-      startingPrice: "52000.00",
-      currentBid: "55400.00",
-      photos: [
-        "https://images.unsplash.com/photo-1606611013875-74d6b4ade6e8?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"
-      ],
-      auctionDuration: 216,
-      status: "active",
-      auctionStartTime: now,
-      auctionEndTime: auction8EndTime,
-      customsCleared: false,
-      recycled: true,
-      technicalInspectionValid: false,
-      technicalInspectionDate: null,
-      createdAt: now
-    };
-    this.carListings.set(listing8.id, listing8);
-
-    const listing9: CarListing = {
-      id: this.currentListingId++,
-      sellerId: sellerUser.id,
-      lotNumber: "567891",
-      make: "Ford",
-      model: "Mustang",
-      year: 2021,
-      mileage: 15000,
-      vin: "1FA6P8TH5M5123456",
-      description: "Iconic Ford Mustang GT with V8 engine. Performance package with Brembo brakes and sport-tuned suspension.",
-      startingPrice: "42000.00",
-      currentBid: "45600.00",
-      photos: [
-        "https://cdn.pixabay.com/photo/2016/11/29/09/16/ford-mustang-1868815_960_720.jpg",
-        "https://cdn.pixabay.com/photo/2017/04/20/20/09/ford-2245874_960_720.jpg",
-        "https://cdn.pixabay.com/photo/2018/04/04/16/32/ford-mustang-3290466_960_720.jpg",
-        "https://cdn.pixabay.com/photo/2016/04/01/09/11/car-1299173_960_720.jpg",
-        "https://cdn.pixabay.com/photo/2017/08/06/15/13/mercedes-2593571_960_720.jpg"
-      ],
-      auctionDuration: 168,
-      status: "active",
-      auctionStartTime: now,
-      auctionEndTime: auction9EndTime,
-      customsCleared: true,
-      recycled: false,
-      technicalInspectionValid: true,
-      technicalInspectionDate: "2024-01-15",
-      createdAt: now
-    };
-    this.carListings.set(listing9.id, listing9);
-
-    const listing10: CarListing = {
-      id: this.currentListingId++,
-      sellerId: sellerUser.id,
-      lotNumber: "678902",
-      make: "Volkswagen",
-      model: "Golf",
-      year: 2020,
-      mileage: 28500,
-      vin: "WVWZZZ1JZYW123456",
-      description: "Efficient Volkswagen Golf with TSI engine. European engineering with excellent build quality and fuel economy.",
-      startingPrice: "24000.00",
-      currentBid: "26800.00",
-      photos: [
-        "https://cdn.pixabay.com/photo/2016/12/07/21/50/volkswagen-1890744_960_720.jpg",
-        "https://cdn.pixabay.com/photo/2017/05/13/12/40/fashion-2307471_960_720.jpg",
-        "https://cdn.pixabay.com/photo/2016/11/22/23/44/porsche-1851246_960_720.jpg",
-        "https://cdn.pixabay.com/photo/2017/08/10/02/05/audi-2618189_960_720.jpg",
-        "https://cdn.pixabay.com/photo/2016/02/13/13/11/oldtimer-1197800_960_720.jpg"
-      ],
-      auctionDuration: 120,
-      status: "active",
-      auctionStartTime: now,
-      auctionEndTime: auction4EndTime,
-      customsCleared: true,
-      recycled: false,
-      technicalInspectionValid: true,
-      technicalInspectionDate: "2024-02-20",
-      createdAt: now
-    };
-    this.carListings.set(listing10.id, listing10);
-
-    const listing11: CarListing = {
-      id: this.currentListingId++,
-      sellerId: sellerUser.id,
-      lotNumber: "789013",
-      make: "Hyundai",
-      model: "Tucson",
-      year: 2022,
-      mileage: 12000,
-      vin: "KM8J3CA46NU123456",
-      description: "Modern Hyundai Tucson with advanced safety features. Spacious interior with latest infotainment system and comprehensive warranty.",
-      startingPrice: "29000.00",
-      currentBid: "31500.00",
-      photos: [
-        "https://cdn.pixabay.com/photo/2017/08/10/02/05/audi-2618189_960_720.jpg",
-        "https://cdn.pixabay.com/photo/2016/11/22/23/44/porsche-1851246_960_720.jpg",
-        "https://cdn.pixabay.com/photo/2017/04/20/20/09/ford-2245874_960_720.jpg",
-        "https://cdn.pixabay.com/photo/2016/02/13/13/11/oldtimer-1197800_960_720.jpg",
-        "https://cdn.pixabay.com/photo/2017/08/06/15/13/mercedes-2593571_960_720.jpg"
-      ],
-      auctionDuration: 144,
-      status: "active",
-      auctionStartTime: now,
-      auctionEndTime: auction6EndTime,
-      customsCleared: false,
-      recycled: true,
-      technicalInspectionValid: true,
-      technicalInspectionDate: "2024-03-10",
-      createdAt: now
-    };
-    this.carListings.set(listing11.id, listing11);
-
-    const listing12: CarListing = {
-      id: this.currentListingId++,
-      sellerId: sellerUser.id,
-      lotNumber: "890124",
-      make: "Mazda",
-      model: "CX-5",
-      year: 2021,
-      mileage: 19000,
-      vin: "JM3KFBCM1L0123456",
-      description: "Stylish Mazda CX-5 with SKYACTIV technology. All-wheel drive with premium interior and advanced safety features.",
-      startingPrice: "31000.00",
-      currentBid: "33200.00",
-      photos: [
-        "https://cdn.pixabay.com/photo/2016/11/29/08/41/auto-1868726_960_720.jpg",
-        "https://cdn.pixabay.com/photo/2017/03/27/14/56/auto-2179220_960_720.jpg",
-        "https://cdn.pixabay.com/photo/2016/12/07/21/50/volkswagen-1890744_960_720.jpg",
-        "https://cdn.pixabay.com/photo/2018/01/15/22/25/bmw-3085396_960_720.jpg",
-        "https://cdn.pixabay.com/photo/2016/04/01/09/11/car-1299173_960_720.jpg"
-      ],
-      auctionDuration: 96,
-      status: "active",
-      auctionStartTime: now,
-      auctionEndTime: auction5EndTime,
-      customsCleared: true,
-      recycled: false,
-      technicalInspectionValid: false,
-      technicalInspectionDate: null,
-      createdAt: now
-    };
-    this.carListings.set(listing12.id, listing12);
-
-    const listing13: CarListing = {
-      id: this.currentListingId++,
-      sellerId: sellerUser.id,
-      lotNumber: "901235",
-      make: "Subaru",
-      model: "Outback",
-      year: 2020,
-      mileage: 35000,
-      vin: "4S4BSANC8L3123456",
-      description: "Adventure-ready Subaru Outback with symmetrical all-wheel drive. Perfect for outdoor enthusiasts with excellent ground clearance.",
-      startingPrice: "26000.00",
-      currentBid: "28400.00",
-      photos: [
-        "https://cdn.pixabay.com/photo/2017/07/16/10/43/subaru-2509611_960_720.jpg",
-        "https://cdn.pixabay.com/photo/2016/12/07/21/50/volkswagen-1890744_960_720.jpg",
-        "https://cdn.pixabay.com/photo/2017/08/10/02/05/audi-2618189_960_720.jpg",
-        "https://cdn.pixabay.com/photo/2016/11/22/23/44/porsche-1851246_960_720.jpg",
-        "https://cdn.pixabay.com/photo/2018/01/15/22/25/bmw-3085396_960_720.jpg"
-      ],
-      auctionDuration: 168,
-      status: "active",
-      auctionStartTime: now,
-      auctionEndTime: auction9EndTime,
-      customsCleared: true,
-      recycled: false,
-      technicalInspectionValid: true,
-      technicalInspectionDate: "2024-04-05",
-      createdAt: now
-    };
-    this.carListings.set(listing13.id, listing13);
-
-    const listing14: CarListing = {
-      id: this.currentListingId++,
-      sellerId: sellerUser.id,
-      lotNumber: "012346",
-      make: "Infiniti",
-      model: "Q50",
-      year: 2019,
-      mileage: 42000,
-      vin: "JN1EV7AR5KM123456",
-      description: "Luxury Infiniti Q50 with twin-turbo V6 engine. Premium leather interior with advanced driver assistance systems.",
-      startingPrice: "35000.00",
-      currentBid: "37800.00",
-      photos: [
-        "https://cdn.pixabay.com/photo/2016/11/29/09/16/ford-mustang-1868815_960_720.jpg",
-        "https://cdn.pixabay.com/photo/2017/03/27/14/56/auto-2179220_960_720.jpg",
-        "https://cdn.pixabay.com/photo/2016/11/29/08/41/auto-1868726_960_720.jpg",
-        "https://cdn.pixabay.com/photo/2017/08/06/15/13/mercedes-2593571_960_720.jpg",
-        "https://cdn.pixabay.com/photo/2018/01/15/22/25/bmw-3085396_960_720.jpg"
-      ],
-      auctionDuration: 120,
-      status: "active",
-      auctionStartTime: now,
-      auctionEndTime: auction4EndTime,
-      customsCleared: false,
-      recycled: true,
-      technicalInspectionValid: false,
-      technicalInspectionDate: null,
-      createdAt: now
-    };
-    this.carListings.set(listing14.id, listing14);
-
-    // Test auction that ends in 15 seconds for testing completed auction handling
-    const testEndTime = new Date(now.getTime() + 15 * 1000); // 15 seconds from now
-    const testListing: CarListing = {
-      id: this.currentListingId++,
-      sellerId: sellerUser.id,
-      lotNumber: "TEST001",
-      make: "Toyota",
-      model: "Test Camry",
-      year: 2023,
-      mileage: 5000,
-      vin: "TEST123456789",
-      description: "Test auction that will end in 15 seconds to verify completed auction handling.",
-      startingPrice: "25000.00",
-      currentBid: "27500.00",
-      photos: [
-        "https://cdn.pixabay.com/photo/2017/08/10/02/05/audi-2618189_960_720.jpg"
-      ],
-      auctionDuration: 0,
-      status: "active",
-      auctionStartTime: now,
-      auctionEndTime: testEndTime,
-      customsCleared: true,
-      recycled: false,
-      technicalInspectionValid: true,
-      technicalInspectionDate: "2025-12-31",
-      createdAt: now
-    };
-    this.carListings.set(testListing.id, testListing);
-
-    // Create sample bids - using actual listing IDs after they've been created
-    const bid1: Bid = {
-      id: this.currentBidId++,
-      listingId: 2, // First listing (Porsche 911)
-      bidderId: buyerUser.id,
-      amount: "145500.00",
-      createdAt: new Date(now.getTime() - 2 * 60 * 1000) // 2 minutes ago
-    };
-    this.bids.set(bid1.id, bid1);
-
-    const bid2: Bid = {
-      id: this.currentBidId++,
-      listingId: 2, // First listing (Porsche 911)
-      bidderId: buyerUser.id,
-      amount: "145000.00",
-      createdAt: new Date(now.getTime() - 5 * 60 * 1000) // 5 minutes ago
-    };
-    this.bids.set(bid2.id, bid2);
-
-    // Add more bids for Ford Mustang (listing 9)
-    const bid3: Bid = {
-      id: this.currentBidId++,
-      listingId: 9, // Ford Mustang
-      bidderId: buyerUser.id,
-      amount: "31000.00",
-      createdAt: new Date(now.getTime() - 1 * 60 * 1000) // 1 minute ago
-    };
-    this.bids.set(bid3.id, bid3);
-
-    const bid4: Bid = {
-      id: this.currentBidId++,
-      listingId: 9, // Ford Mustang
-      bidderId: buyerUser.id,
-      amount: "30500.00",
-      createdAt: new Date(now.getTime() - 3 * 60 * 1000) // 3 minutes ago
-    };
-    this.bids.set(bid4.id, bid4);
-
-    const bid5: Bid = {
-      id: this.currentBidId++,
-      listingId: 9, // Ford Mustang
-      bidderId: buyerUser.id,
-      amount: "30000.00",
-      createdAt: new Date(now.getTime() - 6 * 60 * 1000) // 6 minutes ago
-    };
-    this.bids.set(bid5.id, bid5);
-
-    const bid6: Bid = {
-      id: this.currentBidId++,
-      listingId: 9, // Ford Mustang
-      bidderId: buyerUser.id,
-      amount: "29500.00",
-      createdAt: new Date(now.getTime() - 8 * 60 * 1000) // 8 minutes ago
-    };
-    this.bids.set(bid6.id, bid6);
-
-    // Create sample favorites for testing notifications
-    const favorite1: Favorite = {
-      id: this.currentFavoriteId++,
-      userId: buyerUser.id,
-      listingId: listing2.id, // BMW M3
-      createdAt: new Date()
-    };
-    this.favorites.set(favorite1.id, favorite1);
-
-    const favorite2: Favorite = {
-      id: this.currentFavoriteId++,
-      userId: buyerUser.id,
-      listingId: listing3.id, // Tesla Model S
-      createdAt: new Date()
-    };
-    this.favorites.set(favorite2.id, favorite2);
-  }
-
-  // User operations
+export class DatabaseStorage implements IStorage {
   async getUser(id: number): Promise<User | undefined> {
-    return this.users.get(id);
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user || undefined;
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(
-      (user) => user.username === username,
-    );
+    const [user] = await db.select().from(users).where(eq(users.username, username));
+    return user || undefined;
   }
 
   async getUserByEmail(email: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(
-      (user) => user.email === email,
-    );
+    const [user] = await db.select().from(users).where(eq(users.email, email));
+    return user || undefined;
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
-    const id = this.currentUserId++;
-    const user: User = { 
-      ...insertUser, 
-      id,
-      isActive: true,
-      createdAt: new Date()
-    };
-    this.users.set(id, user);
+    const [user] = await db.insert(users).values(insertUser).returning();
     return user;
   }
 
   async updateUserStatus(id: number, isActive: boolean): Promise<User | undefined> {
-    const user = this.users.get(id);
-    if (!user) return undefined;
-    
-    const updatedUser = { ...user, isActive };
-    this.users.set(id, updatedUser);
-    return updatedUser;
+    const [user] = await db
+      .update(users)
+      .set({ isActive })
+      .where(eq(users.id, id))
+      .returning();
+    return user || undefined;
   }
 
   async getAllUsers(): Promise<User[]> {
-    return Array.from(this.users.values());
+    return await db.select().from(users);
   }
 
-  // Car listing operations
   async getListing(id: number): Promise<CarListing | undefined> {
-    return this.carListings.get(id);
+    const [listing] = await db.select().from(carListings).where(eq(carListings.id, id));
+    return listing || undefined;
   }
 
   async getListingsByStatus(status: string, limit?: number): Promise<CarListing[]> {
-    const now = new Date();
-    const listings = Array.from(this.carListings.values())
-      .filter(listing => {
-        // Проверяем статус
-        if (listing.status !== status) return false;
-        
-        // Если аукцион активный, проверяем что время не истекло
-        if (status === 'active') {
-          return listing.auctionEndTime && listing.auctionEndTime > now;
-        }
-        
-        return true;
-      })
-      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
-    
-    return limit ? listings.slice(0, limit) : listings;
+    let query = db.select().from(carListings).where(eq(carListings.status, status));
+    if (limit) {
+      query = query.limit(limit);
+    }
+    return await query;
   }
 
   async getListingsBySeller(sellerId: number): Promise<CarListing[]> {
-    return Array.from(this.carListings.values())
-      .filter(listing => listing.sellerId === sellerId);
+    return await db.select().from(carListings).where(eq(carListings.sellerId, sellerId));
   }
 
   async createListing(insertListing: InsertCarListing): Promise<CarListing> {
-    const id = this.currentListingId++;
-    const now = new Date();
-    const auctionEndTime = new Date(now.getTime() + insertListing.auctionDuration * 60 * 60 * 1000);
-    
-    // Генерируем уникальный номер лота, если он не предоставлен
-    let lotNumber = insertListing.lotNumber;
-    if (!lotNumber) {
-      const existingLotNumbers = Array.from(this.carListings.values()).map(listing => listing.lotNumber);
-      lotNumber = generateUniqueLotNumber(existingLotNumbers);
-    }
-    
-    const listing: CarListing = {
-      ...insertListing,
-      id,
-      lotNumber,
-      currentBid: null,
-      status: "pending",
-      auctionStartTime: null,
-      auctionEndTime,
-      createdAt: now
-    };
-    
-    this.carListings.set(id, listing);
+    const [listing] = await db.insert(carListings).values(insertListing).returning();
     return listing;
   }
 
   async updateListingStatus(id: number, status: string): Promise<CarListing | undefined> {
-    const listing = this.carListings.get(id);
-    if (!listing) return undefined;
-
-    const updatedListing = { 
-      ...listing, 
-      status,
-      auctionStartTime: status === "active" ? new Date() : listing.auctionStartTime
-    };
-    this.carListings.set(id, updatedListing);
-    return updatedListing;
+    const [listing] = await db
+      .update(carListings)
+      .set({ status })
+      .where(eq(carListings.id, id))
+      .returning();
+    return listing || undefined;
   }
 
   async updateListingCurrentBid(id: number, amount: string): Promise<CarListing | undefined> {
-    const listing = this.carListings.get(id);
-    if (!listing) return undefined;
-
-    const updatedListing = { ...listing, currentBid: amount };
-    this.carListings.set(id, updatedListing);
-    this.saveData(); // Сохраняем данные после обновления ставки
-    return updatedListing;
+    const [listing] = await db
+      .update(carListings)
+      .set({ currentBid: amount })
+      .where(eq(carListings.id, id))
+      .returning();
+    return listing || undefined;
   }
 
   async searchListings(filters: {
@@ -831,216 +140,180 @@ export class MemStorage implements IStorage {
     maxPrice?: number;
     year?: number;
   }): Promise<CarListing[]> {
-    const now = new Date();
-    return Array.from(this.carListings.values())
-      .filter(listing => {
-        // Проверяем что аукцион активный и не завершился
-        if (listing.status !== "active" || !listing.auctionEndTime || listing.auctionEndTime <= now) return false;
-        
-        if (filters.query) {
-          const query = filters.query.toLowerCase();
-          const searchText = `${listing.make} ${listing.model} ${listing.year}`.toLowerCase();
-          if (!searchText.includes(query)) return false;
-        }
-        
-        if (filters.make && listing.make.toLowerCase() !== filters.make.toLowerCase()) {
-          return false;
-        }
-        
-        if (filters.year && listing.year !== filters.year) {
-          return false;
-        }
-        
-        const currentPrice = parseFloat(listing.currentBid || listing.startingPrice);
-        if (filters.minPrice && currentPrice < filters.minPrice) {
-          return false;
-        }
-        
-        if (filters.maxPrice && currentPrice > filters.maxPrice) {
-          return false;
-        }
-        
-        return true;
-      });
+    const conditions = [eq(carListings.status, "active")];
+
+    if (filters.query) {
+      conditions.push(
+        or(
+          ilike(carListings.make, `%${filters.query}%`),
+          ilike(carListings.model, `%${filters.query}%`),
+          ilike(carListings.lotNumber, `%${filters.query}%`)
+        )!
+      );
+    }
+
+    if (filters.make) {
+      conditions.push(eq(carListings.make, filters.make));
+    }
+
+    if (filters.year) {
+      conditions.push(eq(carListings.year, filters.year));
+    }
+
+    if (filters.minPrice) {
+      conditions.push(sql`CAST(${carListings.startingPrice} AS NUMERIC) >= ${filters.minPrice}`);
+    }
+
+    if (filters.maxPrice) {
+      conditions.push(sql`CAST(${carListings.startingPrice} AS NUMERIC) <= ${filters.maxPrice}`);
+    }
+
+    return await db.select().from(carListings).where(and(...conditions));
   }
 
-  // Bid operations
   async getBidsForListing(listingId: number): Promise<Bid[]> {
-    return Array.from(this.bids.values())
-      .filter(bid => bid.listingId === listingId)
-      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+    return await db
+      .select()
+      .from(bids)
+      .where(eq(bids.listingId, listingId))
+      .orderBy(desc(bids.createdAt));
   }
 
   async getBidsByUser(bidderId: number): Promise<Bid[]> {
-    return Array.from(this.bids.values())
-      .filter(bid => bid.bidderId === bidderId)
-      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+    return await db
+      .select()
+      .from(bids)
+      .where(eq(bids.bidderId, bidderId))
+      .orderBy(desc(bids.createdAt));
   }
 
   async getBidCountForListing(listingId: number): Promise<number> {
-    return Array.from(this.bids.values())
-      .filter(bid => bid.listingId === listingId).length;
+    const [result] = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(bids)
+      .where(eq(bids.listingId, listingId));
+    return result.count;
   }
 
   async createBid(insertBid: InsertBid): Promise<Bid> {
-    const id = this.currentBidId++;
-    const bid: Bid = {
-      ...insertBid,
-      id,
-      createdAt: new Date()
-    };
-    
-    this.bids.set(id, bid);
-    this.saveData(); // Сохраняем данные после создания ставки
+    const [bid] = await db.insert(bids).values(insertBid).returning();
     return bid;
   }
 
-  // Favorites operations
   async getFavoritesByUser(userId: number): Promise<Favorite[]> {
-    const now = new Date();
-    const userFavorites = Array.from(this.favorites.values())
-      .filter(favorite => favorite.userId === userId);
-    
-    // Фильтруем избранные: оставляем активные аукционы и завершенные, где пользователь делал ставки
-    return userFavorites.filter(favorite => {
-      const listing = this.carListings.get(favorite.listingId);
-      if (!listing) return false;
-      
-      // Если аукцион активный и не завершился - оставляем
-      if (listing.status === 'active' && listing.auctionEndTime && listing.auctionEndTime > now) {
-        return true;
-      }
-      
-      // Если аукцион завершился - проверяем, делал ли пользователь ставки
-      if (listing.auctionEndTime && listing.auctionEndTime <= now) {
-        const userBids = Array.from(this.bids.values())
-          .filter(bid => bid.listingId === favorite.listingId && bid.bidderId === userId);
-        return userBids.length > 0;
-      }
-      
-      return false;
-    });
+    return await db.select().from(favorites).where(eq(favorites.userId, userId));
   }
 
   async createFavorite(insertFavorite: InsertFavorite): Promise<Favorite> {
-    const id = this.currentFavoriteId++;
-    const favorite: Favorite = {
-      ...insertFavorite,
-      id,
-      createdAt: new Date()
-    };
-    
-    this.favorites.set(id, favorite);
+    const [favorite] = await db.insert(favorites).values(insertFavorite).returning();
     return favorite;
   }
 
   async deleteFavorite(id: number): Promise<boolean> {
-    return this.favorites.delete(id);
+    const result = await db.delete(favorites).where(eq(favorites.id, id));
+    return result.rowCount !== null && result.rowCount > 0;
   }
 
   async getUsersWithFavoriteListing(listingId: number): Promise<number[]> {
-    return Array.from(this.favorites.values())
-      .filter(favorite => favorite.listingId === listingId)
-      .map(favorite => favorite.userId);
+    const userFavorites = await db
+      .select({ userId: favorites.userId })
+      .from(favorites)
+      .where(eq(favorites.listingId, listingId));
+    return userFavorites.map(f => f.userId);
   }
 
-  // Notifications operations
   async getNotificationsByUser(userId: number): Promise<Notification[]> {
-    return Array.from(this.notifications.values())
-      .filter(n => n.userId === userId)
-      .sort((a, b) => new Date(b.createdAt!).getTime() - new Date(a.createdAt!).getTime());
+    return await db
+      .select()
+      .from(notifications)
+      .where(eq(notifications.userId, userId))
+      .orderBy(desc(notifications.createdAt));
   }
 
   async createNotification(insertNotification: InsertNotification): Promise<Notification> {
-    const notification: Notification = {
-      id: this.currentNotificationId++,
-      ...insertNotification,
-      createdAt: new Date()
-    };
-    this.notifications.set(notification.id, notification);
+    const [notification] = await db.insert(notifications).values(insertNotification).returning();
     return notification;
   }
 
   async markNotificationAsRead(id: number): Promise<boolean> {
-    const notification = this.notifications.get(id);
-    if (notification) {
-      notification.isRead = true;
-      return true;
-    }
-    return false;
+    const result = await db
+      .update(notifications)
+      .set({ isRead: true })
+      .where(eq(notifications.id, id));
+    return result.rowCount !== null && result.rowCount > 0;
   }
 
   async getUnreadNotificationCount(userId: number): Promise<number> {
-    return Array.from(this.notifications.values())
-      .filter(n => n.userId === userId && !n.isRead)
-      .length;
+    const [result] = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(notifications)
+      .where(and(eq(notifications.userId, userId), eq(notifications.isRead, false)));
+    return result.count;
   }
 
-  // Car alerts operations
   async getCarAlertsByUser(userId: number): Promise<CarAlert[]> {
-    return Array.from(this.carAlerts.values())
-      .filter(a => a.userId === userId)
-      .sort((a, b) => new Date(b.createdAt!).getTime() - new Date(a.createdAt!).getTime());
+    return await db.select().from(carAlerts).where(eq(carAlerts.userId, userId));
   }
 
   async createCarAlert(insertAlert: InsertCarAlert): Promise<CarAlert> {
-    const alert: CarAlert = {
-      id: this.currentCarAlertId++,
-      ...insertAlert,
-      createdAt: new Date()
-    };
-    this.carAlerts.set(alert.id, alert);
+    const [alert] = await db.insert(carAlerts).values(insertAlert).returning();
     return alert;
   }
 
   async deleteCarAlert(id: number): Promise<boolean> {
-    return this.carAlerts.delete(id);
+    const result = await db.delete(carAlerts).where(eq(carAlerts.id, id));
+    return result.rowCount !== null && result.rowCount > 0;
   }
 
   async checkAlertsForNewListing(listing: CarListing): Promise<CarAlert[]> {
-    const matchingAlerts: CarAlert[] = [];
-    
-    for (const alert of this.carAlerts.values()) {
-      if (!alert.isActive) continue;
-      
-      // Check make match
-      if (alert.make.toLowerCase() !== listing.make.toLowerCase()) continue;
-      
-      // Check model match if specified
-      if (alert.model && alert.model.toLowerCase() !== listing.model.toLowerCase()) continue;
-      
-      // Check price range if specified
-      const listingPrice = parseFloat(listing.startingPrice);
-      if (alert.minPrice && listingPrice < parseFloat(alert.minPrice)) continue;
-      if (alert.maxPrice && listingPrice > parseFloat(alert.maxPrice)) continue;
-      
-      // Check year range if specified
-      if (alert.minYear && listing.year < alert.minYear) continue;
-      if (alert.maxYear && listing.year > alert.maxYear) continue;
-      
-      matchingAlerts.push(alert);
-    }
-    
-    return matchingAlerts;
+    return await db
+      .select()
+      .from(carAlerts)
+      .where(
+        and(
+          eq(carAlerts.isActive, true),
+          eq(carAlerts.make, listing.make),
+          sql`(${carAlerts.model} IS NULL OR ${carAlerts.model} = ${listing.model})`,
+          sql`(${carAlerts.minPrice} IS NULL OR CAST(${listing.startingPrice} AS NUMERIC) >= CAST(${carAlerts.minPrice} AS NUMERIC))`,
+          sql`(${carAlerts.maxPrice} IS NULL OR CAST(${listing.startingPrice} AS NUMERIC) <= CAST(${carAlerts.maxPrice} AS NUMERIC))`,
+          sql`(${carAlerts.minYear} IS NULL OR ${listing.year} >= ${carAlerts.minYear})`,
+          sql`(${carAlerts.maxYear} IS NULL OR ${listing.year} <= ${carAlerts.maxYear})`
+        )
+      );
   }
 
-  // Admin operations
   async getAdminStats(): Promise<{
     pendingListings: number;
     activeAuctions: number;
     totalUsers: number;
     bannedUsers: number;
   }> {
-    const allListings = Array.from(this.carListings.values());
-    const allUsers = Array.from(this.users.values());
+    const [pendingListings] = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(carListings)
+      .where(eq(carListings.status, "pending"));
+
+    const [activeAuctions] = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(carListings)
+      .where(eq(carListings.status, "active"));
+
+    const [totalUsers] = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(users);
+
+    const [bannedUsers] = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(users)
+      .where(eq(users.isActive, false));
 
     return {
-      pendingListings: allListings.filter(l => l.status === "pending").length,
-      activeAuctions: allListings.filter(l => l.status === "active").length,
-      totalUsers: allUsers.length,
-      bannedUsers: allUsers.filter(u => !u.isActive).length
+      pendingListings: pendingListings.count,
+      activeAuctions: activeAuctions.count,
+      totalUsers: totalUsers.count,
+      bannedUsers: bannedUsers.count
     };
   }
 }
 
-export const storage = new MemStorage();
+export const storage = new DatabaseStorage();
