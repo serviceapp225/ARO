@@ -17,7 +17,7 @@ export default function AuctionDetail() {
   const { id } = useParams();
   const [, setLocation] = useLocation();
   const { isFavorite, addToFavorites, removeFromFavorites } = useFavorites();
-  const { auctions } = useAuction();
+  const { auctions } = useAuctions();
   
   const [bidAmount, setBidAmount] = useState("");
   const [auctionEndTime, setAuctionEndTime] = useState<Date | null>(null);
@@ -48,7 +48,8 @@ export default function AuctionDetail() {
   });
 
   // Sort bids by amount (highest first) to show current winning bid at top
-  const sortedBids = (realBiddingHistory as any[]).sort((a, b) => parseFloat(b.amount) - parseFloat(a.amount));
+  const sortedBids = Array.isArray(realBiddingHistory) ? 
+    (realBiddingHistory as any[]).sort((a, b) => parseFloat(b.amount) - parseFloat(a.amount)) : [];
 
   // Bid mutation with celebration effects
   const bidMutation = useMutation({
@@ -118,7 +119,7 @@ export default function AuctionDetail() {
   };
 
   // Use only real auction data from the database
-  const auction = currentAuction;
+  const auction = currentAuction as any;
 
   // Scroll to top on page load
   useEffect(() => {
@@ -127,12 +128,12 @@ export default function AuctionDetail() {
 
   // Initialize auction end time from real data
   useEffect(() => {
-    if (currentAuction?.auctionEndTime && !auctionEndTime) {
-      const endTime = new Date(currentAuction.auctionEndTime);
+    if (auction?.auctionEndTime && !auctionEndTime) {
+      const endTime = new Date(auction.auctionEndTime);
       setAuctionEndTime(endTime);
       setIsTimerReady(true);
     }
-  }, [currentAuction, auctionEndTime]);
+  }, [auction, auctionEndTime]);
 
   // Handle auction end callback
   const handleAuctionEnd = useCallback(() => {
@@ -311,7 +312,7 @@ export default function AuctionDetail() {
 
   return (
     <div className="min-h-screen bg-background">
-      {showConfetti && <ConfettiEffect />}
+      {showConfetti && <ConfettiEffect isActive={showConfetti} />}
       
       {/* Header */}
       <div className="bg-white dark:bg-gray-900 border-b sticky top-0 z-40">
@@ -367,7 +368,7 @@ export default function AuctionDetail() {
             {/* Thumbnail Grid */}
             {auction.photos && auction.photos.length > 1 && (
               <div className="p-4 grid grid-cols-4 gap-2">
-                {auction.photos.slice(1, 5).map((photo, index) => (
+                {auction.photos.slice(1, 5).map((photo: any, index: number) => (
                   <img
                     key={index + 1}
                     src={photo}
@@ -451,11 +452,11 @@ export default function AuctionDetail() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Users className="h-5 w-5" />
-                История ставок ({realBiddingHistory.length})
+                История ставок ({sortedBids.length})
               </CardTitle>
             </CardHeader>
             <CardContent>
-              {realBiddingHistory.length === 0 ? (
+              {sortedBids.length === 0 ? (
                 <p className="text-muted-foreground text-center py-4">
                   Ставок пока нет. Станьте первым!
                 </p>
@@ -528,7 +529,7 @@ export default function AuctionDetail() {
                   {currentHighestBid.toLocaleString()} сом
                 </p>
                 <p className="text-sm text-muted-foreground">
-                  Ставок: {realBiddingHistory.length}
+                  Ставок: {sortedBids.length}
                 </p>
               </div>
 
