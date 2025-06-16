@@ -129,6 +129,23 @@ export default function AuctionDetail() {
   // Use real auction data from database
   const auction = currentAuction as any;
 
+  const currentBid = auction ? (auction.currentBid ? parseFloat(auction.currentBid) : parseFloat(auction.startingPrice)) : 0;
+  const condition = auction ? getConditionByMileage(auction.mileage) : "Неизвестно";
+
+  // Прокрутка к верху страницы при загрузке
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
+
+  // Инициализация времени окончания аукциона
+  useEffect(() => {
+    if (!auctionEndTime && auction?.auctionEndTime) {
+      const endTime = new Date(auction.auctionEndTime);
+      setAuctionEndTime(endTime);
+      setIsTimerReady(true);
+    }
+  }, [auction, auctionEndTime]);
+
   // Show loading state while auction data is loading
   if (!auction) {
     return (
@@ -147,23 +164,6 @@ export default function AuctionDetail() {
       </div>
     );
   }
-
-  const currentBid = auction.currentBid ? parseFloat(auction.currentBid) : parseFloat(auction.startingPrice);
-  const condition = getConditionByMileage(auction.mileage);
-
-  // Прокрутка к верху страницы при загрузке
-  useEffect(() => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }, []);
-
-  // Инициализация времени окончания аукциона
-  useEffect(() => {
-    if (!auctionEndTime && auction?.auctionEndTime) {
-      const endTime = new Date(auction.auctionEndTime);
-      setAuctionEndTime(endTime);
-      setIsTimerReady(true);
-    }
-  }, [auction, auctionEndTime]);
 
   // Функция для обработки окончания аукциона
   const handleAuctionEnd = () => {
