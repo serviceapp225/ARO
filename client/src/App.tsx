@@ -10,7 +10,7 @@ import { AlertsProvider } from "@/contexts/AlertsContext";
 import { FavoritesProvider } from "@/contexts/FavoritesContext";
 import HomePage from "@/pages/HomePage";
 import AuctionFeed from "@/pages/AuctionFeed";
-import AuctionDetail from "@/pages/AuctionDetail";
+import AuctionDetail from "@/pages/AuctionDetailFixed";
 import Favorites from "@/pages/Favorites";
 import SellCar from "@/pages/SellCar";
 import MyBids from "@/pages/MyBids";
