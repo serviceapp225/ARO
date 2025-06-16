@@ -789,7 +789,7 @@ export class MemStorage implements IStorage {
 
     const updatedListing = { ...listing, currentBid: amount };
     this.carListings.set(id, updatedListing);
-    this.saveData(); // Сохраняем данные после обновления ставки
+    await this.saveData(); // Сохраняем данные после обновления ставки
     return updatedListing;
   }
 

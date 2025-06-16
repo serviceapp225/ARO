@@ -93,7 +93,7 @@ export default function Favorites() {
             <p className="text-gray-500 mb-6">
               Добавьте автомобили в избранное, чтобы быстро находить их
             </p>
-            <Button>
+            <Button onClick={() => setLocation("/")}>
               Перейти к аукционам
             </Button>
           </div>
