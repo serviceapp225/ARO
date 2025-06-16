@@ -13,7 +13,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         status as string, 
         limit ? Number(limit) : undefined
       );
-      res.json(listings);
+      
+      // Add real bid counts to each listing
+      const listingsWithBidCounts = await Promise.all(
+        listings.map(async (listing) => {
+          const bidCount = await storage.getBidCountForListing(listing.id);
+          return { ...listing, bidCount };
+        })
+      );
+      
+      res.json(listingsWithBidCounts);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch listings" });
     }

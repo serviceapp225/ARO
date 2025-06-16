@@ -45,7 +45,7 @@ export function AuctionProvider({ children }: { children: ReactNode }) {
       mileage: listing.mileage,
       photos: listing.photos || [],
       currentBid: parseFloat(listing.currentBid || listing.startingPrice),
-      bidCount: Math.floor(Math.random() * 25) + 1, // Mock bid count for now
+      bidCount: listing.bidCount || 0, // Real bid count from server
       endTime: new Date(listing.auctionEndTime),
       status: listing.status as 'active' | 'ended',
       customsCleared: listing.customsCleared || false,

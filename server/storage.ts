@@ -48,6 +48,7 @@ export interface IStorage {
   // Bid operations
   getBidsForListing(listingId: number): Promise<Bid[]>;
   getBidsByUser(bidderId: number): Promise<Bid[]>;
+  getBidCountForListing(listingId: number): Promise<number>;
   createBid(bid: InsertBid): Promise<Bid>;
 
   // Favorites operations
@@ -837,6 +838,11 @@ export class MemStorage implements IStorage {
     return Array.from(this.bids.values())
       .filter(bid => bid.bidderId === bidderId)
       .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+  }
+
+  async getBidCountForListing(listingId: number): Promise<number> {
+    return Array.from(this.bids.values())
+      .filter(bid => bid.listingId === listingId).length;
   }
 
   async createBid(insertBid: InsertBid): Promise<Bid> {
