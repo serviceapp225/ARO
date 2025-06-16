@@ -242,12 +242,6 @@ export function ActiveAuctions({ searchQuery = "" }: ActiveAuctionsProps) {
                 По запросу "{searchQuery}" ничего не найдено
               </p>
               <div className="max-w-sm mx-auto">
-                <SearchAlertButton 
-                  searchFilters={{ 
-                    brand: searchQuery.toLowerCase(),
-                    model: ""
-                  }} 
-                />
               </div>
             </>
           ) : (

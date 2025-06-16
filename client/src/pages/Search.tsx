@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { ActiveAuctions } from "@/components/ActiveAuctions";
-import SearchAlertButton from "@/components/SearchAlertButton";
+
 import { CAR_MAKES, getModelsForMake } from "@shared/car-data";
 
 export default function Search() {
@@ -468,7 +468,6 @@ export default function Search() {
               </h2>
               {activeFiltersCount > 0 && (
                 <div className="w-64">
-                  <SearchAlertButton searchFilters={searchFilters} />
                 </div>
               )}
             </div>
@@ -484,7 +483,6 @@ export default function Search() {
                   Создайте уведомление и мы сообщим, когда появится автомобиль с нужными параметрами
                 </p>
                 <div className="max-w-sm mx-auto">
-                  <SearchAlertButton searchFilters={searchFilters} />
                 </div>
               </div>
             )}
