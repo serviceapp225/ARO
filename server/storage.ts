@@ -841,8 +841,10 @@ export class MemStorage implements IStorage {
   }
 
   async getBidCountForListing(listingId: number): Promise<number> {
-    return Array.from(this.bids.values())
-      .filter(bid => bid.listingId === listingId).length;
+    const allBids = Array.from(this.bids.values());
+    const bidsForListing = allBids.filter(bid => bid.listingId === listingId);
+    console.log(`Total bids: ${allBids.length}, Bids for listing ${listingId}: ${bidsForListing.length}`);
+    return bidsForListing.length;
   }
 
   async createBid(insertBid: InsertBid): Promise<Bid> {

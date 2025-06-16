@@ -18,6 +18,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const listingsWithBidCounts = await Promise.all(
         listings.map(async (listing) => {
           const bidCount = await storage.getBidCountForListing(listing.id);
+          console.log(`Listing ${listing.id} has ${bidCount} bids`);
           return { ...listing, bidCount };
         })
       );
