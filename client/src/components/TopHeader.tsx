@@ -44,6 +44,22 @@ export function TopHeader({
     }
   };
 
+  // Hide notifications on auction-related and profile pages
+  const shouldHideNotifications = () => {
+    if (!showNotifications) return true;
+    
+    // Hide on auction detail pages (pattern: /auction/*)
+    if (location.startsWith('/auction/')) return true;
+    
+    // Hide on profile and related pages
+    if (location === '/profile') return true;
+    if (location === '/favorites') return true;
+    if (location === '/bids') return true;
+    if (location === '/sell') return true;
+    
+    return false;
+  };
+
   return (
     <header className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 px-4 py-3 flex items-center justify-between">
       <div className="flex items-center gap-3">
@@ -59,7 +75,7 @@ export function TopHeader({
         </h1>
       </div>
 
-      {showNotifications && (
+      {!shouldHideNotifications() && (
         <NotificationBell userId={currentUserId} />
       )}
     </header>
