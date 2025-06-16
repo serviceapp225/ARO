@@ -36,6 +36,11 @@ export default function Favorites() {
   // Get favorite auctions from the auction list
   const favoriteIds = getFavoritesList();
   const favoriteAuctions = auctions.filter(auction => favoriteIds.includes(auction.id));
+  
+  // Helper function to check if auction is completed
+  const isAuctionCompleted = (endTime: string) => {
+    return new Date(endTime) <= new Date();
+  };
 
   const removeFavorite = (id: string) => {
     removeFromFavorites(id);
@@ -142,7 +147,13 @@ export default function Favorites() {
                       </Button>
                     </div>
                     <div className="absolute bottom-3 left-3">
-                      <CountdownTimer endTime={car.endTime} size="small" />
+                      {isAuctionCompleted(car.endTime) ? (
+                        <div className="bg-gray-800/90 text-white px-2 py-1 rounded text-xs font-semibold">
+                          ЗАВЕРШЕН
+                        </div>
+                      ) : (
+                        <CountdownTimer endTime={car.endTime} size="small" />
+                      )}
                     </div>
                   </div>
                   <CardContent className="p-4">
