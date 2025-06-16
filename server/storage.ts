@@ -113,10 +113,10 @@ export class MemStorage implements IStorage {
 
   private loadData() {
     try {
-      const fs = require('fs');
-      if (fs.existsSync(this.dataFile)) {
-        const data = JSON.parse(fs.readFileSync(this.dataFile, 'utf8'));
-        
+      const fileHelper = require('./fix_storage.js');
+      const data = fileHelper.loadData(this.dataFile);
+      
+      if (data) {
         // Load all data from file
         this.users = new Map(data.users || []);
         this.carListings = new Map(data.carListings?.map(([k, v]: [number, any]) => [k, { ...v, createdAt: new Date(v.createdAt), auctionStartTime: v.auctionStartTime ? new Date(v.auctionStartTime) : null, auctionEndTime: new Date(v.auctionEndTime) }]) || []);
@@ -147,7 +147,7 @@ export class MemStorage implements IStorage {
 
   private saveData() {
     try {
-      const fs = require('fs');
+      const fileHelper = require('./fix_storage.js');
       const data = {
         users: Array.from(this.users.entries()),
         carListings: Array.from(this.carListings.entries()),
@@ -163,7 +163,7 @@ export class MemStorage implements IStorage {
         currentCarAlertId: this.currentCarAlertId
       };
       
-      fs.writeFileSync(this.dataFile, JSON.stringify(data, null, 2));
+      fileHelper.saveData(this.dataFile, data);
     } catch (error) {
       console.error('Error saving data:', error);
     }
@@ -789,7 +789,7 @@ export class MemStorage implements IStorage {
 
     const updatedListing = { ...listing, currentBid: amount };
     this.carListings.set(id, updatedListing);
-    await this.saveData(); // Сохраняем данные после обновления ставки
+    this.saveData(); // Сохраняем данные после обновления ставки
     return updatedListing;
   }
 
