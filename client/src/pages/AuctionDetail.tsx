@@ -503,7 +503,7 @@ export default function AuctionDetail() {
                   </div>
                   <div className="flex justify-between items-center py-2 px-3 rounded-lg bg-white border border-gray-100">
                     <span className="text-gray-600 font-medium">Город</span>
-                    <span className="font-semibold text-gray-900">{mockAuction.specifications.city}</span>
+                    <span className="font-semibold text-gray-900">{auction.location}</span>
                   </div>
                 </div>
               </div>
@@ -517,19 +517,19 @@ export default function AuctionDetail() {
                 <div className="space-y-3">
                   <div className="flex justify-between items-center py-2 px-3 rounded-lg bg-white border border-gray-100">
                     <span className="text-gray-600 font-medium">Двигатель</span>
-                    <span className="font-semibold text-gray-900">{mockAuction.specifications.engine}</span>
+                    <span className="font-semibold text-gray-900">{auction.engine || 'Не указан'}</span>
                   </div>
                   <div className="flex justify-between items-center py-2 px-3 rounded-lg bg-white border border-gray-100">
                     <span className="text-gray-600 font-medium">КПП</span>
-                    <span className="font-semibold text-gray-900">{mockAuction.specifications.transmission}</span>
+                    <span className="font-semibold text-gray-900">{auction.transmission || 'Не указана'}</span>
                   </div>
                   <div className="flex justify-between items-center py-2 px-3 rounded-lg bg-white border border-gray-100">
                     <span className="text-gray-600 font-medium">Привод</span>
-                    <span className="font-semibold text-gray-900">{mockAuction.specifications.drivetrain}</span>
+                    <span className="font-semibold text-gray-900">Передний привод</span>
                   </div>
                   <div className="flex justify-between items-center py-2 px-3 rounded-lg bg-white border border-gray-100">
                     <span className="text-gray-600 font-medium">Топливо</span>
-                    <span className="font-semibold text-gray-900">{mockAuction.specifications.fuelType}</span>
+                    <span className="font-semibold text-gray-900">{auction.fuelType || 'Не указано'}</span>
                   </div>
                 </div>
               </div>
@@ -544,15 +544,15 @@ export default function AuctionDetail() {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                 <div className="flex justify-between items-center py-2 px-3 rounded-lg bg-white border border-gray-100">
                   <span className="text-gray-600 font-medium">Кузов</span>
-                  <span className="font-semibold text-gray-900">{mockAuction.specifications.bodyType}</span>
+                  <span className="font-semibold text-gray-900">{auction.bodyType || 'Не указан'}</span>
                 </div>
                 <div className="flex justify-between items-center py-2 px-3 rounded-lg bg-white border border-gray-100">
                   <span className="text-gray-600 font-medium">Цвет</span>
-                  <span className="font-semibold text-gray-900">{mockAuction.specifications.color}</span>
+                  <span className="font-semibold text-gray-900">{auction.color || 'Не указан'}</span>
                 </div>
                 <div className="flex justify-between items-center py-2 px-3 rounded-lg bg-white border border-gray-100">
                   <span className="text-gray-600 font-medium">VIN</span>
-                  <span className="font-semibold text-gray-900 font-mono text-sm">{mockAuction.specifications.vin}</span>
+                  <span className="font-semibold text-gray-900 font-mono text-sm">{auction.vin || 'Не указан'}</span>
                 </div>
               </div>
             </div>
