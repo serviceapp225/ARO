@@ -71,6 +71,11 @@ export default function AuctionDetail() {
       setShowConfetti(true);
       setCurrentPrice(parseFloat(variables.amount));
       
+      // Automatically add to favorites when placing a bid
+      if (!isFavorite(id!)) {
+        addToFavorites(id!);
+      }
+      
       // Show success toast
       toast({
         title: "🎉 Ставка принята!",
@@ -178,6 +183,45 @@ export default function AuctionDetail() {
     }
   }, [auction, currentAuction, auctionEndTime]);
 
+  // Функция для обработки окончания аукциона
+  const handleAuctionEnd = () => {
+    const bidsArray = sortedBids || [];
+    
+    if (bidsArray.length === 0) {
+      // Если ставок не было, просто удаляем из избранного
+      if (isFavorite(id!)) {
+        removeFromFavorites(id!);
+      }
+      return;
+    }
+
+    // Находим наивысшую ставку (первая в отсортированном массиве)
+    const highestBid = bidsArray[0];
+
+    // Проверяем, является ли текущий пользователь (ID 3) победителем
+    const currentUserId = 3;
+    const isWinner = highestBid.bidderId === currentUserId;
+
+    if (isWinner) {
+      // Показываем сообщение о победе
+      toast({
+        title: "🏆 Поздравляем! Вы победили!",
+        description: `Вы выиграли аукцион со ставкой $${parseFloat(highestBid.amount).toLocaleString()}`,
+        duration: 10000,
+      });
+    } else {
+      // Удаляем из избранного, если пользователь не победил
+      if (isFavorite(id!)) {
+        removeFromFavorites(id!);
+        toast({
+          title: "Аукцион завершен",
+          description: "К сожалению, вы не выиграли этот аукцион",
+          duration: 5000,
+        });
+      }
+    }
+  };
+
   useEffect(() => {
     const calculateTimeLeft = () => {
       if (!auctionEndTime) return;
@@ -191,13 +235,16 @@ export default function AuctionDetail() {
           minutes: Math.floor((difference / 1000 / 60) % 60),
           seconds: Math.floor((difference / 1000) % 60)
         });
+      } else {
+        // Auction has ended - handle favorites management
+        handleAuctionEnd();
       }
     };
 
     calculateTimeLeft();
     const timer = setInterval(calculateTimeLeft, 1000);
     return () => clearInterval(timer);
-  }, [auctionEndTime]);
+  }, [auctionEndTime, handleAuctionEnd]);
 
   // Функция для автоматического продления времени аукциона при ставке в последние секунды
   const extendAuctionIfNeeded = () => {
