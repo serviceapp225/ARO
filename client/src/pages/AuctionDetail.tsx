@@ -31,6 +31,7 @@ export default function AuctionDetail() {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const [touchEnd, setTouchEnd] = useState<number | null>(null);
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [mouseStart, setMouseStart] = useState<number | null>(null);
   const [mouseEnd, setMouseEnd] = useState<number | null>(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -854,7 +855,7 @@ export default function AuctionDetail() {
                 {auction.year} {auction.make} {auction.model}
               </p>
               <p className="text-sm opacity-80">
-                Фото {activeImageIndex + 1} из {auction.imageUrl ? 1 : 0}
+                Фото 1 из {auction.imageUrl ? 1 : 0}
               </p>
               <p className="text-xs opacity-60 mt-1">
                 Листайте пальцем или перетаскивайте мышью
