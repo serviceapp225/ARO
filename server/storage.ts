@@ -90,8 +90,10 @@ export class MemStorage implements IStorage {
   private currentFavoriteId: number;
   private currentNotificationId: number;
   private currentCarAlertId: number;
+  private dataFile: string;
 
   constructor() {
+    this.dataFile = './server/data.json';
     this.users = new Map();
     this.carListings = new Map();
     this.bids = new Map();
@@ -105,8 +107,66 @@ export class MemStorage implements IStorage {
     this.currentNotificationId = 1;
     this.currentCarAlertId = 1;
 
-    // Initialize with some sample data for development
-    this.initializeSampleData();
+    // Load existing data or initialize with sample data
+    this.loadData();
+  }
+
+  private loadData() {
+    try {
+      const fs = require('fs');
+      if (fs.existsSync(this.dataFile)) {
+        const data = JSON.parse(fs.readFileSync(this.dataFile, 'utf8'));
+        
+        // Load all data from file
+        this.users = new Map(data.users || []);
+        this.carListings = new Map(data.carListings?.map(([k, v]: [number, any]) => [k, { ...v, createdAt: new Date(v.createdAt), auctionStartTime: v.auctionStartTime ? new Date(v.auctionStartTime) : null, auctionEndTime: new Date(v.auctionEndTime) }]) || []);
+        this.bids = new Map(data.bids?.map(([k, v]: [number, any]) => [k, { ...v, createdAt: new Date(v.createdAt) }]) || []);
+        this.favorites = new Map(data.favorites?.map(([k, v]: [number, any]) => [k, { ...v, createdAt: new Date(v.createdAt) }]) || []);
+        this.notifications = new Map(data.notifications?.map(([k, v]: [number, any]) => [k, { ...v, createdAt: new Date(v.createdAt) }]) || []);
+        this.carAlerts = new Map(data.carAlerts || []);
+        
+        this.currentUserId = data.currentUserId || 1;
+        this.currentListingId = data.currentListingId || 1;
+        this.currentBidId = data.currentBidId || 1;
+        this.currentFavoriteId = data.currentFavoriteId || 1;
+        this.currentNotificationId = data.currentNotificationId || 1;
+        this.currentCarAlertId = data.currentCarAlertId || 1;
+        
+        console.log('Data loaded successfully from file');
+      } else {
+        console.log('No existing data file found, initializing with sample data');
+        this.initializeSampleData();
+        this.saveData();
+      }
+    } catch (error) {
+      console.error('Error loading data:', error);
+      this.initializeSampleData();
+      this.saveData();
+    }
+  }
+
+  private saveData() {
+    try {
+      const fs = require('fs');
+      const data = {
+        users: Array.from(this.users.entries()),
+        carListings: Array.from(this.carListings.entries()),
+        bids: Array.from(this.bids.entries()),
+        favorites: Array.from(this.favorites.entries()),
+        notifications: Array.from(this.notifications.entries()),
+        carAlerts: Array.from(this.carAlerts.entries()),
+        currentUserId: this.currentUserId,
+        currentListingId: this.currentListingId,
+        currentBidId: this.currentBidId,
+        currentFavoriteId: this.currentFavoriteId,
+        currentNotificationId: this.currentNotificationId,
+        currentCarAlertId: this.currentCarAlertId
+      };
+      
+      fs.writeFileSync(this.dataFile, JSON.stringify(data, null, 2));
+    } catch (error) {
+      console.error('Error saving data:', error);
+    }
   }
 
   private initializeSampleData() {
@@ -729,6 +789,7 @@ export class MemStorage implements IStorage {
 
     const updatedListing = { ...listing, currentBid: amount };
     this.carListings.set(id, updatedListing);
+    this.saveData(); // Сохраняем данные после обновления ставки
     return updatedListing;
   }
 
@@ -792,6 +853,7 @@ export class MemStorage implements IStorage {
     };
     
     this.bids.set(id, bid);
+    this.saveData(); // Сохраняем данные после создания ставки
     return bid;
   }
 
