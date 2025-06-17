@@ -100,7 +100,12 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getListingsByStatus(status: string, limit?: number): Promise<CarListing[]> {
-    const query = db.select().from(carListings).where(eq(carListings.status, status));
+    const query = db
+      .select()
+      .from(carListings)
+      .where(eq(carListings.status, status))
+      .orderBy(desc(carListings.createdAt)); // Show newest listings first
+    
     if (limit) {
       return await query.limit(limit);
     }

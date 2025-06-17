@@ -42,7 +42,11 @@ export const carListings = pgTable("car_listings", {
   vin: text("vin"),
   location: text("location"),
   createdAt: timestamp("created_at").defaultNow(),
-});
+}, (table) => ({
+  statusIdx: index("car_listings_status_idx").on(table.status),
+  sellerIdx: index("car_listings_seller_idx").on(table.sellerId),
+  createdAtIdx: index("car_listings_created_at_idx").on(table.createdAt),
+}));
 
 export const bids = pgTable("bids", {
   id: serial("id").primaryKey(),

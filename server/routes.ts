@@ -6,7 +6,7 @@ import { z } from "zod";
 
 // Simple in-memory cache
 const cache = new Map();
-const CACHE_TTL = 2000; // 2 seconds
+const CACHE_TTL = 1000; // 1 second for faster updates
 
 function getCached(key: string) {
   const cached = cache.get(key);
