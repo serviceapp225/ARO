@@ -33,19 +33,22 @@ const AuctionContext = createContext<AuctionContextType | undefined>(undefined);
 export function AuctionProvider({ children }: { children: ReactNode }) {
   const [selectedAuction, setSelectedAuction] = useState<Auction | null>(null);
 
-  // Fetch real data from API
+  // Fetch real data from API with caching optimization
   const { data: listings, isLoading, refetch } = useQuery({
     queryKey: ['/api/listings'],
+    staleTime: 30000, // Consider data fresh for 30 seconds
+    gcTime: 300000, // Keep in cache for 5 minutes
+    refetchOnWindowFocus: false, // Don't refetch when window gains focus
     select: (data: any[]) => data.map(listing => ({
       id: listing.id.toString(),
-      lotNumber: listing.lotNumber, // Используем реальный номер лота из базы данных
+      lotNumber: listing.lotNumber,
       make: listing.make,
       model: listing.model,
       year: listing.year,
       mileage: listing.mileage,
       photos: listing.photos || [],
       currentBid: parseFloat(listing.currentBid || listing.startingPrice),
-      bidCount: listing.bidCount || 0, // Real bid count from server
+      bidCount: listing.bidCount || 0,
       endTime: new Date(listing.auctionEndTime),
       status: listing.status as 'active' | 'ended',
       customsCleared: listing.customsCleared || false,

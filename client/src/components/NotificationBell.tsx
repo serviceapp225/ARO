@@ -13,7 +13,8 @@ export function NotificationBell({ userId }: NotificationBellProps) {
 
   const { data: notifications = [], isLoading } = useQuery<Notification[]>({
     queryKey: [`/api/notifications/${userId}`],
-    refetchInterval: 5000, // Poll every 5 seconds for new notifications
+    refetchInterval: isOpen ? 30000 : 60000, // Poll less frequently: 30s when open, 60s when closed
+    staleTime: 30000, // Consider data fresh for 30 seconds
   });
 
   const markAsReadMutation = useMutation({
