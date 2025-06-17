@@ -88,28 +88,28 @@ export default function SellCar() {
     console.log("Submitting car listing:", formData, uploadedImages);
 
     try {
-      // Create listing data
+      // Create listing data matching database schema
       const listingData = {
+        sellerId: 2, // Demo seller ID
+        lotNumber: `LOT${Date.now()}`,
         make: formData.make,
         model: formData.model,
         year: parseInt(formData.year),
         mileage: parseInt(formData.mileage) || 0,
-        startingPrice: formData.price,
-        reservePrice: formData.reservePrice || formData.price,
         description: formData.description,
-        bodyType: formData.bodyType || 'sedan',
-        fuelType: formData.fuelType || 'gasoline',
-        transmission: formData.transmission || 'manual',
-        engineVolume: parseFloat(formData.engineVolume) || 2.0,
+        startingPrice: formData.price,
+        photos: uploadedImages, // Array of photo URLs
+        auctionDuration: 168, // 7 days in hours
         customsCleared: formData.customsCleared === 'yes',
         recycled: formData.recycled === 'yes',
         technicalInspectionValid: formData.technicalInspectionValid === 'yes',
         technicalInspectionDate: formData.technicalInspectionDate || null,
-        photos: uploadedImages, // For now, using blob URLs
-        sellerId: 2, // Demo seller ID
-        status: 'pending',
-        auctionEndTime: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(), // 7 days from now
-        lotNumber: `LOT${Date.now()}`
+        engine: formData.engineVolume ? `${formData.engineVolume}L` : null,
+        transmission: formData.transmission || null,
+        fuelType: formData.fuelType || null,
+        bodyType: formData.bodyType || null,
+        color: null, // Not captured in form
+        location: "Душанбе", // Default location
       };
 
       const response = await fetch('/api/listings', {
