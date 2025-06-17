@@ -44,17 +44,38 @@ export default function SellCar() {
       const newImages: string[] = [];
       
       for (const file of filesToProcess) {
-        // Convert file to base64 data URL for persistent storage
-        const reader = new FileReader();
-        const dataUrl = await new Promise<string>((resolve) => {
-          reader.onload = (e) => resolve(e.target?.result as string);
-          reader.readAsDataURL(file);
-        });
-        newImages.push(dataUrl);
+        // Compress and convert file to base64 data URL
+        const compressedDataUrl = await compressImage(file, 0.8, 1200); // 80% quality, max 1200px width
+        newImages.push(compressedDataUrl);
       }
       
       setUploadedImages(prev => [...prev, ...newImages]);
     }
+  };
+
+  const compressImage = (file: File, quality: number, maxWidth: number): Promise<string> => {
+    return new Promise((resolve) => {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d')!;
+      const img = new Image();
+      
+      img.onload = () => {
+        // Calculate new dimensions
+        const ratio = Math.min(maxWidth / img.width, maxWidth / img.height);
+        const width = img.width * ratio;
+        const height = img.height * ratio;
+        
+        canvas.width = width;
+        canvas.height = height;
+        
+        // Draw and compress
+        ctx.drawImage(img, 0, 0, width, height);
+        const compressedDataUrl = canvas.toDataURL('image/jpeg', quality);
+        resolve(compressedDataUrl);
+      };
+      
+      img.src = URL.createObjectURL(file);
+    });
   };
 
   const removeImage = (index: number) => {
