@@ -461,7 +461,7 @@ export default function AuctionDetail() {
               onClick={() => openGallery(0)}
             >
               <AutoImageCarousel 
-                images={auction?.imageUrl ? [auction.imageUrl] : []} 
+                images={auction?.photos || []} 
                 alt={`${auction?.year} ${auction?.make} ${auction?.model}`}
                 className="h-64"
                 autoPlayInterval={3000}
@@ -472,7 +472,7 @@ export default function AuctionDetail() {
               Нажмите для просмотра галереи
             </div>
             <div className="absolute bottom-4 right-4 bg-black/50 text-white px-2 py-1 rounded text-sm">
-              {auction?.imageUrl ? 1 : 0} фото
+              {auction?.photos?.length || 0} фото
             </div>
           </Card>
 
@@ -761,7 +761,7 @@ export default function AuctionDetail() {
               onMouseLeave={onMouseLeave}
             >
               <img
-                src={auction?.imageUrl || ''}
+                src={auction?.photos?.[currentImageIndex] || ''}
                 alt={`${auction.year} ${auction.make} ${auction.model} - фото ${currentImageIndex + 1}`}
                 className="max-w-full max-h-full object-contain select-none pointer-events-none"
                 onError={(e) => {
@@ -773,11 +773,15 @@ export default function AuctionDetail() {
 
             {/* Image indicator */}
             <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2">
-              {auction?.imageUrl && (
+              {auction?.photos?.map((_: string, index: number) => (
                 <button
-                  className="w-3 h-3 rounded-full bg-white transition-all"
+                  key={index}
+                  onClick={() => setCurrentImageIndex(index)}
+                  className={`w-3 h-3 rounded-full transition-all ${
+                    index === currentImageIndex ? 'bg-white' : 'bg-white/50'
+                  }`}
                 />
-              )}
+              ))}
             </div>
 
             {/* Image info */}
@@ -786,7 +790,7 @@ export default function AuctionDetail() {
                 {auction?.year} {auction?.make} {auction?.model}
               </p>
               <p className="text-sm opacity-80">
-                Фото 1 из {auction?.imageUrl ? 1 : 0}
+                Фото {currentImageIndex + 1} из {auction?.photos?.length || 0}
               </p>
               <p className="text-xs opacity-60 mt-1">
                 Листайте пальцем или перетаскивайте мышью
