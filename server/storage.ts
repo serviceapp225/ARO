@@ -199,26 +199,12 @@ export class DatabaseStorage implements IStorage {
   async getBidCountsForListings(listingIds: number[]): Promise<Record<number, number>> {
     if (listingIds.length === 0) return {};
     
-    const results = await db
-      .select({ 
-        listingId: bids.listingId,
-        count: sql<number>`count(*)` 
-      })
-      .from(bids)
-      .where(sql`${bids.listingId} = ANY(${listingIds})`)
-      .groupBy(bids.listingId);
-    
+    // Use individual queries for now to avoid PostgreSQL array syntax issues
     const counts: Record<number, number> = {};
-    results.forEach(r => {
-      counts[r.listingId] = r.count;
-    });
-    
-    // Ensure all listing IDs are included, even with 0 bids
-    listingIds.forEach(id => {
-      if (!(id in counts)) {
-        counts[id] = 0;
-      }
-    });
+    for (const id of listingIds) {
+      const count = await this.getBidCountForListing(id);
+      counts[id] = count;
+    }
     
     return counts;
   }

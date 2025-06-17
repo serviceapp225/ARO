@@ -7,9 +7,12 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { CAR_MAKES_MODELS, getModelsForMake } from "../../../shared/car-data";
+import { useToast } from "@/hooks/use-toast";
+import { useLocation } from "wouter";
 
 export default function SellCar() {
   const [uploadedImages, setUploadedImages] = useState<string[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     make: "",
     model: "",
@@ -29,6 +32,8 @@ export default function SellCar() {
   });
   
   const [availableModels, setAvailableModels] = useState<string[]>([]);
+  const { toast } = useToast();
+  const [, setLocation] = useLocation();
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
@@ -55,10 +60,112 @@ export default function SellCar() {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: Implement form submission
+    
+    // Validate required fields
+    if (!formData.make || !formData.model || !formData.year || !formData.price || !formData.description) {
+      toast({
+        title: "Ошибка",
+        description: "Пожалуйста, заполните все обязательные поля",
+        variant: "destructive",
+        duration: 3000,
+      });
+      return;
+    }
+
+    if (uploadedImages.length === 0) {
+      toast({
+        title: "Ошибка", 
+        description: "Добавьте хотя бы одно фото автомобиля",
+        variant: "destructive",
+        duration: 3000,
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
     console.log("Submitting car listing:", formData, uploadedImages);
+
+    try {
+      // Create listing data
+      const listingData = {
+        make: formData.make,
+        model: formData.model,
+        year: parseInt(formData.year),
+        mileage: parseInt(formData.mileage) || 0,
+        startingPrice: formData.price,
+        reservePrice: formData.reservePrice || formData.price,
+        description: formData.description,
+        bodyType: formData.bodyType || 'sedan',
+        fuelType: formData.fuelType || 'gasoline',
+        transmission: formData.transmission || 'manual',
+        engineVolume: parseFloat(formData.engineVolume) || 2.0,
+        customsCleared: formData.customsCleared === 'yes',
+        recycled: formData.recycled === 'yes',
+        technicalInspectionValid: formData.technicalInspectionValid === 'yes',
+        technicalInspectionDate: formData.technicalInspectionDate || null,
+        photos: uploadedImages, // For now, using blob URLs
+        sellerId: 2, // Demo seller ID
+        status: 'pending',
+        auctionEndTime: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(), // 7 days from now
+        lotNumber: `LOT${Date.now()}`
+      };
+
+      const response = await fetch('/api/listings', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(listingData),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to create listing');
+      }
+
+      const newListing = await response.json();
+
+      toast({
+        title: "✅ Объявление создано!",
+        description: "Ваш автомобиль добавлен на аукцион",
+        duration: 5000,
+      });
+
+      // Reset form
+      setFormData({
+        make: "",
+        model: "",
+        year: "",
+        mileage: "",
+        price: "",
+        reservePrice: "",
+        description: "",
+        bodyType: "",
+        fuelType: "",
+        transmission: "",
+        engineVolume: "",
+        customsCleared: "",
+        recycled: "",
+        technicalInspectionValid: "",
+        technicalInspectionDate: ""
+      });
+      setUploadedImages([]);
+      
+      // Navigate to the new listing
+      setLocation(`/auction/${newListing.id}`);
+
+    } catch (error) {
+      console.error('Error creating listing:', error);
+      toast({
+        title: "Ошибка",
+        description: "Не удалось создать объявление. Попробуйте еще раз.",
+        variant: "destructive",
+        duration: 3000,
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -369,8 +476,12 @@ export default function SellCar() {
           {/* Submit Button */}
           <Card>
             <CardContent className="p-6">
-              <Button type="submit" className="w-full bg-red-600 hover:bg-red-700 text-lg py-3">
-                Разместить на аукционе
+              <Button 
+                type="submit" 
+                disabled={isSubmitting}
+                className="w-full bg-red-600 hover:bg-red-700 text-lg py-3 disabled:opacity-50"
+              >
+                {isSubmitting ? "Публикация..." : "Разместить на аукционе"}
               </Button>
               <p className="text-sm text-neutral-500 text-center mt-3">
                 После публикации объявление будет проверено модератором
