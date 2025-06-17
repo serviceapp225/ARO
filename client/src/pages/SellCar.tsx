@@ -31,6 +31,7 @@ export default function SellCar() {
     engineVolume: "",
     driveType: "",
     color: "",
+    condition: "",
     vin: "",
     customsCleared: "",
     recycled: "",
@@ -209,6 +210,7 @@ export default function SellCar() {
           engineVolume: "",
           driveType: "",
           color: "",
+          condition: "",
           vin: "",
           customsCleared: "",
           recycled: "",
@@ -464,6 +466,24 @@ export default function SellCar() {
                       <SelectItem value="brown">Коричневый</SelectItem>
                       <SelectItem value="gold">Золотистый</SelectItem>
                       <SelectItem value="other">Другой</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <Label htmlFor="condition">Состояние</Label>
+                  <Select value={formData.condition} onValueChange={(value) => handleInputChange("condition", value)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Состояние автомобиля" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="excellent">Отличное</SelectItem>
+                      <SelectItem value="very_good">Очень хорошее</SelectItem>
+                      <SelectItem value="good">Хорошее</SelectItem>
+                      <SelectItem value="satisfactory">Удовлетворительное</SelectItem>
+                      <SelectItem value="requires_repair">Требует ремонта</SelectItem>
+                      <SelectItem value="accident">После ДТП</SelectItem>
+                      <SelectItem value="not_running">Не на ходу</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

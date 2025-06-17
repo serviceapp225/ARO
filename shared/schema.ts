@@ -39,6 +39,7 @@ export const carListings = pgTable("car_listings", {
   bodyType: text("body_type"),
   driveType: text("drive_type"),
   color: text("color"),
+  condition: text("condition"),
   vin: text("vin"),
   location: text("location"),
   createdAt: timestamp("created_at").defaultNow(),
