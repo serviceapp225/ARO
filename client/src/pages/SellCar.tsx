@@ -127,6 +127,24 @@ export default function SellCar() {
     setIsSubmitting(true);
     console.log("Submitting car listing:", formData, uploadedImages);
 
+    // Show success modal immediately for better UX
+    setShowSuccessModal(true);
+    setCountdown(3);
+    
+    // Start countdown timer
+    let countdownInterval: NodeJS.Timeout;
+    countdownInterval = setInterval(() => {
+      setCountdown(prev => {
+        if (prev <= 1) {
+          clearInterval(countdownInterval);
+          setShowSuccessModal(false);
+          setLocation('/'); // Navigate to homepage
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
     try {
       // Create listing data matching database schema
       const listingData = {
@@ -175,23 +193,6 @@ export default function SellCar() {
 
       const newListing = await response.json();
 
-      // Show success modal immediately
-      setShowSuccessModal(true);
-      setCountdown(3);
-      
-      // Start countdown timer
-      const countdownInterval = setInterval(() => {
-        setCountdown(prev => {
-          if (prev <= 1) {
-            clearInterval(countdownInterval);
-            setShowSuccessModal(false);
-            setLocation('/'); // Navigate to homepage
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-
       // Reset form (non-blocking)
       setTimeout(() => {
         setFormData({
@@ -223,6 +224,10 @@ export default function SellCar() {
 
     } catch (error) {
       console.error('Error creating listing:', error);
+      
+      // Close success modal if there's an error
+      clearInterval(countdownInterval);
+      setShowSuccessModal(false);
       
       let errorMessage = "Не удалось создать объявление. Попробуйте еще раз.";
       
