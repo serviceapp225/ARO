@@ -150,7 +150,7 @@ export default function SellCar() {
       // Create listing data matching database schema
       const listingData = {
         sellerId: 2, // Demo seller ID
-        lotNumber: `LOT${Date.now()}`,
+        lotNumber: `LOT${Math.floor(100000 + Math.random() * 900000)}`,
         make: formData.make,
         model: formData.model,
         year: parseInt(formData.year),

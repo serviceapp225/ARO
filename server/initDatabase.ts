@@ -57,7 +57,7 @@ export async function initializeDatabaseWithSampleData() {
   const listings = await db.insert(carListings).values([
     {
       sellerId: sellerUser.id,
-      lotNumber: "724583",
+      lotNumber: "LOT724583",
       make: "Porsche",
       model: "911 Turbo S",
       year: 2020,
@@ -84,7 +84,7 @@ export async function initializeDatabaseWithSampleData() {
     },
     {
       sellerId: sellerUser.id,
-      lotNumber: "892456",
+      lotNumber: "LOT892456",
       make: "BMW",
       model: "M5 Competition",
       year: 2021,
