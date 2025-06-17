@@ -41,6 +41,82 @@ export default function AuctionDetail() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
+  // Translation functions for car characteristics
+  const translateTransmission = (transmission: string) => {
+    const translations = {
+      'automatic': 'Автомат',
+      'manual': 'Механика', 
+      'cvt': 'Вариатор'
+    };
+    return translations[transmission as keyof typeof translations] || transmission || 'Не указана';
+  };
+
+  const translateFuelType = (fuelType: string) => {
+    const translations = {
+      'gasoline': 'Бензин',
+      'diesel': 'Дизель',
+      'gas': 'Газ',
+      'gas_gasoline': 'Газ+бензин',
+      'hybrid': 'Гибрид',
+      'electric': 'Электро'
+    };
+    return translations[fuelType as keyof typeof translations] || fuelType || 'Не указано';
+  };
+
+  const translateBodyType = (bodyType: string) => {
+    const translations = {
+      'sedan': 'Седан',
+      'crossover': 'Кроссовер',
+      'suv': 'Внедорожник',
+      'hatchback': 'Хэтчбек',
+      'wagon': 'Универсал',
+      'minivan': 'Минивен',
+      'coupe': 'Купе',
+      'convertible': 'Кабриолет',
+      'pickup': 'Пикап'
+    };
+    return translations[bodyType as keyof typeof translations] || bodyType || 'Не указан';
+  };
+
+  const translateDriveType = (driveType: string) => {
+    const translations = {
+      'front': 'Передний',
+      'rear': 'Задний', 
+      'all': 'Полный'
+    };
+    return translations[driveType as keyof typeof translations] || driveType || 'Не указан';
+  };
+
+  const translateColor = (color: string) => {
+    const translations = {
+      'white': 'Белый',
+      'black': 'Черный',
+      'silver': 'Серебристый',
+      'gray': 'Серый',
+      'red': 'Красный',
+      'blue': 'Синий',
+      'green': 'Зеленый',
+      'yellow': 'Желтый',
+      'brown': 'Коричневый',
+      'gold': 'Золотистый',
+      'other': 'Другой'
+    };
+    return translations[color as keyof typeof translations] || color || 'Не указан';
+  };
+
+  const translateCondition = (condition: string) => {
+    const translations = {
+      'excellent': 'Отличное',
+      'very_good': 'Очень хорошее',
+      'good': 'Хорошее',
+      'satisfactory': 'Удовлетворительное',
+      'requires_repair': 'Требует ремонта',
+      'accident': 'После ДТП',
+      'not_running': 'Не на ходу'
+    };
+    return translations[condition as keyof typeof translations] || condition || 'Не указано';
+  };
+
   // Fetch current auction data
   const { data: currentAuction, refetch: refetchAuction } = useQuery({
     queryKey: [`/api/listings/${id}`],
@@ -522,7 +598,7 @@ export default function AuctionDetail() {
                   </div>
                   <div className="flex justify-between items-center py-2 px-3 rounded-lg bg-white border border-gray-100">
                     <span className="text-gray-600 font-medium">Состояние</span>
-                    <span className="font-semibold text-green-600">{condition}</span>
+                    <span className="font-semibold text-green-600">{translateCondition(auction.condition)}</span>
                   </div>
                   <div className="flex justify-between items-center py-2 px-3 rounded-lg bg-white border border-gray-100">
                     <span className="text-gray-600 font-medium">Город</span>
@@ -544,15 +620,15 @@ export default function AuctionDetail() {
                   </div>
                   <div className="flex justify-between items-center py-2 px-3 rounded-lg bg-white border border-gray-100">
                     <span className="text-gray-600 font-medium">КПП</span>
-                    <span className="font-semibold text-gray-900">{auction.transmission || 'Не указана'}</span>
+                    <span className="font-semibold text-gray-900">{translateTransmission(auction.transmission)}</span>
                   </div>
                   <div className="flex justify-between items-center py-2 px-3 rounded-lg bg-white border border-gray-100">
                     <span className="text-gray-600 font-medium">Привод</span>
-                    <span className="font-semibold text-gray-900">Передний привод</span>
+                    <span className="font-semibold text-gray-900">{translateDriveType(auction.driveType)}</span>
                   </div>
                   <div className="flex justify-between items-center py-2 px-3 rounded-lg bg-white border border-gray-100">
                     <span className="text-gray-600 font-medium">Топливо</span>
-                    <span className="font-semibold text-gray-900">{auction.fuelType || 'Не указано'}</span>
+                    <span className="font-semibold text-gray-900">{translateFuelType(auction.fuelType)}</span>
                   </div>
                 </div>
               </div>
