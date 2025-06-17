@@ -65,9 +65,7 @@ export function AuctionProvider({ children }: { children: ReactNode }) {
     technicalInspectionDate: listing.technicalInspectionDate
   })) : [];
 
-  console.log('Raw listings:', listings);
-  console.log('Final auctions array:', auctions);
-  console.log('Loading state:', isLoading);
+
 
   const refreshAuctions = useCallback(() => {
     refetch();

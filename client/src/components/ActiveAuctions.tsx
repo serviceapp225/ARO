@@ -18,8 +18,7 @@ export function ActiveAuctions({ searchQuery = "" }: ActiveAuctionsProps) {
   const { auctions, loading } = useAuctions();
   const { isFavorite, addToFavorites, removeFromFavorites } = useFavorites();
   
-  console.log('ActiveAuctions - auctions:', auctions);
-  console.log('ActiveAuctions - loading:', loading);
+
   const [, setLocation] = useLocation();
   const [page, setPage] = useState(1);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -60,6 +59,13 @@ export function ActiveAuctions({ searchQuery = "" }: ActiveAuctionsProps) {
 
   // Calculate displayed auctions based on current page
   const displayedAuctions = sortedAuctions.slice(0, page * ITEMS_PER_PAGE);
+  
+  // Debug logging
+  console.log('Debug - auctions count:', auctions.length);
+  console.log('Debug - filteredAuctions count:', filteredAuctions.length);
+  console.log('Debug - sortedAuctions count:', sortedAuctions.length);
+  console.log('Debug - displayedAuctions count:', displayedAuctions.length);
+  console.log('Debug - page:', page, 'ITEMS_PER_PAGE:', ITEMS_PER_PAGE);
 
   const handleToggleFavorite = (auctionId: string, e: React.MouseEvent) => {
     e.stopPropagation();
