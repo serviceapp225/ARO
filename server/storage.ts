@@ -1,6 +1,6 @@
 import { users, carListings, bids, favorites, notifications, carAlerts, type User, type InsertUser, type CarListing, type InsertCarListing, type Bid, type InsertBid, type Favorite, type InsertFavorite, type Notification, type InsertNotification, type CarAlert, type InsertCarAlert } from "@shared/schema";
 import { db } from "./db";
-import { eq, and, desc, sql, or, ilike } from "drizzle-orm";
+import { eq, and, desc, sql, or, ilike, inArray } from "drizzle-orm";
 
 export interface IStorage {
   // User operations
@@ -215,11 +215,26 @@ export class DatabaseStorage implements IStorage {
   async getBidCountsForListings(listingIds: number[]): Promise<Record<number, number>> {
     if (listingIds.length === 0) return {};
     
-    // Use individual queries for now to avoid PostgreSQL array syntax issues
+    // Optimized single query to replace the slow loop
+    const results = await db
+      .select({
+        listingId: bids.listingId,
+        count: sql<number>`count(*)::int`
+      })
+      .from(bids)
+      .where(sql`${bids.listingId} = ANY(${listingIds})`)
+      .groupBy(bids.listingId);
+    
     const counts: Record<number, number> = {};
+    
+    // Initialize all listing IDs with 0
     for (const id of listingIds) {
-      const count = await this.getBidCountForListing(id);
-      counts[id] = count;
+      counts[id] = 0;
+    }
+    
+    // Fill in actual counts
+    for (const result of results) {
+      counts[result.listingId] = result.count;
     }
     
     return counts;
