@@ -839,7 +839,7 @@ export default function AuctionDetail() {
                     </div>
                     <div>
                       <div className="font-semibold text-gray-900 flex items-center gap-2">
-                        {bid.bidderId === 3 ? 'Покупатель (Вы)' : `Участник ${bid.bidderId}`}
+                        {bid.bidder?.username || `Участник #${bid.bidderId}`}
                         {index === 0 && (
                           <Badge className="bg-green-600 text-white text-xs px-2 py-1">
                             👑 Лидирует

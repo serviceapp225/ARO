@@ -119,7 +119,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const listingId = parseInt(req.params.id);
       const bids = await storage.getBidsForListing(listingId);
-      res.json(bids);
+      
+      // Enrich bids with user information
+      const enrichedBids = await Promise.all(
+        bids.map(async (bid) => {
+          const user = await storage.getUser(bid.bidderId);
+          return {
+            ...bid,
+            bidder: {
+              id: user?.id,
+              username: user?.username,
+              email: user?.email
+            }
+          };
+        })
+      );
+      
+      res.json(enrichedBids);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch bids" });
     }

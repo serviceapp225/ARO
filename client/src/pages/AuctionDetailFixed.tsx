@@ -829,7 +829,7 @@ export default function AuctionDetail() {
                       </div>
                       <div>
                         <div className="font-medium text-gray-900">
-                          Участник #{bid.bidderId}
+                          {bid.bidder?.username || `Участник #${bid.bidderId}`}
                         </div>
                         <div className="text-sm text-gray-600">
                           {new Date(bid.createdAt).toLocaleString('ru-RU')}

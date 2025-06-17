@@ -501,7 +501,7 @@ export default function AuctionDetail() {
                           {index + 1}
                         </div>
                         <div>
-                          <p className="font-medium">Ставка #{bid.id}</p>
+                          <p className="font-medium">{bid.bidder?.username || `Участник #${bid.bidderId}`}</p>
                           <p className="text-sm text-muted-foreground">
                             {new Date(bid.createdAt).toLocaleString('ru-RU')}
                           </p>
