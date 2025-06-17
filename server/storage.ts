@@ -215,26 +215,17 @@ export class DatabaseStorage implements IStorage {
   async getBidCountsForListings(listingIds: number[]): Promise<Record<number, number>> {
     if (listingIds.length === 0) return {};
     
-    // Optimized single query to replace the slow loop
-    const results = await db
-      .select({
-        listingId: bids.listingId,
-        count: sql<number>`count(*)::int`
-      })
-      .from(bids)
-      .where(sql`${bids.listingId} = ANY(${listingIds})`)
-      .groupBy(bids.listingId);
+    // Use Promise.all for parallel execution instead of sequential loop
+    const countPromises = listingIds.map(async (id) => {
+      const count = await this.getBidCountForListing(id);
+      return { id, count };
+    });
+    
+    const results = await Promise.all(countPromises);
     
     const counts: Record<number, number> = {};
-    
-    // Initialize all listing IDs with 0
-    for (const id of listingIds) {
-      counts[id] = 0;
-    }
-    
-    // Fill in actual counts
     for (const result of results) {
-      counts[result.listingId] = result.count;
+      counts[result.id] = result.count;
     }
     
     return counts;
