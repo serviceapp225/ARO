@@ -206,8 +206,8 @@ export function ActiveAuctions({ searchQuery = "" }: ActiveAuctionsProps) {
                     : 'bg-gray-100 text-gray-700'
                 }`}>
                   {auction.technicalInspectionValid 
-                    ? `Техосмотр до ${auction.technicalInspectionDate}` 
-                    : 'Техосмотр: нет'}
+                    ? `ТО до ${auction.technicalInspectionDate}` 
+                    : 'ТО: нет'}
                 </span>
               </div>
               <div className="mb-2">
