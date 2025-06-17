@@ -40,23 +40,30 @@ export function AuctionProvider({ children }: { children: ReactNode }) {
     gcTime: 60000, // Keep in cache for 1 minute
     refetchOnWindowFocus: true, // Refetch when window gains focus
     refetchInterval: 1000, // Auto-refetch every 1 second
-    select: (data: any[]) => data.map(listing => ({
-      id: listing.id.toString(),
-      lotNumber: listing.lotNumber,
-      make: listing.make,
-      model: listing.model,
-      year: listing.year,
-      mileage: listing.mileage,
-      photos: listing.photos || [],
-      currentBid: parseFloat(listing.currentBid || listing.startingPrice),
-      bidCount: listing.bidCount || 0,
-      endTime: new Date(listing.auctionEndTime),
-      status: listing.status as 'active' | 'ended',
-      customsCleared: listing.customsCleared || false,
-      recycled: listing.recycled || false,
-      technicalInspectionValid: listing.technicalInspectionValid || false,
-      technicalInspectionDate: listing.technicalInspectionDate
-    }))
+    select: (data: any[]) => {
+      console.log('Raw listings data:', data);
+      return data.map(listing => {
+        const transformed = {
+          id: listing.id.toString(),
+          lotNumber: listing.lotNumber,
+          make: listing.make,
+          model: listing.model,
+          year: listing.year,
+          mileage: listing.mileage,
+          photos: listing.photos || [],
+          currentBid: parseFloat(listing.currentBid || listing.startingPrice),
+          bidCount: listing.bidCount || 0,
+          endTime: new Date(listing.auctionEndTime),
+          status: listing.status as 'active' | 'ended',
+          customsCleared: listing.customsCleared || false,
+          recycled: listing.recycled || false,
+          technicalInspectionValid: listing.technicalInspectionValid || false,
+          technicalInspectionDate: listing.technicalInspectionDate
+        };
+        console.log('Transformed listing:', transformed);
+        return transformed;
+      });
+    }
   });
 
   const auctions = listings || [];

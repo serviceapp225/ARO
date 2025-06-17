@@ -17,6 +17,9 @@ interface ActiveAuctionsProps {
 export function ActiveAuctions({ searchQuery = "" }: ActiveAuctionsProps) {
   const { auctions, loading } = useAuctions();
   const { isFavorite, addToFavorites, removeFromFavorites } = useFavorites();
+  
+  console.log('ActiveAuctions - auctions:', auctions);
+  console.log('ActiveAuctions - loading:', loading);
   const [, setLocation] = useLocation();
   const [page, setPage] = useState(1);
   const [loadingMore, setLoadingMore] = useState(false);
