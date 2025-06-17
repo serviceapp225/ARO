@@ -165,8 +165,9 @@ export default function SellCar() {
 
       const newListing = await response.json();
 
-      // Invalidate cache to refresh auction list immediately
-      queryClient.invalidateQueries({ queryKey: ['/api/listings'] });
+      // Force immediate cache refresh and refetch
+      await queryClient.invalidateQueries({ queryKey: ['/api/listings'] });
+      await queryClient.refetchQueries({ queryKey: ['/api/listings'] });
 
       toast({
         title: "✅ Объявление создано!",

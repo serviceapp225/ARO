@@ -33,12 +33,13 @@ const AuctionContext = createContext<AuctionContextType | undefined>(undefined);
 export function AuctionProvider({ children }: { children: ReactNode }) {
   const [selectedAuction, setSelectedAuction] = useState<Auction | null>(null);
 
-  // Fetch real data from API with caching optimization
+  // Fetch real data from API with automatic refresh
   const { data: listings, isLoading, refetch } = useQuery({
     queryKey: ['/api/listings'],
-    staleTime: 30000, // Consider data fresh for 30 seconds
-    gcTime: 300000, // Keep in cache for 5 minutes
-    refetchOnWindowFocus: false, // Don't refetch when window gains focus
+    staleTime: 5000, // Consider data fresh for 5 seconds
+    gcTime: 60000, // Keep in cache for 1 minute
+    refetchOnWindowFocus: true, // Refetch when window gains focus
+    refetchInterval: 10000, // Auto-refetch every 10 seconds
     select: (data: any[]) => data.map(listing => ({
       id: listing.id.toString(),
       lotNumber: listing.lotNumber,
