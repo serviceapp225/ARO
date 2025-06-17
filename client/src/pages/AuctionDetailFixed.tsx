@@ -253,61 +253,16 @@ export default function AuctionDetail() {
     
     setIsPlacingBid(true);
     
+    // Play celebration sound immediately when button is clicked
+    setShowConfetti(true);
+    
     try {
-      // Place bid using API
-      const response = await fetch(`/api/listings/${id}/bids`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          amount: bidValue.toString(),
-          bidderId: 3, // Using demo user ID
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to place bid');
-      }
-      
-      // Trigger celebration effect with immediate sound
-      setShowConfetti(true);
-      
-      // Play celebration sound immediately with confetti
-      try {
-        import('@assets/celebration_1750167957407.mp3').then((audioModule) => {
-          const audio = new Audio(audioModule.default);
-          audio.volume = 0.7;
-          audio.play().catch(() => {
-            console.log('Audio playback failed, using fallback');
-            // Fallback to generated sound if custom audio fails
-            try {
-              const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-              const duration = 1.5;
-              const sampleRate = audioContext.sampleRate;
-              const buffer = audioContext.createBuffer(1, duration * sampleRate, sampleRate);
-              const data = buffer.getChannelData(0);
-              
-              for (let i = 0; i < data.length; i++) {
-                const t = i / sampleRate;
-                const envelope = Math.exp(-t * 3) * (1 - Math.exp(-t * 10));
-                const freq1 = 440 * (1 + t * 0.8);
-                const freq2 = 550 * (1 + t * 0.6); 
-                const wave = Math.sin(2 * Math.PI * freq1 * t) * 0.3 + Math.sin(2 * Math.PI * freq2 * t) * 0.2;
-                data[i] = wave * envelope * 0.15;
-              }
-              
-              const source = audioContext.createBufferSource();
-              source.buffer = buffer;
-              source.connect(audioContext.destination);
-              source.start();
-            } catch (fallbackError) {
-              console.log('Fallback audio also failed');
-            }
-          });
-        }).catch(() => {
-          console.log('Custom audio import failed, using fallback');
-          // Fallback to generated sound
+      import('@assets/celebration_1750167957407.mp3').then((audioModule) => {
+        const audio = new Audio(audioModule.default);
+        audio.volume = 0.7;
+        audio.play().catch(() => {
+          console.log('Audio playback failed, using fallback');
+          // Fallback to generated sound if custom audio fails
           try {
             const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
             const duration = 1.5;
@@ -329,14 +284,58 @@ export default function AuctionDetail() {
             source.connect(audioContext.destination);
             source.start();
           } catch (fallbackError) {
-            console.log('All audio options failed');
+            console.log('Fallback audio also failed');
           }
         });
-      } catch (e) {
-        console.log('Audio system not available');
+      }).catch(() => {
+        console.log('Custom audio import failed, using fallback');
+        // Fallback to generated sound
+        try {
+          const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+          const duration = 1.5;
+          const sampleRate = audioContext.sampleRate;
+          const buffer = audioContext.createBuffer(1, duration * sampleRate, sampleRate);
+          const data = buffer.getChannelData(0);
+          
+          for (let i = 0; i < data.length; i++) {
+            const t = i / sampleRate;
+            const envelope = Math.exp(-t * 3) * (1 - Math.exp(-t * 10));
+            const freq1 = 440 * (1 + t * 0.8);
+            const freq2 = 550 * (1 + t * 0.6); 
+            const wave = Math.sin(2 * Math.PI * freq1 * t) * 0.3 + Math.sin(2 * Math.PI * freq2 * t) * 0.2;
+            data[i] = wave * envelope * 0.15;
+          }
+          
+          const source = audioContext.createBufferSource();
+          source.buffer = buffer;
+          source.connect(audioContext.destination);
+          source.start();
+        } catch (fallbackError) {
+          console.log('All audio options failed');
+        }
+      });
+    } catch (e) {
+      console.log('Audio system not available');
+    }
+    
+    setTimeout(() => setShowConfetti(false), 4000);
+    
+    try {
+      // Place bid using API
+      const response = await fetch(`/api/listings/${id}/bids`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          amount: bidValue.toString(),
+          bidderId: 3, // Using demo user ID
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to place bid');
       }
-      
-      setTimeout(() => setShowConfetti(false), 4000);
       
       toast({
         title: "🏆 Ставка размещена!",
