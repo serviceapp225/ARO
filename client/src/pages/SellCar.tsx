@@ -26,6 +26,9 @@ export default function SellCar() {
     fuelType: "",
     transmission: "",
     engineVolume: "",
+    driveType: "",
+    color: "",
+    vin: "",
     customsCleared: "",
     recycled: "",
     technicalInspectionValid: "",
@@ -182,6 +185,9 @@ export default function SellCar() {
         fuelType: "",
         transmission: "",
         engineVolume: "",
+        driveType: "",
+        color: "",
+        vin: "",
         customsCleared: "",
         recycled: "",
         technicalInspectionValid: "",
@@ -385,6 +391,57 @@ export default function SellCar() {
                     value={formData.engineVolume}
                     onChange={(e) => handleInputChange("engineVolume", e.target.value)}
                   />
+                </div>
+
+                <div>
+                  <Label htmlFor="driveType">Привод</Label>
+                  <Select value={formData.driveType} onValueChange={(value) => handleInputChange("driveType", value)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Привод" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="front">Передний</SelectItem>
+                      <SelectItem value="rear">Задний</SelectItem>
+                      <SelectItem value="all">Полный</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <Label htmlFor="color">Цвет</Label>
+                  <Select value={formData.color} onValueChange={(value) => handleInputChange("color", value)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Цвет" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="white">Белый</SelectItem>
+                      <SelectItem value="black">Черный</SelectItem>
+                      <SelectItem value="silver">Серебристый</SelectItem>
+                      <SelectItem value="gray">Серый</SelectItem>
+                      <SelectItem value="red">Красный</SelectItem>
+                      <SelectItem value="blue">Синий</SelectItem>
+                      <SelectItem value="green">Зеленый</SelectItem>
+                      <SelectItem value="yellow">Желтый</SelectItem>
+                      <SelectItem value="brown">Коричневый</SelectItem>
+                      <SelectItem value="gold">Золотистый</SelectItem>
+                      <SelectItem value="other">Другой</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 gap-4">
+                <div>
+                  <Label htmlFor="vin">VIN-номер</Label>
+                  <Input
+                    id="vin"
+                    type="text"
+                    placeholder="Введите VIN-номер автомобиля"
+                    value={formData.vin}
+                    onChange={(e) => handleInputChange("vin", e.target.value.toUpperCase())}
+                    maxLength={17}
+                  />
+                  <p className="text-xs text-gray-500 mt-1">17-значный идентификационный номер автомобиля</p>
                 </div>
               </div>
 
