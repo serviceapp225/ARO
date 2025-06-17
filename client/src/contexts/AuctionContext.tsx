@@ -36,37 +36,38 @@ export function AuctionProvider({ children }: { children: ReactNode }) {
   // Fetch real data from API with automatic refresh
   const { data: listings, isLoading, refetch } = useQuery({
     queryKey: ['/api/listings'],
-    staleTime: 500, // Consider data fresh for 0.5 seconds
-    gcTime: 60000, // Keep in cache for 1 minute
-    refetchOnWindowFocus: true, // Refetch when window gains focus
-    refetchInterval: 1000, // Auto-refetch every 1 second
-    select: (data: any[]) => {
-      console.log('Raw listings data:', data);
-      return data.map(listing => {
-        const transformed = {
-          id: listing.id.toString(),
-          lotNumber: listing.lotNumber,
-          make: listing.make,
-          model: listing.model,
-          year: listing.year,
-          mileage: listing.mileage,
-          photos: listing.photos || [],
-          currentBid: parseFloat(listing.currentBid || listing.startingPrice),
-          bidCount: listing.bidCount || 0,
-          endTime: new Date(listing.auctionEndTime),
-          status: listing.status as 'active' | 'ended',
-          customsCleared: listing.customsCleared || false,
-          recycled: listing.recycled || false,
-          technicalInspectionValid: listing.technicalInspectionValid || false,
-          technicalInspectionDate: listing.technicalInspectionDate
-        };
-        console.log('Transformed listing:', transformed);
-        return transformed;
-      });
-    }
+    staleTime: 0, // Always consider data stale to force fresh requests
+    gcTime: 5000, // Short cache time
+    refetchOnWindowFocus: true,
+    refetchInterval: 2000, // Refetch every 2 seconds
+    retry: 3,
+    retryDelay: 1000,
+    enabled: true,
+    refetchOnMount: true
   });
 
-  const auctions = listings || [];
+  // Transform listings data to auction format
+  const auctions: Auction[] = Array.isArray(listings) ? listings.map((listing: any) => ({
+    id: listing.id.toString(),
+    lotNumber: listing.lotNumber,
+    make: listing.make,
+    model: listing.model,
+    year: listing.year,
+    mileage: listing.mileage,
+    photos: listing.photos || [],
+    currentBid: parseFloat(listing.currentBid || listing.startingPrice),
+    bidCount: listing.bidCount || 0,
+    endTime: new Date(listing.auctionEndTime),
+    status: listing.status as 'active' | 'ended',
+    customsCleared: listing.customsCleared || false,
+    recycled: listing.recycled || false,
+    technicalInspectionValid: listing.technicalInspectionValid || false,
+    technicalInspectionDate: listing.technicalInspectionDate
+  })) : [];
+
+  console.log('Raw listings:', listings);
+  console.log('Final auctions array:', auctions);
+  console.log('Loading state:', isLoading);
 
   const refreshAuctions = useCallback(() => {
     refetch();
