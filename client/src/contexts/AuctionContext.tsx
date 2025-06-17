@@ -47,23 +47,32 @@ export function AuctionProvider({ children }: { children: ReactNode }) {
   });
 
   // Transform listings data to auction format
-  const auctions: Auction[] = Array.isArray(listings) ? listings.map((listing: any) => ({
-    id: listing.id.toString(),
-    lotNumber: listing.lotNumber,
-    make: listing.make,
-    model: listing.model,
-    year: listing.year,
-    mileage: listing.mileage,
-    photos: listing.photos || [],
-    currentBid: parseFloat(listing.currentBid || listing.startingPrice),
-    bidCount: listing.bidCount || 0,
-    endTime: new Date(listing.auctionEndTime),
-    status: listing.status as 'active' | 'ended',
-    customsCleared: listing.customsCleared || false,
-    recycled: listing.recycled || false,
-    technicalInspectionValid: listing.technicalInspectionValid || false,
-    technicalInspectionDate: listing.technicalInspectionDate
-  })) : [];
+  console.log('Raw listings data:', listings);
+  console.log('Is listings array?', Array.isArray(listings));
+  console.log('Listings length:', listings?.length);
+  
+  const auctions: Auction[] = Array.isArray(listings) ? listings.map((listing: any) => {
+    console.log('Processing listing:', listing);
+    return {
+      id: listing.id.toString(),
+      lotNumber: listing.lotNumber,
+      make: listing.make,
+      model: listing.model,
+      year: listing.year,
+      mileage: listing.mileage,
+      photos: listing.photos || [],
+      currentBid: parseFloat(listing.currentBid || listing.startingPrice),
+      bidCount: listing.bidCount || 0,
+      endTime: new Date(listing.auctionEndTime),
+      status: listing.status as 'active' | 'ended',
+      customsCleared: listing.customsCleared || false,
+      recycled: listing.recycled || false,
+      technicalInspectionValid: listing.technicalInspectionValid || false,
+      technicalInspectionDate: listing.technicalInspectionDate
+    };
+  }) : [];
+  
+  console.log('Final auctions array:', auctions);
 
 
 
