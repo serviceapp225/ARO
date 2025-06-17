@@ -643,11 +643,11 @@ export default function AuctionDetail() {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                 <div className="flex justify-between items-center py-2 px-3 rounded-lg bg-white border border-gray-100">
                   <span className="text-gray-600 font-medium">Кузов</span>
-                  <span className="font-semibold text-gray-900">{auction.bodyType || 'Не указан'}</span>
+                  <span className="font-semibold text-gray-900">{translateBodyType(auction.bodyType)}</span>
                 </div>
                 <div className="flex justify-between items-center py-2 px-3 rounded-lg bg-white border border-gray-100">
                   <span className="text-gray-600 font-medium">Цвет</span>
-                  <span className="font-semibold text-gray-900">{auction.color || 'Не указан'}</span>
+                  <span className="font-semibold text-gray-900">{translateColor(auction.color)}</span>
                 </div>
                 <div className="flex justify-between items-center py-2 px-3 rounded-lg bg-white border border-gray-100">
                   <span className="text-gray-600 font-medium">VIN</span>
