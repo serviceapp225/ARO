@@ -274,11 +274,28 @@ export default function AuctionDetail() {
       setShowConfetti(true);
       setTimeout(() => setShowConfetti(false), 4000);
       
-      // Play success sound
+      // Play "тадааа" sound effect
       try {
-        const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmAaAQkAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA');
-        audio.volume = 0.3;
-        audio.play().catch(() => {}); // Ignore errors if autoplay is blocked
+        const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+        const duration = 1.5;
+        const sampleRate = audioContext.sampleRate;
+        const buffer = audioContext.createBuffer(1, duration * sampleRate, sampleRate);
+        const data = buffer.getChannelData(0);
+        
+        // Create "тадааа" sound - ascending trumpet-like fanfare
+        for (let i = 0; i < data.length; i++) {
+          const t = i / sampleRate;
+          const envelope = Math.exp(-t * 3) * (1 - Math.exp(-t * 10));
+          const freq1 = 440 * (1 + t * 0.8); // Rising frequency
+          const freq2 = 550 * (1 + t * 0.6); 
+          const wave = Math.sin(2 * Math.PI * freq1 * t) * 0.3 + Math.sin(2 * Math.PI * freq2 * t) * 0.2;
+          data[i] = wave * envelope * 0.15;
+        }
+        
+        const source = audioContext.createBufferSource();
+        source.buffer = buffer;
+        source.connect(audioContext.destination);
+        source.start();
       } catch (e) {
         // Fallback - no sound
       }
@@ -867,10 +884,7 @@ export default function AuctionDetail() {
           {/* Floating Text */}
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="text-center text-white font-bold text-2xl animate-bounce mt-32">
-              <div className="bg-gradient-to-r from-yellow-400 to-orange-500 bg-clip-text text-transparent">
-                ПОБЕДА!
-              </div>
-              <div className="text-lg mt-2">Ставка принята!</div>
+              <div className="text-lg">Ставка принята!</div>
             </div>
           </div>
 
