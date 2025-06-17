@@ -334,15 +334,15 @@ export default function AuctionDetail() {
   };
 
   const nextImage = () => {
-    setCurrentImageIndex((prev) => 
-      prev === 0 ? 0 : 0
-    );
+    if (auction?.photos && auction.photos.length > 1) {
+      setCurrentImageIndex((prev) => (prev + 1) % auction.photos.length);
+    }
   };
 
   const prevImage = () => {
-    setCurrentImageIndex((prev) => 
-      prev === 0 ? 0 : 0
-    );
+    if (auction?.photos && auction.photos.length > 1) {
+      setCurrentImageIndex((prev) => (prev - 1 + auction.photos.length) % auction.photos.length);
+    }
   };
 
   // Touch and mouse handlers
