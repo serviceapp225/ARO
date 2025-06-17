@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { CAR_MAKES_MODELS, getModelsForMake } from "../../../shared/car-data";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
@@ -175,33 +175,7 @@ export default function SellCar() {
 
       const newListing = await response.json();
 
-      // Invalidate cache (non-blocking)
-      queryClient.invalidateQueries({ queryKey: ['/api/listings'] });
-
-      // Reset form
-      setFormData({
-        make: "",
-        model: "",
-        year: "",
-        mileage: "",
-        price: "",
-        reservePrice: "",
-        description: "",
-        bodyType: "",
-        fuelType: "",
-        transmission: "",
-        engineVolume: "",
-        driveType: "",
-        color: "",
-        vin: "",
-        customsCleared: "",
-        recycled: "",
-        technicalInspectionValid: "",
-        technicalInspectionDate: ""
-      });
-      setUploadedImages([]);
-      
-      // Show success modal and start countdown
+      // Show success modal immediately
       setShowSuccessModal(true);
       setCountdown(3);
       
@@ -217,6 +191,36 @@ export default function SellCar() {
           return prev - 1;
         });
       }, 1000);
+
+      // Reset form (non-blocking)
+      setTimeout(() => {
+        setFormData({
+          make: "",
+          model: "",
+          year: "",
+          mileage: "",
+          price: "",
+          reservePrice: "",
+          description: "",
+          bodyType: "",
+          fuelType: "",
+          transmission: "",
+          engineVolume: "",
+          driveType: "",
+          color: "",
+          vin: "",
+          customsCleared: "",
+          recycled: "",
+          technicalInspectionValid: "",
+          technicalInspectionDate: ""
+        });
+        setUploadedImages([]);
+      }, 100);
+
+      // Invalidate cache (non-blocking)
+      setTimeout(() => {
+        queryClient.invalidateQueries({ queryKey: ['/api/listings'] });
+      }, 500);
 
     } catch (error) {
       console.error('Error creating listing:', error);
@@ -624,10 +628,13 @@ export default function SellCar() {
               <CheckCircle className="h-6 w-6" />
               Успешно добавлено!
             </DialogTitle>
+            <DialogDescription>
+              Ваше объявление успешно создано и будет проверено модератором.
+            </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <p className="text-sm text-muted-foreground">
-              Ваше объявление успешно создано. После проверки модератором оно будет выставлено в аукцион.
+              После проверки модератором объявление будет выставлено в аукцион.
             </p>
             <div className="flex items-center justify-center">
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
