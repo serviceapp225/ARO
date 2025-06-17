@@ -4,6 +4,19 @@ import { initializeDatabaseWithSampleData } from "./initDatabase";
 import { setupVite, serveStatic, log } from "./vite";
 
 const app = express();
+
+// Add caching headers for better performance
+app.use((req, res, next) => {
+  if (req.path.startsWith('/api/')) {
+    // Cache API responses for 30 seconds
+    res.set('Cache-Control', 'public, max-age=30');
+  } else if (req.path.match(/\.(css|js|png|jpg|jpeg|gif|ico|svg)$/)) {
+    // Cache static assets for 1 hour
+    res.set('Cache-Control', 'public, max-age=3600');
+  }
+  next();
+});
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 

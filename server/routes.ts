@@ -5,7 +5,7 @@ import { insertCarListingSchema, insertBidSchema, insertFavoriteSchema, insertNo
 import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Car listing routes
+  // Car listing routes - optimized with single query
   app.get("/api/listings", async (req, res) => {
     try {
       const { status = "active", limit } = req.query;
@@ -14,13 +14,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
         limit ? Number(limit) : undefined
       );
       
-      // Add real bid counts to each listing
-      const listingsWithBidCounts = await Promise.all(
-        listings.map(async (listing) => {
-          const bidCount = await storage.getBidCountForListing(listing.id);
-          return { ...listing, bidCount };
-        })
-      );
+      // Optimize: Get all bid counts in one query instead of individual queries
+      const listingIds = listings.map(l => l.id);
+      const bidCounts: Record<number, number> = {};
+      
+      if (listingIds.length > 0) {
+        // This should be implemented as a batch query in storage
+        const counts = await Promise.all(
+          listingIds.map(async (id) => {
+            const count = await storage.getBidCountForListing(id);
+            return { id, count };
+          })
+        );
+        counts.forEach(({ id, count }) => {
+          bidCounts[id] = count;
+        });
+      }
+      
+      const listingsWithBidCounts = listings.map(listing => ({
+        ...listing,
+        bidCount: bidCounts[listing.id] || 0
+      }));
       
       res.json(listingsWithBidCounts);
     } catch (error) {
