@@ -35,12 +35,24 @@ export default function SellCar() {
   const { toast } = useToast();
   const [, setLocation] = useLocation();
 
-  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
     if (files) {
-      const newImages = Array.from(files).slice(0, 20 - uploadedImages.length).map(file => 
-        URL.createObjectURL(file)
-      );
+      const remainingSlots = 20 - uploadedImages.length;
+      const filesToProcess = Array.from(files).slice(0, remainingSlots);
+      
+      const newImages: string[] = [];
+      
+      for (const file of filesToProcess) {
+        // Convert file to base64 data URL for persistent storage
+        const reader = new FileReader();
+        const dataUrl = await new Promise<string>((resolve) => {
+          reader.onload = (e) => resolve(e.target?.result as string);
+          reader.readAsDataURL(file);
+        });
+        newImages.push(dataUrl);
+      }
+      
       setUploadedImages(prev => [...prev, ...newImages]);
     }
   };
