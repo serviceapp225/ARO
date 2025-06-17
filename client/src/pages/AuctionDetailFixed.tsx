@@ -472,23 +472,9 @@ export default function AuctionDetail() {
     setIsDragging(false);
   };
 
-  // Show loading state while auction data is loading
+  // Skip loading screen for faster navigation
   if (!auction) {
-    return (
-      <div className="min-h-screen bg-gradient-to-b from-blue-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
-        <div className="container mx-auto px-4 py-8">
-          <div className="text-center py-16">
-            <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto mb-4"></div>
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-              Загрузка аукциона...
-            </h2>
-            <p className="text-gray-600 dark:text-gray-400">
-              Пожалуйста, подождите
-            </p>
-          </div>
-        </div>
-      </div>
-    );
+    return null;
   }
 
   return (

@@ -83,18 +83,16 @@ export function ActiveAuctions({ searchQuery = "" }: ActiveAuctionsProps) {
       ) {
         setLoadingMore(true);
         
-        // Simulate API call delay
-        setTimeout(() => {
-          const nextPage = page + 1;
-          const totalAvailable = sortedAuctions.length;
-          
-          if (nextPage * ITEMS_PER_PAGE >= totalAvailable) {
-            setHasMore(false);
-          }
-          
-          setPage(nextPage);
-          setLoadingMore(false);
-        }, 500);
+        // Load more items immediately
+        const nextPage = page + 1;
+        const totalAvailable = sortedAuctions.length;
+        
+        if (nextPage * ITEMS_PER_PAGE >= totalAvailable) {
+          setHasMore(false);
+        }
+        
+        setPage(nextPage);
+        setLoadingMore(false);
       }
     };
 
