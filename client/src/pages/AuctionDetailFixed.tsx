@@ -195,7 +195,13 @@ export default function AuctionDetail() {
   };
 
   const calculateTimeLeft = (endDate: string) => {
-    const difference = new Date(endDate).getTime() - new Date().getTime();
+    if (!endDate) return { days: 0, hours: 0, minutes: 0, seconds: 0 };
+    
+    const endTime = new Date(endDate);
+    const currentTime = new Date();
+    const difference = endTime.getTime() - currentTime.getTime();
+    
+    console.log('End date:', endDate, 'End time:', endTime, 'Current time:', currentTime, 'Difference:', difference);
     
     if (difference > 0) {
       return {
@@ -220,7 +226,7 @@ export default function AuctionDetail() {
       return;
     }
 
-    const timeLeftData = calculateTimeLeft(auction.endDate);
+    const timeLeftData = calculateTimeLeft(auction.auctionEndTime);
     const isAuctionEnded = timeLeftData.days === 0 && timeLeftData.hours === 0 && 
                           timeLeftData.minutes === 0 && timeLeftData.seconds === 0;
     
