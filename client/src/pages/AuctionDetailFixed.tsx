@@ -270,11 +270,10 @@ export default function AuctionDetail() {
         throw new Error('Failed to place bid');
       }
       
-      // Trigger celebration effect
+      // Trigger celebration effect with immediate sound
       setShowConfetti(true);
-      setTimeout(() => setShowConfetti(false), 4000);
       
-      // Play celebration sound
+      // Play celebration sound immediately with confetti
       try {
         import('@assets/celebration_1750167957407.mp3').then((audioModule) => {
           const audio = new Audio(audioModule.default);
@@ -336,6 +335,8 @@ export default function AuctionDetail() {
       } catch (e) {
         console.log('Audio system not available');
       }
+      
+      setTimeout(() => setShowConfetti(false), 4000);
       
       toast({
         title: "🏆 Ставка размещена!",
