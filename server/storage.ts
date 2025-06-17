@@ -112,7 +112,18 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createListing(insertListing: InsertCarListing): Promise<CarListing> {
-    const [listing] = await db.insert(carListings).values(insertListing).returning();
+    // Automatically set new listings as active with proper auction timing
+    const now = new Date();
+    const auctionEndTime = new Date(now.getTime() + (insertListing.auctionDuration * 60 * 60 * 1000));
+    
+    const listingData = {
+      ...insertListing,
+      status: "active",
+      auctionStartTime: now,
+      auctionEndTime: auctionEndTime
+    };
+    
+    const [listing] = await db.insert(carListings).values(listingData).returning();
     return listing;
   }
 
