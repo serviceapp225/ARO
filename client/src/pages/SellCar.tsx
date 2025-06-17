@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { CAR_MAKES_MODELS, getModelsForMake } from "../../../shared/car-data";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
+import { queryClient } from "@/lib/queryClient";
 
 export default function SellCar() {
   const [uploadedImages, setUploadedImages] = useState<string[]>([]);
@@ -158,6 +159,9 @@ export default function SellCar() {
       }
 
       const newListing = await response.json();
+
+      // Invalidate cache to refresh auction list immediately
+      queryClient.invalidateQueries({ queryKey: ['/api/listings'] });
 
       toast({
         title: "✅ Объявление создано!",
