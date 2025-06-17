@@ -94,7 +94,10 @@ export async function initializeDatabaseWithSampleData() {
       startingPrice: "85000.00",
       currentBid: null,
       photos: [
-        "https://images.unsplash.com/photo-1555215695-3004980ad54e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"
+        "https://images.unsplash.com/photo-1555215695-3004980ad54e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
+        "https://images.unsplash.com/photo-1617788138017-80ad40651399?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
+        "https://images.unsplash.com/photo-1619405399517-d7fce0f13302?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
+        "https://images.unsplash.com/photo-1616422285623-13ff0162193c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"
       ],
       auctionDuration: 72,
       status: "active",
@@ -117,7 +120,10 @@ export async function initializeDatabaseWithSampleData() {
       startingPrice: "28000.00",
       currentBid: "31000.00",
       photos: [
-        "https://images.unsplash.com/photo-1584345604476-8ec5e12e42dd?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"
+        "https://images.unsplash.com/photo-1584345604476-8ec5e12e42dd?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
+        "https://images.unsplash.com/photo-1603386329225-868f9b1ee6c9?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
+        "https://images.unsplash.com/photo-1607892035701-a80beab6b0c7?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
+        "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"
       ],
       auctionDuration: 72,
       status: "active",
@@ -140,7 +146,10 @@ export async function initializeDatabaseWithSampleData() {
       startingPrice: "110000.00",
       currentBid: null,
       photos: [
-        "https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"
+        "https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
+        "https://images.unsplash.com/photo-1580273916550-e323be2ae537?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
+        "https://images.unsplash.com/photo-1563720223185-11003d516935?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
+        "https://images.unsplash.com/photo-1614162692292-7ac56d7f7f1e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"
       ],
       auctionDuration: 72,
       status: "active",
