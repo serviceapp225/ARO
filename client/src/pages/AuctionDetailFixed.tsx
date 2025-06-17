@@ -272,10 +272,19 @@ export default function AuctionDetail() {
       
       // Trigger celebration effect
       setShowConfetti(true);
-      setTimeout(() => setShowConfetti(false), 3000);
+      setTimeout(() => setShowConfetti(false), 4000);
+      
+      // Play success sound
+      try {
+        const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmAaAQkAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA');
+        audio.volume = 0.3;
+        audio.play().catch(() => {}); // Ignore errors if autoplay is blocked
+      } catch (e) {
+        // Fallback - no sound
+      }
       
       toast({
-        title: "🎉 Ставка размещена!",
+        title: "🏆 Ставка размещена!",
         description: `Ваша ставка $${bidValue.toLocaleString()} принята`,
         duration: 3000,
       });
@@ -810,31 +819,76 @@ export default function AuctionDetail() {
         </div>
       )}
 
-      {/* Confetti Animation */}
+      {/* Epic Celebration Effect */}
       {showConfetti && (
-        <div className="fixed inset-0 pointer-events-none z-50 overflow-hidden">
-          {[...Array(30)].map((_, i) => {
-            const colors = ['bg-red-500', 'bg-blue-500', 'bg-green-500', 'bg-yellow-500', 'bg-purple-500', 'bg-pink-500'];
-            const randomColor = colors[Math.floor(Math.random() * colors.length)];
-            const randomLeft = Math.random() * 100;
-            const randomDelay = Math.random() * 2;
+        <div className="fixed inset-0 pointer-events-none z-50 overflow-hidden bg-black bg-opacity-20">
+          {/* Central Explosion */}
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="relative">
+              {/* Glowing Ring */}
+              <div className="w-32 h-32 border-4 border-yellow-400 rounded-full animate-ping opacity-75"></div>
+              <div className="absolute inset-0 w-32 h-32 border-4 border-blue-400 rounded-full animate-ping opacity-50" style={{animationDelay: '0.5s'}}></div>
+              
+              {/* Center Trophy */}
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="text-8xl animate-bounce filter drop-shadow-lg">🏆</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Particle Explosion */}
+          {[...Array(60)].map((_, i) => {
+            const angle = (360 / 60) * i;
+            const distance = 150 + Math.random() * 200;
+            const size = Math.random() * 8 + 4;
+            const colors = ['#FFD700', '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7', '#FD79A8', '#A29BFE'];
+            const color = colors[Math.floor(Math.random() * colors.length)];
             
             return (
               <div
                 key={i}
-                className={`absolute w-2 h-2 ${randomColor} rounded-full animate-ping`}
+                className="absolute rounded-full animate-pulse"
                 style={{
-                  left: `${randomLeft}%`,
-                  top: '10px',
-                  animationDelay: `${randomDelay}s`,
-                  animationDuration: '2s'
+                  left: '50%',
+                  top: '50%',
+                  width: `${size}px`,
+                  height: `${size}px`,
+                  backgroundColor: color,
+                  transform: `translate(-50%, -50%) rotate(${angle}deg) translateY(-${distance}px)`,
+                  animationDelay: `${Math.random() * 1}s`,
+                  animationDuration: `${2 + Math.random() * 2}s`,
+                  boxShadow: `0 0 ${size * 2}px ${color}`,
+                  opacity: Math.random() * 0.8 + 0.2
                 }}
               />
             );
           })}
+
+          {/* Floating Text */}
           <div className="absolute inset-0 flex items-center justify-center">
-            <div className="text-6xl animate-bounce">🎉</div>
+            <div className="text-center text-white font-bold text-2xl animate-bounce mt-32">
+              <div className="bg-gradient-to-r from-yellow-400 to-orange-500 bg-clip-text text-transparent">
+                ПОБЕДА!
+              </div>
+              <div className="text-lg mt-2">Ставка принята!</div>
+            </div>
           </div>
+
+          {/* Sparkles */}
+          {[...Array(20)].map((_, i) => (
+            <div
+              key={`sparkle-${i}`}
+              className="absolute text-yellow-400 animate-ping"
+              style={{
+                left: `${Math.random() * 100}%`,
+                top: `${Math.random() * 100}%`,
+                animationDelay: `${Math.random() * 3}s`,
+                fontSize: `${Math.random() * 20 + 15}px`
+              }}
+            >
+              ✨
+            </div>
+          ))}
         </div>
       )}
     </div>
