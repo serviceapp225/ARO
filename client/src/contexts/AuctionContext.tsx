@@ -36,10 +36,10 @@ export function AuctionProvider({ children }: { children: ReactNode }) {
   // Fetch real data from API with automatic refresh
   const { data: listings, isLoading, refetch } = useQuery({
     queryKey: ['/api/listings'],
-    staleTime: 5000, // Consider data fresh for 5 seconds
+    staleTime: 2000, // Consider data fresh for 2 seconds
     gcTime: 60000, // Keep in cache for 1 minute
     refetchOnWindowFocus: true, // Refetch when window gains focus
-    refetchInterval: 10000, // Auto-refetch every 10 seconds
+    refetchInterval: 3000, // Auto-refetch every 3 seconds
     select: (data: any[]) => data.map(listing => ({
       id: listing.id.toString(),
       lotNumber: listing.lotNumber,

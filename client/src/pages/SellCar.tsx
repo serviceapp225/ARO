@@ -217,10 +217,9 @@ export default function SellCar() {
         setUploadedImages([]);
       }, 100);
 
-      // Invalidate cache (non-blocking)
-      setTimeout(() => {
-        queryClient.invalidateQueries({ queryKey: ['/api/listings'] });
-      }, 500);
+      // Force immediate cache refresh
+      queryClient.invalidateQueries({ queryKey: ['/api/listings'] });
+      queryClient.refetchQueries({ queryKey: ['/api/listings'] });
 
     } catch (error) {
       console.error('Error creating listing:', error);
