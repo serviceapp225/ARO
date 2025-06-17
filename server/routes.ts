@@ -4,11 +4,44 @@ import { storage } from "./storage";
 import { insertCarListingSchema, insertBidSchema, insertFavoriteSchema, insertNotificationSchema, insertCarAlertSchema } from "@shared/schema";
 import { z } from "zod";
 
+// Simple in-memory cache
+const cache = new Map();
+const CACHE_TTL = 2000; // 2 seconds
+
+function getCached(key: string) {
+  const cached = cache.get(key);
+  if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+    return cached.data;
+  }
+  return null;
+}
+
+function setCache(key: string, data: any) {
+  cache.set(key, { data, timestamp: Date.now() });
+}
+
+function clearCachePattern(pattern: string) {
+  const keys = Array.from(cache.keys());
+  keys.forEach(key => {
+    if (key.includes(pattern)) {
+      cache.delete(key);
+    }
+  });
+}
+
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Car listing routes - optimized with single query
+  // Car listing routes - optimized with caching
   app.get("/api/listings", async (req, res) => {
     try {
       const { status = "active", limit } = req.query;
+      const cacheKey = `listings_${status}_${limit || 'all'}`;
+      
+      // Check cache first
+      const cached = getCached(cacheKey);
+      if (cached) {
+        return res.json(cached);
+      }
+      
       const listings = await storage.getListingsByStatus(
         status as string, 
         limit ? Number(limit) : undefined
@@ -22,6 +55,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ...listing,
         bidCount: bidCounts[listing.id] || 0
       }));
+      
+      // Cache the result
+      setCache(cacheKey, listingsWithBidCounts);
       
       res.json(listingsWithBidCounts);
     } catch (error) {
@@ -46,6 +82,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const validatedData = insertCarListingSchema.parse(req.body);
       const listing = await storage.createListing(validatedData);
+      
+      // Clear listings cache to force refresh
+      clearCachePattern('listings_');
+      
       res.status(201).json(listing);
     } catch (error) {
       if (error instanceof z.ZodError) {
