@@ -30,6 +30,7 @@ export interface IStorage {
   getBidsForListing(listingId: number): Promise<Bid[]>;
   getBidsByUser(bidderId: number): Promise<Bid[]>;
   getBidCountForListing(listingId: number): Promise<number>;
+  getBidCountsForListings(listingIds: number[]): Promise<Record<number, number>>;
   createBid(bid: InsertBid): Promise<Bid>;
 
   // Favorites operations
@@ -193,6 +194,33 @@ export class DatabaseStorage implements IStorage {
       .from(bids)
       .where(eq(bids.listingId, listingId));
     return result.count;
+  }
+
+  async getBidCountsForListings(listingIds: number[]): Promise<Record<number, number>> {
+    if (listingIds.length === 0) return {};
+    
+    const results = await db
+      .select({ 
+        listingId: bids.listingId,
+        count: sql<number>`count(*)` 
+      })
+      .from(bids)
+      .where(sql`${bids.listingId} = ANY(${listingIds})`)
+      .groupBy(bids.listingId);
+    
+    const counts: Record<number, number> = {};
+    results.forEach(r => {
+      counts[r.listingId] = r.count;
+    });
+    
+    // Ensure all listing IDs are included, even with 0 bids
+    listingIds.forEach(id => {
+      if (!(id in counts)) {
+        counts[id] = 0;
+      }
+    });
+    
+    return counts;
   }
 
   async createBid(insertBid: InsertBid): Promise<Bid> {

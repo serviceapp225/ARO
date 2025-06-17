@@ -14,22 +14,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         limit ? Number(limit) : undefined
       );
       
-      // Optimize: Get all bid counts in one query instead of individual queries
+      // Optimize: Get all bid counts in single batch query
       const listingIds = listings.map(l => l.id);
-      const bidCounts: Record<number, number> = {};
-      
-      if (listingIds.length > 0) {
-        // This should be implemented as a batch query in storage
-        const counts = await Promise.all(
-          listingIds.map(async (id) => {
-            const count = await storage.getBidCountForListing(id);
-            return { id, count };
-          })
-        );
-        counts.forEach(({ id, count }) => {
-          bidCounts[id] = count;
-        });
-      }
+      const bidCounts = await storage.getBidCountsForListings(listingIds);
       
       const listingsWithBidCounts = listings.map(listing => ({
         ...listing,
