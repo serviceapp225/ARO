@@ -270,8 +270,12 @@ export default function AuctionDetail() {
         throw new Error('Failed to place bid');
       }
       
+      // Trigger celebration effect
+      setShowConfetti(true);
+      setTimeout(() => setShowConfetti(false), 3000);
+      
       toast({
-        title: "Ставка размещена!",
+        title: "🎉 Ставка размещена!",
         description: `Ваша ставка $${bidValue.toLocaleString()} принята`,
         duration: 3000,
       });
@@ -802,6 +806,34 @@ export default function AuctionDetail() {
                 Листайте пальцем или перетаскивайте мышью
               </p>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Confetti Animation */}
+      {showConfetti && (
+        <div className="fixed inset-0 pointer-events-none z-50 overflow-hidden">
+          {[...Array(30)].map((_, i) => {
+            const colors = ['bg-red-500', 'bg-blue-500', 'bg-green-500', 'bg-yellow-500', 'bg-purple-500', 'bg-pink-500'];
+            const randomColor = colors[Math.floor(Math.random() * colors.length)];
+            const randomLeft = Math.random() * 100;
+            const randomDelay = Math.random() * 2;
+            
+            return (
+              <div
+                key={i}
+                className={`absolute w-2 h-2 ${randomColor} rounded-full animate-ping`}
+                style={{
+                  left: `${randomLeft}%`,
+                  top: '10px',
+                  animationDelay: `${randomDelay}s`,
+                  animationDuration: '2s'
+                }}
+              />
+            );
+          })}
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="text-6xl animate-bounce">🎉</div>
           </div>
         </div>
       )}
