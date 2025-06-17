@@ -201,8 +201,6 @@ export default function AuctionDetail() {
     const currentTime = new Date();
     const difference = endTime.getTime() - currentTime.getTime();
     
-    console.log('End date:', endDate, 'End time:', endTime, 'Current time:', currentTime, 'Difference:', difference);
-    
     if (difference > 0) {
       return {
         days: Math.floor(difference / (1000 * 60 * 60 * 24)),
@@ -283,6 +281,7 @@ export default function AuctionDetail() {
       
       await refetchAuction();
       queryClient.invalidateQueries({ queryKey: [`/api/listings/${id}/bids`] });
+      queryClient.invalidateQueries({ queryKey: ['/api/listings'] });
       
     } catch (error) {
       console.error('Error placing bid:', error);
