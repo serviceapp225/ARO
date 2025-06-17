@@ -1,11 +1,12 @@
 import { useState } from "react";
-import { Upload, X, Plus } from "lucide-react";
+import { Upload, X, Plus, CheckCircle, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { CAR_MAKES_MODELS, getModelsForMake } from "../../../shared/car-data";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
@@ -14,6 +15,8 @@ import { queryClient } from "@/lib/queryClient";
 export default function SellCar() {
   const [uploadedImages, setUploadedImages] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [countdown, setCountdown] = useState(3);
   const [formData, setFormData] = useState({
     make: "",
     model: "",
@@ -175,12 +178,6 @@ export default function SellCar() {
       // Invalidate cache (non-blocking)
       queryClient.invalidateQueries({ queryKey: ['/api/listings'] });
 
-      toast({
-        title: "✅ Объявление создано!",
-        description: "Ваш автомобиль добавлен на аукцион",
-        duration: 5000,
-      });
-
       // Reset form
       setFormData({
         make: "",
@@ -204,8 +201,22 @@ export default function SellCar() {
       });
       setUploadedImages([]);
       
-      // Navigate to the new listing
-      setLocation(`/auction/${newListing.id}`);
+      // Show success modal and start countdown
+      setShowSuccessModal(true);
+      setCountdown(3);
+      
+      // Start countdown timer
+      const countdownInterval = setInterval(() => {
+        setCountdown(prev => {
+          if (prev <= 1) {
+            clearInterval(countdownInterval);
+            setShowSuccessModal(false);
+            setLocation('/'); // Navigate to homepage
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
 
     } catch (error) {
       console.error('Error creating listing:', error);
@@ -604,6 +615,29 @@ export default function SellCar() {
           </Card>
         </form>
       </main>
+
+      {/* Success Modal */}
+      <Dialog open={showSuccessModal} onOpenChange={() => {}}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-green-600">
+              <CheckCircle className="h-6 w-6" />
+              Успешно добавлено!
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Ваше объявление успешно создано. После проверки модератором оно будет выставлено в аукцион.
+            </p>
+            <div className="flex items-center justify-center">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <ArrowLeft className="h-4 w-4" />
+                Переход на главную страницу через {countdown} сек...
+              </div>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
