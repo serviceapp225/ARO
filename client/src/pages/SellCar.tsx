@@ -151,13 +151,20 @@ export default function SellCar() {
         location: "Душанбе", // Default location
       };
 
+      // Add timeout to prevent hanging
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+
       const response = await fetch('/api/listings', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(listingData),
+        signal: controller.signal,
       });
+
+      clearTimeout(timeoutId);
 
       if (!response.ok) {
         throw new Error('Failed to create listing');
@@ -165,9 +172,8 @@ export default function SellCar() {
 
       const newListing = await response.json();
 
-      // Force immediate cache refresh and refetch
-      await queryClient.invalidateQueries({ queryKey: ['/api/listings'] });
-      await queryClient.refetchQueries({ queryKey: ['/api/listings'] });
+      // Invalidate cache (non-blocking)
+      queryClient.invalidateQueries({ queryKey: ['/api/listings'] });
 
       toast({
         title: "✅ Объявление создано!",
@@ -203,11 +209,22 @@ export default function SellCar() {
 
     } catch (error) {
       console.error('Error creating listing:', error);
+      
+      let errorMessage = "Не удалось создать объявление. Попробуйте еще раз.";
+      
+      if (error instanceof Error) {
+        if (error.name === 'AbortError') {
+          errorMessage = "Время ожидания истекло. Проверьте интернет-соединение.";
+        } else if (error.message.includes('Failed to fetch')) {
+          errorMessage = "Проблема с подключением к серверу.";
+        }
+      }
+      
       toast({
         title: "Ошибка",
-        description: "Не удалось создать объявление. Попробуйте еще раз.",
+        description: errorMessage,
         variant: "destructive",
-        duration: 3000,
+        duration: 5000,
       });
     } finally {
       setIsSubmitting(false);
