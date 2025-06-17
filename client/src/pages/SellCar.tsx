@@ -145,7 +145,9 @@ export default function SellCar() {
         transmission: formData.transmission || null,
         fuelType: formData.fuelType || null,
         bodyType: formData.bodyType || null,
-        color: null, // Not captured in form
+        driveType: formData.driveType || null,
+        color: formData.color || null,
+        vin: formData.vin || null,
         location: "Душанбе", // Default location
       };
 
