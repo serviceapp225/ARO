@@ -18,6 +18,7 @@ export default function SellCar() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [countdown, setCountdown] = useState(3);
+  const [showReservePriceInfo, setShowReservePriceInfo] = useState(false);
   const [formData, setFormData] = useState({
     make: "",
     model: "",
@@ -675,21 +676,23 @@ export default function SellCar() {
                 <div>
                   <div className="flex items-center gap-2">
                     <Label htmlFor="reservePrice">Резервная цена ($)</Label>
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <HelpCircle className="w-4 h-4 text-gray-400 hover:text-gray-600 cursor-help" />
-                        </TooltipTrigger>
-                        <TooltipContent className="max-w-xs">
-                          <p className="text-sm">
-                            <strong>Резервная цена</strong> - это минимальная цена, за которую вы готовы продать автомобиль. 
-                            Она скрыта от покупателей и защищает вас от продажи по слишком низкой цене. 
-                            Если ставки не достигнут резервной цены, вы не обязаны продавать автомобиль.
-                          </p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
+                    <button 
+                      type="button" 
+                      onClick={() => setShowReservePriceInfo(!showReservePriceInfo)}
+                      className="inline-flex items-center p-1 rounded-full hover:bg-gray-100 transition-colors"
+                    >
+                      <HelpCircle className="w-4 h-4 text-gray-400 hover:text-gray-600 cursor-pointer" />
+                    </button>
                   </div>
+                  {showReservePriceInfo && (
+                    <div className="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                      <p className="text-sm text-blue-800">
+                        <strong>Резервная цена</strong> - это минимальная цена, за которую вы готовы продать автомобиль. 
+                        Она скрыта от покупателей и защищает вас от продажи по слишком низкой цене. 
+                        Если ставки не достигнут резервной цены, вы не обязаны продавать автомобиль.
+                      </p>
+                    </div>
+                  )}
                   <Input
                     id="reservePrice"
                     type="number"
