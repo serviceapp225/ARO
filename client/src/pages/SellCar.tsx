@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Upload, X, Plus, CheckCircle, ArrowLeft } from "lucide-react";
+import { Upload, X, Plus, CheckCircle, ArrowLeft, HelpCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { CAR_MAKES_MODELS, getModelsForMake } from "../../../shared/car-data";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
@@ -672,7 +673,23 @@ export default function SellCar() {
                 </div>
                 
                 <div>
-                  <Label htmlFor="reservePrice">Резервная цена ($)</Label>
+                  <div className="flex items-center gap-2">
+                    <Label htmlFor="reservePrice">Резервная цена ($)</Label>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <HelpCircle className="w-4 h-4 text-gray-400 hover:text-gray-600 cursor-help" />
+                        </TooltipTrigger>
+                        <TooltipContent className="max-w-xs">
+                          <p className="text-sm">
+                            <strong>Резервная цена</strong> - это минимальная цена, за которую вы готовы продать автомобиль. 
+                            Она скрыта от покупателей и защищает вас от продажи по слишком низкой цене. 
+                            Если ставки не достигнут резервной цены, вы не обязаны продавать автомобиль.
+                          </p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </div>
                   <Input
                     id="reservePrice"
                     type="number"
