@@ -287,10 +287,33 @@ export class DatabaseStorage implements IStorage {
   }
 
   async deleteNotification(id: number): Promise<boolean> {
-    const result = await db
-      .delete(notifications)
-      .where(eq(notifications.id, id));
-    return result.rowCount !== null && result.rowCount > 0;
+    try {
+      console.log(`Storage: Attempting to delete notification with ID: ${id}`);
+      
+      // First check if notification exists
+      const existingNotification = await db
+        .select()
+        .from(notifications)
+        .where(eq(notifications.id, id))
+        .limit(1);
+      
+      console.log(`Storage: Found ${existingNotification.length} notifications with ID ${id}`);
+      
+      if (existingNotification.length === 0) {
+        console.log(`Storage: Notification with ID ${id} not found`);
+        return false;
+      }
+      
+      const result = await db
+        .delete(notifications)
+        .where(eq(notifications.id, id));
+      
+      console.log(`Storage: Delete result rowCount: ${result.rowCount}`);
+      return result.rowCount !== null && result.rowCount > 0;
+    } catch (error) {
+      console.error(`Storage: Error deleting notification ${id}:`, error);
+      throw error;
+    }
   }
 
   async getUnreadNotificationCount(userId: number): Promise<number> {

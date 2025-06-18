@@ -26,7 +26,15 @@ export function SearchAlertNotifications({ userId }: SearchAlertNotificationsPro
       const response = await fetch(`/api/notifications/${notificationId}`, {
         method: 'DELETE',
       });
-      if (!response.ok) throw new Error('Failed to delete notification');
+      if (!response.ok) {
+        const errorData = await response.text();
+        console.error('Delete notification error:', response.status, errorData);
+        throw new Error(`Failed to delete notification: ${response.status} ${errorData}`);
+      }
+      // For 204 No Content, don't try to parse JSON
+      if (response.status === 204) {
+        return {};
+      }
       return response.json();
     },
     onSuccess: () => {
@@ -36,10 +44,11 @@ export function SearchAlertNotifications({ userId }: SearchAlertNotificationsPro
         description: "Уведомление успешно удалено",
       });
     },
-    onError: () => {
+    onError: (error: Error) => {
+      console.error('Delete notification mutation error:', error);
       toast({
         title: "Ошибка",
-        description: "Не удалось удалить уведомление",
+        description: `Не удалось удалить уведомление: ${error.message}`,
         variant: "destructive",
       });
     }

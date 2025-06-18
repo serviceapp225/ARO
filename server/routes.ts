@@ -420,12 +420,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.delete("/api/notifications/:id", async (req, res) => {
     try {
       const notificationId = parseInt(req.params.id);
+      console.log(`Attempting to delete notification with ID: ${notificationId}`);
+      
+      if (isNaN(notificationId)) {
+        console.log(`Invalid notification ID: ${req.params.id}`);
+        return res.status(400).json({ error: "Invalid notification ID" });
+      }
+      
       const success = await storage.deleteNotification(notificationId);
+      console.log(`Delete notification result: ${success}`);
+      
       if (!success) {
         return res.status(404).json({ error: "Notification not found" });
       }
       res.status(204).send();
     } catch (error) {
+      console.error('Error deleting notification:', error);
       res.status(500).json({ error: "Failed to delete notification" });
     }
   });
