@@ -652,6 +652,10 @@ export default function AuctionDetail() {
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   <div className="flex justify-between items-center py-2 px-3 rounded-lg bg-white border border-gray-100">
+                    <span className="text-gray-600 font-medium">Год выпуска</span>
+                    <span className="font-semibold text-gray-900">{auction.year}</span>
+                  </div>
+                  <div className="flex justify-between items-center py-2 px-3 rounded-lg bg-white border border-gray-100">
                     <span className="text-gray-600 font-medium">Пробег</span>
                     <span className="font-semibold text-gray-900">{auction.mileage?.toLocaleString()} км</span>
                   </div>
