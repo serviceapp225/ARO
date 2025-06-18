@@ -137,12 +137,12 @@ export default function SellCar() {
       return;
     }
 
-    if (uploadedImages.length === 0) {
+    if (uploadedImages.length < 5) {
       toast({
         title: "Ошибка", 
-        description: "Добавьте хотя бы одно фото автомобиля",
+        description: `Необходимо загрузить минимум 5 фотографий автомобиля. Загружено: ${uploadedImages.length}`,
         variant: "destructive",
-        duration: 3000,
+        duration: 5000,
       });
       return;
     }
@@ -291,8 +291,14 @@ export default function SellCar() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Upload className="w-5 h-5" />
-                Загрузите фото
+                Загрузите фото <span className="text-red-500">*</span>
               </CardTitle>
+              <p className="text-sm text-gray-600">
+                Минимум 5 фотографий автомобиля 
+                <span className={`ml-2 font-medium ${uploadedImages.length >= 5 ? 'text-green-600' : 'text-red-500'}`}>
+                  ({uploadedImages.length}/5)
+                </span>
+              </p>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
