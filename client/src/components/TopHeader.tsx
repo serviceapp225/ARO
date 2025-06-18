@@ -26,7 +26,7 @@ export function TopHeader({
     switch (location) {
       case "/":
       case "/home":
-        return "AUTOAUCTION";
+        return "AUTOBID.TJ";
       case "/auctions":
         return "Аукционы";
       case "/favorites":
@@ -40,7 +40,7 @@ export function TopHeader({
       case "/notifications":
         return "Уведомления";
       default:
-        return "AUTOAUCTION";
+        return "AUTOBID.TJ";
     }
   };
 
