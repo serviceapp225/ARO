@@ -177,7 +177,7 @@ export class DatabaseStorage implements IStorage {
     }
 
     if (filters.model) {
-      conditions.push(eq(carListings.model, filters.model));
+      conditions.push(ilike(carListings.model, `%${filters.model}%`));
     }
 
     if (filters.year) {
@@ -192,7 +192,12 @@ export class DatabaseStorage implements IStorage {
       conditions.push(sql`CAST(${carListings.startingPrice} AS NUMERIC) <= ${filters.maxPrice}`);
     }
 
-    return await db.select().from(carListings).where(and(...conditions));
+    return await db
+      .select()
+      .from(carListings)
+      .where(and(...conditions))
+      .orderBy(carListings.createdAt)
+      .limit(50); // Limit results for better performance
   }
 
   async getBidsForListing(listingId: number): Promise<Bid[]> {
@@ -222,17 +227,26 @@ export class DatabaseStorage implements IStorage {
   async getBidCountsForListings(listingIds: number[]): Promise<Record<number, number>> {
     if (listingIds.length === 0) return {};
     
-    // Use Promise.all for parallel execution instead of sequential loop
-    const countPromises = listingIds.map(async (id) => {
-      const count = await this.getBidCountForListing(id);
-      return { id, count };
-    });
-    
-    const results = await Promise.all(countPromises);
+    // Single optimized query to get all bid counts at once
+    const results = await db
+      .select({
+        listingId: bids.listingId,
+        count: sql<number>`count(*)`
+      })
+      .from(bids)
+      .where(inArray(bids.listingId, listingIds))
+      .groupBy(bids.listingId);
     
     const counts: Record<number, number> = {};
+    
+    // Initialize all listing IDs with 0 count
+    for (const id of listingIds) {
+      counts[id] = 0;
+    }
+    
+    // Set actual counts from query results
     for (const result of results) {
-      counts[result.id] = result.count;
+      counts[result.listingId] = result.count;
     }
     
     return counts;

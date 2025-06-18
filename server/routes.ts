@@ -76,23 +76,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
         year: req.query.year ? parseInt(req.query.year as string) : undefined
       };
       
+      // Create cache key from filters
+      const cacheKey = `search_${JSON.stringify(filters)}`;
+      
+      // Check cache first
+      const cached = getCached(cacheKey);
+      if (cached) {
+        return res.json(cached);
+      }
+      
       const listings = await storage.searchListings(filters);
       
-      // Get bid counts for search results
+      // Get bid counts for search results in batch if we have results
+      let enrichedListings = listings;
       if (listings.length > 0) {
         const listingIds = listings.map(listing => listing.id);
         const bidCounts = await storage.getBidCountsForListings(listingIds);
         
-        // Add bid counts to listings
-        const enrichedListings = listings.map(listing => ({
+        enrichedListings = listings.map(listing => ({
           ...listing,
           bidCount: bidCounts[listing.id] || 0
         }));
-        
-        res.json(enrichedListings);
-      } else {
-        res.json(listings);
       }
+      
+      // Cache the result for 30 seconds
+      setCache(cacheKey, enrichedListings);
+      
+      res.json(enrichedListings);
     } catch (error) {
       res.status(500).json({ error: "Failed to search listings" });
     }

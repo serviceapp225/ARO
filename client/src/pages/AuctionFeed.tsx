@@ -105,8 +105,9 @@ export default function AuctionFeed() {
       return response.json();
     },
     enabled: hasActiveFilters && forceRefresh > 0,
-    staleTime: 0,
-    refetchOnMount: true
+    staleTime: 30000, // Cache for 30 seconds
+    refetchOnMount: false,
+    refetchOnWindowFocus: false
   });
 
   const handleSearch = () => {
