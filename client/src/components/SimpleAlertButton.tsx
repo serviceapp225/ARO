@@ -51,38 +51,11 @@ export default function SimpleAlertButton({ searchFilters = {} }: SimpleAlertBut
     },
     onSuccess: async () => {
       queryClient.invalidateQueries({ queryKey: ['/api/car-alerts'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/notifications'] });
       setIsCreated(true);
       
-      // Создаем уведомление в основной системе
-      try {
-        const alertDescription = [
-          searchFilters.brand && `марка: ${searchFilters.brand}`,
-          searchFilters.model && `модель: ${searchFilters.model}`,
-          searchFilters.yearFrom && `год от: ${searchFilters.yearFrom}`,
-          searchFilters.yearTo && `год до: ${searchFilters.yearTo}`,
-          searchFilters.priceFrom && `цена от: $${searchFilters.priceFrom}`,
-          searchFilters.priceTo && `цена до: $${searchFilters.priceTo}`
-        ].filter(Boolean).join(', ');
-
-        await fetch('/api/notifications', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            userId,
-            title: "Создано уведомление о поиске",
-            message: `Вы получите уведомление при появлении автомобилей: ${alertDescription}`,
-            type: "alert_created",
-            isRead: false
-          }),
-        });
-      } catch (error) {
-        console.error('Ошибка создания уведомления:', error);
-      }
-      
       toast({
-        title: "Уведомление создано",
-        description: "Мы сообщим вам о новых автомобилях по вашим параметрам",
+        title: "Поисковый запрос сохранён",
+        description: "Мы сообщим вам в колокольчике о новых автомобилях по вашим параметрам",
         duration: 3000,
       });
       

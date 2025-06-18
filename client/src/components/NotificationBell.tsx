@@ -13,11 +13,14 @@ export function NotificationBell({ userId }: NotificationBellProps) {
   const queryClient = useQueryClient();
   const [, setLocation] = useLocation();
 
-  const { data: notifications = [], isLoading } = useQuery<Notification[]>({
+  const { data: allNotifications = [], isLoading } = useQuery<Notification[]>({
     queryKey: [`/api/notifications/${userId}`],
     refetchInterval: isOpen ? 30000 : 60000, // Poll less frequently: 30s when open, 60s when closed
     staleTime: 30000, // Consider data fresh for 30 seconds
   });
+
+  // Фильтруем только уведомления о найденных машинах
+  const notifications = allNotifications.filter(n => n.type === 'car_found');
 
   const markAsReadMutation = useMutation({
     mutationFn: async (notificationId: number) => {
