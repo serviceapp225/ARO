@@ -1,64 +1,13 @@
-import { Bell, Trash2, Car, Search, Check } from "lucide-react";
+import { Bell, Trash2, Car } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { useAlerts } from "@/contexts/AlertsContext";
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import type { Notification } from '@shared/schema';
 
 export function UserAlerts() {
   const { alerts, removeAlert, toggleAlert } = useAlerts();
   const { toast } = useToast();
-  const queryClient = useQueryClient();
-  
-  // Mock user ID - в реальном приложении будет из контекста авторизации
-  const userId = 3;
-
-  const { data: allNotifications = [] } = useQuery<Notification[]>({
-    queryKey: [`/api/notifications/${userId}`],
-    staleTime: 30000,
-  });
-
-  // Фильтруем только уведомления о созданных поисковых запросах
-  const searchAlertNotifications = allNotifications.filter(n => n.type === 'alert_created');
-
-  const deleteNotificationMutation = useMutation({
-    mutationFn: async (notificationId: number) => {
-      const response = await fetch(`/api/notifications/${notificationId}`, {
-        method: 'DELETE',
-      });
-      if (!response.ok) throw new Error('Failed to delete notification');
-      return response.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [`/api/notifications/${userId}`] });
-      toast({
-        title: "Уведомление удалено",
-        description: "Уведомление о создании поиска удалено",
-      });
-    },
-    onError: () => {
-      toast({
-        title: "Ошибка",
-        description: "Не удалось удалить уведомление",
-        variant: "destructive",
-      });
-    }
-  });
-
-  const markAsReadMutation = useMutation({
-    mutationFn: async (notificationId: number) => {
-      const response = await fetch(`/api/notifications/${notificationId}/read`, {
-        method: 'PATCH',
-      });
-      if (!response.ok) throw new Error('Failed to mark notification as read');
-      return response.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [`/api/notifications/${userId}`] });
-    },
-  });
 
   const handleDeleteAlert = (alertId: number) => {
     removeAlert(alertId);
@@ -182,73 +131,6 @@ export function UserAlerts() {
             </div>
           </div>
         ))}
-        
-        {/* Created search alert notifications */}
-        {searchAlertNotifications.length > 0 && (
-          <>
-            <div className="border-t pt-4 mt-4">
-              <h4 className="text-sm font-medium text-gray-700 mb-3 flex items-center gap-2">
-                <Search className="w-4 h-4" />
-                История создания поисков
-              </h4>
-              <div className="space-y-3">
-                {searchAlertNotifications.map((notification) => (
-                  <div
-                    key={notification.id}
-                    className={`p-3 border rounded-lg ${
-                      !notification.isRead ? 'bg-blue-50 border-blue-200' : 'bg-gray-50'
-                    }`}
-                  >
-                    <div className="flex items-start justify-between">
-                      <div className="flex items-start gap-3 flex-1">
-                        <Search className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
-                        <div className="flex-1">
-                          <h5 className={`text-sm font-medium ${
-                            !notification.isRead ? 'text-blue-900' : 'text-gray-900'
-                          }`}>
-                            {notification.title}
-                          </h5>
-                          <p className={`text-xs mt-1 ${
-                            !notification.isRead ? 'text-blue-700' : 'text-gray-600'
-                          }`}>
-                            {notification.message}
-                          </p>
-                          <p className="text-xs text-gray-500 mt-1">
-                            {new Date(notification.createdAt!).toLocaleString('ru-RU', {
-                              day: '2-digit',
-                              month: '2-digit',
-                              year: 'numeric',
-                              hour: '2-digit',
-                              minute: '2-digit'
-                            })}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-1 ml-2">
-                        {!notification.isRead && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => markAsReadMutation.mutate(notification.id)}
-                          >
-                            <Check className="w-3 h-3" />
-                          </Button>
-                        )}
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => deleteNotificationMutation.mutate(notification.id)}
-                        >
-                          <Trash2 className="w-3 h-3" />
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </>
-        )}
       </CardContent>
     </Card>
   );
