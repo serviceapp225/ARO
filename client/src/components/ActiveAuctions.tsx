@@ -214,6 +214,16 @@ export function ActiveAuctions({ searchQuery = "", customListings }: ActiveAucti
                     ? `ТО до ${auction.technicalInspectionDate}` 
                     : 'ТО: нет'}
                 </span>
+                
+                <span className={`text-xs px-2 py-1 rounded-full ${
+                  (auction as any).tinted 
+                    ? 'bg-indigo-100 text-indigo-700' 
+                    : 'bg-gray-100 text-gray-700'
+                }`}>
+                  {(auction as any).tinted 
+                    ? `Тонировка ${(auction as any).tintingDate}` 
+                    : 'Тонировка: нет'}
+                </span>
               </div>
               <div className="mb-2">
                 <p className="text-xs text-gray-500">Текущая ставка</p>
