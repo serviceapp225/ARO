@@ -106,45 +106,39 @@ export default function Search() {
   const hasSearchCriteria = activeFiltersCount > 0 || Object.keys(searchQueryParams).length > 0;
   
   const { data: searchResults = [], isLoading } = useQuery({
-    queryKey: ['/api/listings/search', JSON.stringify(searchQueryParams), JSON.stringify(searchFilters)],
+    queryKey: ['/api/listings/search', JSON.stringify(searchFilters)],
     queryFn: async () => {
-      console.log('Search triggered with filters:', searchFilters);
-      console.log('Search query params:', searchQueryParams);
-      console.log('Active filters count:', activeFiltersCount);
+      const params = new URLSearchParams();
       
-      // Если есть активные фильтры, но нет параметров для API (например, только выбрана марка без других фильтров)
-      if (activeFiltersCount > 0 && Object.keys(searchQueryParams).length === 0) {
-        // Если выбрана только марка, добавим её в параметры поиска
-        if (searchFilters.brand) {
-          const brandName = CAR_MAKES.find(make => make.toLowerCase() === searchFilters.brand.toLowerCase());
-          console.log('Brand selected:', searchFilters.brand, 'mapped to:', brandName);
-          if (brandName) {
-            const params = new URLSearchParams();
-            params.append('make', brandName);
-            console.log('Searching with brand params:', params.toString());
-            const response = await fetch(`/api/listings/search?${params}`);
-            if (!response.ok) throw new Error('Search failed');
-            const result = await response.json();
-            console.log('Brand search results:', result);
-            return result;
-          }
-        }
-        return [];
+      // Добавляем поиск по тексту
+      if (searchQuery.trim()) {
+        params.append('query', searchQuery.trim());
       }
       
-      const params = new URLSearchParams();
-      Object.entries(searchQueryParams).forEach(([key, value]) => {
-        if (value !== undefined && value !== null && value !== '' && value !== 0) {
-          params.append(key, String(value));
+      // Добавляем фильтр по марке
+      if (searchFilters.brand) {
+        const brandName = CAR_MAKES.find(make => make.toLowerCase() === searchFilters.brand.toLowerCase());
+        if (brandName) {
+          params.append('make', brandName);
         }
-      });
+      }
       
-      console.log('Searching with params:', params.toString());
+      // Добавляем другие фильтры
+      if (searchFilters.yearFrom) {
+        params.append('year', searchFilters.yearFrom);
+      }
+      
+      if (searchFilters.priceFrom) {
+        params.append('minPrice', searchFilters.priceFrom);
+      }
+      
+      if (searchFilters.priceTo) {
+        params.append('maxPrice', searchFilters.priceTo);
+      }
+      
       const response = await fetch(`/api/listings/search?${params}`);
       if (!response.ok) throw new Error('Search failed');
-      const result = await response.json();
-      console.log('Search results:', result);
-      return result;
+      return response.json();
     },
     enabled: hasSearchCriteria,
     staleTime: 0,
