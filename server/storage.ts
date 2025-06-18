@@ -314,8 +314,8 @@ export class DatabaseStorage implements IStorage {
       .where(
         and(
           eq(carAlerts.isActive, true),
-          eq(carAlerts.make, listing.make),
-          sql`(${carAlerts.model} IS NULL OR ${carAlerts.model} = ${listing.model})`,
+          sql`LOWER(${carAlerts.make}) = LOWER(${listing.make})`,
+          sql`(${carAlerts.model} IS NULL OR LOWER(${carAlerts.model}) = LOWER(${listing.model}))`,
           sql`(${carAlerts.minPrice} IS NULL OR CAST(${listing.startingPrice} AS NUMERIC) >= CAST(${carAlerts.minPrice} AS NUMERIC))`,
           sql`(${carAlerts.maxPrice} IS NULL OR CAST(${listing.startingPrice} AS NUMERIC) <= CAST(${carAlerts.maxPrice} AS NUMERIC))`,
           sql`(${carAlerts.minYear} IS NULL OR ${listing.year} >= ${carAlerts.minYear})`,

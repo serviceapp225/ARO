@@ -119,6 +119,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Clear listings cache to force refresh
       clearCachePattern('listings_');
       
+      // Check for matching car alerts and send notifications
+      try {
+        const matchingAlerts = await storage.checkAlertsForNewListing(listing);
+        
+        for (const alert of matchingAlerts) {
+          // Create notification for each matching alert
+          await storage.createNotification({
+            userId: alert.userId,
+            title: "Найден автомобиль по вашему запросу",
+            message: `${listing.make} ${listing.model} ${listing.year} г. - ${listing.startingPrice}$ (лот #${listing.lotNumber})`,
+            type: "car_found",
+            listingId: listing.id,
+            isRead: false
+          });
+        }
+      } catch (alertError) {
+        console.error('Error checking alerts for new listing:', alertError);
+        // Don't fail the listing creation if alert checking fails
+      }
+      
       res.status(201).json(listing);
     } catch (error) {
       if (error instanceof z.ZodError) {
