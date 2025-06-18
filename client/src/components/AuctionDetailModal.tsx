@@ -78,19 +78,20 @@ export function AuctionDetailModal() {
             <div className="lg:col-span-2 space-y-6">
               <div>
                 <h2 className="text-3xl font-bold text-neutral-900 mb-2">
-                  {selectedAuction.year} {selectedAuction.make} {selectedAuction.model}
+                  {selectedAuction.make} {selectedAuction.model}
                 </h2>
-                <p className="text-neutral-600">
-                  {selectedAuction.mileage.toLocaleString()} miles
-                </p>
+                <div className="text-neutral-600 space-y-1">
+                  <p>Год: {selectedAuction.year}</p>
+                  <p>Пробег: {selectedAuction.mileage.toLocaleString()} км</p>
+                </div>
               </div>
 
               <div>
                 <h3 className="text-lg font-semibold mb-3">Description</h3>
                 <p className="text-neutral-700 leading-relaxed">
-                  This stunning {selectedAuction.year} {selectedAuction.make} {selectedAuction.model} is a true masterpiece of automotive engineering. 
-                  With only {selectedAuction.mileage.toLocaleString()} carefully driven miles, this vehicle represents excellence in 
-                  performance and luxury. Features include premium interior, advanced safety systems, and exceptional build quality.
+                  Этот превосходный {selectedAuction.make} {selectedAuction.model} - настоящий шедевр автомобильной инженерии. 
+                  С пробегом всего {selectedAuction.mileage.toLocaleString()} км, этот автомобиль представляет совершенство в 
+                  производительности и роскоши. Включает премиальный интерьер, передовые системы безопасности и исключительное качество сборки.
                 </p>
               </div>
 

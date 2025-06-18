@@ -67,7 +67,6 @@ export default function AuctionFeed() {
   const { data: searchResults = [], isLoading: searchLoading } = useQuery({
     queryKey: ['/api/listings/search', JSON.stringify(searchFilters), forceRefresh],
     queryFn: async () => {
-      console.log('Executing search with filters:', searchFilters);
       const params = new URLSearchParams();
       
       // Добавляем поиск по тексту
