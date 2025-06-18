@@ -102,11 +102,28 @@ export default function Search() {
 
   // Search query with filters
   const searchQueryParams = buildSearchFilters();
-  const hasSearchCriteria = Object.keys(searchQueryParams).length > 0;
+  const activeFiltersCount = Object.values(searchFilters).filter(Boolean).length;
+  const hasSearchCriteria = activeFiltersCount > 0 || Object.keys(searchQueryParams).length > 0;
   
   const { data: searchResults = [], isLoading } = useQuery({
     queryKey: ['/api/listings/search', JSON.stringify(searchQueryParams)],
     queryFn: async () => {
+      // Если есть активные фильтры, но нет параметров для API (например, только выбрана марка без других фильтров)
+      if (activeFiltersCount > 0 && Object.keys(searchQueryParams).length === 0) {
+        // Если выбрана только марка, добавим её в параметры поиска
+        if (searchFilters.brand) {
+          const brandName = CAR_MAKES.find(make => make.toLowerCase() === searchFilters.brand.toLowerCase());
+          if (brandName) {
+            const params = new URLSearchParams();
+            params.append('make', brandName);
+            const response = await fetch(`/api/listings/search?${params}`);
+            if (!response.ok) throw new Error('Search failed');
+            return response.json();
+          }
+        }
+        return [];
+      }
+      
       const params = new URLSearchParams();
       Object.entries(searchQueryParams).forEach(([key, value]) => {
         if (value !== undefined && value !== null && value !== '' && value !== 0) {
@@ -126,8 +143,6 @@ export default function Search() {
   const handleSearch = () => {
     // Search is triggered automatically via useQuery when filters change
   };
-
-  const activeFiltersCount = Object.values(searchFilters).filter(Boolean).length;
 
   return (
     <div className="min-h-screen bg-neutral-50 pb-20">
