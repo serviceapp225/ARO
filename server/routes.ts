@@ -135,11 +135,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const matchingAlerts = await storage.checkAlertsForNewListing(listing);
         console.log('Found matching alerts:', matchingAlerts.length);
         
+        // Group alerts by user to avoid duplicate notifications
+        const userAlerts = new Map<number, CarAlert[]>();
         for (const alert of matchingAlerts) {
-          console.log('Creating notification for alert:', alert.id, 'user:', alert.userId);
-          // Create notification for each matching alert
+          if (!userAlerts.has(alert.userId)) {
+            userAlerts.set(alert.userId, []);
+          }
+          userAlerts.get(alert.userId)!.push(alert);
+        }
+        
+        // Send only one notification per user
+        for (const [userId, alerts] of userAlerts) {
+          console.log('Creating notification for user:', userId, 'matching alerts:', alerts.length);
           await storage.createNotification({
-            userId: alert.userId,
+            userId,
             title: "Найден автомобиль по вашему запросу",
             message: `${listing.make} ${listing.model} ${listing.year} г. - ${listing.startingPrice}$ (лот #${listing.lotNumber})`,
             type: "car_found",
