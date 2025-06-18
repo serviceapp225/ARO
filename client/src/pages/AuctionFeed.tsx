@@ -82,6 +82,11 @@ export default function AuctionFeed() {
         }
       }
       
+      // Добавляем фильтр по модели
+      if (searchFilters.model) {
+        params.append('model', searchFilters.model);
+      }
+      
       // Добавляем другие фильтры
       if (searchFilters.yearFrom) {
         params.append('year', searchFilters.yearFrom);

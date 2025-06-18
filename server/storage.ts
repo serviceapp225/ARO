@@ -21,6 +21,7 @@ export interface IStorage {
   searchListings(filters: {
     query?: string;
     make?: string;
+    model?: string;
     minPrice?: number;
     maxPrice?: number;
     year?: number;
@@ -153,6 +154,7 @@ export class DatabaseStorage implements IStorage {
   async searchListings(filters: {
     query?: string;
     make?: string;
+    model?: string;
     minPrice?: number;
     maxPrice?: number;
     year?: number;
@@ -171,6 +173,10 @@ export class DatabaseStorage implements IStorage {
 
     if (filters.make) {
       conditions.push(eq(carListings.make, filters.make));
+    }
+
+    if (filters.model) {
+      conditions.push(eq(carListings.model, filters.model));
     }
 
     if (filters.year) {
