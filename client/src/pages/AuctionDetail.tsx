@@ -576,6 +576,9 @@ export default function AuctionDetail() {
                 <Badge variant="outline" className={`${(auction as any).technicalInspectionValid ? 'text-purple-700 bg-purple-50 border-purple-200' : 'text-gray-700 bg-gray-50 border-gray-200'}`}>
                   {(auction as any).technicalInspectionValid ? `Техосмотр до ${(auction as any).technicalInspectionDate}` : 'Техосмотр: нет'}
                 </Badge>
+                <Badge variant="outline" className={`${(auction as any).tinted ? 'text-indigo-700 bg-indigo-50 border-indigo-200' : 'text-gray-700 bg-gray-50 border-gray-200'}`}>
+                  {(auction as any).tinted ? `Тонировка ${(auction as any).tintingDate}` : 'Тонировка: нет'}
+                </Badge>
               </div>
             </div>
 
