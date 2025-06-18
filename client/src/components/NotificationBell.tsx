@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Bell, X, Car } from 'lucide-react';
+import { Bell, X, Car, Trash2, Trash } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useLocation } from 'wouter';
 import type { Notification } from '@shared/schema';
@@ -29,6 +29,34 @@ export function NotificationBell({ userId }: NotificationBellProps) {
       });
       if (!response.ok) throw new Error('Failed to mark notification as read');
       return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [`/api/notifications/${userId}`] });
+    },
+  });
+
+  const deleteNotificationMutation = useMutation({
+    mutationFn: async (notificationId: number) => {
+      const response = await fetch(`/api/notifications/${notificationId}`, {
+        method: 'DELETE',
+      });
+      if (!response.ok) throw new Error('Failed to delete notification');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [`/api/notifications/${userId}`] });
+    },
+  });
+
+  const clearAllNotificationsMutation = useMutation({
+    mutationFn: async () => {
+      const deletePromises = notifications.map(notification => 
+        fetch(`/api/notifications/${notification.id}`, {
+          method: 'DELETE',
+        })
+      );
+      await Promise.all(deletePromises);
+      return true;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [`/api/notifications/${userId}`] });
@@ -77,12 +105,27 @@ export function NotificationBell({ userId }: NotificationBellProps) {
         <div className="absolute right-0 top-full mt-2 w-80 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50">
           <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
             <h3 className="font-semibold text-gray-900 dark:text-white">Уведомления</h3>
-            <button
-              onClick={() => setIsOpen(false)}
-              className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-            >
-              <X className="w-5 h-5" />
-            </button>
+            <div className="flex items-center gap-2">
+              {notifications.length > 0 && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    clearAllNotificationsMutation.mutate();
+                  }}
+                  className="text-red-500 hover:text-red-700 p-1 rounded transition-colors"
+                  title="Очистить все"
+                  disabled={clearAllNotificationsMutation.isPending}
+                >
+                  <Trash className="w-4 h-4" />
+                </button>
+              )}
+              <button
+                onClick={() => setIsOpen(false)}
+                className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
           </div>
 
           <div className="max-h-96 overflow-y-auto">
@@ -100,8 +143,7 @@ export function NotificationBell({ userId }: NotificationBellProps) {
               notifications.map((notification) => (
                 <div
                   key={notification.id}
-                  onClick={() => handleNotificationClick(notification)}
-                  className={`p-4 border-b border-gray-100 dark:border-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors ${
+                  className={`p-4 border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors ${
                     !notification.isRead ? 'bg-blue-50 dark:bg-blue-900/20' : ''
                   }`}
                 >
@@ -109,7 +151,10 @@ export function NotificationBell({ userId }: NotificationBellProps) {
                     {notification.type === 'car_found' && (
                       <Car className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
                     )}
-                    <div className="flex-1">
+                    <div 
+                      className="flex-1 cursor-pointer"
+                      onClick={() => handleNotificationClick(notification)}
+                    >
                       <div className="flex items-center gap-2">
                         <h4 className={`text-sm font-medium ${
                           !notification.isRead 
@@ -133,6 +178,17 @@ export function NotificationBell({ userId }: NotificationBellProps) {
                         {formatDate(notification.createdAt!)}
                       </p>
                     </div>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        deleteNotificationMutation.mutate(notification.id);
+                      }}
+                      className="text-red-500 hover:text-red-700 p-1 rounded transition-colors flex-shrink-0"
+                      title="Удалить уведомление"
+                      disabled={deleteNotificationMutation.isPending}
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
                   </div>
                 </div>
               ))
