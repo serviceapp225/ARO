@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { ActiveAuctions } from "@/components/ActiveAuctions";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import SimpleAlertButton from "@/components/SimpleAlertButton";
 
 import { CAR_MAKES, getModelsForMake } from "@shared/car-data";
 import { useLocation } from "wouter";
@@ -12,6 +14,8 @@ import { useLocation } from "wouter";
 export default function AuctionFeed() {
   const [location] = useLocation();
   const [showFilters, setShowFilters] = useState(false);
+  const [forceRefresh, setForceRefresh] = useState(0);
+  const queryClient = useQueryClient();
   const [searchFilters, setSearchFilters] = useState({
     query: "",
     brand: "",
@@ -58,6 +62,52 @@ export default function AuctionFeed() {
   };
 
   const hasActiveFilters = Object.values(searchFilters).some(value => value !== "");
+
+  // API запрос для поиска по критериям
+  const { data: searchResults = [], isLoading: searchLoading } = useQuery({
+    queryKey: ['/api/listings/search', JSON.stringify(searchFilters), forceRefresh],
+    queryFn: async () => {
+      const params = new URLSearchParams();
+      
+      // Добавляем поиск по тексту
+      if (searchFilters.query.trim()) {
+        params.append('query', searchFilters.query.trim());
+      }
+      
+      // Добавляем фильтр по марке
+      if (searchFilters.brand) {
+        const brandName = CAR_MAKES.find(make => make.toLowerCase() === searchFilters.brand.toLowerCase());
+        if (brandName) {
+          params.append('make', brandName);
+        }
+      }
+      
+      // Добавляем другие фильтры
+      if (searchFilters.yearFrom) {
+        params.append('year', searchFilters.yearFrom);
+      }
+      
+      if (searchFilters.priceFrom) {
+        params.append('minPrice', searchFilters.priceFrom);
+      }
+      
+      if (searchFilters.priceTo) {
+        params.append('maxPrice', searchFilters.priceTo);
+      }
+      
+      const response = await fetch(`/api/listings/search?${params}`);
+      if (!response.ok) throw new Error('Search failed');
+      return response.json();
+    },
+    enabled: hasActiveFilters && forceRefresh > 0,
+    staleTime: 0,
+    refetchOnMount: true
+  });
+
+  const handleSearch = () => {
+    queryClient.invalidateQueries({ queryKey: ['/api/listings/search'] });
+    setForceRefresh(prev => prev + 1);
+  };
 
   const clearFilters = () => {
     setSearchFilters({
@@ -276,29 +326,151 @@ export default function AuctionFeed() {
               </div>
             </div>
 
-
+            {/* Search and Clear Buttons */}
+            <div className="flex flex-col gap-3 mt-6">
+              {hasActiveFilters && (
+                <div className="text-center text-sm text-gray-600 mb-2">
+                  Нажмите кнопку "Поиск" для применения фильтров
+                </div>
+              )}
+              
+              <Button 
+                onClick={handleSearch}
+                className="w-full bg-red-600 hover:bg-red-700 text-white py-3 text-lg font-semibold"
+                disabled={!hasActiveFilters}
+              >
+                <Search className="w-5 h-5 mr-2" />
+                Найти автомобили
+              </Button>
+              
+              {hasActiveFilters && (
+                <Button 
+                  variant="outline" 
+                  onClick={clearFilters}
+                  className="w-full"
+                >
+                  <X className="w-4 h-4 mr-2" />
+                  Очистить все фильтры
+                </Button>
+              )}
+            </div>
           </div>
         </div>
 
-
-
-        {/* Auctions Grid */}
-        <ActiveAuctions />
-
-        {/* Notification Button when filters are active */}
-        {hasActiveFilters && (
-          <div className="mt-8 p-6 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
-            <div className="text-center">
-              <h3 className="text-lg font-medium text-gray-900 mb-2">
-                Хотите получать уведомления о новых машинах?
-              </h3>
-              <p className="text-gray-600 mb-4">
-                Мы отправим уведомление, когда появятся автомобили по вашим параметрам
-              </p>
-
+        {/* Search Results or All Auctions */}
+        {forceRefresh > 0 && hasActiveFilters ? (
+          <div className="space-y-6">
+            <div className="bg-white rounded-lg p-4 shadow-sm">
+              <h2 className="text-lg font-semibold text-gray-900 mb-2">
+                Результаты поиска ({searchResults.length})
+              </h2>
+              {searchLoading && (
+                <div className="text-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600 mx-auto"></div>
+                  <p className="mt-2 text-gray-600">Поиск автомобилей...</p>
+                </div>
+              )}
             </div>
+            
+            {!searchLoading && searchResults.length > 0 && (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {searchResults.map((listing: any) => (
+                  <div key={listing.id} className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+                    <div className="aspect-video bg-gray-100 relative">
+                      {listing.images && listing.images.length > 0 ? (
+                        <img 
+                          src={listing.images[0]} 
+                          alt={`${listing.make} ${listing.model}`}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-gray-400">
+                          Фото отсутствует
+                        </div>
+                      )}
+                      <div className="absolute top-2 right-2 bg-red-600 text-white px-2 py-1 rounded text-sm font-medium">
+                        #{listing.lotNumber}
+                      </div>
+                    </div>
+                    
+                    <div className="p-4">
+                      <h3 className="font-semibold text-lg text-gray-900 mb-2">
+                        {listing.make} {listing.model}
+                      </h3>
+                      <div className="space-y-1 text-sm text-gray-600 mb-3">
+                        <p>{listing.year} г. • {listing.mileage?.toLocaleString()} км</p>
+                        <p>{listing.engineVolume}л • {listing.fuelType}</p>
+                        <p>{listing.transmission} • {listing.bodyType}</p>
+                      </div>
+                      
+                      <div className="flex justify-between items-center">
+                        <div>
+                          <p className="text-sm text-gray-500">Текущая ставка</p>
+                          <p className="font-bold text-lg text-red-600">
+                            ${listing.currentBid?.toLocaleString() || listing.startingPrice?.toLocaleString()}
+                          </p>
+                        </div>
+                        <Button 
+                          onClick={() => window.location.href = `/auction/${listing.id}`}
+                          className="bg-red-600 hover:bg-red-700 text-white"
+                        >
+                          Участвовать
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+            
+            {!searchLoading && searchResults.length === 0 && (
+              <div className="bg-white rounded-lg p-8 text-center">
+                <div className="text-gray-400 mb-4">
+                  <Search className="w-16 h-16 mx-auto" />
+                </div>
+                <h3 className="text-lg font-medium text-gray-900 mb-2">
+                  Автомобили не найдены
+                </h3>
+                <p className="text-gray-600 mb-6">
+                  По вашим критериям поиска автомобили не найдены. Попробуйте изменить параметры поиска.
+                </p>
+              </div>
+            )}
+            
+            {/* Показать кнопку уведомления, если есть фильтры но мало результатов */}
+            {forceRefresh > 0 && hasActiveFilters && !searchLoading && searchResults.length < 3 && (
+              <div className="mt-8 p-6 bg-gray-50 rounded-lg text-center">
+                <h3 className="text-lg font-medium text-gray-900 mb-2">
+                  Не нашли подходящий автомобиль?
+                </h3>
+                <p className="text-gray-600 mb-4">
+                  Мы отправим уведомление, когда появятся автомобили по вашим критериям
+                </p>
+                <SimpleAlertButton 
+                  searchFilters={{
+                    brand: searchFilters.brand,
+                    model: searchFilters.model,
+                    yearFrom: searchFilters.yearFrom,
+                    yearTo: searchFilters.yearTo,
+                    priceFrom: searchFilters.priceFrom,
+                    priceTo: searchFilters.priceTo,
+                    bodyType: searchFilters.bodyType,
+                    fuelType: searchFilters.fuelType,
+                    transmission: searchFilters.transmission,
+                    customsCleared: searchFilters.customsCleared
+                  }}
+                />
+              </div>
+            )}
           </div>
+        ) : (
+          <>
+            {/* Auctions Grid */}
+            <ActiveAuctions />
+          </>
         )}
+
+
       </main>
     </div>
   );
