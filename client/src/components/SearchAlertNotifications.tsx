@@ -70,16 +70,19 @@ export function SearchAlertNotifications({ userId }: SearchAlertNotificationsPro
 
   if (isLoading) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center space-x-2">
-            <Search className="w-5 h-5" />
-            <span>История создания поисковых запросов</span>
+      <Card className="border-0 shadow-lg bg-white">
+        <CardHeader className="pb-4 bg-gradient-to-r from-purple-50 to-pink-50 rounded-t-lg">
+          <CardTitle className="flex items-center space-x-3">
+            <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
+              <Search className="w-5 h-5 text-white" />
+            </div>
+            <span className="text-xl font-bold text-gray-900">История создания поисковых запросов</span>
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="p-4 text-center text-gray-500">
-            Загрузка...
+          <div className="p-8 text-center">
+            <div className="w-8 h-8 border-4 border-purple-200 border-t-purple-500 rounded-full animate-spin mx-auto mb-4"></div>
+            <p className="text-gray-600">Загрузка истории...</p>
           </div>
         </CardContent>
       </Card>
@@ -88,20 +91,27 @@ export function SearchAlertNotifications({ userId }: SearchAlertNotificationsPro
 
   if (searchAlertNotifications.length === 0) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center space-x-2">
-            <Search className="w-5 h-5" />
-            <span>История создания поисковых запросов</span>
+      <Card className="border-0 shadow-lg bg-gradient-to-br from-purple-50 to-pink-50">
+        <CardHeader className="pb-4">
+          <CardTitle className="flex items-center space-x-3">
+            <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
+              <Search className="w-5 h-5 text-white" />
+            </div>
+            <span className="text-xl font-bold text-gray-900">История создания поисковых запросов</span>
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-center py-6">
-            <Search className="w-12 h-12 mx-auto text-gray-400 mb-4" />
-            <p className="text-gray-500 mb-2">Пока нет истории создания поисковых запросов</p>
-            <p className="text-sm text-gray-400">
-              Здесь будут отображаться уведомления о созданных вами поисковых запросах
-            </p>
+          <div className="text-center py-12">
+            <div className="w-20 h-20 bg-gradient-to-br from-purple-100 to-pink-100 rounded-full flex items-center justify-center mx-auto mb-6">
+              <Search className="w-10 h-10 text-purple-500" />
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">История пуста</h3>
+            <p className="text-gray-600 mb-4">Пока нет истории создания поисковых запросов</p>
+            <div className="bg-purple-50 rounded-lg p-4 max-w-lg mx-auto">
+              <p className="text-sm text-purple-700">
+                📝 Здесь будут отображаться уведомления о созданных вами поисковых запросах
+              </p>
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -109,61 +119,82 @@ export function SearchAlertNotifications({ userId }: SearchAlertNotificationsPro
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center space-x-2">
-          <Search className="w-5 h-5" />
-          <span>История создания поисковых запросов</span>
+    <Card className="border-0 shadow-lg bg-white">
+      <CardHeader className="pb-4 bg-gradient-to-r from-purple-50 to-pink-50 rounded-t-lg">
+        <CardTitle className="flex items-center space-x-3">
+          <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
+            <Search className="w-5 h-5 text-white" />
+          </div>
+          <span className="text-xl font-bold text-gray-900">История создания поисковых запросов</span>
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-3">
+      <CardContent className="space-y-4 p-6">
         {searchAlertNotifications.map((notification) => (
           <div
             key={notification.id}
-            className={`p-4 border rounded-lg ${
-              !notification.isRead ? 'bg-blue-50 border-blue-200' : 'bg-gray-50'
+            className={`group p-5 border border-gray-200 rounded-xl transition-all duration-200 ${
+              !notification.isRead 
+                ? 'bg-gradient-to-r from-purple-50 to-pink-50 border-purple-200 hover:shadow-md' 
+                : 'bg-gradient-to-r from-gray-50 to-gray-100 hover:shadow-md'
             }`}
           >
             <div className="flex items-start justify-between">
-              <div className="flex items-start gap-3 flex-1">
-                <Search className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+              <div className="flex items-start gap-4 flex-1">
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
+                  !notification.isRead 
+                    ? 'bg-gradient-to-r from-purple-100 to-pink-100' 
+                    : 'bg-gray-200'
+                }`}>
+                  <Search className={`w-4 h-4 ${
+                    !notification.isRead ? 'text-purple-600' : 'text-gray-500'
+                  }`} />
+                </div>
                 <div className="flex-1">
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <h4 className={`text-sm font-medium ${
-                        !notification.isRead ? 'text-blue-900' : 'text-gray-900'
+                  <div className="mb-3">
+                    <div className="flex items-start justify-between mb-2">
+                      <h4 className={`text-sm font-semibold ${
+                        !notification.isRead ? 'text-purple-900' : 'text-gray-900'
                       }`}>
                         {notification.title}
+                        {!notification.isRead && (
+                          <span className="inline-block w-2 h-2 bg-purple-500 rounded-full ml-2"></span>
+                        )}
                       </h4>
-                      <p className={`text-sm mt-1 ${
-                        !notification.isRead ? 'text-blue-700' : 'text-gray-600'
+                    </div>
+                    <div className={`p-3 rounded-lg ${
+                      !notification.isRead ? 'bg-white/60' : 'bg-white/80'
+                    }`}>
+                      <p className={`text-sm ${
+                        !notification.isRead ? 'text-purple-700' : 'text-gray-600'
                       }`}>
                         {notification.message}
                       </p>
-                      <p className="text-xs text-gray-500 mt-2">
-                        {formatDate(notification.createdAt!)}
-                      </p>
                     </div>
-                    <div className="flex items-center gap-2 ml-4">
-                      {!notification.isRead && (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => markAsReadMutation.mutate(notification.id)}
-                        >
-                          <Check className="w-4 h-4" />
-                        </Button>
-                      )}
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => deleteNotificationMutation.mutate(notification.id)}
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </div>
+                    <p className="text-xs text-gray-500 mt-2 flex items-center gap-1">
+                      🕒 {formatDate(notification.createdAt!)}
+                    </p>
                   </div>
                 </div>
+              </div>
+              <div className="flex items-center gap-2 ml-4">
+                {!notification.isRead && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => markAsReadMutation.mutate(notification.id)}
+                    className="border-purple-300 text-purple-600 hover:bg-purple-50"
+                  >
+                    <Check className="w-4 h-4" />
+                  </Button>
+                )}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => deleteNotificationMutation.mutate(notification.id)}
+                  className="border-red-300 text-red-600 hover:bg-red-50"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </Button>
               </div>
             </div>
           </div>
