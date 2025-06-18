@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { ActiveAuctions } from "@/components/ActiveAuctions";
 import { useQuery } from "@tanstack/react-query";
+import SimpleAlertButton from "@/components/SimpleAlertButton";
 
 import { CAR_MAKES, getModelsForMake } from "@shared/car-data";
 
@@ -110,14 +111,9 @@ export default function Search() {
         }
       });
       
-      console.log('Search params being sent:', Object.fromEntries(params.entries()));
-      console.log('Query params object:', searchQueryParams);
-      
       const response = await fetch(`/api/listings/search?${params}`);
       if (!response.ok) throw new Error('Search failed');
-      const result = await response.json();
-      console.log('Search results received:', result);
-      return result;
+      return response.json();
     },
     enabled: hasSearchCriteria,
     staleTime: 0,
@@ -584,6 +580,7 @@ export default function Search() {
                   Создайте уведомление и мы сообщим, когда появится автомобиль с нужными параметрами
                 </p>
                 <div className="max-w-sm mx-auto">
+                  <SimpleAlertButton searchFilters={searchFilters} />
                 </div>
               </div>
             )}
