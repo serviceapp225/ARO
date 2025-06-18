@@ -16,6 +16,7 @@ import SellCar from "@/pages/SellCar";
 import MyBids from "@/pages/MyBids";
 import Profile from "@/pages/Profile";
 import Notifications from "@/pages/Notifications";
+import MyAlerts from "@/pages/MyAlerts";
 import UserData from "@/pages/UserData";
 import LanguageSelector from "@/components/LanguageSelector";
 import Terms from "@/pages/Terms";
@@ -41,6 +42,7 @@ function Router() {
         <Route path="/bids" component={MyBids} />
         <Route path="/profile" component={Profile} />
         <Route path="/notifications" component={Notifications} />
+        <Route path="/my-alerts" component={MyAlerts} />
         <Route path="/user-data" component={UserData} />
         <Route path="/language" component={LanguageSelector} />
         <Route path="/terms" component={Terms} />
