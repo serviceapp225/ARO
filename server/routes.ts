@@ -65,6 +65,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/listings/search", async (req, res) => {
+    try {
+      const filters = {
+        query: req.query.query as string,
+        make: req.query.make as string,
+        minPrice: req.query.minPrice ? parseFloat(req.query.minPrice as string) : undefined,
+        maxPrice: req.query.maxPrice ? parseFloat(req.query.maxPrice as string) : undefined,
+        year: req.query.year ? parseInt(req.query.year as string) : undefined
+      };
+      
+      const listings = await storage.searchListings(filters);
+      
+      // Get bid counts for search results
+      if (listings.length > 0) {
+        const listingIds = listings.map(listing => listing.id);
+        const bidCounts = await storage.getBidCountsForListings(listingIds);
+        
+        // Add bid counts to listings
+        const enrichedListings = listings.map(listing => ({
+          ...listing,
+          bidCount: bidCounts[listing.id] || 0
+        }));
+        
+        res.json(enrichedListings);
+      } else {
+        res.json(listings);
+      }
+    } catch (error) {
+      res.status(500).json({ error: "Failed to search listings" });
+    }
+  });
+
   app.get("/api/listings/:id", async (req, res) => {
     try {
       const listingId = parseInt(req.params.id);

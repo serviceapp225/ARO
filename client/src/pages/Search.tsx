@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { ActiveAuctions } from "@/components/ActiveAuctions";
+import { useQuery } from "@tanstack/react-query";
 
 import { CAR_MAKES, getModelsForMake } from "@shared/car-data";
 
@@ -67,8 +68,57 @@ export default function Search() {
     });
   };
 
+  // Build search filters for API
+  const buildSearchFilters = () => {
+    const filters: any = {};
+    
+    if (searchQuery.trim()) {
+      filters.query = searchQuery.trim();
+    }
+    
+    if (searchFilters.brand) {
+      const brandName = CAR_MAKES.find(make => make.toLowerCase() === searchFilters.brand);
+      if (brandName) filters.make = brandName;
+    }
+    
+    if (searchFilters.yearFrom) {
+      filters.year = parseInt(searchFilters.yearFrom);
+    }
+    
+    if (searchFilters.priceFrom) {
+      filters.minPrice = parseFloat(searchFilters.priceFrom);
+    }
+    
+    if (searchFilters.priceTo) {
+      filters.maxPrice = parseFloat(searchFilters.priceTo);
+    }
+    
+    return filters;
+  };
+
+  // Search query with filters
+  const searchQueryParams = buildSearchFilters();
+  const hasSearchCriteria = Object.keys(searchQueryParams).length > 0;
+  
+  const { data: searchResults = [], isLoading } = useQuery({
+    queryKey: ['/api/listings/search', searchQueryParams],
+    queryFn: async () => {
+      const params = new URLSearchParams();
+      Object.entries(searchQueryParams).forEach(([key, value]) => {
+        if (value !== undefined && value !== null && value !== '' && value !== 0) {
+          params.append(key, String(value));
+        }
+      });
+      
+      const response = await fetch(`/api/listings/search?${params}`);
+      if (!response.ok) throw new Error('Search failed');
+      return response.json();
+    },
+    enabled: hasSearchCriteria
+  });
+
   const handleSearch = () => {
-    console.log("Searching with filters:", searchFilters);
+    // Search is triggered automatically via useQuery when filters change
   };
 
   const activeFiltersCount = Object.values(searchFilters).filter(Boolean).length;
@@ -471,7 +521,51 @@ export default function Search() {
                 </div>
               )}
             </div>
-            <ActiveAuctions searchQuery={searchQuery} />
+            {/* Search Results */}
+            {hasSearchCriteria ? (
+              <div>
+                {isLoading ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {Array.from({ length: 6 }).map((_, i) => (
+                      <div key={i} className="animate-pulse">
+                        <div className="bg-gray-200 rounded-lg h-48 mb-4"></div>
+                        <div className="space-y-2">
+                          <div className="bg-gray-200 h-4 rounded w-3/4"></div>
+                          <div className="bg-gray-200 h-4 rounded w-1/2"></div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : searchResults.length > 0 ? (
+                  <div>
+                    <p className="text-gray-600 mb-4">
+                      Найдено {searchResults.length} автомобилей
+                    </p>
+                    <ActiveAuctions customListings={searchResults} />
+                  </div>
+                ) : (
+                  <div className="text-center py-12">
+                    <div className="text-gray-400 text-6xl mb-4">🔍</div>
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">
+                      Ничего не найдено
+                    </h3>
+                    <p className="text-gray-600">
+                      Попробуйте изменить параметры поиска
+                    </p>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="text-center py-12">
+                <div className="text-gray-400 text-6xl mb-4">🚗</div>
+                <h3 className="text-lg font-medium text-gray-900 mb-2">
+                  Введите параметры поиска
+                </h3>
+                <p className="text-gray-600">
+                  Используйте фильтры выше для поиска автомобилей
+                </p>
+              </div>
+            )}
             
             {/* Показать кнопку уведомления, если есть фильтры но мало результатов */}
             {activeFiltersCount > 0 && (
