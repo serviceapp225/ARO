@@ -89,7 +89,9 @@ export function NotificationBell({ userId }: NotificationBellProps) {
               </div>
             ) : notifications.length === 0 ? (
               <div className="p-4 text-center text-gray-500 dark:text-gray-400">
-                Нет уведомлений
+                <Car className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                <p className="text-sm mb-1">Нет новых уведомлений</p>
+                <p className="text-xs">Создайте поисковые запросы в разделе "Аукционы" для получения уведомлений о подходящих машинах</p>
               </div>
             ) : (
               notifications.map((notification) => (

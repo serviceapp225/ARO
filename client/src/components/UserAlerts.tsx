@@ -63,15 +63,15 @@ export function UserAlerts() {
         <CardHeader>
           <CardTitle className="flex items-center space-x-2">
             <Bell className="w-5 h-5" />
-            <span>Уведомления</span>
+            <span>Мои поисковые запросы</span>
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="text-center py-8">
             <Car className="w-12 h-12 mx-auto text-gray-400 mb-4" />
-            <p className="text-gray-500 mb-4">У вас пока нет активных уведомлений</p>
+            <p className="text-gray-500 mb-4">У вас пока нет сохранённых поисковых запросов</p>
             <p className="text-sm text-gray-400">
-              Создайте уведомление для отслеживания интересующих вас автомобилей
+              Создайте поисковый запрос на главной странице "Аукционы", чтобы получать уведомления о подходящих машинах
             </p>
           </div>
         </CardContent>
@@ -85,7 +85,7 @@ export function UserAlerts() {
         <CardTitle className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
             <Bell className="w-5 h-5" />
-            <span>Уведомления</span>
+            <span>Мои поисковые запросы</span>
             <Badge variant="secondary" className="ml-2">
               {alerts.length}
             </Badge>
@@ -109,7 +109,8 @@ export function UserAlerts() {
                 </Badge>
               </div>
               <p className="text-sm text-gray-500">
-                Создано {new Date(alert.createdAt).toLocaleDateString('ru-RU')}
+                Создано {new Date(alert.createdAt).toLocaleDateString('ru-RU')} • 
+                {alert.isActive ? ' Получите уведомление когда появится подходящая машина' : ' Уведомления приостановлены'}
               </p>
             </div>
             <div className="flex items-center space-x-2">
