@@ -114,12 +114,9 @@ export default function Search() {
         }
       });
       
-      console.log('Searching with params:', params.toString());
       const response = await fetch(`/api/listings/search?${params}`);
       if (!response.ok) throw new Error('Search failed');
-      const result = await response.json();
-      console.log('Search results:', result);
-      return result;
+      return response.json();
     },
     enabled: hasSearchCriteria,
     staleTime: 0,
@@ -531,7 +528,7 @@ export default function Search() {
               )}
             </div>
             {/* Search Results */}
-            {hasSearchCriteria ? (
+            {activeFiltersCount > 0 ? (
               <div>
                 {isLoading ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -559,7 +556,7 @@ export default function Search() {
                       Ничего не найдено
                     </h3>
                     <p className="text-gray-600">
-                      Попробуйте изменить параметры поиска
+                      По заданным критериям автомобили не найдены
                     </p>
                   </div>
                 )}
@@ -577,7 +574,7 @@ export default function Search() {
             )}
             
             {/* Показать кнопку уведомления, если есть фильтры но мало результатов */}
-            {activeFiltersCount > 0 && (
+            {activeFiltersCount > 0 && !isLoading && searchResults.length < 3 && (
               <div className="mt-8 p-6 bg-gray-50 rounded-lg text-center">
                 <h3 className="text-lg font-medium text-gray-900 mb-2">
                   Не нашли подходящий автомобиль?
