@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
-import { Bell, X } from 'lucide-react';
+import { Bell, X, Car } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useLocation } from 'wouter';
 import type { Notification } from '@shared/schema';
 
 interface NotificationBellProps {
@@ -10,6 +11,7 @@ interface NotificationBellProps {
 export function NotificationBell({ userId }: NotificationBellProps) {
   const [isOpen, setIsOpen] = useState(false);
   const queryClient = useQueryClient();
+  const [, setLocation] = useLocation();
 
   const { data: notifications = [], isLoading } = useQuery<Notification[]>({
     queryKey: [`/api/notifications/${userId}`],
@@ -35,6 +37,12 @@ export function NotificationBell({ userId }: NotificationBellProps) {
   const handleNotificationClick = (notification: Notification) => {
     if (!notification.isRead) {
       markAsReadMutation.mutate(notification.id);
+    }
+    
+    // Navigate to auction page if notification is about a found car
+    if (notification.type === 'car_found' && notification.listingId) {
+      setIsOpen(false);
+      setLocation(`/auction/${notification.listingId}`);
     }
   };
 
@@ -92,7 +100,10 @@ export function NotificationBell({ userId }: NotificationBellProps) {
                     !notification.isRead ? 'bg-blue-50 dark:bg-blue-900/20' : ''
                   }`}
                 >
-                  <div className="flex items-start justify-between">
+                  <div className="flex items-start gap-3">
+                    {notification.type === 'car_found' && (
+                      <Car className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+                    )}
                     <div className="flex-1">
                       <div className="flex items-center gap-2">
                         <h4 className={`text-sm font-medium ${

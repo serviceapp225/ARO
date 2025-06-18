@@ -121,9 +121,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Check for matching car alerts and send notifications
       try {
+        console.log('Checking alerts for new listing:', listing.make, listing.model);
         const matchingAlerts = await storage.checkAlertsForNewListing(listing);
+        console.log('Found matching alerts:', matchingAlerts.length);
         
         for (const alert of matchingAlerts) {
+          console.log('Creating notification for alert:', alert.id, 'user:', alert.userId);
           // Create notification for each matching alert
           await storage.createNotification({
             userId: alert.userId,
