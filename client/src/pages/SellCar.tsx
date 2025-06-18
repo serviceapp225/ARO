@@ -36,7 +36,9 @@ export default function SellCar() {
     customsCleared: "",
     recycled: "",
     technicalInspectionValid: "",
-    technicalInspectionDate: ""
+    technicalInspectionDate: "",
+    tinted: "",
+    tintingDate: ""
   });
   
   const [availableModels, setAvailableModels] = useState<string[]>([]);
@@ -122,7 +124,9 @@ export default function SellCar() {
       { field: formData.customsCleared, name: "Растаможка" },
       { field: formData.recycled, name: "Утилизационный сбор" },
       { field: formData.technicalInspectionValid, name: "Техосмотр" },
-      { field: formData.technicalInspectionDate, name: "Дата техосмотра" }
+      { field: formData.technicalInspectionDate, name: "Дата техосмотра" },
+      { field: formData.tinted, name: "Тонировка" },
+      { field: formData.tintingDate, name: "Дата тонировки" }
     ];
 
     const emptyFields = requiredFields.filter(({ field }) => !field || field.trim() === "");
@@ -185,6 +189,8 @@ export default function SellCar() {
         recycled: formData.recycled === 'yes',
         technicalInspectionValid: formData.technicalInspectionValid === 'yes',
         technicalInspectionDate: formData.technicalInspectionDate || null,
+        tinted: formData.tinted === 'yes',
+        tintingDate: formData.tintingDate || null,
         engine: formData.engineVolume ? `${formData.engineVolume}L` : null,
         transmission: formData.transmission || null,
         fuelType: formData.fuelType || null,
@@ -237,7 +243,9 @@ export default function SellCar() {
           customsCleared: "",
           recycled: "",
           technicalInspectionValid: "",
-          technicalInspectionDate: ""
+          technicalInspectionDate: "",
+          tinted: "",
+          tintingDate: ""
         });
         setUploadedImages([]);
       }, 100);
@@ -609,6 +617,42 @@ export default function SellCar() {
                     type="date"
                     value={formData.technicalInspectionDate}
                     onChange={(e) => handleInputChange("technicalInspectionDate", e.target.value)}
+                    placeholder="ДД.ММ.ГГГГ"
+                  />
+                </div>
+              )}
+
+              <div>
+                <Label>Тонировка <span className="text-red-500">*</span></Label>
+                <div className="flex gap-2 mt-2">
+                  <Button
+                    type="button"
+                    variant={formData.tinted === "yes" ? "default" : "outline"}
+                    className="flex-1"
+                    onClick={() => handleInputChange("tinted", "yes")}
+                  >
+                    Есть
+                  </Button>
+                  <Button
+                    type="button"
+                    variant={formData.tinted === "no" ? "default" : "outline"}
+                    className="flex-1"
+                    onClick={() => handleInputChange("tinted", "no")}
+                  >
+                    Нет
+                  </Button>
+                </div>
+              </div>
+
+              {/* Поле даты тонировки, показывается только если тонировка есть */}
+              {formData.tinted === "yes" && (
+                <div>
+                  <Label htmlFor="tintingDate">Дата тонировки <span className="text-red-500">*</span></Label>
+                  <Input
+                    id="tintingDate"
+                    type="date"
+                    value={formData.tintingDate}
+                    onChange={(e) => handleInputChange("tintingDate", e.target.value)}
                     placeholder="ДД.ММ.ГГГГ"
                   />
                 </div>
