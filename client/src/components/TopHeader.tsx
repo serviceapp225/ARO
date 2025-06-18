@@ -62,6 +62,7 @@ export function TopHeader({
 
   return (
     <header className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 px-4 py-3 flex items-center justify-between">
+      {/* Левая часть */}
       <div className="flex items-center gap-3">
         {showBack && (
           <Link href={backPath}>
@@ -70,13 +71,7 @@ export function TopHeader({
             </button>
           </Link>
         )}
-        <h1 className="text-lg font-semibold text-gray-900 dark:text-white">
-          {getTitle()}
-        </h1>
-      </div>
-
-      {!shouldHideNotifications() && (
-        <div className="flex items-center gap-2">
+        {!shouldHideNotifications() && (
           <button
             onClick={() => window.open('https://wa.me/992000000000', '_blank')}
             className="p-2 text-green-600 hover:text-green-700 hover:bg-green-50 rounded-lg transition-colors"
@@ -84,9 +79,20 @@ export function TopHeader({
           >
             <MessageCircle className="w-6 h-6" />
           </button>
+        )}
+      </div>
+
+      {/* Центр - название */}
+      <h1 className="text-lg font-semibold text-gray-900 dark:text-white absolute left-1/2 transform -translate-x-1/2">
+        {getTitle()}
+      </h1>
+
+      {/* Правая часть */}
+      <div className="flex items-center">
+        {!shouldHideNotifications() && (
           <NotificationBell userId={currentUserId} />
-        </div>
-      )}
+        )}
+      </div>
     </header>
   );
 }
