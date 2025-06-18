@@ -550,7 +550,7 @@ export default function SellCar() {
                 </div>
 
                 <div>
-                  <Label>Утилизация</Label>
+                  <Label>Утилизация <span className="text-red-500">*</span></Label>
                   <div className="flex gap-2 mt-2">
                     <Button
                       type="button"
@@ -572,7 +572,7 @@ export default function SellCar() {
                 </div>
 
                 <div>
-                  <Label>Техосмотр</Label>
+                  <Label>Техосмотр <span className="text-red-500">*</span></Label>
                   <div className="flex gap-2 mt-2">
                     <Button
                       type="button"
@@ -597,7 +597,7 @@ export default function SellCar() {
               {/* Поле даты техосмотра, показывается только если техосмотр есть */}
               {formData.technicalInspectionValid === "yes" && (
                 <div>
-                  <Label htmlFor="technicalInspectionDate">Действие техосмотра до</Label>
+                  <Label htmlFor="technicalInspectionDate">Действие техосмотра до <span className="text-red-500">*</span></Label>
                   <Input
                     id="technicalInspectionDate"
                     type="date"
@@ -610,7 +610,7 @@ export default function SellCar() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="price">Стартовая цена ($)</Label>
+                  <Label htmlFor="price">Стартовая цена ($) <span className="text-red-500">*</span></Label>
                   <Input
                     id="price"
                     type="number"
@@ -635,7 +635,7 @@ export default function SellCar() {
               </div>
 
               <div>
-                <Label htmlFor="description">Описание</Label>
+                <Label htmlFor="description">Описание <span className="text-red-500">*</span></Label>
                 <Textarea
                   id="description"
                   placeholder="Опишите состояние автомобиля, особенности, историю обслуживания..."
