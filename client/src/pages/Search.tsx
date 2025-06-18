@@ -79,7 +79,10 @@ export default function Search() {
     
     if (searchFilters.brand) {
       const brandName = CAR_MAKES.find(make => make.toLowerCase() === searchFilters.brand);
-      if (brandName) filters.make = brandName;
+      if (brandName) {
+        filters.make = brandName;
+        console.log('Setting make filter to:', brandName);
+      }
     }
     
     if (searchFilters.yearFrom) {
@@ -94,26 +97,34 @@ export default function Search() {
       filters.maxPrice = parseFloat(searchFilters.priceTo);
     }
     
+    console.log('Built filters:', filters);
     return filters;
   };
 
   // Search query with filters
   const searchQueryParams = buildSearchFilters();
-  const hasSearchCriteria = Object.keys(searchQueryParams).length > 0;
+  const hasSearchCriteria = Object.keys(searchQueryParams).length > 0 || 
+                           Object.values(searchFilters).some(value => value !== '');
   
   const { data: searchResults = [], isLoading } = useQuery({
-    queryKey: ['/api/listings/search', JSON.stringify(searchQueryParams)],
+    queryKey: ['/api/listings/search', JSON.stringify(searchQueryParams), JSON.stringify(searchFilters)],
     queryFn: async () => {
-      const params = new URLSearchParams();
-      Object.entries(searchQueryParams).forEach(([key, value]) => {
-        if (value !== undefined && value !== null && value !== '' && value !== 0) {
-          params.append(key, String(value));
-        }
-      });
+      // If we have search criteria from filters, use search API
+      if (Object.keys(searchQueryParams).length > 0) {
+        const params = new URLSearchParams();
+        Object.entries(searchQueryParams).forEach(([key, value]) => {
+          if (value !== undefined && value !== null && value !== '' && value !== 0) {
+            params.append(key, String(value));
+          }
+        });
+        
+        const response = await fetch(`/api/listings/search?${params}`);
+        if (!response.ok) throw new Error('Search failed');
+        return response.json();
+      }
       
-      const response = await fetch(`/api/listings/search?${params}`);
-      if (!response.ok) throw new Error('Search failed');
-      return response.json();
+      // If no search criteria but have filters, return empty array to trigger "not found" state
+      return [];
     },
     enabled: hasSearchCriteria,
     staleTime: 0,
