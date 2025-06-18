@@ -102,28 +102,24 @@ export default function Search() {
 
   // Search query with filters
   const searchQueryParams = buildSearchFilters();
-  const hasSearchCriteria = Object.keys(searchQueryParams).length > 0 || 
-                           Object.values(searchFilters).some(value => value !== '');
+  const hasSearchCriteria = Object.keys(searchQueryParams).length > 0;
   
   const { data: searchResults = [], isLoading } = useQuery({
-    queryKey: ['/api/listings/search', JSON.stringify(searchQueryParams), JSON.stringify(searchFilters)],
+    queryKey: ['/api/listings/search', JSON.stringify(searchQueryParams)],
     queryFn: async () => {
-      // If we have search criteria from filters, use search API
-      if (Object.keys(searchQueryParams).length > 0) {
-        const params = new URLSearchParams();
-        Object.entries(searchQueryParams).forEach(([key, value]) => {
-          if (value !== undefined && value !== null && value !== '' && value !== 0) {
-            params.append(key, String(value));
-          }
-        });
-        
-        const response = await fetch(`/api/listings/search?${params}`);
-        if (!response.ok) throw new Error('Search failed');
-        return response.json();
-      }
+      const params = new URLSearchParams();
+      Object.entries(searchQueryParams).forEach(([key, value]) => {
+        if (value !== undefined && value !== null && value !== '' && value !== 0) {
+          params.append(key, String(value));
+        }
+      });
       
-      // If no search criteria but have filters, return empty array to trigger "not found" state
-      return [];
+      console.log('Searching with params:', params.toString());
+      const response = await fetch(`/api/listings/search?${params}`);
+      if (!response.ok) throw new Error('Search failed');
+      const result = await response.json();
+      console.log('Search results:', result);
+      return result;
     },
     enabled: hasSearchCriteria,
     staleTime: 0,
