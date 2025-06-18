@@ -43,7 +43,30 @@ export function NotificationBell({ userId }: NotificationBellProps) {
       if (!response.ok) throw new Error('Failed to delete notification');
       return response.json();
     },
-    onSuccess: () => {
+    onMutate: async (notificationId: number) => {
+      // Cancel any outgoing refetches
+      await queryClient.cancelQueries({ queryKey: [`/api/notifications/${userId}`] });
+      
+      // Snapshot the previous value
+      const previousNotifications = queryClient.getQueryData<Notification[]>([`/api/notifications/${userId}`]);
+      
+      // Optimistically remove the notification
+      if (previousNotifications) {
+        queryClient.setQueryData<Notification[]>(
+          [`/api/notifications/${userId}`],
+          previousNotifications.filter(n => n.id !== notificationId)
+        );
+      }
+      
+      return { previousNotifications };
+    },
+    onError: (err, notificationId, context) => {
+      // Rollback on error
+      if (context?.previousNotifications) {
+        queryClient.setQueryData([`/api/notifications/${userId}`], context.previousNotifications);
+      }
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: [`/api/notifications/${userId}`] });
     },
   });
@@ -58,7 +81,30 @@ export function NotificationBell({ userId }: NotificationBellProps) {
       await Promise.all(deletePromises);
       return true;
     },
-    onSuccess: () => {
+    onMutate: async () => {
+      // Cancel any outgoing refetches
+      await queryClient.cancelQueries({ queryKey: [`/api/notifications/${userId}`] });
+      
+      // Snapshot the previous value
+      const previousNotifications = queryClient.getQueryData<Notification[]>([`/api/notifications/${userId}`]);
+      
+      // Optimistically clear all car_found notifications
+      if (previousNotifications) {
+        queryClient.setQueryData<Notification[]>(
+          [`/api/notifications/${userId}`],
+          previousNotifications.filter(n => n.type !== 'car_found')
+        );
+      }
+      
+      return { previousNotifications };
+    },
+    onError: (err, variables, context) => {
+      // Rollback on error
+      if (context?.previousNotifications) {
+        queryClient.setQueryData([`/api/notifications/${userId}`], context.previousNotifications);
+      }
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: [`/api/notifications/${userId}`] });
     },
   });

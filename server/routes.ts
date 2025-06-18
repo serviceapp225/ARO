@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertCarListingSchema, insertBidSchema, insertFavoriteSchema, insertNotificationSchema, insertCarAlertSchema } from "@shared/schema";
+import { insertCarListingSchema, insertBidSchema, insertFavoriteSchema, insertNotificationSchema, insertCarAlertSchema, type CarAlert } from "@shared/schema";
 import { z } from "zod";
 
 // Simple in-memory cache
@@ -145,7 +145,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
         
         // Send only one notification per user
-        for (const [userId, alerts] of userAlerts) {
+        for (const [userId, alerts] of Array.from(userAlerts.entries())) {
           console.log('Creating notification for user:', userId, 'matching alerts:', alerts.length);
           await storage.createNotification({
             userId,
