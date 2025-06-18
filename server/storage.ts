@@ -44,6 +44,7 @@ export interface IStorage {
   getNotificationsByUser(userId: number): Promise<Notification[]>;
   createNotification(notification: InsertNotification): Promise<Notification>;
   markNotificationAsRead(id: number): Promise<boolean>;
+  deleteNotification(id: number): Promise<boolean>;
   getUnreadNotificationCount(userId: number): Promise<number>;
 
   // Car alerts operations
@@ -281,6 +282,13 @@ export class DatabaseStorage implements IStorage {
     const result = await db
       .update(notifications)
       .set({ isRead: true })
+      .where(eq(notifications.id, id));
+    return result.rowCount !== null && result.rowCount > 0;
+  }
+
+  async deleteNotification(id: number): Promise<boolean> {
+    const result = await db
+      .delete(notifications)
       .where(eq(notifications.id, id));
     return result.rowCount !== null && result.rowCount > 0;
   }
