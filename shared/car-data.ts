@@ -173,9 +173,7 @@ export const CAR_MAKES_MODELS = {
     "Duster", "Logan", "Sandero", "Spring", "Jogger", "Lodgy"
   ],
   "Opel": [
-    "Corsa", "Corsa OPC", "Astra", "Astra OPC", "Astra GTC", "Insignia", "Insignia OPC", "Crossland", "Grandland", "Grandland X", 
-    "Mokka", "Mokka X", "Vivaro", "Zafira", "Zafira Tourer", "Vectra", "Omega", "Kadett", "Ascona", "Manta",
-    "Antara", "Meriva", "Agila", "Tigra", "Calibra", "Speedster", "GT", "Combo", "Movano"
+    "Astra", "Zafira"
   ],
   "Smart": [
     "Fortwo", "Fortwo Cabrio", "Fortwo Brabus", "Forfour", "Forfour Brabus", "EQfortwo", "EQforfour", 
