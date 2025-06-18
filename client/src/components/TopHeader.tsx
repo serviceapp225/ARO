@@ -1,4 +1,4 @@
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, MessageCircle } from "lucide-react";
 import { useLocation, Link } from "wouter";
 import { NotificationBell } from "./NotificationBell";
 
@@ -76,7 +76,16 @@ export function TopHeader({
       </div>
 
       {!shouldHideNotifications() && (
-        <NotificationBell userId={currentUserId} />
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => window.open('https://wa.me/992000000000', '_blank')}
+            className="p-2 text-green-600 hover:text-green-700 hover:bg-green-50 rounded-lg transition-colors"
+            title="Связаться через WhatsApp"
+          >
+            <MessageCircle className="w-6 h-6" />
+          </button>
+          <NotificationBell userId={currentUserId} />
+        </div>
       )}
     </header>
   );
