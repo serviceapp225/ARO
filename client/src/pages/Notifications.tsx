@@ -2,14 +2,10 @@ import { ArrowLeft, Bell, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { UserAlerts } from "@/components/UserAlerts";
-import { SearchAlertNotifications } from "@/components/SearchAlertNotifications";
 import { useLocation } from "wouter";
 
 export default function Notifications() {
   const [, setLocation] = useLocation();
-  
-  // Mock user ID - в реальном приложении будет из контекста авторизации
-  const userId = 3;
 
   return (
     <div className="min-h-screen bg-gray-50 pb-20">
@@ -45,9 +41,6 @@ export default function Notifications() {
 
           {/* User alerts */}
           <UserAlerts />
-          
-          {/* Search alert notifications history */}
-          <SearchAlertNotifications userId={userId} />
         </div>
       </main>
     </div>
