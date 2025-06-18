@@ -89,7 +89,11 @@ export default function AuctionFeed() {
       
       // Добавляем другие фильтры
       if (searchFilters.yearFrom) {
-        params.append('year', searchFilters.yearFrom);
+        params.append('minYear', searchFilters.yearFrom);
+      }
+      
+      if (searchFilters.yearTo) {
+        params.append('maxYear', searchFilters.yearTo);
       }
       
       if (searchFilters.priceFrom) {

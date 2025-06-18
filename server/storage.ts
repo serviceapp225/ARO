@@ -158,7 +158,8 @@ export class DatabaseStorage implements IStorage {
     model?: string;
     minPrice?: number;
     maxPrice?: number;
-    year?: number;
+    minYear?: number;
+    maxYear?: number;
   }): Promise<CarListing[]> {
     const conditions = [eq(carListings.status, "active")];
 
@@ -180,8 +181,12 @@ export class DatabaseStorage implements IStorage {
       conditions.push(ilike(carListings.model, `%${filters.model}%`));
     }
 
-    if (filters.year) {
-      conditions.push(eq(carListings.year, filters.year));
+    if (filters.minYear) {
+      conditions.push(sql`${carListings.year} >= ${filters.minYear}`);
+    }
+
+    if (filters.maxYear) {
+      conditions.push(sql`${carListings.year} <= ${filters.maxYear}`);
     }
 
     if (filters.minPrice) {

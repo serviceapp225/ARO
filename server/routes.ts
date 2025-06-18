@@ -73,7 +73,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         model: req.query.model as string,
         minPrice: req.query.minPrice ? parseFloat(req.query.minPrice as string) : undefined,
         maxPrice: req.query.maxPrice ? parseFloat(req.query.maxPrice as string) : undefined,
-        year: req.query.year ? parseInt(req.query.year as string) : undefined
+        minYear: req.query.minYear ? parseInt(req.query.minYear as string) : undefined,
+        maxYear: req.query.maxYear ? parseInt(req.query.maxYear as string) : undefined
       };
       
       // Create cache key from filters
