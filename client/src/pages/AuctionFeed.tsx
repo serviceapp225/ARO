@@ -67,6 +67,7 @@ export default function AuctionFeed() {
   const { data: searchResults = [], isLoading: searchLoading } = useQuery({
     queryKey: ['/api/listings/search', JSON.stringify(searchFilters), forceRefresh],
     queryFn: async () => {
+      console.log('Executing search with filters:', searchFilters);
       const params = new URLSearchParams();
       
       // Добавляем поиск по тексту
@@ -108,7 +109,7 @@ export default function AuctionFeed() {
       if (!response.ok) throw new Error('Search failed');
       return response.json();
     },
-    enabled: hasActiveFilters && forceRefresh > 0,
+    enabled: hasActiveFilters,
     staleTime: 30000, // Cache for 30 seconds
     refetchOnMount: false,
     refetchOnWindowFocus: false
@@ -368,7 +369,7 @@ export default function AuctionFeed() {
         </div>
 
         {/* Search Results or All Auctions */}
-        {forceRefresh > 0 && hasActiveFilters ? (
+        {hasActiveFilters ? (
           <div className="space-y-6">
             <div className="bg-white rounded-lg p-4 shadow-sm">
               <h2 className="text-lg font-semibold text-gray-900 mb-2">
@@ -436,7 +437,7 @@ export default function AuctionFeed() {
 
             
             {/* Показать кнопку уведомления, если есть фильтры но мало результатов */}
-            {forceRefresh > 0 && hasActiveFilters && !searchLoading && searchResults.length < 3 && (
+            {hasActiveFilters && !searchLoading && searchResults.length < 3 && (
               <div className="mt-8 p-6 bg-gray-50 rounded-lg text-center">
                 <h3 className="text-lg font-medium text-gray-900 mb-2">
                   Не нашли подходящий автомобиль?
