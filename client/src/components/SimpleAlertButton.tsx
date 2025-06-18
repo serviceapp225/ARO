@@ -25,7 +25,7 @@ export default function SimpleAlertButton({ searchFilters = {} }: SimpleAlertBut
   const { toast } = useToast();
   
   // Mock user ID - в реальном приложении будет из контекста авторизации
-  const userId = 1;
+  const userId = 3;
 
   const createAlertMutation = useMutation({
     mutationFn: async () => {
