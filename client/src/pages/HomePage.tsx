@@ -22,20 +22,6 @@ export default function HomePage() {
     <div className="min-h-screen bg-gray-50 pb-20">
       <TopHeader />
       
-      {/* WhatsApp Contact Section */}
-      <div className="bg-white border-b border-gray-200 px-4 py-2">
-        <div className="flex justify-end">
-          <a 
-            href="https://wa.me/992900000000" 
-            target="_blank" 
-            rel="noopener noreferrer"
-            className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center hover:bg-green-200 transition-colors"
-          >
-            <MessageCircle className="w-5 h-5 text-green-600" />
-          </a>
-        </div>
-      </div>
-
       <main className="container mx-auto px-4 py-6 space-y-6">
         {/* Search Section */}
         <div className="bg-white rounded-2xl p-4 shadow-sm">
