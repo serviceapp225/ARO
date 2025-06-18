@@ -106,19 +106,27 @@ export default function Search() {
   const hasSearchCriteria = activeFiltersCount > 0 || Object.keys(searchQueryParams).length > 0;
   
   const { data: searchResults = [], isLoading } = useQuery({
-    queryKey: ['/api/listings/search', JSON.stringify(searchQueryParams)],
+    queryKey: ['/api/listings/search', JSON.stringify(searchQueryParams), JSON.stringify(searchFilters)],
     queryFn: async () => {
+      console.log('Search triggered with filters:', searchFilters);
+      console.log('Search query params:', searchQueryParams);
+      console.log('Active filters count:', activeFiltersCount);
+      
       // Если есть активные фильтры, но нет параметров для API (например, только выбрана марка без других фильтров)
       if (activeFiltersCount > 0 && Object.keys(searchQueryParams).length === 0) {
         // Если выбрана только марка, добавим её в параметры поиска
         if (searchFilters.brand) {
           const brandName = CAR_MAKES.find(make => make.toLowerCase() === searchFilters.brand.toLowerCase());
+          console.log('Brand selected:', searchFilters.brand, 'mapped to:', brandName);
           if (brandName) {
             const params = new URLSearchParams();
             params.append('make', brandName);
+            console.log('Searching with brand params:', params.toString());
             const response = await fetch(`/api/listings/search?${params}`);
             if (!response.ok) throw new Error('Search failed');
-            return response.json();
+            const result = await response.json();
+            console.log('Brand search results:', result);
+            return result;
           }
         }
         return [];
@@ -131,9 +139,12 @@ export default function Search() {
         }
       });
       
+      console.log('Searching with params:', params.toString());
       const response = await fetch(`/api/listings/search?${params}`);
       if (!response.ok) throw new Error('Search failed');
-      return response.json();
+      const result = await response.json();
+      console.log('Search results:', result);
+      return result;
     },
     enabled: hasSearchCriteria,
     staleTime: 0,
