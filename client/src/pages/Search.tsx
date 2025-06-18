@@ -101,7 +101,7 @@ export default function Search() {
   const hasSearchCriteria = Object.keys(searchQueryParams).length > 0;
   
   const { data: searchResults = [], isLoading } = useQuery({
-    queryKey: ['/api/listings/search', searchQueryParams],
+    queryKey: ['/api/listings/search', JSON.stringify(searchQueryParams)],
     queryFn: async () => {
       const params = new URLSearchParams();
       Object.entries(searchQueryParams).forEach(([key, value]) => {
@@ -110,11 +110,18 @@ export default function Search() {
         }
       });
       
+      console.log('Search params being sent:', Object.fromEntries(params.entries()));
+      console.log('Query params object:', searchQueryParams);
+      
       const response = await fetch(`/api/listings/search?${params}`);
       if (!response.ok) throw new Error('Search failed');
-      return response.json();
+      const result = await response.json();
+      console.log('Search results received:', result);
+      return result;
     },
-    enabled: hasSearchCriteria
+    enabled: hasSearchCriteria,
+    staleTime: 0,
+    refetchOnMount: true
   });
 
   const handleSearch = () => {
