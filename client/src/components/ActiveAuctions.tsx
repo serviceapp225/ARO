@@ -12,9 +12,10 @@ import { useState, useEffect } from 'react';
 
 interface ActiveAuctionsProps {
   searchQuery?: string;
+  customListings?: any[];
 }
 
-export function ActiveAuctions({ searchQuery = "" }: ActiveAuctionsProps) {
+export function ActiveAuctions({ searchQuery = "", customListings }: ActiveAuctionsProps) {
   const { auctions, loading } = useAuctions();
   const { isFavorite, addToFavorites, removeFromFavorites } = useFavorites();
   
@@ -27,19 +28,22 @@ export function ActiveAuctions({ searchQuery = "" }: ActiveAuctionsProps) {
 
   const ITEMS_PER_PAGE = 20;
 
+  // Use custom listings if provided, otherwise use filtered auctions
+  const sourceAuctions = customListings || auctions;
+  
   // Filter auctions by search query (lot number or car name)
-  const filteredAuctions = auctions.filter(auction => {
+  const filteredAuctions = sourceAuctions.filter((auction: any) => {
     if (!searchQuery.trim()) return true;
     
     const query = searchQuery.toLowerCase();
-    const lotMatch = auction.lotNumber.toLowerCase().includes(query);
+    const lotMatch = auction.lotNumber?.toLowerCase().includes(query);
     const carNameMatch = `${auction.make} ${auction.model}`.toLowerCase().includes(query);
     
     return lotMatch || carNameMatch;
   });
 
   // Sort auctions based on selected criteria
-  const sortedAuctions = [...filteredAuctions].sort((a, b) => {
+  const sortedAuctions = [...filteredAuctions].sort((a: any, b: any) => {
     switch (sortBy) {
       case "price-low":
         return a.currentBid - b.currentBid;
