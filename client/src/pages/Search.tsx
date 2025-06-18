@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { ActiveAuctions } from "@/components/ActiveAuctions";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import SimpleAlertButton from "@/components/SimpleAlertButton";
 
 import { CAR_MAKES, getModelsForMake } from "@shared/car-data";
@@ -15,6 +15,7 @@ import { CAR_MAKES, getModelsForMake } from "@shared/car-data";
 export default function Search() {
   const [searchQuery, setSearchQuery] = useState("");
   const [forceRefresh, setForceRefresh] = useState(0);
+  const queryClient = useQueryClient();
   const [searchFilters, setSearchFilters] = useState({
     brand: "",
     model: "",
@@ -46,7 +47,6 @@ export default function Search() {
       }
       return newFilters;
     });
-    setForceRefresh(prev => prev + 1);
   };
 
   const clearFilter = (field: string) => {
@@ -142,13 +142,14 @@ export default function Search() {
       if (!response.ok) throw new Error('Search failed');
       return response.json();
     },
-    enabled: hasSearchCriteria,
+    enabled: hasSearchCriteria && forceRefresh > 0,
     staleTime: 0,
     refetchOnMount: true
   });
 
   const handleSearch = () => {
-    // Search is triggered automatically via useQuery when filters change
+    queryClient.invalidateQueries({ queryKey: ['/api/listings/search'] });
+    setForceRefresh(prev => prev + 1);
   };
 
   return (
@@ -550,7 +551,7 @@ export default function Search() {
               )}
             </div>
             {/* Search Results */}
-            {activeFiltersCount > 0 ? (
+            {forceRefresh > 0 && activeFiltersCount > 0 ? (
               <div>
                 {isLoading ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -587,16 +588,16 @@ export default function Search() {
               <div className="text-center py-12">
                 <div className="text-gray-400 text-6xl mb-4">🚗</div>
                 <h3 className="text-lg font-medium text-gray-900 mb-2">
-                  Введите параметры поиска
+                  {activeFiltersCount > 0 ? "Нажмите кнопку 'Поиск' для начала поиска" : "Введите параметры поиска"}
                 </h3>
                 <p className="text-gray-600">
-                  Используйте фильтры выше для поиска автомобилей
+                  {activeFiltersCount > 0 ? "Фильтры настроены, теперь запустите поиск" : "Используйте фильтры выше для поиска автомобилей"}
                 </p>
               </div>
             )}
             
             {/* Показать кнопку уведомления, если есть фильтры но мало результатов */}
-            {activeFiltersCount > 0 && !isLoading && searchResults.length < 3 && (
+            {forceRefresh > 0 && activeFiltersCount > 0 && !isLoading && searchResults.length < 3 && (
               <div className="mt-8 p-6 bg-gray-50 rounded-lg text-center">
                 <h3 className="text-lg font-medium text-gray-900 mb-2">
                   Не нашли подходящий автомобиль?
