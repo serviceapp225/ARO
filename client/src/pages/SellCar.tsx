@@ -104,13 +104,35 @@ export default function SellCar() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Validate required fields
-    if (!formData.make || !formData.model || !formData.year || !formData.price || !formData.description) {
+    // Validate required fields (все кроме VIN и резервной цены)
+    const requiredFields = [
+      { field: formData.make, name: "Марка" },
+      { field: formData.model, name: "Модель" },
+      { field: formData.year, name: "Год выпуска" },
+      { field: formData.mileage, name: "Пробег" },
+      { field: formData.price, name: "Стартовая цена" },
+      { field: formData.description, name: "Описание" },
+      { field: formData.bodyType, name: "Тип кузова" },
+      { field: formData.fuelType, name: "Тип топлива" },
+      { field: formData.transmission, name: "Коробка передач" },
+      { field: formData.engineVolume, name: "Объем двигателя" },
+      { field: formData.driveType, name: "Привод" },
+      { field: formData.color, name: "Цвет" },
+      { field: formData.condition, name: "Состояние" },
+      { field: formData.customsCleared, name: "Растаможка" },
+      { field: formData.recycled, name: "Утилизационный сбор" },
+      { field: formData.technicalInspectionValid, name: "Техосмотр" },
+      { field: formData.technicalInspectionDate, name: "Дата техосмотра" }
+    ];
+
+    const emptyFields = requiredFields.filter(({ field }) => !field || field.trim() === "");
+    
+    if (emptyFields.length > 0) {
       toast({
         title: "Ошибка",
-        description: "Пожалуйста, заполните все обязательные поля",
+        description: `Заполните обязательные поля: ${emptyFields.map(f => f.name).join(", ")}`,
         variant: "destructive",
-        duration: 3000,
+        duration: 5000,
       });
       return;
     }
@@ -314,7 +336,7 @@ export default function SellCar() {
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="make">Марка</Label>
+                  <Label htmlFor="make">Марка <span className="text-red-500">*</span></Label>
                   <Select value={formData.make} onValueChange={(value) => handleInputChange("make", value)}>
                     <SelectTrigger>
                       <SelectValue placeholder="Выберите марку" />
@@ -328,7 +350,7 @@ export default function SellCar() {
                 </div>
 
                 <div>
-                  <Label htmlFor="model">Модель</Label>
+                  <Label htmlFor="model">Модель <span className="text-red-500">*</span></Label>
                   <Select value={formData.model} onValueChange={(value) => handleInputChange("model", value)} disabled={!formData.make}>
                     <SelectTrigger>
                       <SelectValue placeholder={formData.make ? "Выберите модель" : "Сначала выберите марку"} />
@@ -344,7 +366,7 @@ export default function SellCar() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="year">Год выпуска</Label>
+                  <Label htmlFor="year">Год выпуска <span className="text-red-500">*</span></Label>
                   <Select value={formData.year} onValueChange={(value) => handleInputChange("year", value)}>
                     <SelectTrigger>
                       <SelectValue placeholder="Год" />
@@ -358,7 +380,7 @@ export default function SellCar() {
                 </div>
 
                 <div>
-                  <Label htmlFor="mileage">Пробег (км)</Label>
+                  <Label htmlFor="mileage">Пробег (км) <span className="text-red-500">*</span></Label>
                   <Input
                     id="mileage"
                     type="number"
@@ -372,7 +394,7 @@ export default function SellCar() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div>
-                  <Label htmlFor="bodyType">Тип кузова</Label>
+                  <Label htmlFor="bodyType">Тип кузова <span className="text-red-500">*</span></Label>
                   <Select value={formData.bodyType} onValueChange={(value) => handleInputChange("bodyType", value)}>
                     <SelectTrigger>
                       <SelectValue placeholder="Тип кузова" />
@@ -392,7 +414,7 @@ export default function SellCar() {
                 </div>
 
                 <div>
-                  <Label htmlFor="fuelType">Тип топлива</Label>
+                  <Label htmlFor="fuelType">Тип топлива <span className="text-red-500">*</span></Label>
                   <Select value={formData.fuelType} onValueChange={(value) => handleInputChange("fuelType", value)}>
                     <SelectTrigger>
                       <SelectValue placeholder="Топливо" />
@@ -409,7 +431,7 @@ export default function SellCar() {
                 </div>
 
                 <div>
-                  <Label htmlFor="transmission">КПП</Label>
+                  <Label htmlFor="transmission">КПП <span className="text-red-500">*</span></Label>
                   <Select value={formData.transmission} onValueChange={(value) => handleInputChange("transmission", value)}>
                     <SelectTrigger>
                       <SelectValue placeholder="КПП" />
@@ -423,7 +445,7 @@ export default function SellCar() {
                 </div>
 
                 <div>
-                  <Label htmlFor="engineVolume">Объем двигателя (л)</Label>
+                  <Label htmlFor="engineVolume">Объем двигателя (л) <span className="text-red-500">*</span></Label>
                   <Input
                     id="engineVolume"
                     type="number"
@@ -435,7 +457,7 @@ export default function SellCar() {
                 </div>
 
                 <div>
-                  <Label htmlFor="driveType">Привод</Label>
+                  <Label htmlFor="driveType">Привод <span className="text-red-500">*</span></Label>
                   <Select value={formData.driveType} onValueChange={(value) => handleInputChange("driveType", value)}>
                     <SelectTrigger>
                       <SelectValue placeholder="Привод" />
@@ -449,7 +471,7 @@ export default function SellCar() {
                 </div>
 
                 <div>
-                  <Label htmlFor="color">Цвет</Label>
+                  <Label htmlFor="color">Цвет <span className="text-red-500">*</span></Label>
                   <Select value={formData.color} onValueChange={(value) => handleInputChange("color", value)}>
                     <SelectTrigger>
                       <SelectValue placeholder="Цвет" />
@@ -471,7 +493,7 @@ export default function SellCar() {
                 </div>
 
                 <div>
-                  <Label htmlFor="condition">Состояние</Label>
+                  <Label htmlFor="condition">Состояние <span className="text-red-500">*</span></Label>
                   <Select value={formData.condition} onValueChange={(value) => handleInputChange("condition", value)}>
                     <SelectTrigger>
                       <SelectValue placeholder="Состояние автомобиля" />
@@ -506,7 +528,7 @@ export default function SellCar() {
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
-                  <Label>Растаможен</Label>
+                  <Label>Растаможен <span className="text-red-500">*</span></Label>
                   <div className="flex gap-2 mt-2">
                     <Button
                       type="button"
