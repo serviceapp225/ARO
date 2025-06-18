@@ -428,16 +428,7 @@ export default function AuctionFeed() {
               </div>
             )}
             
-            {!searchLoading && searchResults.length === 0 && (
-              <div className="bg-white rounded-lg p-8 text-center">
-                <div className="text-gray-400 mb-4">
-                  <Search className="w-16 h-16 mx-auto" />
-                </div>
-                <h3 className="text-lg font-medium text-gray-900 mb-2">
-                  Не нашли подходящий автомобиль
-                </h3>
-              </div>
-            )}
+
             
             {/* Показать кнопку уведомления, если есть фильтры но мало результатов */}
             {forceRefresh > 0 && hasActiveFilters && !searchLoading && searchResults.length < 3 && (
