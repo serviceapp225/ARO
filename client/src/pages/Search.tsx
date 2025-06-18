@@ -78,10 +78,10 @@ export default function Search() {
     }
     
     if (searchFilters.brand) {
-      const brandName = CAR_MAKES.find(make => make.toLowerCase() === searchFilters.brand);
+      // Найти марку с учетом регистра
+      const brandName = CAR_MAKES.find(make => make.toLowerCase() === searchFilters.brand.toLowerCase());
       if (brandName) {
         filters.make = brandName;
-        console.log('Setting make filter to:', brandName);
       }
     }
     
@@ -97,7 +97,6 @@ export default function Search() {
       filters.maxPrice = parseFloat(searchFilters.priceTo);
     }
     
-    console.log('Built filters:', filters);
     return filters;
   };
 
