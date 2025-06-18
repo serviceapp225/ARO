@@ -180,11 +180,12 @@ export function ActiveAuctions({ searchQuery = "", customListings }: ActiveAucti
                 </span>
               </div>
               <h3 className="text-sm font-bold text-gray-900 mb-1 truncate">
-                {auction.year} {auction.make} {auction.model}
+                {auction.make} {auction.model}
               </h3>
-              <p className="text-xs text-gray-600 mb-2">
-                {auction.mileage.toLocaleString()} км
-              </p>
+              <div className="text-xs text-gray-600 mb-2 space-y-0.5">
+                <p>Год: {auction.year}</p>
+                <p>Пробег: {auction.mileage.toLocaleString()} км</p>
+              </div>
               
               {/* Индикаторы статуса */}
               <div className="flex flex-wrap gap-1 mb-2">

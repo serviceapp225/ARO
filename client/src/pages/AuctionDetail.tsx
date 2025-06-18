@@ -369,7 +369,7 @@ export default function AuctionDetail() {
   };
 
   const handleWhatsAppContact = () => {
-    window.open(`https://wa.me/?text=Интересует автомобиль ${auction.year} ${auction.make} ${auction.model}`, '_blank');
+    window.open(`https://wa.me/?text=Интересует автомобиль ${auction.make} ${auction.model} ${auction.year} года`, '_blank');
   };
 
   const handleToggleFavorite = () => {
@@ -557,7 +557,7 @@ export default function AuctionDetail() {
             <div className="mb-6 p-4 bg-gray-50 rounded-xl">
               <div className="flex items-center justify-between mb-2">
                 <h1 className="text-2xl font-bold text-gray-900">
-                  {auction.year} {auction.make} {auction.model}
+                  {auction.make} {auction.model}
                 </h1>
                 <Badge className="bg-green-100 text-green-800 border-green-200">
                   Активный
@@ -947,7 +947,7 @@ export default function AuctionDetail() {
             {/* Информация о фото */}
             <div className="absolute bottom-16 left-1/2 -translate-x-1/2 text-white text-center">
               <p className="text-lg font-medium">
-                {auction?.year} {auction?.make} {auction?.model}
+                {auction?.make} {auction?.model}
               </p>
               <p className="text-sm opacity-80">
                 Фото 1 из {auction?.imageUrl ? 1 : 0}

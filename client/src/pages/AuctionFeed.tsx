@@ -409,8 +409,9 @@ export default function AuctionFeed() {
                         {listing.make} {listing.model}
                       </h3>
                       <div className="space-y-1 text-sm text-gray-600 mb-3">
-                        <p>{listing.year} г. • {listing.mileage?.toLocaleString()} км</p>
-                        <p>{listing.engineVolume}л • {listing.fuelType}</p>
+                        <p>Год: {listing.year}</p>
+                        <p>Пробег: {listing.mileage?.toLocaleString()} км</p>
+                        <p>Объем: {listing.engineVolume}л • {listing.fuelType}</p>
                         <p>{listing.transmission} • {listing.bodyType}</p>
                       </div>
                       
