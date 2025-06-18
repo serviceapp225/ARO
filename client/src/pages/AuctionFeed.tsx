@@ -434,11 +434,8 @@ export default function AuctionFeed() {
                   <Search className="w-16 h-16 mx-auto" />
                 </div>
                 <h3 className="text-lg font-medium text-gray-900 mb-2">
-                  Автомобили не найдены
+                  Не нашли подходящий автомобиль
                 </h3>
-                <p className="text-gray-600 mb-6">
-                  По вашим критериям поиска автомобили не найдены. Попробуйте изменить параметры поиска.
-                </p>
               </div>
             )}
             
