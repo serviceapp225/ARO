@@ -67,6 +67,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/listings/search", async (req, res) => {
     try {
+      console.log('Search query params:', req.query);
       const filters = {
         query: req.query.query as string,
         make: req.query.make as string,
@@ -76,9 +77,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         minYear: req.query.minYear ? parseInt(req.query.minYear as string) : undefined,
         maxYear: req.query.maxYear ? parseInt(req.query.maxYear as string) : undefined
       };
+      console.log('Search filters:', filters);
       
       // Create cache key from filters
       const cacheKey = `search_${JSON.stringify(filters)}`;
+      
+      // Clear old cache entries that might use the old 'year' parameter
+      clearCachePattern('search_');
       
       // Check cache first
       const cached = getCached(cacheKey);
