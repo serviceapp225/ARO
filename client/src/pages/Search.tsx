@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Search as SearchIcon, SlidersHorizontal, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,7 @@ import { CAR_MAKES, getModelsForMake } from "@shared/car-data";
 
 export default function Search() {
   const [searchQuery, setSearchQuery] = useState("");
+  const [forceRefresh, setForceRefresh] = useState(0);
   const [searchFilters, setSearchFilters] = useState({
     brand: "",
     model: "",
@@ -45,6 +46,7 @@ export default function Search() {
       }
       return newFilters;
     });
+    setForceRefresh(prev => prev + 1);
   };
 
   const clearFilter = (field: string) => {
@@ -106,7 +108,7 @@ export default function Search() {
   const hasSearchCriteria = activeFiltersCount > 0 || Object.keys(searchQueryParams).length > 0;
   
   const { data: searchResults = [], isLoading } = useQuery({
-    queryKey: ['/api/listings/search', JSON.stringify(searchFilters)],
+    queryKey: ['/api/listings/search', JSON.stringify(searchFilters), forceRefresh],
     queryFn: async () => {
       const params = new URLSearchParams();
       
