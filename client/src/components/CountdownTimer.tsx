@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Clock } from 'lucide-react';
 
 interface CountdownTimerProps {
-  endTime: Date;
+  endTime: Date | string | null | undefined;
   size?: 'small' | 'large';
   onTimeUp?: () => void;
 }
@@ -18,18 +18,41 @@ export function CountdownTimer({ endTime, size = 'small', onTimeUp }: CountdownT
   const [isInitialized, setIsInitialized] = useState(false);
 
   useEffect(() => {
+    // Проверяем что endTime существует и валидно
+    if (!endTime) {
+      setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0, total: 0 });
+      setIsInitialized(true);
+      return;
+    }
+
     const calculateTime = () => {
-      if (!endTime) {
+      const now = new Date().getTime();
+      
+      // Конвертируем endTime в Date объект безопасно
+      let endTimeDate: Date;
+      if (typeof endTime === 'string') {
+        endTimeDate = new Date(endTime);
+      } else if (endTime instanceof Date) {
+        endTimeDate = endTime;
+      } else {
         setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0, total: 0 });
+        setIsInitialized(true);
         return;
       }
       
-      const now = new Date().getTime();
-      const distance = endTime.getTime() - now;
+      // Проверяем что дата валидна
+      if (isNaN(endTimeDate.getTime())) {
+        setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0, total: 0 });
+        setIsInitialized(true);
+        return;
+      }
+      
+      const distance = endTimeDate.getTime() - now;
 
       if (distance < 0) {
         setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0, total: 0 });
         onTimeUp?.();
+        setIsInitialized(true);
         return;
       }
 
@@ -45,29 +68,10 @@ export function CountdownTimer({ endTime, size = 'small', onTimeUp }: CountdownT
     // Calculate immediately on mount
     calculateTime();
 
-    const timer = setInterval(() => {
-      const now = new Date().getTime();
-      const distance = endTime.getTime() - now;
-
-
-
-      if (distance < 0) {
-        setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0, total: 0 });
-        onTimeUp?.();
-        clearInterval(timer);
-        return;
-      }
-
-      const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-      const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-      const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-      const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-
-      setTimeLeft({ days, hours, minutes, seconds, total: distance });
-    }, 1000);
+    const timer = setInterval(calculateTime, 1000);
 
     return () => clearInterval(timer);
-  }, [endTime, onTimeUp]);
+  }, [endTime, onTimeUp, isInitialized]);
 
   const getColorClass = () => {
     if (timeLeft.total < 300000) return 'from-red-600 to-red-800'; // 5 minutes
@@ -76,6 +80,30 @@ export function CountdownTimer({ endTime, size = 'small', onTimeUp }: CountdownT
   };
 
   const formatTime = (num: number) => num.toString().padStart(2, '0');
+
+  // Если endTime не задано, показываем сообщение об окончании
+  if (!endTime) {
+    if (size === 'large') {
+      return (
+        <div className="bg-gray-400 text-white p-6 rounded-2xl text-center">
+          <div className="text-sm mb-2">Аукцион завершен</div>
+          <div className="text-3xl font-bold font-mono mb-2">
+            00:00:00
+          </div>
+          <div className="text-sm opacity-90">
+            Время истекло
+          </div>
+        </div>
+      );
+    }
+    
+    return (
+      <div className="bg-gray-400 text-white px-2 py-0.5 rounded-full text-xs font-semibold">
+        <Clock className="w-2.5 h-2.5 inline mr-0.5" />
+        Завершен
+      </div>
+    );
+  }
 
   if (size === 'large') {
     if (!isInitialized) {
@@ -94,7 +122,7 @@ export function CountdownTimer({ endTime, size = 'small', onTimeUp }: CountdownT
 
     return (
       <div className={`bg-gradient-to-r ${getColorClass()} text-white p-6 rounded-2xl text-center ${timeLeft.total < 300000 ? 'animate-pulse' : ''}`}>
-        <div className="text-sm mb-2">Auction Ends In</div>
+        <div className="text-sm mb-2">Аукцион завершится через</div>
         <div className="text-3xl font-bold font-mono mb-2">
           {timeLeft.days > 0 && `${timeLeft.days}д `}
           {formatTime(timeLeft.hours)}:{formatTime(timeLeft.minutes)}:{formatTime(timeLeft.seconds)}
@@ -113,6 +141,16 @@ export function CountdownTimer({ endTime, size = 'small', onTimeUp }: CountdownT
       <div className="bg-gray-400 text-white px-2 py-0.5 rounded-full text-xs font-semibold animate-pulse">
         <Clock className="w-2.5 h-2.5 inline mr-0.5" />
         --м --с
+      </div>
+    );
+  }
+
+  // Если время истекло
+  if (timeLeft.total <= 0) {
+    return (
+      <div className="bg-gray-400 text-white px-2 py-0.5 rounded-full text-xs font-semibold">
+        <Clock className="w-2.5 h-2.5 inline mr-0.5" />
+        Завершен
       </div>
     );
   }
