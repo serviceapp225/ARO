@@ -155,15 +155,7 @@ export default function AuctionFeed() {
       <main className="container mx-auto px-4 py-6">
         {/* Filter Section */}
         <div className="bg-white rounded-2xl p-4 mb-6 shadow-sm">
-          {/* Filter Header */}
-          {hasActiveFilters && (
-            <div className="flex justify-end mb-6">
-              <Button variant="ghost" onClick={clearFilters} className="text-sm">
-                <X className="w-4 h-4 mr-1" />
-                Очистить все
-              </Button>
-            </div>
-          )}
+
 
           {/* All Filters Visible */}
           <div className="space-y-6">
@@ -357,16 +349,7 @@ export default function AuctionFeed() {
                 Найти автомобили
               </Button>
               
-              {hasActiveFilters && (
-                <Button 
-                  variant="outline" 
-                  onClick={clearFilters}
-                  className="w-full"
-                >
-                  <X className="w-4 h-4 mr-2" />
-                  Очистить все фильтры
-                </Button>
-              )}
+
             </div>
           </div>
         </div>
