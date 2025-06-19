@@ -36,11 +36,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { status = "active", limit } = req.query;
       const cacheKey = `listings_${status}_${limit || 'all'}`;
       
-      // Check cache first
-      const cached = getCached(cacheKey);
-      if (cached) {
-        return res.json(cached);
-      }
+      // Clear cache to ensure fresh data
+      clearCachePattern('listings_');
       
       const listings = await storage.getListingsByStatus(
         status as string, 

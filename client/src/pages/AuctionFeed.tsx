@@ -63,56 +63,61 @@ export default function AuctionFeed() {
 
   const hasActiveFilters = Object.values(searchFilters).some(value => value !== "");
 
-  // API запрос для поиска по критериям
-  const { data: searchResults = [], isLoading: searchLoading } = useQuery({
-    queryKey: ['/api/listings/search', JSON.stringify(searchFilters), forceRefresh],
+  // Получаем все аукционы и фильтруем их на клиенте
+  const { data: allAuctions = [], isLoading: auctionsLoading } = useQuery({
+    queryKey: ['/api/listings'],
     queryFn: async () => {
-      const params = new URLSearchParams();
-      
-      // Добавляем поиск по тексту
-      if (searchFilters.query.trim()) {
-        params.append('query', searchFilters.query.trim());
-      }
-      
-      // Добавляем фильтр по марке
-      if (searchFilters.brand) {
-        const brandName = CAR_MAKES.find(make => make.toLowerCase() === searchFilters.brand.toLowerCase());
-        if (brandName) {
-          params.append('make', brandName);
-        }
-      }
-      
-      // Добавляем фильтр по модели
-      if (searchFilters.model) {
-        params.append('model', searchFilters.model);
-      }
-      
-      // Добавляем другие фильтры
-      if (searchFilters.yearFrom) {
-        params.append('minYear', searchFilters.yearFrom);
-      }
-      
-      if (searchFilters.yearTo) {
-        params.append('maxYear', searchFilters.yearTo);
-      }
-      
-      if (searchFilters.priceFrom) {
-        params.append('minPrice', searchFilters.priceFrom);
-      }
-      
-      if (searchFilters.priceTo) {
-        params.append('maxPrice', searchFilters.priceTo);
-      }
-      
-      const response = await fetch(`/api/listings/search?${params}`);
-      if (!response.ok) throw new Error('Search failed');
+      const response = await fetch('/api/listings');
+      if (!response.ok) throw new Error('Failed to fetch auctions');
       return response.json();
     },
-    enabled: hasActiveFilters,
-    staleTime: 30000, // Cache for 30 seconds
-    refetchOnMount: false,
-    refetchOnWindowFocus: false
+    staleTime: 30000
   });
+
+  // Фильтруем аукционы по выбранным критериям
+  const searchResults = allAuctions.filter((auction: any) => {
+    // Фильтр по тексту (поиск в марке, модели, номере лота)
+    if (searchFilters.query.trim()) {
+      const query = searchFilters.query.toLowerCase();
+      const searchText = `${auction.make} ${auction.model} ${auction.lotNumber}`.toLowerCase();
+      if (!searchText.includes(query)) {
+        return false;
+      }
+    }
+    
+    // Фильтр по марке
+    if (searchFilters.brand) {
+      const brandName = CAR_MAKES.find(make => make.toLowerCase() === searchFilters.brand.toLowerCase());
+      if (brandName && auction.make !== brandName) {
+        return false;
+      }
+    }
+    
+    // Фильтр по модели
+    if (searchFilters.model && auction.model !== searchFilters.model) {
+      return false;
+    }
+    
+    // Фильтр по году
+    if (searchFilters.yearFrom && auction.year < parseInt(searchFilters.yearFrom)) {
+      return false;
+    }
+    if (searchFilters.yearTo && auction.year > parseInt(searchFilters.yearTo)) {
+      return false;
+    }
+    
+    // Фильтр по цене
+    if (searchFilters.priceFrom && parseFloat(auction.startingPrice) < parseFloat(searchFilters.priceFrom)) {
+      return false;
+    }
+    if (searchFilters.priceTo && parseFloat(auction.startingPrice) > parseFloat(searchFilters.priceTo)) {
+      return false;
+    }
+    
+    return true;
+  });
+
+  const searchLoading = auctionsLoading;
 
   const handleSearch = () => {
     queryClient.invalidateQueries({ queryKey: ['/api/listings/search'] });
@@ -383,54 +388,18 @@ export default function AuctionFeed() {
             </div>
             
             {!searchLoading && searchResults.length > 0 && (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {searchResults.map((listing: any) => (
-                  <div key={listing.id} className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-                    <div className="aspect-video bg-gray-100 relative">
-                      {listing.images && listing.images.length > 0 ? (
-                        <img 
-                          src={listing.images[0]} 
-                          alt={`${listing.make} ${listing.model}`}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center text-gray-400">
-                          Фото отсутствует
-                        </div>
-                      )}
-                      <div className="absolute top-2 right-2 bg-red-600 text-white px-2 py-1 rounded text-sm font-medium">
-                        #{listing.lotNumber}
-                      </div>
-                    </div>
-                    
-                    <div className="p-4">
-                      <h3 className="font-semibold text-lg text-gray-900 mb-2">
-                        {listing.make} {listing.model}
-                      </h3>
-                      <div className="space-y-1 text-sm text-gray-600 mb-3">
-                        <p>Год: {listing.year}</p>
-                        <p>Пробег: {listing.mileage?.toLocaleString()} км</p>
-                        <p>Объем: {listing.engineVolume}л • {listing.fuelType}</p>
-                        <p>{listing.transmission} • {listing.bodyType}</p>
-                      </div>
-                      
-                      <div className="flex justify-between items-center">
-                        <div>
-                          <p className="text-sm text-gray-500">Текущая ставка</p>
-                          <p className="font-bold text-lg text-red-600">
-                            ${listing.currentBid?.toLocaleString() || listing.startingPrice?.toLocaleString()}
-                          </p>
-                        </div>
-                        <Button 
-                          onClick={() => window.location.href = `/auction/${listing.id}`}
-                          className="bg-red-600 hover:bg-red-700 text-white"
-                        >
-                          Участвовать
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
+              <ActiveAuctions customListings={searchResults} />
+            )}
+            
+            {!searchLoading && searchResults.length === 0 && (
+              <div className="text-center py-12">
+                <div className="text-gray-400 text-6xl mb-4">🔍</div>
+                <h3 className="text-lg font-medium text-gray-900 mb-2">
+                  Ничего не найдено
+                </h3>
+                <p className="text-gray-600">
+                  По заданным критериям автомобили не найдены
+                </p>
               </div>
             )}
             
