@@ -132,6 +132,25 @@ export default function SellCar() {
     }
   };
 
+  const handleDateInputChange = (field: string, value: string) => {
+    // Разрешаем только цифры
+    const numbersOnly = value.replace(/[^\d]/g, '');
+    
+    // Ограничиваем до 8 цифр (ДДММГГГГ)
+    const limitedNumbers = numbersOnly.slice(0, 8);
+    
+    // Автоматически добавляем точки
+    let formattedValue = limitedNumbers;
+    if (limitedNumbers.length >= 3) {
+      formattedValue = limitedNumbers.slice(0, 2) + '.' + limitedNumbers.slice(2);
+    }
+    if (limitedNumbers.length >= 5) {
+      formattedValue = limitedNumbers.slice(0, 2) + '.' + limitedNumbers.slice(2, 4) + '.' + limitedNumbers.slice(4);
+    }
+    
+    setFormData(prev => ({ ...prev, [field]: formattedValue }));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -689,8 +708,9 @@ export default function SellCar() {
                     id="technicalInspectionDate"
                     type="text"
                     value={formData.technicalInspectionDate}
-                    onChange={(e) => handleInputChange("technicalInspectionDate", e.target.value)}
-                    placeholder="Например: 15.06.2025"
+                    onChange={(e) => handleDateInputChange("technicalInspectionDate", e.target.value)}
+                    placeholder="ДД.ММ.ГГГГ"
+                    maxLength={10}
                   />
                 </div>
               )}
@@ -725,8 +745,9 @@ export default function SellCar() {
                     id="tintingDate"
                     type="text"
                     value={formData.tintingDate}
-                    onChange={(e) => handleInputChange("tintingDate", e.target.value)}
-                    placeholder="Например: 20.03.2024"
+                    onChange={(e) => handleDateInputChange("tintingDate", e.target.value)}
+                    placeholder="ДД.ММ.ГГГГ"
+                    maxLength={10}
                   />
                 </div>
               )}
