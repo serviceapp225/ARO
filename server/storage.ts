@@ -177,7 +177,7 @@ export class DatabaseStorage implements IStorage {
     }
 
     if (filters.make) {
-      conditions.push(eq(carListings.make, filters.make));
+      conditions.push(ilike(carListings.make, `%${filters.make}%`));
     }
 
     if (filters.model) {

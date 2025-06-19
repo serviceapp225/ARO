@@ -123,7 +123,10 @@ export default function Search() {
       
       // Добавляем фильтр по марке
       if (searchFilters.brand) {
-        params.append('make', searchFilters.brand);
+        const brandName = CAR_MAKES.find(make => make.toLowerCase() === searchFilters.brand.toLowerCase());
+        if (brandName) {
+          params.append('make', brandName);
+        }
       }
       
       // Добавляем другие фильтры
