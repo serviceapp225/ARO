@@ -250,10 +250,7 @@ export function ActiveAuctions({ searchQuery = "", customListings }: ActiveAucti
           <Car className="w-12 h-12 text-gray-300 mx-auto mb-4" />
           {searchQuery.trim() ? (
             <>
-              <p className="text-gray-600 text-lg mb-2">Не найдено автомобилей</p>
-              <p className="text-gray-500 text-sm mb-4">
-                По запросу "{searchQuery}" ничего не найдено
-              </p>
+              <p className="text-gray-600 text-lg mb-2">Не нашли подходящий автомобиль</p>
               <div className="max-w-sm mx-auto">
               </div>
             </>
