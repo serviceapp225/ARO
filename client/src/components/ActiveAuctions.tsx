@@ -219,7 +219,7 @@ export function ActiveAuctions({ searchQuery = "", customListings }: ActiveAucti
                     : 'bg-gray-100 text-gray-700'
                 }`}>
                   {(auction as any).tinted 
-                    ? `Тонировка ${(auction as any).tintingDate}` 
+                    ? `Тонировка (${(auction as any).tintingDate || 'есть'})` 
                     : 'Тонировка: нет'}
                 </span>
               </div>
