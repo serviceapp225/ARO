@@ -233,9 +233,12 @@ export default function SellCar() {
         isEmpty = !field || field.trim() === "";
       }
       
+      console.log(`Checking field "${name}": value="${field}", isEmpty=${isEmpty}`);
+      
       if (isEmpty) {
         firstEmptyField = { field, name };
         fieldId = fieldMapping[name];
+        console.log(`First empty field found: ${name} -> ${fieldId}`);
         break;
       }
     }
@@ -245,10 +248,12 @@ export default function SellCar() {
       
       // Скроллим к полю
       setTimeout(() => {
-        const element = document.getElementById(fieldId) || document.querySelector(`[data-field="${fieldId}"]`);
-        if (element) {
-          element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          element.focus();
+        if (fieldId) {
+          const element = document.getElementById(fieldId) || document.querySelector(`[data-field="${fieldId}"]`);
+          if (element) {
+            element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            element.focus();
+          }
         }
       }, 100);
       
