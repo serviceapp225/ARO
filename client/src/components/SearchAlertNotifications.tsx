@@ -14,8 +14,13 @@ export function SearchAlertNotifications({ userId }: SearchAlertNotificationsPro
   const { toast } = useToast();
 
   const { data: carAlerts = [], isLoading } = useQuery<CarAlert[]>({
-    queryKey: [`/api/car-alerts/${userId}`],
-    staleTime: 30000,
+    queryKey: ['/api/car-alerts', userId],
+    staleTime: 60000, // Кэш на 1 минуту
+    gcTime: 300000, // Хранить в кэше 5 минут
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    retry: 2,
+    retryDelay: 1000,
   });
 
   const deleteCarAlertMutation = useMutation({

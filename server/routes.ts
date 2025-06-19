@@ -463,7 +463,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/car-alerts/:userId", async (req, res) => {
     try {
       const userId = parseInt(req.params.userId);
+      const cacheKey = `car-alerts-${userId}`;
+      
+      // Проверяем кэш
+      const cached = getCached(cacheKey);
+      if (cached) {
+        return res.json(cached);
+      }
+      
       const alerts = await storage.getCarAlertsByUser(userId);
+      
+      // Кэшируем результат
+      setCache(cacheKey, alerts);
+      
       res.json(alerts);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch car alerts" });
@@ -487,6 +499,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const validatedData = insertCarAlertSchema.parse(req.body);
       const alert = await storage.createCarAlert(validatedData);
+      
+      // Очищаем кэш для этого пользователя
+      clearCachePattern(`car-alerts-${validatedData.userId}`);
+      
       res.status(201).json(alert);
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -503,6 +519,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!success) {
         return res.status(404).json({ error: "Alert not found" });
       }
+      
+      // Очищаем весь кэш car-alerts (не знаем userId удаленного алерта)
+      clearCachePattern('car-alerts-');
+      
       res.status(204).send();
     } catch (error) {
       res.status(500).json({ error: "Failed to delete alert" });
