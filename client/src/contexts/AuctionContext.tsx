@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, ReactNode, useCallback } from 'react';
+import { createContext, useContext, useState, ReactNode, useCallback, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { queryClient } from '@/lib/queryClient';
 
@@ -32,14 +32,19 @@ const AuctionContext = createContext<AuctionContextType | undefined>(undefined);
 
 export function AuctionProvider({ children }: { children: ReactNode }) {
   const [selectedAuction, setSelectedAuction] = useState<Auction | null>(null);
+  
+  // Clear cache on mount to ensure fresh data
+  useState(() => {
+    queryClient.removeQueries({ queryKey: ['/api/listings'] });
+  });
 
   // Fetch real data from API with automatic refresh
   const { data: listings, isLoading, refetch } = useQuery({
     queryKey: ['/api/listings'],
     staleTime: 0, // Always consider data stale to force fresh requests
-    gcTime: 5000, // Short cache time
+    gcTime: 0, // No cache time - always fresh
     refetchOnWindowFocus: true,
-    refetchInterval: 2000, // Refetch every 2 seconds
+    refetchInterval: 1000, // Refetch every second
     retry: 3,
     retryDelay: 1000,
     enabled: true,
