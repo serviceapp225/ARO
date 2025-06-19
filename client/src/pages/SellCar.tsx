@@ -176,13 +176,24 @@ export default function SellCar() {
       return;
     }
 
-    const emptyFields = requiredFields.filter(({ field }) => !field || field.trim() === "");
+    // Проверяем основные обязательные поля
+    const emptyFields = requiredFields.filter(({ field, name }) => {
+      // Для полей с да/нет вопросами, пустая строка означает что не выбрано
+      if (name === "Техосмотр" || name === "Тонировка" || 
+          name === "Растаможка" || name === "Утилизационный сбор") {
+        return !field; // Проверяем что поле не пустое
+      }
+      // Для остальных полей проверяем что они заполнены
+      return !field || field.trim() === "";
+    });
     
     if (emptyFields.length > 0) {
+      console.log("Empty fields:", emptyFields.map(f => f.name));
       toast({
         title: "Заполните все обязательные поля",
+        description: `Не заполнено: ${emptyFields.map(f => f.name).join(", ")}`,
         variant: "destructive",
-        duration: 2000,
+        duration: 3000,
       });
       return;
     }
