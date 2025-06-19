@@ -102,16 +102,37 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getListingsByStatus(status: string, limit?: number): Promise<CarListing[]> {
-    const query = db
-      .select()
-      .from(carListings)
-      .where(eq(carListings.status, status))
-      .orderBy(desc(carListings.createdAt)); // Show newest listings first
-    
-    if (limit) {
-      return await query.limit(limit);
+    try {
+      const query = db
+        .select()
+        .from(carListings)
+        .where(eq(carListings.status, status))
+        .orderBy(desc(carListings.createdAt));
+      
+      let listings;
+      if (limit) {
+        listings = await query.limit(limit);
+      } else {
+        listings = await query;
+      }
+      
+      // Ensure all listings are processed correctly
+      return listings.map(listing => ({
+        ...listing,
+        // Truncate very long base64 images to prevent transmission issues
+        photos: Array.isArray(listing.photos) 
+          ? listing.photos.map(photo => {
+              if (typeof photo === 'string' && photo.startsWith('data:image') && photo.length > 50000) {
+                return photo.substring(0, 50000) + '...'; // Truncate very long base64
+              }
+              return photo;
+            })
+          : listing.photos
+      }));
+    } catch (error) {
+      console.error('Error fetching listings:', error);
+      return [];
     }
-    return await query;
   }
 
   async getListingsBySeller(sellerId: number): Promise<CarListing[]> {
