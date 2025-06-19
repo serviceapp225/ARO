@@ -224,6 +224,7 @@ export default function SellCar() {
         bodyType: formData.bodyType || null,
         driveType: formData.driveType || null,
         color: formData.color || null,
+        condition: formData.condition || null,
         vin: formData.vin || null,
         location: formData.location || null,
       };

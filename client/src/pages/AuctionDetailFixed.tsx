@@ -91,6 +91,19 @@ export default function AuctionDetail() {
     return translations[driveType as keyof typeof translations] || driveType || 'Не указан';
   };
 
+  const translateCondition = (condition: string) => {
+    const translations = {
+      'excellent': 'Отличное',
+      'very_good': 'Очень хорошее', 
+      'good': 'Хорошее',
+      'satisfactory': 'Удовлетворительное',
+      'requires_repair': 'Требует ремонта',
+      'accident': 'После ДТП',
+      'not_running': 'Не на ходу'
+    };
+    return translations[condition as keyof typeof translations] || condition || 'Не указано';
+  };
+
   const translateColor = (color: string) => {
     const translations = {
       'white': 'Белый',
@@ -108,18 +121,7 @@ export default function AuctionDetail() {
     return translations[color as keyof typeof translations] || color || 'Не указан';
   };
 
-  const translateCondition = (condition: string) => {
-    const translations = {
-      'excellent': 'Отличное',
-      'very_good': 'Очень хорошее',
-      'good': 'Хорошее',
-      'satisfactory': 'Удовлетворительное',
-      'requires_repair': 'Требует ремонта',
-      'accident': 'После ДТП',
-      'not_running': 'Не на ходу'
-    };
-    return translations[condition as keyof typeof translations] || condition || 'Не указано';
-  };
+
 
   // Fetch current auction data
   const { data: currentAuction, refetch: refetchAuction } = useQuery({
