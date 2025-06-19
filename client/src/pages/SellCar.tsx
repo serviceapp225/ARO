@@ -154,14 +154,12 @@ export default function SellCar() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Validate required fields (все кроме VIN и резервной цены)
+    // Validate required fields в порядке появления в форме сверху вниз
     const requiredFields = [
       { field: formData.make, name: "Марка" },
       { field: formData.model, name: "Модель" },
       { field: formData.year, name: "Год выпуска" },
       { field: formData.mileage, name: "Пробег" },
-      { field: formData.price, name: "Стартовая цена" },
-      { field: formData.description, name: "Описание" },
       { field: formData.bodyType, name: "Тип кузова" },
       { field: formData.fuelType, name: "Тип топлива" },
       { field: formData.transmission, name: "Коробка передач" },
@@ -173,7 +171,9 @@ export default function SellCar() {
       { field: formData.customsCleared, name: "Растаможка" },
       { field: formData.recycled, name: "Утилизационный сбор" },
       { field: formData.technicalInspectionValid, name: "Техосмотр" },
-      { field: formData.tinted, name: "Тонировка" }
+      { field: formData.tinted, name: "Тонировка" },
+      { field: formData.price, name: "Стартовая цена" },
+      { field: formData.description, name: "Описание" }
     ];
 
     // Условно обязательные поля - требуются только если выбран "да"
@@ -215,8 +215,6 @@ export default function SellCar() {
         "Модель": "model", 
         "Год выпуска": "year",
         "Пробег": "mileage",
-        "Стартовая цена": "price",
-        "Описание": "description",
         "Тип кузова": "bodyType",
         "Тип топлива": "fuelType",
         "Коробка передач": "transmission",
@@ -228,7 +226,9 @@ export default function SellCar() {
         "Растаможка": "customsCleared",
         "Утилизационный сбор": "recycled",
         "Техосмотр": "technicalInspectionValid",
-        "Тонировка": "tinted"
+        "Тонировка": "tinted",
+        "Стартовая цена": "price",
+        "Описание": "description"
       };
       
       const firstEmptyField = emptyFields[0];
@@ -521,7 +521,7 @@ export default function SellCar() {
                 <div>
                   <Label htmlFor="bodyType">Тип кузова <span className="text-red-500">*</span></Label>
                   <Select value={formData.bodyType} onValueChange={(value) => handleInputChange("bodyType", value)}>
-                    <SelectTrigger>
+                    <SelectTrigger id="bodyType">
                       <SelectValue placeholder="Тип кузова" />
                     </SelectTrigger>
                     <SelectContent>
@@ -541,7 +541,7 @@ export default function SellCar() {
                 <div>
                   <Label htmlFor="fuelType">Тип топлива <span className="text-red-500">*</span></Label>
                   <Select value={formData.fuelType} onValueChange={(value) => handleInputChange("fuelType", value)}>
-                    <SelectTrigger>
+                    <SelectTrigger id="fuelType">
                       <SelectValue placeholder="Топливо" />
                     </SelectTrigger>
                     <SelectContent>
@@ -558,7 +558,7 @@ export default function SellCar() {
                 <div>
                   <Label htmlFor="transmission">КПП <span className="text-red-500">*</span></Label>
                   <Select value={formData.transmission} onValueChange={(value) => handleInputChange("transmission", value)}>
-                    <SelectTrigger>
+                    <SelectTrigger id="transmission">
                       <SelectValue placeholder="КПП" />
                     </SelectTrigger>
                     <SelectContent>
@@ -584,7 +584,7 @@ export default function SellCar() {
                 <div>
                   <Label htmlFor="driveType">Привод <span className="text-red-500">*</span></Label>
                   <Select value={formData.driveType} onValueChange={(value) => handleInputChange("driveType", value)}>
-                    <SelectTrigger>
+                    <SelectTrigger id="driveType">
                       <SelectValue placeholder="Привод" />
                     </SelectTrigger>
                     <SelectContent>
