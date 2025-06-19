@@ -161,7 +161,7 @@ export function ActiveAuctions({ searchQuery = "", customListings }: ActiveAucti
               />
               <div className="absolute top-2 left-2">
                 <CountdownTimer 
-                  endTime={auction.auctionEndTime} 
+                  endTime={auction.endTime} 
                   size="small"
                 />
               </div>
