@@ -150,7 +150,7 @@ export default function Search() {
       if (!response.ok) throw new Error('Search failed');
       return response.json();
     },
-    enabled: hasSearchCriteria && forceRefresh > 0,
+    enabled: hasSearchCriteria,
     staleTime: 0,
     refetchOnMount: true
   });
