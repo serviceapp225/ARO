@@ -407,6 +407,18 @@ export default function AuctionDetail() {
         throw new Error('Failed to place bid');
       }
       
+      // Мгновенно обновляем локальное состояние для быстрой реакции
+      queryClient.setQueryData([`/api/listings/${id}`], (oldData: any) => {
+        if (oldData) {
+          return {
+            ...oldData,
+            currentBid: bidValue.toString(),
+            bidCount: (oldData.bidCount || 0) + 1
+          };
+        }
+        return oldData;
+      });
+      
       toast({
         title: "🏆 Ставка размещена!",
         description: `Ваша ставка $${bidValue.toLocaleString()} принята`,
@@ -416,7 +428,20 @@ export default function AuctionDetail() {
       setBidAmount((bidValue + 1000).toString());
       setShowBidInput(false);
       
-      await refetchAuction();
+      // Также обновляем список аукционов мгновенно
+      queryClient.setQueryData(['/api/listings'], (oldData: any) => {
+        if (oldData && Array.isArray(oldData)) {
+          return oldData.map((listing: any) => 
+            listing.id === parseInt(id!) 
+              ? { ...listing, currentBid: bidValue.toString(), bidCount: (listing.bidCount || 0) + 1 }
+              : listing
+          );
+        }
+        return oldData;
+      });
+      
+      // Обновляем данные в фоне для синхронизации с сервером
+      queryClient.invalidateQueries({ queryKey: [`/api/listings/${id}`] });
       queryClient.invalidateQueries({ queryKey: [`/api/listings/${id}/bids`] });
       queryClient.invalidateQueries({ queryKey: ['/api/listings'] });
       
