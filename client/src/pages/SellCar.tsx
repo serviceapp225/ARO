@@ -135,28 +135,33 @@ export default function SellCar() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Validate required fields (все кроме VIN и резервной цены)
+    // Validate required fields (только самые важные поля)
     const requiredFields = [
       { field: formData.make, name: "Марка" },
       { field: formData.model, name: "Модель" },
       { field: formData.year, name: "Год выпуска" },
-      { field: formData.mileage, name: "Пробег" },
       { field: formData.price, name: "Стартовая цена" },
-      { field: formData.description, name: "Описание" },
-      { field: formData.bodyType, name: "Тип кузова" },
-      { field: formData.fuelType, name: "Тип топлива" },
-      { field: formData.transmission, name: "Коробка передач" },
-      { field: formData.engineVolume, name: "Объем двигателя" },
-      { field: formData.driveType, name: "Привод" },
-      { field: formData.color, name: "Цвет" },
-      { field: formData.condition, name: "Состояние" },
-      { field: formData.customsCleared, name: "Растаможка" },
-      { field: formData.recycled, name: "Утилизационный сбор" },
-      { field: formData.technicalInspectionValid, name: "Техосмотр" },
-      { field: formData.technicalInspectionDate, name: "Дата техосмотра" },
-      { field: formData.tinted, name: "Тонировка" },
-      { field: formData.tintingDate, name: "Дата тонировки" }
+      { field: formData.description, name: "Описание" }
     ];
+
+    // Условно обязательные поля - требуются только если выбран "да"
+    if (formData.technicalInspectionValid === 'yes' && !formData.technicalInspectionDate) {
+      toast({
+        title: "Заполните дату техосмотра",
+        variant: "destructive",
+        duration: 2000,
+      });
+      return;
+    }
+
+    if (formData.tinted === 'yes' && !formData.tintingDate) {
+      toast({
+        title: "Заполните дату тонировки",
+        variant: "destructive",
+        duration: 2000,
+      });
+      return;
+    }
 
     const emptyFields = requiredFields.filter(({ field }) => !field || field.trim() === "");
     
