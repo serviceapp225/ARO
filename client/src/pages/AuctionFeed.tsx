@@ -383,7 +383,20 @@ export default function AuctionFeed() {
             </div>
             
             {!searchLoading && searchResults.length > 0 && (
-              <ActiveAuctions customListings={searchResults} />
+              <>
+                <ActiveAuctions customListings={searchResults} />
+                
+                {/* Кнопка уведомления даже при найденных результатах */}
+                <div className="mt-8 p-6 bg-gray-50 rounded-lg text-center">
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">
+                    Не нашли подходящий автомобиль?
+                  </h3>
+                  <p className="text-gray-600 mb-4">
+                    Мы отправим уведомление, когда появятся новые автомобили по вашим критериям
+                  </p>
+                  <SimpleAlertButton searchFilters={searchFilters} />
+                </div>
+              </>
             )}
             
             {!searchLoading && searchResults.length === 0 && (
