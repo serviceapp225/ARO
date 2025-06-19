@@ -53,23 +53,20 @@ export default function AdminPanel() {
 
   const handleApproveListing = (listingId: number) => {
     toast({
-      title: "Listing Approved",
-      description: "The car listing has been approved and is now live.",
+      title: "Объявление одобрено",
     });
   };
 
   const handleRejectListing = (listingId: number) => {
     toast({
-      title: "Listing Rejected",
-      description: "The car listing has been rejected.",
+      title: "Объявление отклонено",
       variant: "destructive",
     });
   };
 
   const handleUserAction = (userId: number, action: 'ban' | 'unban') => {
     toast({
-      title: action === 'ban' ? "User Banned" : "User Unbanned",
-      description: `User has been ${action}ned successfully.`,
+      title: action === 'ban' ? "Пользователь заблокирован" : "Пользователь разблокирован",
       variant: action === 'ban' ? "destructive" : "default",
     });
   };

@@ -44,16 +44,14 @@ export function SearchAlertNotifications({ userId }: SearchAlertNotificationsPro
       );
       
       toast({
-        title: "Уведомление удалено", 
-        description: "Уведомление успешно удалено",
+        title: "Уведомление удалено",
         duration: 2000,
       });
     },
     onError: (error: Error) => {
       console.error('Delete notification mutation error:', error);
       toast({
-        title: "Ошибка",
-        description: `Не удалось удалить уведомление: ${error.message}`,
+        title: "Ошибка при удалении",
         variant: "destructive", 
         duration: 2000,
       });

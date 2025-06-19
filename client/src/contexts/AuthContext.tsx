@@ -40,12 +40,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(null);
       toast({
         title: "Выход выполнен",
-        description: "Вы успешно вышли из системы.",
       });
     } catch (error) {
       toast({
-        title: "Ошибка",
-        description: "Не удалось выйти из системы.",
+        title: "Ошибка выхода",
         variant: "destructive",
       });
     }
