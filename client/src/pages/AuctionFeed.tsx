@@ -87,7 +87,7 @@ export default function AuctionFeed() {
     
     // Фильтр по марке
     if (searchFilters.brand) {
-      if (auction.make !== searchFilters.brand) {
+      if (auction.make.toLowerCase() !== searchFilters.brand.toLowerCase()) {
         return false;
       }
     }
