@@ -133,18 +133,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
           userAlerts.get(alert.userId)!.push(alert);
         }
         
-        // Send notification for each matching alert
+        // Send notification for each matching alert (avoiding duplicates)
         for (const alert of matchingAlerts) {
           console.log('Creating notification for user:', alert.userId, 'alert:', alert.id);
-          await storage.createNotification({
-            userId: alert.userId,
-            title: "Найден автомобиль по вашему запросу",
-            message: `${listing.make} ${listing.model} ${listing.year} г. - ${listing.startingPrice}$ (лот #${listing.lotNumber})`,
-            type: "car_found",
-            listingId: listing.id,
-            alertId: alert.id,
-            isRead: false
-          });
+          
+          // Check if notification for this listing and alert already exists
+          const existingNotifications = await storage.getNotificationsByUser(alert.userId);
+          const duplicateExists = existingNotifications.some(n => 
+            n.type === "car_found" && 
+            n.listingId === listing.id && 
+            n.alertId === alert.id
+          );
+          
+          if (!duplicateExists) {
+            await storage.createNotification({
+              userId: alert.userId,
+              title: "Найден автомобиль по вашему запросу",
+              message: `${listing.make} ${listing.model} ${listing.year} г. - ${listing.startingPrice}$ (лот #${listing.lotNumber})`,
+              type: "car_found",
+              listingId: listing.id,
+              alertId: alert.id,
+              isRead: false
+            });
+          } else {
+            console.log('Notification already exists for listing:', listing.id, 'alert:', alert.id);
+          }
         }
       } catch (alertError) {
         console.error('Error checking alerts for new listing:', alertError);

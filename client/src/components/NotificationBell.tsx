@@ -227,11 +227,14 @@ export function NotificationBell({ userId }: NotificationBellProps) {
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
-                        deleteNotificationMutation.mutate(notification.id);
+                        e.preventDefault();
+                        if (!deleteNotificationMutation.isPending) {
+                          deleteNotificationMutation.mutate(notification.id);
+                        }
                       }}
-                      className="text-red-500 hover:text-red-700 p-1 rounded transition-colors flex-shrink-0"
-                      title="Удалить уведомление"
                       disabled={deleteNotificationMutation.isPending}
+                      className="text-red-500 hover:text-red-700 p-1 rounded disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex-shrink-0"
+                      title="Удалить уведомление"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
