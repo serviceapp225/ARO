@@ -214,12 +214,12 @@ export function ActiveAuctions({ searchQuery = "", customListings }: ActiveAucti
                 </span>
                 
                 <span className={`text-xs px-2 py-1 rounded-full ${
-                  (auction as any).tinted 
+                  auction.tinted 
                     ? 'bg-indigo-100 text-indigo-700' 
                     : 'bg-gray-100 text-gray-700'
                 }`}>
-                  {(auction as any).tinted 
-                    ? `Тонировка (${(auction as any).tintingDate || 'есть'})` 
+                  {auction.tinted 
+                    ? `Тонировка (${auction.tintingDate || 'есть'})` 
                     : 'Тонировка: нет'}
                 </span>
               </div>

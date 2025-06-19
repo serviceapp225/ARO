@@ -18,6 +18,8 @@ interface Auction {
   recycled: boolean;
   technicalInspectionValid: boolean;
   technicalInspectionDate?: string;
+  tinted: boolean;
+  tintingDate?: string;
 }
 
 interface AuctionContextType {
@@ -67,7 +69,9 @@ export function AuctionProvider({ children }: { children: ReactNode }) {
     customsCleared: listing.customsCleared || false,
     recycled: listing.recycled || false,
     technicalInspectionValid: listing.technicalInspectionValid || false,
-    technicalInspectionDate: listing.technicalInspectionDate
+    technicalInspectionDate: listing.technicalInspectionDate,
+    tinted: listing.tinted || false,
+    tintingDate: listing.tintingDate
   })) : [];
 
 
