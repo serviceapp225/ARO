@@ -162,20 +162,18 @@ export default function SellCar() {
     
     if (emptyFields.length > 0) {
       toast({
-        title: "Ошибка",
-        description: `Заполните обязательные поля: ${emptyFields.map(f => f.name).join(", ")}`,
+        title: "Заполните все обязательные поля",
         variant: "destructive",
-        duration: 5000,
+        duration: 2000,
       });
       return;
     }
 
     if (uploadedImages.length < 5) {
       toast({
-        title: "Ошибка", 
-        description: `Необходимо загрузить минимум 5 фотографий автомобиля. Загружено: ${uploadedImages.length}`,
+        title: "Загрузите минимум 5 фотографий",
         variant: "destructive",
-        duration: 5000,
+        duration: 2000,
       });
       return;
     }
@@ -302,10 +300,9 @@ export default function SellCar() {
       }
       
       toast({
-        title: "Ошибка",
-        description: errorMessage,
+        title: "Ошибка создания объявления",
         variant: "destructive",
-        duration: 5000,
+        duration: 2000,
       });
     } finally {
       setIsSubmitting(false);
