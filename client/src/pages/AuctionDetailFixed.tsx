@@ -151,7 +151,9 @@ export default function AuctionDetail() {
   const auction = currentAuction as any;
   const sortedBids = Array.isArray(bidsData) ? bidsData : [];
 
-  const currentBid = auction ? (auction.currentBid ? parseFloat(auction.currentBid) : parseFloat(auction.startingPrice)) : 0;
+  // Локальное состояние для мгновенного обновления текущей ставки
+  const [localCurrentBid, setLocalCurrentBid] = useState<number | null>(null);
+  const currentBid = localCurrentBid ?? (auction ? (auction.currentBid ? parseFloat(auction.currentBid) : parseFloat(auction.startingPrice)) : 0);
   
   const condition = auction ? translateCondition(auction.condition) : "Неизвестно";
 
@@ -195,6 +197,17 @@ export default function AuctionDetail() {
       return () => clearInterval(timer);
     }
   }, [auctionEndTime, isTimerReady]);
+
+  // Синхронизируем локальное состояние с серверными данными
+  useEffect(() => {
+    if (auction && auction.currentBid && !localCurrentBid) {
+      // Сбрасываем локальное состояние только если оно не было установлено локально
+      const serverCurrentBid = parseFloat(auction.currentBid);
+      if (localCurrentBid === null || Math.abs(localCurrentBid - serverCurrentBid) > 100) {
+        setLocalCurrentBid(null); // Позволяем серверным данным взять верх
+      }
+    }
+  }, [auction?.currentBid, localCurrentBid]);
 
   useEffect(() => {
     if (auction && auction.currentBid) {
@@ -406,6 +419,9 @@ export default function AuctionDetail() {
       if (!response.ok) {
         throw new Error('Failed to place bid');
       }
+      
+      // Мгновенно обновляем локальное состояние текущей ставки
+      setLocalCurrentBid(bidValue);
       
       // Мгновенно обновляем локальное состояние для быстрой реакции
       queryClient.setQueryData([`/api/listings/${id}`], (oldData: any) => {
