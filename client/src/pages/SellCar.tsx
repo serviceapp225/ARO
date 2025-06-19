@@ -53,6 +53,7 @@ export default function SellCar() {
     price: "",
     reservePrice: "",
     description: "",
+    auctionDuration: "7", // По умолчанию 7 дней
     bodyType: "",
     fuelType: "",
     transmission: "",
@@ -174,7 +175,8 @@ export default function SellCar() {
       { field: formData.technicalInspectionValid, name: "Техосмотр" },
       { field: formData.tinted, name: "Тонировка" },
       { field: formData.price, name: "Стартовая цена" },
-      { field: formData.description, name: "Описание" }
+      { field: formData.description, name: "Описание" },
+      { field: formData.auctionDuration, name: "Продолжительность аукциона" }
     ];
 
     // Условно обязательные поля - требуются только если выбран "да"
@@ -215,7 +217,8 @@ export default function SellCar() {
       "Техосмотр": "technicalInspectionValid",
       "Тонировка": "tinted",
       "Стартовая цена": "price",
-      "Описание": "description"
+      "Описание": "description",
+      "Продолжительность аукциона": "auctionDuration"
     };
 
     let firstEmptyField = null;
@@ -315,7 +318,7 @@ export default function SellCar() {
         description: formData.description,
         startingPrice: formData.price,
         photos: uploadedImages, // Array of photo URLs
-        auctionDuration: 168, // 7 days in hours
+        auctionDuration: parseInt(formData.auctionDuration) * 24, // Convert days to hours
         customsCleared: formData.customsCleared === 'yes',
         recycled: formData.recycled === 'yes',
         technicalInspectionValid: formData.technicalInspectionValid === 'yes',
@@ -364,6 +367,7 @@ export default function SellCar() {
           price: "",
           reservePrice: "",
           description: "",
+          auctionDuration: "7",
           bodyType: "",
           fuelType: "",
           transmission: "",
@@ -859,6 +863,21 @@ export default function SellCar() {
                   value={formData.description}
                   onChange={(e) => handleInputChange("description", e.target.value)}
                 />
+              </div>
+
+              <div>
+                <Label htmlFor="auctionDuration">Продолжительность аукциона <span className="text-red-500">*</span></Label>
+                <Select value={formData.auctionDuration} onValueChange={(value) => handleInputChange("auctionDuration", value)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Выберите продолжительность" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="7">7 дней</SelectItem>
+                    <SelectItem value="10">10 дней</SelectItem>
+                    <SelectItem value="15">15 дней</SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-gray-500 mt-1">Длительность торгов с момента активации аукциона</p>
               </div>
             </CardContent>
           </Card>
