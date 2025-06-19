@@ -154,7 +154,7 @@ export default function SellCar() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Validate required fields в точном порядке появления в форме сверху вниз
+    // Validate required fields в точном порядке появления в HTML форме сверху вниз
     const requiredFields = [
       { field: formData.make, name: "Марка" },
       { field: formData.model, name: "Модель" },
@@ -249,10 +249,29 @@ export default function SellCar() {
       // Скроллим к полю
       setTimeout(() => {
         if (fieldId) {
-          const element = document.getElementById(fieldId) || document.querySelector(`[data-field="${fieldId}"]`);
+          console.log(`Looking for element with ID: ${fieldId}`);
+          const element = document.getElementById(fieldId);
+          console.log(`Found element:`, element);
+          
           if (element) {
+            console.log(`Scrolling to element: ${fieldId}`);
             element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            element.focus();
+            
+            // Попробуем разные способы фокуса
+            if (element.focus) {
+              element.focus();
+            } else if (element.click) {
+              element.click();
+            }
+          } else {
+            console.log(`Element not found, trying alternative selectors`);
+            const altElement = document.querySelector(`[data-field="${fieldId}"]`) || 
+                              document.querySelector(`label[for="${fieldId}"]`) ||
+                              document.querySelector(`[name="${fieldId}"]`);
+            console.log(`Alternative element:`, altElement);
+            if (altElement) {
+              altElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
           }
         }
       }, 100);
