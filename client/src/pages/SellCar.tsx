@@ -135,13 +135,26 @@ export default function SellCar() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Validate required fields (только самые важные поля)
+    // Validate required fields (все кроме VIN и резервной цены)
     const requiredFields = [
       { field: formData.make, name: "Марка" },
       { field: formData.model, name: "Модель" },
       { field: formData.year, name: "Год выпуска" },
+      { field: formData.mileage, name: "Пробег" },
       { field: formData.price, name: "Стартовая цена" },
-      { field: formData.description, name: "Описание" }
+      { field: formData.description, name: "Описание" },
+      { field: formData.bodyType, name: "Тип кузова" },
+      { field: formData.fuelType, name: "Тип топлива" },
+      { field: formData.transmission, name: "Коробка передач" },
+      { field: formData.engineVolume, name: "Объем двигателя" },
+      { field: formData.driveType, name: "Привод" },
+      { field: formData.color, name: "Цвет" },
+      { field: formData.condition, name: "Состояние" },
+      { field: formData.location, name: "Местоположение" },
+      { field: formData.customsCleared, name: "Растаможка" },
+      { field: formData.recycled, name: "Утилизационный сбор" },
+      { field: formData.technicalInspectionValid, name: "Техосмотр" },
+      { field: formData.tinted, name: "Тонировка" }
     ];
 
     // Условно обязательные поля - требуются только если выбран "да"
