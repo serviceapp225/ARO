@@ -227,7 +227,7 @@ export default function SellCar() {
         driveType: formData.driveType || null,
         color: formData.color || null,
         vin: formData.vin || null,
-        location: "Душанбе", // Default location
+        location: formData.location || null,
       };
 
       // Add timeout to prevent hanging
@@ -269,6 +269,7 @@ export default function SellCar() {
           color: "",
           condition: "",
           vin: "",
+          location: "",
           customsCleared: "",
           recycled: "",
           technicalInspectionValid: "",
@@ -566,6 +567,22 @@ export default function SellCar() {
                     maxLength={17}
                   />
                   <p className="text-xs text-gray-500 mt-1">17-значный идентификационный номер автомобиля</p>
+                </div>
+                
+                <div>
+                  <Label htmlFor="location">Город <span className="text-red-500">*</span></Label>
+                  <Select value={formData.location} onValueChange={(value) => handleInputChange("location", value)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Выберите город" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {TAJIKISTAN_CITIES.map((city) => (
+                        <SelectItem key={city} value={city}>
+                          {city}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
 
