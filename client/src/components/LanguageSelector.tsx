@@ -72,17 +72,7 @@ export default function LanguageSelector() {
             ))}
           </div>
 
-          <div className="mt-6 p-4 bg-blue-50 rounded-2xl">
-            <p className="text-sm text-blue-700">
-              <strong>Тоҷики:</strong> Интерфейс ба забони тоҷикӣ
-            </p>
-            <p className="text-sm text-blue-700 mt-1">
-              <strong>Русский:</strong> Интерфейс на русском языке
-            </p>
-            <p className="text-sm text-blue-700 mt-1">
-              <strong>English:</strong> Interface in English language
-            </p>
-          </div>
+
         </div>
       </main>
     </div>
