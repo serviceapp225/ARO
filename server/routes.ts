@@ -133,15 +133,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
           userAlerts.get(alert.userId)!.push(alert);
         }
         
-        // Send only one notification per user
-        for (const [userId, alerts] of Array.from(userAlerts.entries())) {
-          console.log('Creating notification for user:', userId, 'matching alerts:', alerts.length);
+        // Send notification for each matching alert
+        for (const alert of matchingAlerts) {
+          console.log('Creating notification for user:', alert.userId, 'alert:', alert.id);
           await storage.createNotification({
-            userId,
+            userId: alert.userId,
             title: "Найден автомобиль по вашему запросу",
             message: `${listing.make} ${listing.model} ${listing.year} г. - ${listing.startingPrice}$ (лот #${listing.lotNumber})`,
             type: "car_found",
             listingId: listing.id,
+            alertId: alert.id,
             isRead: false
           });
         }
