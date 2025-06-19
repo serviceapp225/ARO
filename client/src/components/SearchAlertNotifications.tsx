@@ -34,9 +34,18 @@ export function SearchAlertNotifications({ userId }: SearchAlertNotificationsPro
       return response.json();
     },
     onSuccess: async (_, alertId) => {
+      // Обновляем список поисковых запросов
       queryClient.setQueryData([`/api/car-alerts/${userId}`], (old: CarAlert[] = []) =>
         old.filter(alert => alert.id !== alertId)
       );
+      
+      // Обновляем список уведомлений (удаляем связанные с этим запросом)
+      queryClient.setQueryData([`/api/notifications/${userId}`], (old: any[] = []) =>
+        old.filter(notification => notification.alertId !== alertId)
+      );
+      
+      // Инвалидируем кэш уведомлений для обновления счетчика в колокольчике
+      queryClient.invalidateQueries({ queryKey: [`/api/notifications/${userId}`] });
       
       toast({
         title: "Поисковый запрос удален",

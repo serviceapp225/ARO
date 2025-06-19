@@ -74,6 +74,7 @@ export const notifications = pgTable("notifications", {
   message: text("message").notNull(),
   isRead: boolean("is_read").default(false),
   listingId: integer("listing_id"), // optional, for car-related notifications
+  alertId: integer("alert_id"), // optional, for notifications related to car alerts
   createdAt: timestamp("created_at").defaultNow(),
 });
 

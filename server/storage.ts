@@ -369,6 +369,10 @@ export class DatabaseStorage implements IStorage {
   }
 
   async deleteCarAlert(id: number): Promise<boolean> {
+    // Сначала удаляем связанные уведомления
+    await db.delete(notifications).where(eq(notifications.alertId, id));
+    
+    // Затем удаляем сам поисковый запрос
     const result = await db.delete(carAlerts).where(eq(carAlerts.id, id));
     return result.rowCount !== null && result.rowCount > 0;
   }
