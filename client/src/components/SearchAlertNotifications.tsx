@@ -1,4 +1,4 @@
-import { Check, Search, Trash2, Bell } from "lucide-react";
+import { Bell, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -164,7 +164,7 @@ export function SearchAlertNotifications({ userId }: SearchAlertNotificationsPro
                       </p>
                     </div>
                     <p className="text-xs text-gray-500 mt-2 flex items-center gap-1">
-                      🕒 Создан {formatDate(alert.createdAt!)}
+                      Создан {formatDate(alert.createdAt!)}
                     </p>
                   </div>
                 </div>
