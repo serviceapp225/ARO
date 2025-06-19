@@ -153,6 +153,7 @@ export default function SellCar() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    e.stopPropagation();
     
     // Validate required fields в точном порядке появления в HTML форме сверху вниз
     const requiredFields = [
@@ -238,7 +239,8 @@ export default function SellCar() {
       if (isEmpty) {
         firstEmptyField = { field, name };
         fieldId = fieldMapping[name];
-        console.log(`First empty field found: ${name} -> ${fieldId}`);
+        console.log(`✓ FIRST EMPTY FIELD FOUND: ${name} -> ${fieldId}`);
+        console.log(`Breaking the loop now...`);
         break;
       }
     }
@@ -545,7 +547,6 @@ export default function SellCar() {
                     placeholder="150000"
                     value={formData.mileage}
                     onChange={(e) => handleInputChange("mileage", e.target.value)}
-                    required
                   />
                 </div>
               </div>
@@ -829,7 +830,6 @@ export default function SellCar() {
                     placeholder="0"
                     value={formData.price}
                     onChange={(e) => handleInputChange("price", e.target.value)}
-                    required
                   />
                 </div>
                 
@@ -872,7 +872,6 @@ export default function SellCar() {
                   rows={4}
                   value={formData.description}
                   onChange={(e) => handleInputChange("description", e.target.value)}
-                  required
                 />
               </div>
             </CardContent>
