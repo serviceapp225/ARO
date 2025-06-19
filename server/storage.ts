@@ -105,10 +105,7 @@ export class DatabaseStorage implements IStorage {
     const query = db
       .select()
       .from(carListings)
-      .where(and(
-        eq(carListings.status, status),
-
-      ))
+      .where(eq(carListings.status, status))
       .orderBy(desc(carListings.createdAt)); // Show newest listings first
     
     if (limit) {
