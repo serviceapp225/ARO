@@ -208,9 +208,44 @@ export default function SellCar() {
     
     if (emptyFields.length > 0) {
       console.log("Empty fields:", emptyFields.map(f => f.name));
+      
+      // Находим первое незаполненное поле в порядке сверху вниз
+      const fieldMapping: Record<string, string> = {
+        "Марка": "make",
+        "Модель": "model", 
+        "Год выпуска": "year",
+        "Пробег": "mileage",
+        "Стартовая цена": "price",
+        "Описание": "description",
+        "Тип кузова": "bodyType",
+        "Тип топлива": "fuelType",
+        "Коробка передач": "transmission",
+        "Объем двигателя": "engineVolume",
+        "Привод": "driveType",
+        "Цвет": "color",
+        "Состояние": "condition",
+        "Местоположение": "location",
+        "Растаможка": "customsCleared",
+        "Утилизационный сбор": "recycled",
+        "Техосмотр": "technicalInspectionValid",
+        "Тонировка": "tinted"
+      };
+      
+      const firstEmptyField = emptyFields[0];
+      const fieldId = fieldMapping[firstEmptyField.name];
+      
+      // Скроллим к полю
+      setTimeout(() => {
+        const element = document.getElementById(fieldId) || document.querySelector(`[data-field="${fieldId}"]`);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          element.focus();
+        }
+      }, 100);
+      
       toast({
         title: "Заполните все обязательные поля",
-        description: `Не заполнено: ${emptyFields.map(f => f.name).join(", ")}`,
+        description: `Первое незаполненное поле: ${firstEmptyField.name}`,
         variant: "destructive",
         duration: 3000,
       });
@@ -428,7 +463,7 @@ export default function SellCar() {
                 <div>
                   <Label htmlFor="make">Марка <span className="text-red-500">*</span></Label>
                   <Select value={formData.make} onValueChange={(value) => handleInputChange("make", value)}>
-                    <SelectTrigger>
+                    <SelectTrigger id="make">
                       <SelectValue placeholder="Выберите марку" />
                     </SelectTrigger>
                     <SelectContent>
@@ -442,7 +477,7 @@ export default function SellCar() {
                 <div>
                   <Label htmlFor="model">Модель <span className="text-red-500">*</span></Label>
                   <Select value={formData.model} onValueChange={(value) => handleInputChange("model", value)} disabled={!formData.make}>
-                    <SelectTrigger>
+                    <SelectTrigger id="model">
                       <SelectValue placeholder={formData.make ? "Выберите модель" : "Сначала выберите марку"} />
                     </SelectTrigger>
                     <SelectContent>
@@ -458,7 +493,7 @@ export default function SellCar() {
                 <div>
                   <Label htmlFor="year">Год выпуска <span className="text-red-500">*</span></Label>
                   <Select value={formData.year} onValueChange={(value) => handleInputChange("year", value)}>
-                    <SelectTrigger>
+                    <SelectTrigger id="year">
                       <SelectValue placeholder="Год" />
                     </SelectTrigger>
                     <SelectContent>
