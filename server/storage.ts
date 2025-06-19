@@ -108,6 +108,8 @@ export class DatabaseStorage implements IStorage {
       .where(and(
         eq(carListings.status, status),
         sql`${carListings.photos} IS NOT NULL AND ${carListings.photos} != '[]' AND ${carListings.photos} != 'null'`,
+        sql`${carListings.photos}::text NOT LIKE '%data:image%'`,
+        sql`${carListings.photos}::text LIKE '%http%'`,
         sql`${carListings.make} IS NOT NULL AND ${carListings.make} != ''`,
         sql`${carListings.model} IS NOT NULL AND ${carListings.model} != ''`,
         sql`${carListings.year} IS NOT NULL`,
@@ -173,6 +175,8 @@ export class DatabaseStorage implements IStorage {
       const conditions = [
         eq(carListings.status, "active"),
         sql`${carListings.photos} IS NOT NULL AND ${carListings.photos} != '[]' AND ${carListings.photos} != 'null'`,
+        sql`${carListings.photos}::text NOT LIKE '%data:image%'`,
+        sql`${carListings.photos}::text LIKE '%http%'`,
         sql`${carListings.make} IS NOT NULL AND ${carListings.make} != ''`,
         sql`${carListings.model} IS NOT NULL AND ${carListings.model} != ''`,
         sql`${carListings.year} IS NOT NULL`,
