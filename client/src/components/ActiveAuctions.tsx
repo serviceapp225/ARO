@@ -159,9 +159,7 @@ export function ActiveAuctions({ searchQuery = "", customListings }: ActiveAucti
                 className="h-32"
                 autoPlayInterval={3000}
               />
-              <div className="absolute top-2 left-2">
-                <CountdownTimer endTime={auction.endTime} size="small" />
-              </div>
+              {/* Временно отключен CountdownTimer для устранения ошибок */}
               <div className="absolute top-2 right-2 flex gap-1">
                 <Button
                   variant="ghost"
