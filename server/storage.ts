@@ -103,8 +103,40 @@ export class DatabaseStorage implements IStorage {
 
   async getListingsByStatus(status: string, limit?: number): Promise<CarListing[]> {
     try {
+      // Select specific fields to avoid large photo data
       const query = db
-        .select()
+        .select({
+          id: carListings.id,
+          sellerId: carListings.sellerId,
+          lotNumber: carListings.lotNumber,
+          make: carListings.make,
+          model: carListings.model,
+          year: carListings.year,
+          mileage: carListings.mileage,
+          vin: carListings.vin,
+          description: carListings.description,
+          startingPrice: carListings.startingPrice,
+          currentBid: carListings.currentBid,
+          auctionDuration: carListings.auctionDuration,
+          status: carListings.status,
+          auctionStartTime: carListings.auctionStartTime,
+          auctionEndTime: carListings.auctionEndTime,
+          customsCleared: carListings.customsCleared,
+          recycled: carListings.recycled,
+          technicalInspectionValid: carListings.technicalInspectionValid,
+          technicalInspectionDate: carListings.technicalInspectionDate,
+          createdAt: carListings.createdAt,
+          engine: carListings.engine,
+          transmission: carListings.transmission,
+          fuelType: carListings.fuelType,
+          bodyType: carListings.bodyType,
+          color: carListings.color,
+          location: carListings.location,
+          driveType: carListings.driveType,
+          condition: carListings.condition,
+          tinted: carListings.tinted,
+          tintingDate: carListings.tintingDate
+        })
         .from(carListings)
         .where(eq(carListings.status, status))
         .orderBy(desc(carListings.createdAt));
@@ -116,18 +148,10 @@ export class DatabaseStorage implements IStorage {
         listings = await query;
       }
       
-      // Ensure all listings are processed correctly
+      // Add empty photos array to maintain data structure
       return listings.map(listing => ({
         ...listing,
-        // Truncate very long base64 images to prevent transmission issues
-        photos: Array.isArray(listing.photos) 
-          ? listing.photos.map(photo => {
-              if (typeof photo === 'string' && photo.startsWith('data:image') && photo.length > 50000) {
-                return photo.substring(0, 50000) + '...'; // Truncate very long base64
-              }
-              return photo;
-            })
-          : listing.photos
+        photos: []
       }));
     } catch (error) {
       console.error('Error fetching listings:', error);
