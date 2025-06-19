@@ -105,7 +105,10 @@ export class DatabaseStorage implements IStorage {
     const query = db
       .select()
       .from(carListings)
-      .where(eq(carListings.status, status))
+      .where(and(
+        eq(carListings.status, status),
+        sql`${carListings.photos} IS NOT NULL AND ${carListings.photos} != '[]' AND ${carListings.photos} != 'null'`
+      ))
       .orderBy(desc(carListings.createdAt)); // Show newest listings first
     
     if (limit) {
@@ -161,7 +164,10 @@ export class DatabaseStorage implements IStorage {
     minYear?: number;
     maxYear?: number;
   }): Promise<CarListing[]> {
-    const conditions = [eq(carListings.status, "active")];
+    const conditions = [
+      eq(carListings.status, "active"),
+      sql`${carListings.photos} IS NOT NULL AND ${carListings.photos} != '[]' AND ${carListings.photos} != 'null'`
+    ];
 
     if (filters.query) {
       conditions.push(
