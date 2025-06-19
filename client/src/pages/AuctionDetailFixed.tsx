@@ -435,11 +435,7 @@ export default function AuctionDetail() {
         return oldData;
       });
       
-      toast({
-        title: "🏆 Ставка размещена!",
-        description: `Ваша ставка $${bidValue.toLocaleString()} принята`,
-        duration: 3000,
-      });
+
       
       setBidAmount((bidValue + 1000).toString());
       setShowBidInput(false);
