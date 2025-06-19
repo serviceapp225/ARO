@@ -641,6 +641,9 @@ export default function AuctionDetail() {
                   <Badge variant="outline" className={`${auction.technicalInspectionValid ? 'text-purple-700 bg-purple-50 border-purple-200' : 'text-gray-700 bg-gray-50 border-gray-200'}`}>
                     {auction.technicalInspectionValid ? `Техосмотр до ${auction.technicalInspectionDate}` : 'Техосмотр: нет'}
                   </Badge>
+                  <Badge variant="outline" className={`${(auction as any).tinted ? 'text-indigo-700 bg-indigo-50 border-indigo-200' : 'text-gray-700 bg-gray-50 border-gray-200'}`}>
+                    {(auction as any).tinted ? `Тонировка (${(auction as any).tintingDate || 'дата не указана'})` : 'Тонировка: нет'}
+                  </Badge>
                 </div>
               </div>
 
@@ -701,14 +704,7 @@ export default function AuctionDetail() {
                     <span className="text-gray-600 font-medium">VIN</span>
                     <span className="font-semibold text-gray-900 font-mono text-sm">{auction.vin || 'Не указан'}</span>
                   </div>
-                  <div className="flex justify-between items-center py-2 px-3 rounded-lg bg-white border border-gray-100">
-                    <span className="text-gray-600 font-medium">Тонировка</span>
-                    <span className={`font-semibold ${(auction as any).tinted ? 'text-indigo-600' : 'text-gray-500'}`}>
-                      {(auction as any).tinted 
-                        ? `Есть (${(auction as any).tintingDate || 'дата не указана'})` 
-                        : 'Нет'}
-                    </span>
-                  </div>
+
                 </div>
               </div>
 
