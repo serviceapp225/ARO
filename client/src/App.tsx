@@ -36,7 +36,6 @@ function Router() {
         <Route path="/" component={HomePage} />
         <Route path="/home" component={HomePage} />
         <Route path="/auctions" component={AuctionFeed} />
-        <Route path="/search" component={AuctionFeed} />
         <Route path="/auction/:id" component={AuctionDetail} />
         <Route path="/favorites" component={Favorites} />
         <Route path="/sell" component={SellCar} />

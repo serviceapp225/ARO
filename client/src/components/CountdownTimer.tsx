@@ -19,6 +19,11 @@ export function CountdownTimer({ endTime, size = 'small', onTimeUp }: CountdownT
 
   useEffect(() => {
     const calculateTime = () => {
+      if (!endTime) {
+        setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0, total: 0 });
+        return;
+      }
+      
       const now = new Date().getTime();
       const distance = endTime.getTime() - now;
 
