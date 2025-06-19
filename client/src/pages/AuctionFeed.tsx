@@ -87,8 +87,7 @@ export default function AuctionFeed() {
     
     // Фильтр по марке
     if (searchFilters.brand) {
-      const brandName = CAR_MAKES.find(make => make.toLowerCase() === searchFilters.brand.toLowerCase());
-      if (brandName && auction.make !== brandName) {
+      if (auction.make !== searchFilters.brand) {
         return false;
       }
     }
