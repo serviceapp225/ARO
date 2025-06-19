@@ -34,9 +34,9 @@ export function AuctionProvider({ children }: { children: ReactNode }) {
   const [selectedAuction, setSelectedAuction] = useState<Auction | null>(null);
   
   // Clear cache on mount to ensure fresh data
-  useState(() => {
+  useEffect(() => {
     queryClient.removeQueries({ queryKey: ['/api/listings'] });
-  });
+  }, []);
 
   // Fetch real data from API with automatic refresh
   const { data: listings, isLoading, refetch } = useQuery({
