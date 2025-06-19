@@ -107,7 +107,13 @@ export class DatabaseStorage implements IStorage {
       .from(carListings)
       .where(and(
         eq(carListings.status, status),
-        sql`${carListings.photos} IS NOT NULL AND ${carListings.photos} != '[]' AND ${carListings.photos} != 'null'`
+        sql`${carListings.photos} IS NOT NULL AND ${carListings.photos} != '[]' AND ${carListings.photos} != 'null'`,
+        sql`${carListings.photos}::text NOT LIKE '%data:image%'`,
+        sql`${carListings.make} IS NOT NULL AND ${carListings.make} != ''`,
+        sql`${carListings.model} IS NOT NULL AND ${carListings.model} != ''`,
+        sql`${carListings.year} IS NOT NULL`,
+        sql`${carListings.mileage} IS NOT NULL`,
+        sql`${carListings.startingPrice} IS NOT NULL`
       ))
       .orderBy(desc(carListings.createdAt)); // Show newest listings first
     
@@ -166,7 +172,13 @@ export class DatabaseStorage implements IStorage {
   }): Promise<CarListing[]> {
     const conditions = [
       eq(carListings.status, "active"),
-      sql`${carListings.photos} IS NOT NULL AND ${carListings.photos} != '[]' AND ${carListings.photos} != 'null'`
+      sql`${carListings.photos} IS NOT NULL AND ${carListings.photos} != '[]' AND ${carListings.photos} != 'null'`,
+      sql`${carListings.photos} NOT LIKE '%data:image%'`,
+      sql`${carListings.make} IS NOT NULL AND ${carListings.make} != ''`,
+      sql`${carListings.model} IS NOT NULL AND ${carListings.model} != ''`,
+      sql`${carListings.year} IS NOT NULL`,
+      sql`${carListings.mileage} IS NOT NULL`,
+      sql`${carListings.startingPrice} IS NOT NULL`
     ];
 
     if (filters.query) {
