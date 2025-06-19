@@ -400,38 +400,14 @@ export default function AuctionFeed() {
                   <p className="text-gray-600 mb-4">
                     Мы отправим уведомление, когда появятся автомобили по вашим критериям
                   </p>
-                  <SimpleAlertButton filters={searchFilters} />
+                  <SimpleAlertButton searchFilters={searchFilters} />
                 </div>
               </div>
             )}
             
 
             
-            {/* Показать кнопку уведомления, если есть фильтры но мало результатов */}
-            {hasActiveFilters && !searchLoading && searchResults.length < 3 && (
-              <div className="mt-8 p-6 bg-gray-50 rounded-lg text-center">
-                <h3 className="text-lg font-medium text-gray-900 mb-2">
-                  Не нашли подходящий автомобиль?
-                </h3>
-                <p className="text-gray-600 mb-4">
-                  Мы отправим уведомление, когда появятся автомобили по вашим критериям
-                </p>
-                <SimpleAlertButton 
-                  searchFilters={{
-                    brand: searchFilters.brand,
-                    model: searchFilters.model,
-                    yearFrom: searchFilters.yearFrom,
-                    yearTo: searchFilters.yearTo,
-                    priceFrom: searchFilters.priceFrom,
-                    priceTo: searchFilters.priceTo,
-                    bodyType: searchFilters.bodyType,
-                    fuelType: searchFilters.fuelType,
-                    transmission: searchFilters.transmission,
-                    customsCleared: searchFilters.customsCleared
-                  }}
-                />
-              </div>
-            )}
+
           </div>
         ) : (
           <>
