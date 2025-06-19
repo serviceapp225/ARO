@@ -108,7 +108,6 @@ export class DatabaseStorage implements IStorage {
       .where(and(
         eq(carListings.status, status),
         sql`${carListings.photos} IS NOT NULL AND ${carListings.photos} != '[]' AND ${carListings.photos} != 'null'`,
-        sql`${carListings.photos}::text NOT LIKE '%data:image%'`,
         sql`${carListings.make} IS NOT NULL AND ${carListings.make} != ''`,
         sql`${carListings.model} IS NOT NULL AND ${carListings.model} != ''`,
         sql`${carListings.year} IS NOT NULL`,
@@ -170,16 +169,16 @@ export class DatabaseStorage implements IStorage {
     minYear?: number;
     maxYear?: number;
   }): Promise<CarListing[]> {
-    const conditions = [
-      eq(carListings.status, "active"),
-      sql`${carListings.photos} IS NOT NULL AND ${carListings.photos} != '[]' AND ${carListings.photos} != 'null'`,
-      sql`${carListings.photos} NOT LIKE '%data:image%'`,
-      sql`${carListings.make} IS NOT NULL AND ${carListings.make} != ''`,
-      sql`${carListings.model} IS NOT NULL AND ${carListings.model} != ''`,
-      sql`${carListings.year} IS NOT NULL`,
-      sql`${carListings.mileage} IS NOT NULL`,
-      sql`${carListings.startingPrice} IS NOT NULL`
-    ];
+    try {
+      const conditions = [
+        eq(carListings.status, "active"),
+        sql`${carListings.photos} IS NOT NULL AND ${carListings.photos} != '[]' AND ${carListings.photos} != 'null'`,
+        sql`${carListings.make} IS NOT NULL AND ${carListings.make} != ''`,
+        sql`${carListings.model} IS NOT NULL AND ${carListings.model} != ''`,
+        sql`${carListings.year} IS NOT NULL`,
+        sql`${carListings.mileage} IS NOT NULL`,
+        sql`${carListings.startingPrice} IS NOT NULL`
+      ];
 
     if (filters.query) {
       conditions.push(
@@ -221,6 +220,10 @@ export class DatabaseStorage implements IStorage {
       .where(and(...conditions))
       .orderBy(carListings.createdAt)
       .limit(50); // Limit results for better performance
+    } catch (error) {
+      console.error('Search listings error:', error);
+      return [];
+    }
   }
 
   async getBidsForListing(listingId: number): Promise<Bid[]> {
