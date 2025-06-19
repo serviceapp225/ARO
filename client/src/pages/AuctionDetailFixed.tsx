@@ -401,7 +401,7 @@ export default function AuctionDetail() {
       console.log('Audio system not available');
     }
     
-    setTimeout(() => setShowConfetti(false), 4000);
+    setTimeout(() => setShowConfetti(false), 1500);
     
     try {
       // Place bid using API
