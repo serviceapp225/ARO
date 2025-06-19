@@ -153,15 +153,7 @@ export default function AuctionDetail() {
 
   const currentBid = auction ? (auction.currentBid ? parseFloat(auction.currentBid) : parseFloat(auction.startingPrice)) : 0;
   
-  const getConditionByMileage = (mileage: number): string => {
-    const miles = mileage || 0;
-    if (miles <= 10000) return "Отличное";
-    if (miles <= 30000) return "Очень хорошее";
-    if (miles <= 50000) return "Хорошее";
-    return "Удовлетворительное";
-  };
-  
-  const condition = auction ? getConditionByMileage(auction.mileage) : "Неизвестно";
+  const condition = auction ? translateCondition(auction.condition) : "Неизвестно";
 
   // All useEffect hooks - placed after state initialization but before conditional returns
   useEffect(() => {
