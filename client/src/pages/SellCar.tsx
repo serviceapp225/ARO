@@ -13,6 +13,32 @@ import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
 import { queryClient } from "@/lib/queryClient";
 
+const TAJIKISTAN_CITIES = [
+  "Душанбе",
+  "Худжанд", 
+  "Куляб",
+  "Курган-Тюбе",
+  "Истаравшан",
+  "Канибадам",
+  "Турсунзаде",
+  "Исфара",
+  "Пенджикент",
+  "Кайраккум",
+  "Вахдат",
+  "Яван",
+  "Нурек",
+  "Рогун",
+  "Дангира",
+  "Шахринав",
+  "Рудаки",
+  "Хисор",
+  "Вахш",
+  "Пяндж",
+  "Мургаб",
+  "Ишкашим",
+  "Хорог"
+];
+
 export default function SellCar() {
   const [uploadedImages, setUploadedImages] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -35,6 +61,7 @@ export default function SellCar() {
     color: "",
     condition: "",
     vin: "",
+    location: "",
     customsCleared: "",
     recycled: "",
     technicalInspectionValid: "",
