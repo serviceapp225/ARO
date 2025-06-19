@@ -80,14 +80,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Create cache key from filters
       const cacheKey = `search_${JSON.stringify(filters)}`;
       
-      // Clear old cache entries that might use the old 'year' parameter
+      // Clear all search cache entries to prevent stale data
       clearCachePattern('search_');
-      
-      // Check cache first
-      const cached = getCached(cacheKey);
-      if (cached) {
-        return res.json(cached);
-      }
       
       const listings = await storage.searchListings(filters);
       

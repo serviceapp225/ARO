@@ -258,7 +258,7 @@ export class DatabaseStorage implements IStorage {
     
     // Set actual counts from query results
     for (const result of results) {
-      counts[result.listingId] = result.count;
+      counts[result.listingId] = Number(result.count) || 0;
     }
     
     return counts;
