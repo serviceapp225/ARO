@@ -687,10 +687,10 @@ export default function SellCar() {
                   <Label htmlFor="technicalInspectionDate">Действие техосмотра до <span className="text-red-500">*</span></Label>
                   <Input
                     id="technicalInspectionDate"
-                    type="date"
+                    type="text"
                     value={formData.technicalInspectionDate}
                     onChange={(e) => handleInputChange("technicalInspectionDate", e.target.value)}
-                    placeholder="ДД.ММ.ГГГГ"
+                    placeholder="Например: 15.06.2025"
                   />
                 </div>
               )}
@@ -723,10 +723,10 @@ export default function SellCar() {
                   <Label htmlFor="tintingDate">Дата тонировки <span className="text-red-500">*</span></Label>
                   <Input
                     id="tintingDate"
-                    type="date"
+                    type="text"
                     value={formData.tintingDate}
                     onChange={(e) => handleInputChange("tintingDate", e.target.value)}
-                    placeholder="ДД.ММ.ГГГГ"
+                    placeholder="Например: 20.03.2024"
                   />
                 </div>
               )}
