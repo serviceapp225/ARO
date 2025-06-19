@@ -82,17 +82,18 @@ export default function SimpleAlertButton({ searchFilters = {} }: SimpleAlertBut
       toast({
         title: "Поисковый запрос сохранён",
         description: "Мы сообщим вам в колокольчике о новых автомобилях по вашим параметрам",
-        duration: 3000,
+        duration: 2000,
       });
       
-      // Сбрасываем состояние через 3 секунды
-      setTimeout(() => setIsCreated(false), 3000);
+      // Сбрасываем состояние через 2 секунды
+      setTimeout(() => setIsCreated(false), 2000);
     },
     onError: () => {
       toast({
         title: "Ошибка",
         description: "Не удалось создать уведомление. Попробуйте снова.",
         variant: "destructive",
+        duration: 2000,
       });
     }
   });

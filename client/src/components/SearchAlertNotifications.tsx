@@ -50,6 +50,7 @@ export function SearchAlertNotifications({ userId }: SearchAlertNotificationsPro
       toast({
         title: "Уведомление удалено",
         description: "Уведомление успешно удалено",
+        duration: 2000,
       });
     },
     onError: (error: Error) => {
@@ -58,6 +59,7 @@ export function SearchAlertNotifications({ userId }: SearchAlertNotificationsPro
         title: "Ошибка",
         description: `Не удалось удалить уведомление: ${error.message}`,
         variant: "destructive",
+        duration: 2000,
       });
     }
   });
