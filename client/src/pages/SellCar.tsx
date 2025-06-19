@@ -234,43 +234,29 @@ export default function SellCar() {
         isEmpty = !field || field.trim() === "";
       }
       
-      console.log(`Checking field "${name}": value="${field}", isEmpty=${isEmpty}`);
-      
       if (isEmpty) {
         firstEmptyField = { field, name };
         fieldId = fieldMapping[name];
-        console.log(`✓ FIRST EMPTY FIELD FOUND: ${name} -> ${fieldId}`);
-        console.log(`Breaking the loop now...`);
         break;
       }
     }
     
     if (firstEmptyField) {
-      console.log("First empty field:", firstEmptyField.name);
-      
       // Скроллим к полю
       setTimeout(() => {
         if (fieldId) {
-          console.log(`Looking for element with ID: ${fieldId}`);
           const element = document.getElementById(fieldId);
-          console.log(`Found element:`, element);
-          
           if (element) {
-            console.log(`Scrolling to element: ${fieldId}`);
             element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            
-            // Попробуем разные способы фокуса
             if (element.focus) {
               element.focus();
             } else if (element.click) {
               element.click();
             }
           } else {
-            console.log(`Element not found, trying alternative selectors`);
             const altElement = document.querySelector(`[data-field="${fieldId}"]`) || 
                               document.querySelector(`label[for="${fieldId}"]`) ||
                               document.querySelector(`[name="${fieldId}"]`);
-            console.log(`Alternative element:`, altElement);
             if (altElement) {
               altElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
             }
