@@ -123,10 +123,7 @@ export default function Search() {
       
       // Добавляем фильтр по марке
       if (searchFilters.brand) {
-        const brandName = CAR_MAKES.find(make => make.toLowerCase() === searchFilters.brand.toLowerCase());
-        if (brandName) {
-          params.append('make', brandName);
-        }
+        params.append('make', searchFilters.brand);
       }
       
       // Добавляем другие фильтры
@@ -226,7 +223,7 @@ export default function Search() {
                       </SelectTrigger>
                       <SelectContent>
                         {CAR_MAKES.map((brand) => (
-                          <SelectItem key={brand} value={brand.toLowerCase()}>
+                          <SelectItem key={brand} value={brand}>
                             {brand}
                           </SelectItem>
                         ))}
