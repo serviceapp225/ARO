@@ -37,8 +37,16 @@ export function SearchAlertNotifications({ userId }: SearchAlertNotificationsPro
       }
       return response.json();
     },
-    onSuccess: () => {
+    onSuccess: (_, notificationId) => {
+      // Оптимистическое обновление - сразу удаляем из кэша
+      queryClient.setQueryData([`/api/notifications/${userId}`], (old: Notification[] = []) => 
+        old.filter(notification => notification.id !== notificationId)
+      );
+      
+      // Принудительно обновляем кэш
       queryClient.invalidateQueries({ queryKey: [`/api/notifications/${userId}`] });
+      queryClient.refetchQueries({ queryKey: [`/api/notifications/${userId}`] });
+      
       toast({
         title: "Уведомление удалено",
         description: "Уведомление успешно удалено",
