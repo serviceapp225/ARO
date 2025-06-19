@@ -111,49 +111,52 @@ export default function Search() {
   const activeFiltersCount = Object.values(searchFilters).filter(Boolean).length;
   const hasSearchCriteria = activeFiltersCount > 0 || Object.keys(searchQueryParams).length > 0;
   
-  const { data: searchResults = [], isLoading } = useQuery({
-    queryKey: ['/api/listings/search', JSON.stringify(searchFilters), forceRefresh],
+  // Получаем все аукционы и фильтруем их на клиенте
+  const { data: allAuctions = [], isLoading: auctionsLoading } = useQuery({
+    queryKey: ['/api/listings'],
     queryFn: async () => {
-      const params = new URLSearchParams();
-      
-      // Добавляем поиск по тексту
-      if (searchQuery.trim()) {
-        params.append('query', searchQuery.trim());
-      }
-      
-      // Добавляем фильтр по марке
-      if (searchFilters.brand) {
-        const brandName = CAR_MAKES.find(make => make.toLowerCase() === searchFilters.brand.toLowerCase());
-        if (brandName) {
-          params.append('make', brandName);
-        }
-      }
-      
-      // Добавляем другие фильтры
-      if (searchFilters.yearFrom) {
-        params.append('minYear', searchFilters.yearFrom);
-      }
-      
-      if (searchFilters.yearTo) {
-        params.append('maxYear', searchFilters.yearTo);
-      }
-      
-      if (searchFilters.priceFrom) {
-        params.append('minPrice', searchFilters.priceFrom);
-      }
-      
-      if (searchFilters.priceTo) {
-        params.append('maxPrice', searchFilters.priceTo);
-      }
-      
-      const response = await fetch(`/api/listings/search?${params}`);
-      if (!response.ok) throw new Error('Search failed');
+      const response = await fetch('/api/listings');
+      if (!response.ok) throw new Error('Failed to fetch auctions');
       return response.json();
     },
-    enabled: hasSearchCriteria,
-    staleTime: 0,
-    refetchOnMount: true
+    staleTime: 30000
   });
+
+  // Фильтруем аукционы по выбранным критериям
+  const searchResults = allAuctions.filter((auction: any) => {
+    // Фильтр по марке
+    if (searchFilters.brand) {
+      const brandName = CAR_MAKES.find(make => make.toLowerCase() === searchFilters.brand.toLowerCase());
+      if (brandName && auction.make !== brandName) {
+        return false;
+      }
+    }
+    
+    // Фильтр по модели
+    if (searchFilters.model && auction.model !== searchFilters.model) {
+      return false;
+    }
+    
+    // Фильтр по году
+    if (searchFilters.yearFrom && auction.year < parseInt(searchFilters.yearFrom)) {
+      return false;
+    }
+    if (searchFilters.yearTo && auction.year > parseInt(searchFilters.yearTo)) {
+      return false;
+    }
+    
+    // Фильтр по цене
+    if (searchFilters.priceFrom && parseFloat(auction.startingPrice) < parseFloat(searchFilters.priceFrom)) {
+      return false;
+    }
+    if (searchFilters.priceTo && parseFloat(auction.startingPrice) > parseFloat(searchFilters.priceTo)) {
+      return false;
+    }
+    
+    return true;
+  });
+
+  const isLoading = auctionsLoading;
 
   const handleSearch = () => {
     queryClient.invalidateQueries({ queryKey: ['/api/listings/search'] });
