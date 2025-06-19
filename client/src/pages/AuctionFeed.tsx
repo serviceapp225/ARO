@@ -57,6 +57,10 @@ export default function AuctionFeed() {
       if (field === 'brand') {
         newFilters.model = '';
       }
+      // Auto-set yearTo when yearFrom is selected
+      if (field === 'yearFrom' && value && !prev.yearTo) {
+        newFilters.yearTo = currentYear.toString();
+      }
       return newFilters;
     });
   };
