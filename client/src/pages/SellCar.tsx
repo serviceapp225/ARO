@@ -154,7 +154,7 @@ export default function SellCar() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Validate required fields в порядке появления в форме сверху вниз
+    // Validate required fields в точном порядке появления в форме сверху вниз
     const requiredFields = [
       { field: formData.make, name: "Марка" },
       { field: formData.model, name: "Модель" },
@@ -195,44 +195,53 @@ export default function SellCar() {
       return;
     }
 
-    // Проверяем основные обязательные поля
-    const emptyFields = requiredFields.filter(({ field, name }) => {
+    // Находим первое незаполненное поле в порядке сверху вниз
+    const fieldMapping: Record<string, string> = {
+      "Марка": "make",
+      "Модель": "model", 
+      "Год выпуска": "year",
+      "Пробег": "mileage",
+      "Тип кузова": "bodyType",
+      "Тип топлива": "fuelType",
+      "Коробка передач": "transmission",
+      "Объем двигателя": "engineVolume",
+      "Привод": "driveType",
+      "Цвет": "color",
+      "Состояние": "condition",
+      "Местоположение": "location",
+      "Растаможка": "customsCleared",
+      "Утилизационный сбор": "recycled",
+      "Техосмотр": "technicalInspectionValid",
+      "Тонировка": "tinted",
+      "Стартовая цена": "price",
+      "Описание": "description"
+    };
+
+    let firstEmptyField = null;
+    let fieldId = null;
+    
+    // Проходим по полям в правильном порядке и находим первое пустое
+    for (const { field, name } of requiredFields) {
+      let isEmpty = false;
+      
       // Для полей с да/нет вопросами, пустая строка означает что не выбрано
       if (name === "Техосмотр" || name === "Тонировка" || 
           name === "Растаможка" || name === "Утилизационный сбор") {
-        return !field; // Проверяем что поле не пустое
+        isEmpty = !field;
+      } else {
+        // Для остальных полей проверяем что они заполнены
+        isEmpty = !field || field.trim() === "";
       }
-      // Для остальных полей проверяем что они заполнены
-      return !field || field.trim() === "";
-    });
+      
+      if (isEmpty) {
+        firstEmptyField = { field, name };
+        fieldId = fieldMapping[name];
+        break;
+      }
+    }
     
-    if (emptyFields.length > 0) {
-      console.log("Empty fields:", emptyFields.map(f => f.name));
-      
-      // Находим первое незаполненное поле в порядке сверху вниз
-      const fieldMapping: Record<string, string> = {
-        "Марка": "make",
-        "Модель": "model", 
-        "Год выпуска": "year",
-        "Пробег": "mileage",
-        "Тип кузова": "bodyType",
-        "Тип топлива": "fuelType",
-        "Коробка передач": "transmission",
-        "Объем двигателя": "engineVolume",
-        "Привод": "driveType",
-        "Цвет": "color",
-        "Состояние": "condition",
-        "Местоположение": "location",
-        "Растаможка": "customsCleared",
-        "Утилизационный сбор": "recycled",
-        "Техосмотр": "technicalInspectionValid",
-        "Тонировка": "tinted",
-        "Стартовая цена": "price",
-        "Описание": "description"
-      };
-      
-      const firstEmptyField = emptyFields[0];
-      const fieldId = fieldMapping[firstEmptyField.name];
+    if (firstEmptyField) {
+      console.log("First empty field:", firstEmptyField.name);
       
       // Скроллим к полю
       setTimeout(() => {
