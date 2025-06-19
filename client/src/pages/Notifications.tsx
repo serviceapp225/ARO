@@ -10,22 +10,22 @@ export default function Notifications() {
   const userId = 3;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 pb-20">
+    <div className="min-h-screen bg-gray-50 pb-20">
       {/* Header */}
-      <header className="bg-white/80 backdrop-blur-sm shadow-sm border-b border-gray-200 sticky top-0 z-40">
+      <header className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-40">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <Button 
             variant="ghost" 
             size="sm" 
             onClick={() => setLocation("/profile")}
-            className="hover:bg-blue-50 transition-colors"
+            className="hover:bg-gray-100 transition-colors"
           >
             <ArrowLeft className="w-5 h-5 mr-2" />
             Назад
           </Button>
           <div className="flex items-center gap-2">
-            <Search className="w-6 h-6 text-purple-600" />
-            <h1 className="text-xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+            <Search className="w-6 h-6 text-gray-700" />
+            <h1 className="text-xl font-bold text-gray-900">
               История поисковых запросов
             </h1>
           </div>
