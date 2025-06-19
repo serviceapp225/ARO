@@ -37,18 +37,37 @@ export function SearchAlertNotifications({ userId }: SearchAlertNotificationsPro
       }
       return response.json();
     },
-    onSuccess: async (_, notificationId) => {
-      // Принудительно обновляем кэш немедленно
-      await queryClient.invalidateQueries({ queryKey: [`/api/notifications/${userId}`] });
-      await queryClient.refetchQueries({ queryKey: [`/api/notifications/${userId}`] });
-      
+    onMutate: async (notificationId) => {
+      // Отменяем исходящие запросы чтобы не перезаписать наше оптимистическое обновление
+      await queryClient.cancelQueries({ queryKey: [`/api/notifications/${userId}`] });
+
+      // Получаем предыдущие данные для возврата при ошибке
+      const previousNotifications = queryClient.getQueryData([`/api/notifications/${userId}`]);
+
+      // Оптимистично удаляем уведомление из UI
+      queryClient.setQueryData([`/api/notifications/${userId}`], (old: Notification[] = []) =>
+        old.filter(notification => notification.id !== notificationId)
+      );
+
+      return { previousNotifications };
+    },
+    onSuccess: () => {
       toast({
         title: "Уведомление удалено", 
         description: "Уведомление успешно удалено",
         duration: 2000,
       });
     },
-    onError: (error: Error) => {
+    onSettled: () => {
+      // Всегда обновляем данные после завершения мутации
+      queryClient.invalidateQueries({ queryKey: [`/api/notifications/${userId}`] });
+    },
+    onError: (error: Error, _, context) => {
+      // Восстанавливаем предыдущие данные при ошибке
+      if (context?.previousNotifications) {
+        queryClient.setQueryData([`/api/notifications/${userId}`], context.previousNotifications);
+      }
+      
       console.error('Delete notification mutation error:', error);
       toast({
         title: "Ошибка",
