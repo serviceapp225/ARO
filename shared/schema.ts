@@ -189,3 +189,26 @@ export const insertSellCarSectionSchema = createInsertSchema(sellCarSection).omi
 
 export type InsertSellCarSection = z.infer<typeof insertSellCarSectionSchema>;
 export type SellCarSection = typeof sellCarSection.$inferSelect;
+
+// Таблица для управления каруселью рекламы
+export const advertisementCarousel = pgTable("advertisement_carousel", {
+  id: serial("id").primaryKey(),
+  title: text("title").notNull(),
+  description: text("description"),
+  imageUrl: text("image_url").notNull(),
+  linkUrl: text("link_url"),
+  buttonText: text("button_text").default("Подробнее"),
+  isActive: boolean("is_active").default(true),
+  order: integer("order").default(0),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const insertAdvertisementCarouselSchema = createInsertSchema(advertisementCarousel).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertAdvertisementCarousel = z.infer<typeof insertAdvertisementCarouselSchema>;
+export type AdvertisementCarousel = typeof advertisementCarousel.$inferSelect;

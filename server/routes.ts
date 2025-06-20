@@ -672,6 +672,70 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Advertisement Carousel routes
+  app.get("/api/advertisement-carousel", async (req, res) => {
+    try {
+      const cacheKey = 'advertisement_carousel';
+      const cached = getCached(cacheKey);
+      if (cached) {
+        return res.json(cached);
+      }
+      
+      const carousel = await storage.getAdvertisementCarousel();
+      setCache(cacheKey, carousel);
+      res.json(carousel);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch advertisement carousel" });
+    }
+  });
+
+  app.get("/api/admin/advertisement-carousel", async (req, res) => {
+    try {
+      const carousel = await storage.getAdvertisementCarousel();
+      res.json(carousel);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch advertisement carousel" });
+    }
+  });
+
+  app.post("/api/admin/advertisement-carousel", async (req, res) => {
+    try {
+      const item = await storage.createAdvertisementCarouselItem(req.body);
+      clearCachePattern('advertisement_carousel');
+      res.status(201).json(item);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to create carousel item" });
+    }
+  });
+
+  app.put("/api/admin/advertisement-carousel/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const item = await storage.updateAdvertisementCarouselItem(id, req.body);
+      if (!item) {
+        return res.status(404).json({ error: "Carousel item not found" });
+      }
+      clearCachePattern('advertisement_carousel');
+      res.json(item);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to update carousel item" });
+    }
+  });
+
+  app.delete("/api/admin/advertisement-carousel/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const deleted = await storage.deleteAdvertisementCarouselItem(id);
+      if (!deleted) {
+        return res.status(404).json({ error: "Carousel item not found" });
+      }
+      clearCachePattern('advertisement_carousel');
+      res.status(204).send();
+    } catch (error) {
+      res.status(500).json({ error: "Failed to delete carousel item" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

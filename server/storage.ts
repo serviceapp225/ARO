@@ -1,4 +1,4 @@
-import { users, carListings, bids, favorites, notifications, carAlerts, banners, sellCarSection, type User, type InsertUser, type CarListing, type InsertCarListing, type Bid, type InsertBid, type Favorite, type InsertFavorite, type Notification, type InsertNotification, type CarAlert, type InsertCarAlert, type Banner, type InsertBanner, type SellCarSection, type InsertSellCarSection } from "@shared/schema";
+import { users, carListings, bids, favorites, notifications, carAlerts, banners, sellCarSection, advertisementCarousel, type User, type InsertUser, type CarListing, type InsertCarListing, type Bid, type InsertBid, type Favorite, type InsertFavorite, type Notification, type InsertNotification, type CarAlert, type InsertCarAlert, type Banner, type InsertBanner, type SellCarSection, type InsertSellCarSection, type AdvertisementCarousel, type InsertAdvertisementCarousel } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, desc, sql, or, ilike, inArray } from "drizzle-orm";
 
@@ -62,6 +62,13 @@ export interface IStorage {
   // Sell Car Section operations
   getSellCarSection(): Promise<SellCarSection | undefined>;
   updateSellCarSection(data: Partial<InsertSellCarSection>): Promise<SellCarSection | undefined>;
+
+  // Advertisement Carousel operations
+  getAdvertisementCarousel(): Promise<AdvertisementCarousel[]>;
+  getAdvertisementCarouselItem(id: number): Promise<AdvertisementCarousel | undefined>;
+  createAdvertisementCarouselItem(item: InsertAdvertisementCarousel): Promise<AdvertisementCarousel>;
+  updateAdvertisementCarouselItem(id: number, item: Partial<InsertAdvertisementCarousel>): Promise<AdvertisementCarousel | undefined>;
+  deleteAdvertisementCarouselItem(id: number): Promise<boolean>;
 
   // Admin operations
   getAdminStats(): Promise<{
@@ -490,6 +497,46 @@ export class DatabaseStorage implements IStorage {
       const [created] = await db.insert(sellCarSection).values(data).returning();
       return created;
     }
+  }
+
+  async getAdvertisementCarousel(): Promise<AdvertisementCarousel[]> {
+    return await db
+      .select()
+      .from(advertisementCarousel)
+      .where(eq(advertisementCarousel.isActive, true))
+      .orderBy(advertisementCarousel.order);
+  }
+
+  async getAdvertisementCarouselItem(id: number): Promise<AdvertisementCarousel | undefined> {
+    const [item] = await db
+      .select()
+      .from(advertisementCarousel)
+      .where(eq(advertisementCarousel.id, id));
+    return item || undefined;
+  }
+
+  async createAdvertisementCarouselItem(item: InsertAdvertisementCarousel): Promise<AdvertisementCarousel> {
+    const [created] = await db
+      .insert(advertisementCarousel)
+      .values({ ...item, updatedAt: new Date() })
+      .returning();
+    return created;
+  }
+
+  async updateAdvertisementCarouselItem(id: number, item: Partial<InsertAdvertisementCarousel>): Promise<AdvertisementCarousel | undefined> {
+    const [updated] = await db
+      .update(advertisementCarousel)
+      .set({ ...item, updatedAt: new Date() })
+      .where(eq(advertisementCarousel.id, id))
+      .returning();
+    return updated || undefined;
+  }
+
+  async deleteAdvertisementCarouselItem(id: number): Promise<boolean> {
+    const result = await db
+      .delete(advertisementCarousel)
+      .where(eq(advertisementCarousel.id, id));
+    return result.rowCount !== null && result.rowCount > 0;
   }
 }
 
