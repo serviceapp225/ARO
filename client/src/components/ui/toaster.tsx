@@ -14,8 +14,8 @@ export function Toaster() {
   return (
     <ToastProvider>
       {toasts.map(function ({ id, title, description, action, ...props }) {
-        // Скрываем кнопку закрытия для уведомлений о сохранении поискового запроса
-        const hideCloseButton = title === "Поисковый запрос сохранён"
+        // Скрываем кнопку закрытия для уведомлений о поисковых запросах
+        const hideCloseButton = title === "Поисковый запрос сохранён" || title === "Поисковый запрос удален"
         
         return (
           <Toast key={id} {...props}>
