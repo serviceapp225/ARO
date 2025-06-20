@@ -26,8 +26,9 @@ export function HeroBanners() {
       if (!response.ok) throw new Error('Failed to fetch banners');
       return response.json();
     },
-    staleTime: 30000, // 30 секунд - быстрее обновление для админов
-    refetchOnWindowFocus: true
+    staleTime: 5000, // 5 секунд - быстрое обновление
+    refetchOnWindowFocus: true,
+    refetchInterval: 10000 // Автообновление каждые 10 секунд
   });
 
   // Сортируем банеры по порядку и берем первые 3

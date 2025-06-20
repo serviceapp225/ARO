@@ -9,7 +9,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Car, Save, Eye, Plus, Edit, Trash2 } from "lucide-react";
+import { Car, Save, Eye, Plus, Edit, Trash2, RefreshCw } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 
@@ -233,6 +233,12 @@ export function MainBannersManagement() {
     window.open('/', '_blank');
   };
 
+  const handleRefresh = () => {
+    queryClient.invalidateQueries({ queryKey: ['/api/banners'] });
+    queryClient.invalidateQueries({ queryKey: ['/api/banners', 'main'] });
+    toast({ title: "Обновлено", description: "Данные банеров обновлены" });
+  };
+
   const getBannerTitle = (index: number) => {
     const titles = ["Продай свое авто", "Специальное предложение", "Безопасные сделки"];
     return titles[index] || `Банер ${index + 1}`;
@@ -261,10 +267,16 @@ export function MainBannersManagement() {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>Основные банеры главной страницы</CardTitle>
-          <Button variant="outline" size="sm" onClick={handlePreview}>
-            <Eye className="h-4 w-4 mr-2" />
-            Предпросмотр на сайте
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm" onClick={handleRefresh}>
+              <RefreshCw className="h-4 w-4 mr-2" />
+              Обновить
+            </Button>
+            <Button variant="outline" size="sm" onClick={handlePreview}>
+              <Eye className="h-4 w-4 mr-2" />
+              Предпросмотр на сайте
+            </Button>
+          </div>
         </CardHeader>
         
         <CardContent>
