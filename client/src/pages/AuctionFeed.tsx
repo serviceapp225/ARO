@@ -345,26 +345,7 @@ export default function AuctionFeed() {
               </div>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Цена (Сомони)
-              </label>
-              <div className="grid grid-cols-2 gap-4">
-                <Input
-                  type="number"
-                  placeholder="От"
-                  value={searchFilters.priceFrom}
-                  onChange={(e) => handleFilterChange("priceFrom", e.target.value)}
-                />
-                
-                <Input
-                  type="number"
-                  placeholder="До"
-                  value={searchFilters.priceTo}
-                  onChange={(e) => handleFilterChange("priceTo", e.target.value)}
-                />
-              </div>
-            </div>
+
 
             {/* Search and Clear Buttons */}
             <div className="flex flex-col gap-3 mt-6">
