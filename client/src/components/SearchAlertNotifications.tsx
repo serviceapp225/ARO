@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Bell, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,6 +13,7 @@ interface SearchAlertNotificationsProps {
 export function SearchAlertNotifications({ userId }: SearchAlertNotificationsProps) {
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const [deletingIds, setDeletingIds] = useState<Set<number>>(new Set());
 
   const { data: carAlerts = [], isLoading } = useQuery<CarAlert[]>({
     queryKey: ['/api/car-alerts', userId],
@@ -30,6 +32,13 @@ export function SearchAlertNotifications({ userId }: SearchAlertNotificationsPro
 
   const deleteCarAlertMutation = useMutation({
     mutationFn: async (alertId: number) => {
+      // Проверяем, не удаляется ли уже этот элемент
+      if (deletingIds.has(alertId)) {
+        throw new Error('Already deleting');
+      }
+      
+      setDeletingIds((prev: Set<number>) => new Set(prev).add(alertId));
+      
       const response = await fetch(`/api/car-alerts/${alertId}`, {
         method: 'DELETE',
       });
@@ -38,7 +47,6 @@ export function SearchAlertNotifications({ userId }: SearchAlertNotificationsPro
           // Запрос уже удален, считаем это успехом
           return {};
         }
-        const errorData = await response.text();
         throw new Error(`Failed to delete car alert: ${response.status}`);
       }
       return {};
@@ -58,6 +66,13 @@ export function SearchAlertNotifications({ userId }: SearchAlertNotificationsPro
       return { previousAlerts };
     },
     onError: (error, alertId, context) => {
+      // Убираем из списка удаляемых
+      setDeletingIds((prev: Set<number>) => {
+        const newSet = new Set(prev);
+        newSet.delete(alertId);
+        return newSet;
+      });
+      
       // Откатываем изменения при ошибке
       if (context?.previousAlerts) {
         queryClient.setQueryData(['/api/car-alerts', userId], context.previousAlerts);
@@ -68,7 +83,14 @@ export function SearchAlertNotifications({ userId }: SearchAlertNotificationsPro
         duration: 2000,
       });
     },
-    onSuccess: () => {
+    onSuccess: (_, alertId) => {
+      // Убираем из списка удаляемых
+      setDeletingIds((prev: Set<number>) => {
+        const newSet = new Set(prev);
+        newSet.delete(alertId);
+        return newSet;
+      });
+      
       toast({
         title: "Поисковый запрос удален",
         duration: 2000,
@@ -201,10 +223,10 @@ export function SearchAlertNotifications({ userId }: SearchAlertNotificationsPro
                   variant="outline"
                   size="sm"
                   onClick={() => deleteCarAlertMutation.mutate(alert.id)}
-                  disabled={deleteCarAlertMutation.isPending}
+                  disabled={deletingIds.has(alert.id)}
                   className="border-red-300 text-red-600 hover:bg-red-50 disabled:opacity-50"
                 >
-                  {deleteCarAlertMutation.isPending ? (
+                  {deletingIds.has(alert.id) ? (
                     <div className="w-4 h-4 border-2 border-red-300 border-t-red-600 rounded-full animate-spin" />
                   ) : (
                     <Trash2 className="w-4 h-4" />
