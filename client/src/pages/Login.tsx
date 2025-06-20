@@ -81,8 +81,8 @@ export default function Login() {
         </CardHeader>
         
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="space-y-2">
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-1">
               <Label htmlFor="fullName">ФИО</Label>
               <Input
                 id="fullName"
@@ -95,12 +95,12 @@ export default function Login() {
                   const lettersOnly = value.replace(/[^а-яёА-ЯЁa-zA-Z\s]/g, '');
                   setFullName(lettersOnly);
                 }}
-                className="text-lg"
+                className="text-base"
                 required
               />
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-1">
               <Label htmlFor="phone">Номер телефона</Label>
               <Input
                 id="phone"
@@ -108,23 +108,23 @@ export default function Login() {
                 placeholder="+992 (__) ___-__-__"
                 value={phoneNumber}
                 onChange={handlePhoneChange}
-                className="text-lg"
+                className="text-base"
                 required
               />
-              <p className="text-sm text-neutral-500">
+              <p className="text-xs text-neutral-500">
                 Мы отправим код подтверждения на этот номер
               </p>
             </div>
 
-            <div className="flex items-start space-x-3">
+            <div className="flex items-start space-x-2">
               <Checkbox
                 id="terms"
                 checked={agreeToTerms}
                 onCheckedChange={(checked) => setAgreeToTerms(checked as boolean)}
-                className="mt-1"
+                className="mt-0.5"
               />
-              <div className="text-sm">
-                <Label htmlFor="terms" className="cursor-pointer">
+              <div className="text-xs">
+                <Label htmlFor="terms" className="cursor-pointer leading-tight">
                   Я согласен с{" "}
                   <Link href="/terms" className="text-primary hover:underline">
                     условиями использования
@@ -153,8 +153,8 @@ export default function Login() {
             </Button>
           </form>
 
-          <div className="mt-6 text-center">
-            <p className="text-sm text-neutral-600">
+          <div className="mt-3 text-center">
+            <p className="text-xs text-neutral-600">
               Нет аккаунта?{" "}
               <Link href="/register" className="text-primary hover:underline font-medium">
                 Зарегистрироваться
