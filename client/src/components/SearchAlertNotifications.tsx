@@ -52,16 +52,16 @@ export function SearchAlertNotifications({ userId }: SearchAlertNotificationsPro
       return {};
     },
     onMutate: async (alertId) => {
+      // Добавляем в список удаляемых для показа индикатора загрузки
+      setDeletingIds((prev: Set<number>) => new Set(prev).add(alertId));
+      
       // Отменяем существующие запросы
       await queryClient.cancelQueries({ queryKey: ['/api/car-alerts', userId] });
       
       // Получаем предыдущие данные для возможного отката
       const previousAlerts = queryClient.getQueryData<CarAlert[]>(['/api/car-alerts', userId]);
       
-      // Оптимистично обновляем данные
-      queryClient.setQueryData<CarAlert[]>(['/api/car-alerts', userId], (old = []) =>
-        old.filter(alert => alert.id !== alertId)
-      );
+      // НЕ делаем оптимистическое обновление - ждем подтверждения с сервера
       
       return { previousAlerts };
     },
@@ -83,7 +83,7 @@ export function SearchAlertNotifications({ userId }: SearchAlertNotificationsPro
         duration: 2000,
       });
     },
-    onSuccess: (_, alertId) => {
+    onSuccess: async (_, alertId) => {
       // Убираем из списка удаляемых
       setDeletingIds((prev: Set<number>) => {
         const newSet = new Set(prev);
@@ -91,13 +91,23 @@ export function SearchAlertNotifications({ userId }: SearchAlertNotificationsPro
         return newSet;
       });
       
+      // Принудительно очищаем весь кеш
+      queryClient.removeQueries({ queryKey: ['/api/car-alerts', userId] });
+      
+      // Даем серверу время очистить свой кеш
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
+      // Принудительно загружаем свежие данные
+      await queryClient.refetchQueries({ queryKey: ['/api/car-alerts', userId] });
+      
       toast({
         title: "Поисковый запрос удален",
         duration: 2000,
       });
     },
     onSettled: () => {
-      // Обновляем кэш в любом случае
+      // Очищаем весь кеш для этого пользователя
+      queryClient.removeQueries({ queryKey: ['/api/car-alerts', userId] });
       queryClient.invalidateQueries({ queryKey: ['/api/car-alerts', userId] });
     }
   });
