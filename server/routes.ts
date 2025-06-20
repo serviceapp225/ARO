@@ -36,6 +36,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { status = "active", limit } = req.query;
       const cacheKey = `listings_${status}_${limit || 'all'}`;
       
+      // Clear cache to apply new limits
+      clearCachePattern('/api/listings');
+      
       // Check cache first
       const cached = getCached(cacheKey);
       if (cached) {
@@ -44,7 +47,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const listings = await storage.getListingsByStatus(
         status as string, 
-        limit ? Number(limit) : undefined
+        limit ? Number(limit) : 20 // Limit to 20 items for better performance
       );
       
       // Get bid counts for each listing
