@@ -34,41 +34,49 @@ export function SearchAlertNotifications({ userId }: SearchAlertNotificationsPro
         method: 'DELETE',
       });
       if (!response.ok) {
+        if (response.status === 404) {
+          // Запрос уже удален, считаем это успехом
+          return {};
+        }
         const errorData = await response.text();
-        console.error('Delete car alert error:', response.status, errorData);
-        throw new Error(`Failed to delete car alert: ${response.status} ${errorData}`);
+        throw new Error(`Failed to delete car alert: ${response.status}`);
       }
-      if (response.status === 204) {
-        return {};
-      }
-      return response.json();
+      return {};
     },
-    onSuccess: async (_, alertId) => {
-      // Обновляем список поисковых запросов
-      queryClient.setQueryData([`/api/car-alerts/${userId}`], (old: CarAlert[] = []) =>
+    onMutate: async (alertId) => {
+      // Отменяем существующие запросы
+      await queryClient.cancelQueries({ queryKey: ['/api/car-alerts', userId] });
+      
+      // Получаем предыдущие данные для возможного отката
+      const previousAlerts = queryClient.getQueryData<CarAlert[]>(['/api/car-alerts', userId]);
+      
+      // Оптимистично обновляем данные
+      queryClient.setQueryData<CarAlert[]>(['/api/car-alerts', userId], (old = []) =>
         old.filter(alert => alert.id !== alertId)
       );
       
-      // Обновляем список уведомлений (удаляем связанные с этим запросом)
-      queryClient.setQueryData([`/api/notifications/${userId}`], (old: any[] = []) =>
-        old.filter(notification => notification.alertId !== alertId)
-      );
-      
-      // Инвалидируем кэш уведомлений для обновления счетчика в колокольчике
-      queryClient.invalidateQueries({ queryKey: [`/api/notifications/${userId}`] });
-      
-      toast({
-        title: "Поисковый запрос удален",
-        duration: 2000,
-      });
+      return { previousAlerts };
     },
-    onError: (error: Error) => {
-      console.error('Delete car alert mutation error:', error);
+    onError: (error, alertId, context) => {
+      // Откатываем изменения при ошибке
+      if (context?.previousAlerts) {
+        queryClient.setQueryData(['/api/car-alerts', userId], context.previousAlerts);
+      }
       toast({
         title: "Ошибка при удалении",
         variant: "destructive", 
         duration: 2000,
       });
+    },
+    onSuccess: () => {
+      toast({
+        title: "Поисковый запрос удален",
+        duration: 2000,
+      });
+    },
+    onSettled: () => {
+      // Обновляем кэш в любом случае
+      queryClient.invalidateQueries({ queryKey: ['/api/car-alerts', userId] });
     }
   });
 
@@ -193,9 +201,14 @@ export function SearchAlertNotifications({ userId }: SearchAlertNotificationsPro
                   variant="outline"
                   size="sm"
                   onClick={() => deleteCarAlertMutation.mutate(alert.id)}
-                  className="border-red-300 text-red-600 hover:bg-red-50"
+                  disabled={deleteCarAlertMutation.isPending}
+                  className="border-red-300 text-red-600 hover:bg-red-50 disabled:opacity-50"
                 >
-                  <Trash2 className="w-4 h-4" />
+                  {deleteCarAlertMutation.isPending ? (
+                    <div className="w-4 h-4 border-2 border-red-300 border-t-red-600 rounded-full animate-spin" />
+                  ) : (
+                    <Trash2 className="w-4 h-4" />
+                  )}
                 </Button>
               </div>
             </div>
