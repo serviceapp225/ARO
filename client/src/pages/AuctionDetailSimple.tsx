@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ArrowLeft, Heart, Share2, Eye, Car, Users, Calendar, MapPin, Fuel, Palette, Settings, Camera } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useFavorites } from "@/contexts/FavoritesContext";
@@ -33,6 +34,7 @@ export default function AuctionDetail() {
   const [isDragging, setIsDragging] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
   const [currentPrice, setCurrentPrice] = useState(0);
+  const [showActivationDialog, setShowActivationDialog] = useState(false);
   
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -212,17 +214,8 @@ export default function AuctionDetail() {
     }, {
       onError: (error: any) => {
         if (error.status === 403 && error.data?.error === "Account not activated") {
-          // Show activation dialog instead of toast
-          const result = window.confirm(
-            "Аккаунт не активирован\n\n" +
-            "Вы можете просматривать аукционы, но не можете делать ставки. " +
-            "Для активации аккаунта обратитесь в службу поддержки через WhatsApp.\n\n" +
-            "Нажмите OK, чтобы связаться с поддержкой"
-          );
-          
-          if (result) {
-            window.open("https://wa.me/992000000000?text=Здравствуйте! Мне нужно активировать аккаунт на AUTOBID.TJ", "_blank");
-          }
+          // Show activation dialog
+          setShowActivationDialog(true);
         } else {
           toast({
             title: "Ошибка",
@@ -680,6 +673,38 @@ export default function AuctionDetail() {
           </div>
         </div>
       )}
+
+      {/* Activation Dialog */}
+      <Dialog open={showActivationDialog} onOpenChange={setShowActivationDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center">
+                <span className="text-red-600">⚠️</span>
+              </div>
+              Аккаунт не активирован
+            </DialogTitle>
+            <DialogDescription>
+              Вы можете просматривать аукционы, но не можете делать ставки. 
+              Для активации аккаунта обратитесь в службу поддержки через WhatsApp.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-2">
+            <Button variant="outline" onClick={() => setShowActivationDialog(false)}>
+              Закрыть
+            </Button>
+            <Button 
+              onClick={() => {
+                window.open("https://wa.me/992000000000?text=Здравствуйте! Мне нужно активировать аккаунт на AUTOBID.TJ", "_blank");
+                setShowActivationDialog(false);
+              }}
+              className="bg-green-600 hover:bg-green-700"
+            >
+              Связаться с поддержкой
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

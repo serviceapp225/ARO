@@ -4,6 +4,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { useAuctions } from '@/contexts/AuctionContext';
 import { useFavorites } from '@/contexts/FavoritesContext';
@@ -41,6 +42,7 @@ export default function AuctionDetail() {
   const [showBidInput, setShowBidInput] = useState(false);
   const [isPlacingBid, setIsPlacingBid] = useState(false);
   const [imageLoadError, setImageLoadError] = useState(false);
+  const [showActivationDialog, setShowActivationDialog] = useState(false);
   
   const { toast } = useToast();
   const queryClient = useQueryClient();
