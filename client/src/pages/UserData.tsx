@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { ArrowLeft, User, Phone, Mail, Upload, Camera, Edit, Save, X } from "lucide-react";
+import { ArrowLeft, User, Phone, Mail, Upload, Camera } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,7 +12,6 @@ export default function UserData() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const { userData, updateUserData } = useUserData();
-  const [isEditing, setIsEditing] = useState(false);
   const [tempData, setTempData] = useState(userData);
 
   // Синхронизируем tempData с userData при изменениях
@@ -23,16 +22,9 @@ export default function UserData() {
   const handleFileUpload = (type: 'front' | 'back') => (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      if (isEditing) {
-        setTempData(prev => ({
-          ...prev,
-          [type === 'front' ? 'passportFront' : 'passportBack']: file
-        }));
-      } else {
-        updateUserData({
-          [type === 'front' ? 'passportFront' : 'passportBack']: file
-        });
-      }
+      updateUserData({
+        [type === 'front' ? 'passportFront' : 'passportBack']: file
+      });
       
       toast({
         title: "Файл загружен",
@@ -42,22 +34,12 @@ export default function UserData() {
     }
   };
 
-  const handleSave = () => {
-    updateUserData(tempData);
-    setIsEditing(false);
-    toast({
-      title: "Данные сохранены",
-      description: "Ваши личные данные успешно обновлены",
-      duration: 3000,
-    });
+  const handleInputChange = (field: string, value: string) => {
+    setTempData(prev => ({ ...prev, [field]: value }));
+    updateUserData({ [field]: value });
   };
 
-  const handleCancel = () => {
-    setTempData(userData);
-    setIsEditing(false);
-  };
-
-  const currentData = isEditing ? tempData : userData;
+  const currentData = userData;
 
   return (
     <div className="min-h-screen bg-gray-50 pb-20">
@@ -78,45 +60,22 @@ export default function UserData() {
           
           {/* Personal Information */}
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
+            <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <User className="w-5 h-5" />
                 Личная информация
               </CardTitle>
-              {!isEditing ? (
-                <Button variant="outline" size="sm" onClick={() => setIsEditing(true)}>
-                  <Edit className="w-4 h-4 mr-2" />
-                  Редактировать
-                </Button>
-              ) : (
-                <div className="flex gap-2">
-                  <Button variant="outline" size="sm" onClick={handleCancel}>
-                    <X className="w-4 h-4 mr-2" />
-                    Отмена
-                  </Button>
-                  <Button size="sm" onClick={handleSave}>
-                    <Save className="w-4 h-4 mr-2" />
-                    Сохранить
-                  </Button>
-                </div>
-              )}
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
                 <Label htmlFor="fullName">ФИО</Label>
-                {isEditing ? (
-                  <Input
-                    id="fullName"
-                    value={currentData.fullName}
-                    onChange={(e) => setTempData(prev => ({ ...prev, fullName: e.target.value }))}
-                    placeholder="Введите ваше полное имя"
-                    className="mt-1"
-                  />
-                ) : (
-                  <div className="mt-1 p-3 bg-gray-50 rounded-md text-gray-700">
-                    {currentData.fullName || "Не указано"}
-                  </div>
-                )}
+                <Input
+                  id="fullName"
+                  value={currentData.fullName}
+                  onChange={(e) => handleInputChange('fullName', e.target.value)}
+                  placeholder="Введите ваше полное имя"
+                  className="mt-1"
+                />
               </div>
 
               <div>
@@ -130,21 +89,14 @@ export default function UserData() {
 
               <div>
                 <Label htmlFor="email">Электронная почта</Label>
-                {isEditing ? (
-                  <Input
-                    id="email"
-                    type="email"
-                    value={currentData.email}
-                    onChange={(e) => setTempData(prev => ({ ...prev, email: e.target.value }))}
-                    placeholder="example@mail.com"
-                    className="mt-1"
-                  />
-                ) : (
-                  <div className="mt-1 p-3 bg-gray-50 rounded-md text-gray-700 flex items-center gap-2">
-                    <Mail className="w-4 h-4" />
-                    {currentData.email || "Не указано"}
-                  </div>
-                )}
+                <Input
+                  id="email"
+                  type="email"
+                  value={currentData.email}
+                  onChange={(e) => handleInputChange('email', e.target.value)}
+                  placeholder="example@mail.com"
+                  className="mt-1"
+                />
               </div>
             </CardContent>
           </Card>
