@@ -236,3 +236,20 @@ export const insertDocumentSchema = createInsertSchema(documents).omit({
 
 export type InsertDocument = z.infer<typeof insertDocumentSchema>;
 export type Document = typeof documents.$inferSelect;
+
+// Alert Views table to track when users have seen alert notifications
+export const alertViews = pgTable("alert_views", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  alertId: integer("alert_id").notNull().references(() => carAlerts.id, { onDelete: "cascade" }),
+  listingId: integer("listing_id").notNull().references(() => carListings.id, { onDelete: "cascade" }),
+  viewedAt: timestamp("viewed_at").defaultNow().notNull(),
+});
+
+export const insertAlertViewSchema = createInsertSchema(alertViews).omit({
+  id: true,
+  viewedAt: true,
+});
+
+export type InsertAlertView = z.infer<typeof insertAlertViewSchema>;
+export type AlertView = typeof alertViews.$inferSelect;

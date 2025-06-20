@@ -1,4 +1,4 @@
-import { users, carListings, bids, favorites, notifications, carAlerts, banners, sellCarSection, advertisementCarousel, documents, type User, type InsertUser, type CarListing, type InsertCarListing, type Bid, type InsertBid, type Favorite, type InsertFavorite, type Notification, type InsertNotification, type CarAlert, type InsertCarAlert, type Banner, type InsertBanner, type SellCarSection, type InsertSellCarSection, type AdvertisementCarousel, type InsertAdvertisementCarousel, type Document, type InsertDocument } from "@shared/schema";
+import { users, carListings, bids, favorites, notifications, carAlerts, banners, sellCarSection, advertisementCarousel, documents, alertViews, type User, type InsertUser, type CarListing, type InsertCarListing, type Bid, type InsertBid, type Favorite, type InsertFavorite, type Notification, type InsertNotification, type CarAlert, type InsertCarAlert, type Banner, type InsertBanner, type SellCarSection, type InsertSellCarSection, type AdvertisementCarousel, type InsertAdvertisementCarousel, type Document, type InsertDocument, type AlertView, type InsertAlertView } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, desc, sql, or, ilike, inArray } from "drizzle-orm";
 
@@ -76,6 +76,10 @@ export interface IStorage {
   createDocument(document: InsertDocument): Promise<Document>;
   updateDocument(id: number, document: Partial<InsertDocument>): Promise<Document | undefined>;
   deleteDocument(id: number): Promise<boolean>;
+
+  // Alert Views operations
+  createAlertView(view: InsertAlertView): Promise<AlertView>;
+  hasUserViewedAlert(userId: number, alertId: number, listingId: number): Promise<boolean>;
 
   // Admin operations
   getAdminStats(): Promise<{
@@ -663,6 +667,27 @@ export class DatabaseStorage implements IStorage {
   async deleteDocument(id: number): Promise<boolean> {
     const result = await db.delete(documents).where(eq(documents.id, id));
     return result.rowCount !== null && result.rowCount > 0;
+  }
+
+  async createAlertView(insertView: InsertAlertView): Promise<AlertView> {
+    const [view] = await db.insert(alertViews).values(insertView).returning();
+    return view;
+  }
+
+  async hasUserViewedAlert(userId: number, alertId: number, listingId: number): Promise<boolean> {
+    const result = await db
+      .select({ id: alertViews.id })
+      .from(alertViews)
+      .where(
+        and(
+          eq(alertViews.userId, userId),
+          eq(alertViews.alertId, alertId),
+          eq(alertViews.listingId, listingId)
+        )
+      )
+      .limit(1);
+    
+    return result.length > 0;
   }
 }
 
