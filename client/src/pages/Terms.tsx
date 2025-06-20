@@ -56,18 +56,7 @@ export default function Terms() {
             </div>
           </div>
 
-          {/* Quick Summary */}
-          <div className="mt-6 bg-blue-50 rounded-2xl p-6">
-            <h3 className="text-lg font-semibold text-blue-900 mb-4">
-              Основные пункты правил:
-            </h3>
-            <ul className="space-y-2 text-blue-800">
-              <li className="flex items-start gap-2">
-                <span className="w-2 h-2 bg-blue-600 rounded-full mt-2 flex-shrink-0"></span>
-                Все транзакции проходят через защищенную систему
-              </li>
-            </ul>
-          </div>
+
         </div>
       </main>
     </div>
