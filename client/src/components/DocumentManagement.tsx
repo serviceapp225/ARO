@@ -39,7 +39,7 @@ export function DocumentManagement() {
     order: 0,
   });
 
-  const { data: documents = [], isLoading } = useQuery({
+  const { data: documents = [], isLoading } = useQuery<Document[]>({
     queryKey: ["/api/admin/documents", selectedType !== "all" ? selectedType : undefined],
     queryFn: async ({ queryKey }) => {
       const [url, type] = queryKey;
@@ -130,7 +130,7 @@ export function DocumentManagement() {
       fileUrl: document.fileUrl || "",
       fileName: document.fileName || "",
       fileSize: document.fileSize || 0,
-      order: document.order,
+      order: document.order || 0,
     });
     setIsDialogOpen(true);
   };
@@ -313,7 +313,7 @@ export function DocumentManagement() {
             </CardContent>
           </Card>
         ) : (
-          documents.map((document) => (
+          documents.map((document: Document) => (
             <Card key={document.id}>
               <CardHeader>
                 <div className="flex items-center justify-between">
@@ -354,7 +354,7 @@ export function DocumentManagement() {
                   )}
                   <div className="flex items-center justify-between text-xs text-gray-400">
                     <span>Порядок: {document.order}</span>
-                    <span>Создан: {new Date(document.createdAt).toLocaleDateString("ru-RU")}</span>
+                    <span>Создан: {document.createdAt ? new Date(document.createdAt).toLocaleDateString("ru-RU") : "Неизвестно"}</span>
                   </div>
                 </div>
               </CardContent>

@@ -11,6 +11,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useLocation } from 'wouter';
 import { SellCarSectionManagement } from '@/components/SellCarSectionManagement';
 import { AdvertisementCarouselManagement } from '@/components/AdvertisementCarouselManagement';
+import { DocumentManagement } from '@/components/DocumentManagement';
 
 interface User {
   id: number;
@@ -44,7 +45,7 @@ export default function AdminPanel() {
   const { user } = useAuth();
   const [, setLocation] = useLocation();
   const { toast } = useToast();
-  const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'listings' | 'sell-section' | 'advertisement'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'listings' | 'sell-section' | 'advertisement' | 'documents'>('overview');
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('all');
 
@@ -246,6 +247,16 @@ export default function AdminPanel() {
             }`}
           >
             Реклама
+          </button>
+          <button
+            onClick={() => setActiveTab('documents')}
+            className={`flex-1 py-2 px-4 rounded-md font-medium transition-colors ${
+              activeTab === 'documents'
+                ? 'bg-white text-gray-900 shadow-sm'
+                : 'text-gray-600 hover:text-gray-900'
+            }`}
+          >
+            Документы
           </button>
 
         </div>
@@ -493,6 +504,13 @@ export default function AdminPanel() {
         {activeTab === 'advertisement' && (
           <div className="space-y-6">
             <AdvertisementCarouselManagement />
+          </div>
+        )}
+
+        {/* Documents Tab */}
+        {activeTab === 'documents' && (
+          <div className="space-y-6">
+            <DocumentManagement />
           </div>
         )}
 
