@@ -89,9 +89,9 @@ export function SellCarSectionManagement() {
     return colorMap[color] || color;
   };
 
-  // Initialize form only once when data first loads
+  // Initialize form when data loads but preserve changes during editing
   useEffect(() => {
-    if (section && !form.formState.isDirty) {
+    if (section && !isEditing) {
       form.reset({
         title: section.title,
         subtitle: section.subtitle,
@@ -105,15 +105,27 @@ export function SellCarSectionManagement() {
         buttonTextColor: section.buttonTextColor,
       });
     }
-  }, [section?.id]);
+  }, [section, isEditing]);
 
   const updateMutation = useMutation({
     mutationFn: (data: SellCarSectionForm) => 
       apiRequest('PUT', '/api/admin/sell-car-section', data),
-    onSuccess: () => {
-      // Don't invalidate queries to prevent form reset
+    onSuccess: (updatedSection) => {
       toast({ title: "Успешно", description: "Секция обновлена" });
       setIsEditing(false);
+      // Update form with saved data to sync state
+      form.reset({
+        title: updatedSection.title,
+        subtitle: updatedSection.subtitle,
+        buttonText: updatedSection.buttonText,
+        backgroundImageUrl: updatedSection.backgroundImageUrl,
+        linkUrl: updatedSection.linkUrl,
+        isActive: updatedSection.isActive,
+        overlayOpacity: updatedSection.overlayOpacity,
+        textColor: updatedSection.textColor,
+        buttonColor: updatedSection.buttonColor,
+        buttonTextColor: updatedSection.buttonTextColor,
+      });
     },
     onError: (error: any) => {
       toast({ 
@@ -147,16 +159,8 @@ export function SellCarSectionManagement() {
   };
 
   const handleRefresh = () => {
-    if (!form.formState.isDirty) {
-      queryClient.invalidateQueries({ queryKey: ['/api/sell-car-section'] });
-      toast({ title: "Обновлено", description: "Данные секции обновлены" });
-    } else {
-      toast({ 
-        title: "Внимание", 
-        description: "Сначала сохраните или отмените изменения",
-        variant: "destructive" 
-      });
-    }
+    queryClient.invalidateQueries({ queryKey: ['/api/sell-car-section'] });
+    toast({ title: "Обновлено", description: "Данные секции обновлены" });
   };
 
   const handlePreview = () => {
