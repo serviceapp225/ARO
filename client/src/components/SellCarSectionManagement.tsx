@@ -89,9 +89,9 @@ export function SellCarSectionManagement() {
     return colorMap[color] || color;
   };
 
-  // Update form when data loads
+  // Initialize form only once when data first loads
   useEffect(() => {
-    if (section && !isEditing) {
+    if (section && !form.formState.isDirty) {
       form.reset({
         title: section.title,
         subtitle: section.subtitle,
@@ -105,13 +105,13 @@ export function SellCarSectionManagement() {
         buttonTextColor: section.buttonTextColor,
       });
     }
-  }, [section, form, isEditing]);
+  }, [section?.id]);
 
   const updateMutation = useMutation({
     mutationFn: (data: SellCarSectionForm) => 
       apiRequest('PUT', '/api/admin/sell-car-section', data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/sell-car-section'] });
+      // Don't invalidate queries to prevent form reset
       toast({ title: "Успешно", description: "Секция обновлена" });
       setIsEditing(false);
     },
@@ -147,8 +147,16 @@ export function SellCarSectionManagement() {
   };
 
   const handleRefresh = () => {
-    queryClient.invalidateQueries({ queryKey: ['/api/sell-car-section'] });
-    toast({ title: "Обновлено", description: "Данные секции обновлены" });
+    if (!form.formState.isDirty) {
+      queryClient.invalidateQueries({ queryKey: ['/api/sell-car-section'] });
+      toast({ title: "Обновлено", description: "Данные секции обновлены" });
+    } else {
+      toast({ 
+        title: "Внимание", 
+        description: "Сначала сохраните или отмените изменения",
+        variant: "destructive" 
+      });
+    }
   };
 
   const handlePreview = () => {
