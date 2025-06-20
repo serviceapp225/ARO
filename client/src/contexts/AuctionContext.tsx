@@ -1,6 +1,4 @@
 import { createContext, useContext, useState, ReactNode, useCallback, useEffect } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { queryClient } from '@/lib/queryClient';
 
 interface Auction {
   id: string;
@@ -35,24 +33,48 @@ const AuctionContext = createContext<AuctionContextType | undefined>(undefined);
 
 export function AuctionProvider({ children }: { children: ReactNode }) {
   const [selectedAuction, setSelectedAuction] = useState<Auction | null>(null);
+  const [listings, setListings] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Clear all cache on mount
-  useEffect(() => {
-    queryClient.clear();
+  // Fetch listings with direct fetch
+  const fetchListings = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      console.log("Fetching listings...");
+      const response = await fetch('/api/listings', {
+        cache: 'no-cache',
+        headers: {
+          'Cache-Control': 'no-cache',
+          'Pragma': 'no-cache'
+        }
+      });
+      console.log("Response:", response.status, response.ok);
+      
+      if (response.ok) {
+        const data = await response.json();
+        console.log("Direct fetch received data:", data?.length, "items, first item:", data?.[0]);
+        setListings(Array.isArray(data) ? data : []);
+      } else {
+        console.error("Response not ok:", response.status);
+        setListings([]);
+      }
+    } catch (error) {
+      console.error('Error fetching listings:', error);
+      setListings([]);
+    } finally {
+      setIsLoading(false);
+    }
   }, []);
 
-  // Fetch listings using React Query with aggressive cache clearing
-  const { data: listings, isLoading, refetch } = useQuery({
-    queryKey: ['/api/listings'],
-    staleTime: 0,
-    gcTime: 0,
-    refetchOnMount: true,
-    refetchOnWindowFocus: true,
-    retry: 1
-  });
+  useEffect(() => {
+    fetchListings();
+    const interval = setInterval(fetchListings, 30000);
+    return () => clearInterval(interval);
+  }, [fetchListings]);
 
   // Debug logging
   console.log("AuctionContext:", {
+    rawData: listings,
     isArray: Array.isArray(listings),
     count: Array.isArray(listings) ? listings.length : 0,
     loading: isLoading
@@ -83,9 +105,8 @@ export function AuctionProvider({ children }: { children: ReactNode }) {
 
 
   const refreshAuctions = useCallback(() => {
-    queryClient.invalidateQueries({ queryKey: ['/api/listings'] });
-    refetch();
-  }, [refetch]);
+    fetchListings();
+  }, [fetchListings]);
 
   return (
     <AuctionContext.Provider value={{ auctions, loading: isLoading, selectedAuction, setSelectedAuction, refreshAuctions }}>
