@@ -193,6 +193,12 @@ export default function AuctionDetail() {
       return;
     }
     
+    // Check if user is active before allowing bid submission
+    if (!currentUser.isActive) {
+      setShowActivationDialog(true);
+      return;
+    }
+    
     if (!bidAmount || !auction) return;
     
     const newBidAmount = parseFloat(bidAmount);

@@ -311,6 +311,12 @@ export default function AuctionDetail() {
       return;
     }
 
+    // Check if user is active before allowing bid
+    if (!currentUser.isActive) {
+      setShowActivationDialog(true);
+      return;
+    }
+
     const timeLeftData = calculateTimeLeft(auction.auctionEndTime);
     const isAuctionEnded = timeLeftData.days === 0 && timeLeftData.hours === 0 && 
                           timeLeftData.minutes === 0 && timeLeftData.seconds === 0;
@@ -824,6 +830,13 @@ export default function AuctionDetail() {
                       setLocation('/login');
                       return;
                     }
+                    
+                    // Check if user is active before showing bid input
+                    if (!currentUser.isActive) {
+                      setShowActivationDialog(true);
+                      return;
+                    }
+                    
                     setShowBidInput(true);
                   }}
                   className="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-3"
