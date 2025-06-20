@@ -112,14 +112,10 @@ export function SearchAlertNotifications({ userId }: SearchAlertNotificationsPro
         return newSet;
       });
       
-      // Принудительно очищаем весь кеш
-      queryClient.removeQueries({ queryKey: ['/api/car-alerts', userId] });
-      
-      // Даем серверу время очистить свой кеш
-      await new Promise(resolve => setTimeout(resolve, 100));
-      
-      // Принудительно загружаем свежие данные
-      await queryClient.refetchQueries({ queryKey: ['/api/car-alerts', userId] });
+      // Оптимистично обновляем локальные данные
+      queryClient.setQueryData<CarAlert[]>(['/api/car-alerts', userId], (old = []) =>
+        old.filter(alert => alert.id !== alertId)
+      );
       
       toast({
         title: "Поисковый запрос удален",
@@ -133,10 +129,6 @@ export function SearchAlertNotifications({ userId }: SearchAlertNotificationsPro
         newSet.delete(alertId);
         return newSet;
       });
-      
-      // Очищаем весь кеш для этого пользователя
-      queryClient.removeQueries({ queryKey: ['/api/car-alerts', userId] });
-      queryClient.invalidateQueries({ queryKey: ['/api/car-alerts', userId] });
     }
   });
 
