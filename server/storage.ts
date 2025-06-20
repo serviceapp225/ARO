@@ -1,4 +1,4 @@
-import { users, carListings, bids, favorites, notifications, carAlerts, banners, sellCarSection, advertisementCarousel, type User, type InsertUser, type CarListing, type InsertCarListing, type Bid, type InsertBid, type Favorite, type InsertFavorite, type Notification, type InsertNotification, type CarAlert, type InsertCarAlert, type Banner, type InsertBanner, type SellCarSection, type InsertSellCarSection, type AdvertisementCarousel, type InsertAdvertisementCarousel } from "@shared/schema";
+import { users, carListings, bids, favorites, notifications, carAlerts, banners, sellCarSection, advertisementCarousel, documents, type User, type InsertUser, type CarListing, type InsertCarListing, type Bid, type InsertBid, type Favorite, type InsertFavorite, type Notification, type InsertNotification, type CarAlert, type InsertCarAlert, type Banner, type InsertBanner, type SellCarSection, type InsertSellCarSection, type AdvertisementCarousel, type InsertAdvertisementCarousel, type Document, type InsertDocument } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, desc, sql, or, ilike, inArray } from "drizzle-orm";
 
@@ -69,6 +69,13 @@ export interface IStorage {
   createAdvertisementCarouselItem(item: InsertAdvertisementCarousel): Promise<AdvertisementCarousel>;
   updateAdvertisementCarouselItem(id: number, item: Partial<InsertAdvertisementCarousel>): Promise<AdvertisementCarousel | undefined>;
   deleteAdvertisementCarouselItem(id: number): Promise<boolean>;
+
+  // Documents operations
+  getDocuments(type?: string): Promise<Document[]>;
+  getDocument(id: number): Promise<Document | undefined>;
+  createDocument(document: InsertDocument): Promise<Document>;
+  updateDocument(id: number, document: Partial<InsertDocument>): Promise<Document | undefined>;
+  deleteDocument(id: number): Promise<boolean>;
 
   // Admin operations
   getAdminStats(): Promise<{
@@ -536,6 +543,41 @@ export class DatabaseStorage implements IStorage {
     const result = await db
       .delete(advertisementCarousel)
       .where(eq(advertisementCarousel.id, id));
+    return result.rowCount !== null && result.rowCount > 0;
+  }
+
+  // Documents operations
+  async getDocuments(type?: string): Promise<Document[]> {
+    const query = db.select().from(documents).orderBy(documents.order, documents.createdAt);
+    
+    if (type) {
+      return await query.where(and(eq(documents.type, type), eq(documents.isActive, true)));
+    }
+    
+    return await query.where(eq(documents.isActive, true));
+  }
+
+  async getDocument(id: number): Promise<Document | undefined> {
+    const [document] = await db.select().from(documents).where(eq(documents.id, id));
+    return document || undefined;
+  }
+
+  async createDocument(insertDocument: InsertDocument): Promise<Document> {
+    const [document] = await db.insert(documents).values(insertDocument).returning();
+    return document;
+  }
+
+  async updateDocument(id: number, documentData: Partial<InsertDocument>): Promise<Document | undefined> {
+    const [document] = await db
+      .update(documents)
+      .set({ ...documentData, updatedAt: new Date() })
+      .where(eq(documents.id, id))
+      .returning();
+    return document || undefined;
+  }
+
+  async deleteDocument(id: number): Promise<boolean> {
+    const result = await db.delete(documents).where(eq(documents.id, id));
     return result.rowCount !== null && result.rowCount > 0;
   }
 }

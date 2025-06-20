@@ -212,3 +212,27 @@ export const insertAdvertisementCarouselSchema = createInsertSchema(advertisemen
 
 export type InsertAdvertisementCarousel = z.infer<typeof insertAdvertisementCarouselSchema>;
 export type AdvertisementCarousel = typeof advertisementCarousel.$inferSelect;
+
+// Documents table for policies and rules
+export const documents = pgTable("documents", {
+  id: serial("id").primaryKey(),
+  title: text("title").notNull(),
+  type: text("type").notNull(), // 'policy' or 'rules'
+  content: text("content").notNull(),
+  fileUrl: text("file_url"),
+  fileName: text("file_name"),
+  fileSize: integer("file_size"),
+  isActive: boolean("is_active").default(true),
+  order: integer("order").default(0),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const insertDocumentSchema = createInsertSchema(documents).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertDocument = z.infer<typeof insertDocumentSchema>;
+export type Document = typeof documents.$inferSelect;
