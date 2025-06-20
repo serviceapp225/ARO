@@ -795,14 +795,14 @@ export default function AuctionDetail() {
                   onClick={() => handleQuickBid(1000)}
                   className="text-sm"
                 >
-                  +$1,000
+                  +1,000 С
                 </Button>
                 <Button 
                   variant="outline" 
                   onClick={() => handleQuickBid(2500)}
                   className="text-sm"
                 >
-                  +$2,500
+                  +2,500 С
                 </Button>
               </div>
             </div>
