@@ -22,7 +22,7 @@ import LanguageSelector from "@/components/LanguageSelector";
 import Terms from "@/pages/Terms";
 import Privacy from "@/pages/Privacy";
 import Login from "@/pages/Login";
-import AdminPanel from "@/pages/AdminPanel";
+
 import NotFound from "@/pages/not-found";
 import { FlutterPreview } from "@/pages/FlutterPreview";
 import { BottomNavigation } from "@/components/BottomNavigation";
@@ -48,7 +48,7 @@ function Router() {
         <Route path="/terms" component={Terms} />
         <Route path="/privacy" component={Privacy} />
         <Route path="/login" component={Login} />
-        <Route path="/admin" component={AdminPanel} />
+
         <Route path="/flutter-preview" component={FlutterPreview} />
         <Route component={NotFound} />
       </Switch>
