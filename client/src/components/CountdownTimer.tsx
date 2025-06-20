@@ -164,5 +164,3 @@ export function CountdownTimer({ endTime, size = 'small', onTimeUp }: CountdownT
     </div>
   );
 }
-
-export const CountdownTimer = memo(CountdownTimerComponent);
