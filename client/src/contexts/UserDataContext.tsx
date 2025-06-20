@@ -18,7 +18,7 @@ const UserDataContext = createContext<UserDataContextType | undefined>(undefined
 export function UserDataProvider({ children }: { children: React.ReactNode }) {
   const [userData, setUserData] = useState({
     fullName: "",
-    phoneNumber: "+992 (90) 123-45-67",
+    phoneNumber: "",
     email: "",
     accountType: 'individual' as 'dealer' | 'individual',
     profilePhoto: null as string | null,
@@ -29,6 +29,8 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
   // Загружаем данные из localStorage при инициализации
   useEffect(() => {
     const savedData = localStorage.getItem('userData');
+    const demoUserData = localStorage.getItem('demo-user');
+    
     if (savedData) {
       try {
         const parsed = JSON.parse(savedData);
@@ -38,9 +40,25 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
           email: parsed.email || "",
           accountType: parsed.accountType || 'individual',
           profilePhoto: parsed.profilePhoto || null,
+          phoneNumber: parsed.phoneNumber || prev.phoneNumber,
         }));
       } catch (error) {
         console.error('Error loading user data:', error);
+      }
+    }
+    
+    // Если есть demo user, используем его номер телефона
+    if (demoUserData) {
+      try {
+        const demoUser = JSON.parse(demoUserData);
+        if (demoUser.phoneNumber) {
+          setUserData(prev => ({
+            ...prev,
+            phoneNumber: demoUser.phoneNumber
+          }));
+        }
+      } catch (error) {
+        console.error('Error loading demo user data:', error);
       }
     }
   }, []);
@@ -55,6 +73,7 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
         email: newData.email,
         accountType: newData.accountType,
         profilePhoto: newData.profilePhoto,
+        phoneNumber: newData.phoneNumber,
       };
       localStorage.setItem('userData', JSON.stringify(dataToSave));
       
