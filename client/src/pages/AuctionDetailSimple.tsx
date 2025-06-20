@@ -79,7 +79,7 @@ export default function AuctionDetail() {
       // Show success toast
       toast({
         title: "🎉 Ставка принята!",
-        description: `Ваша ставка ${parseFloat(variables.amount).toLocaleString()} сом была успешно размещена.`,
+        description: `Ваша ставка ${parseFloat(variables.amount).toLocaleString()} Сомони была успешно размещена.`,
         duration: 4000,
       });
       
@@ -156,7 +156,7 @@ export default function AuctionDetail() {
       // User won the auction
       toast({
         title: "🎉 Поздравляем! Вы выиграли аукцион!",
-        description: `Ваша ставка ${parseFloat(highestBid.amount).toLocaleString()} сом была наивысшей.`,
+        description: `Ваша ставка ${parseFloat(highestBid.amount).toLocaleString()} Сомони была наивысшей.`,
         duration: 8000,
       });
       setShowConfetti(true);
@@ -186,7 +186,7 @@ export default function AuctionDetail() {
     if (newBidAmount <= currentHighestBid) {
       toast({
         title: "Неверная ставка",
-        description: `Ставка должна быть больше текущей цены ${currentHighestBid.toLocaleString()} сом`,
+        description: `Ставка должна быть больше текущей цены ${currentHighestBid.toLocaleString()} Сомони`,
         variant: "destructive",
       });
       return;
@@ -508,7 +508,7 @@ export default function AuctionDetail() {
                         </div>
                       </div>
                       <div className="text-right">
-                        <p className="font-bold text-lg">{parseFloat(bid.amount).toLocaleString()} сом</p>
+                        <p className="font-bold text-lg">{parseFloat(bid.amount).toLocaleString()} Сомони</p>
                         {index === 0 && (
                           <Badge variant="default" className="text-xs">
                             Лидирует

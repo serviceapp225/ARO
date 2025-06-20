@@ -262,7 +262,7 @@ export default function AuctionDetail() {
       
       toast({
         title: "🏆 Поздравляем! Вы победили!",
-        description: `Вы выиграли аукцион со ставкой $${parseFloat(highestBid.amount).toLocaleString()}`,
+        description: `Вы выиграли аукцион со ставкой ${parseFloat(highestBid.amount).toLocaleString()} Сомони`,
         duration: 10000,
       });
     } else {
@@ -877,7 +877,7 @@ export default function AuctionDetail() {
                     </div>
                     <div className="text-right">
                       <div className={`font-bold ${index === 0 ? 'text-green-600' : 'text-gray-700'}`}>
-                        ${parseFloat(bid.amount).toLocaleString()}
+                        {parseFloat(bid.amount).toLocaleString()} Сомони
                       </div>
                       {index === 0 && (
                         <div className="text-xs text-green-600 font-medium">

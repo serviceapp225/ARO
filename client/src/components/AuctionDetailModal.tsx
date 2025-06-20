@@ -109,7 +109,7 @@ export function AuctionDetailModal() {
                       </div>
                       <div className="text-right">
                         <div className="font-semibold text-emerald-600 font-mono">
-                          ${bid.amount.toLocaleString()}
+                          {bid.amount.toLocaleString()} Сомони
                         </div>
                         <div className="text-sm text-neutral-500">{bid.time}</div>
                       </div>
