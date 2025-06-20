@@ -252,16 +252,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Аукцион неактивен" });
       }
       
-      // Check if user is active before allowing bid
-      const bidder = await storage.getUser(req.body.bidderId);
-      if (!bidder) {
-        return res.status(404).json({ error: "Пользователь не найден" });
-      }
-      
-      if (!bidder.isActive) {
-        return res.status(403).json({ error: "Ваш аккаунт заблокирован. Обратитесь к администратору для разблокировки." });
-      }
-      
       const bidData = {
         ...req.body,
         listingId
