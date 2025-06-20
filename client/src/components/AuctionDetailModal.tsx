@@ -23,16 +23,16 @@ export function AuctionDetailModal() {
     
     if (bid < minimumBid) {
       toast({
-        title: "Bid too low",
-        description: `Minimum bid is $${minimumBid.toLocaleString()}`,
+        title: "Ставка слишком низкая",
+        description: `Минимальная ставка ${minimumBid.toLocaleString()} Сомони`,
         variant: "destructive",
       });
       return;
     }
 
     toast({
-      title: "Bid Placed!",
-      description: `Your bid of $${bid.toLocaleString()} has been placed.`,
+      title: "Ставка размещена!",
+      description: `Ваша ставка ${bid.toLocaleString()} Сомони принята.`,
     });
     
     setBidAmount('');
@@ -130,12 +130,12 @@ export function AuctionDetailModal() {
 
               {/* Current Bid */}
               <div className="text-center p-6 bg-emerald-50 rounded-2xl">
-                <div className="text-sm text-neutral-600 mb-1">Current Highest Bid</div>
+                <div className="text-sm text-neutral-600 mb-1">Текущая наивысшая ставка</div>
                 <div className="text-4xl font-bold text-emerald-600 font-mono mb-2">
-                  ${selectedAuction.currentBid.toLocaleString()}
+                  {selectedAuction.currentBid.toLocaleString()} Сомони
                 </div>
                 <div className="text-sm text-neutral-600">
-                  {selectedAuction.bidCount} bids placed
+                  Ставок размещено: {selectedAuction.bidCount}
                 </div>
               </div>
 
@@ -143,11 +143,11 @@ export function AuctionDetailModal() {
               <form onSubmit={handlePlaceBid} className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-neutral-700 mb-2">
-                    Your Bid Amount
+                    Сумма вашей ставки
                   </label>
                   <div className="relative">
                     <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-neutral-500 text-lg">
-                      $
+                      Сомони
                     </span>
                     <Input
                       type="number"
@@ -155,12 +155,12 @@ export function AuctionDetailModal() {
                       min={minimumBid}
                       value={bidAmount}
                       onChange={(e) => setBidAmount(e.target.value)}
-                      className="pl-8 py-4 text-lg font-mono"
+                      className="pl-20 py-4 text-lg font-mono"
                       required
                     />
                   </div>
                   <p className="text-sm text-neutral-500 mt-1">
-                    Minimum bid: ${minimumBid.toLocaleString()}
+                    Минимальная ставка: {minimumBid.toLocaleString()} Сомони
                   </p>
                 </div>
                 
@@ -168,11 +168,11 @@ export function AuctionDetailModal() {
                   type="submit"
                   className="w-full bg-red-600 hover:bg-red-700 py-4 text-lg"
                 >
-                  Place Bid
+                  Сделать ставку
                 </Button>
                 
                 <p className="text-xs text-neutral-500 text-center">
-                  By bidding, you agree to our Terms of Service
+                  Делая ставку, вы соглашаетесь с условиями использования
                 </p>
               </form>
 
@@ -184,7 +184,7 @@ export function AuctionDetailModal() {
                   onClick={handleFavorite}
                 >
                   <Heart className="w-4 h-4 mr-1" />
-                  Watch
+                  В избранное
                 </Button>
                 <Button
                   variant="outline"
@@ -192,7 +192,7 @@ export function AuctionDetailModal() {
                   onClick={handleShare}
                 >
                   <Share2 className="w-4 h-4 mr-1" />
-                  Share
+                  Поделиться
                 </Button>
               </div>
             </div>
