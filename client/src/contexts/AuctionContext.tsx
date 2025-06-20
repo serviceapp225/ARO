@@ -43,11 +43,29 @@ export function AuctionProvider({ children }: { children: ReactNode }) {
   }, []);
 
   // Fetch real data from API with fresh data
-  const { data: listings, isLoading, refetch } = useQuery({
+  const { data: listings, isLoading, refetch, error } = useQuery({
     queryKey: ['/api/listings'],
-    staleTime: 0, // Always consider data stale
-    gcTime: 0, // No cache
-    refetchOnWindowFocus: true,
+    queryFn: async () => {
+      console.log('Fetching listings from API...');
+      const response = await fetch('/api/listings', {
+        credentials: 'include',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      console.log('API Response:', data);
+      return data;
+    },
+    staleTime: 0,
+    gcTime: 0,
+    refetchOnWindowFocus: false,
     refetchInterval: false,
     retry: 2,
     retryDelay: 1000,
@@ -78,8 +96,14 @@ export function AuctionProvider({ children }: { children: ReactNode }) {
   })) : [];
 
   // Debug logging
-  console.log('AuctionContext - listings:', listings, 'auctions:', auctions.length, 'loading:', isLoading);
-  console.log('AuctionContext - first listing:', listings?.[0]);
+  console.log('AuctionContext DEBUG:', {
+    listings: listings,
+    listingsType: typeof listings,
+    isArray: Array.isArray(listings),
+    auctionsCount: auctions.length,
+    loading: isLoading,
+    error: error
+  });
 
 
 
