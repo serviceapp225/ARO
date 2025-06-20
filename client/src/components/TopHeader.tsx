@@ -1,4 +1,4 @@
-import { ArrowLeft, MessageCircle } from "lucide-react";
+import { ArrowLeft, MessageCircle, Gavel } from "lucide-react";
 import { useLocation, Link } from "wouter";
 import { NotificationBell } from "./NotificationBell";
 
@@ -83,7 +83,10 @@ export function TopHeader({
       </div>
 
       {/* Центр - название */}
-      <h1 className="text-lg font-semibold text-gray-900 dark:text-white absolute left-1/2 transform -translate-x-1/2">
+      <h1 className="text-lg font-semibold text-gray-900 dark:text-white absolute left-1/2 transform -translate-x-1/2 flex items-center gap-2">
+        {(getTitle() === "AUTOBID.TJ") && (
+          <Gavel className="w-5 h-5" />
+        )}
         {getTitle()}
       </h1>
 
