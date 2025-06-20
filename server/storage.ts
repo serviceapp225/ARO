@@ -139,7 +139,7 @@ export class DatabaseStorage implements IStorage {
       
       const listings = await query;
       
-      // Return minimal data for performance - exclude photos
+      // Return minimal data for performance - exclude photos completely
       return listings.map(listing => ({
         ...listing,
         photos: [], // Empty array for list view to reduce size

@@ -40,7 +40,6 @@ export function AuctionProvider({ children }: { children: ReactNode }) {
   const fetchListings = useCallback(async () => {
     try {
       setIsLoading(true);
-      console.log("Fetching listings...");
       const response = await fetch('/api/listings', {
         cache: 'no-cache',
         headers: {
@@ -48,21 +47,15 @@ export function AuctionProvider({ children }: { children: ReactNode }) {
           'Pragma': 'no-cache'
         }
       });
-      console.log("Response:", response.status, response.ok);
       
       if (response.ok) {
-        console.log("About to parse JSON...");
         const data = await response.json();
-        console.log("JSON parsed successfully. Data length:", data?.length, "Type:", typeof data);
         if (Array.isArray(data)) {
           setListings(data);
-          console.log("State updated with", data.length, "listings");
         } else {
-          console.log("Data is not array:", data);
           setListings([]);
         }
       } else {
-        console.error("Response not ok:", response.status);
         setListings([]);
       }
     } catch (error) {
@@ -79,13 +72,8 @@ export function AuctionProvider({ children }: { children: ReactNode }) {
     return () => clearInterval(interval);
   }, [fetchListings]);
 
-  // Debug logging
-  console.log("AuctionContext:", {
-    rawData: listings,
-    isArray: Array.isArray(listings),
-    count: Array.isArray(listings) ? listings.length : 0,
-    loading: isLoading
-  });
+  // Debug logging (can be removed in production)
+  // console.log("AuctionContext:", listings?.length, "listings loaded");
   
   // Transform listings data to auction format
   const auctions: Auction[] = Array.isArray(listings) ? listings.map((listing: any) => ({
