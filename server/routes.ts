@@ -399,7 +399,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.patch("/api/admin/users/:id/status", async (req, res) => {
+  app.get("/api/admin/listings", async (req, res) => {
+    try {
+      const allListings = await storage.getListingsByStatus("pending");
+      const activeListings = await storage.getListingsByStatus("active");
+      const endedListings = await storage.getListingsByStatus("ended");
+      const rejectedListings = await storage.getListingsByStatus("rejected");
+      
+      const listings = [...allListings, ...activeListings, ...endedListings, ...rejectedListings];
+      res.json(listings);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch listings" });
+    }
+  });
+
+  app.patch("/api/admin/users/:id", async (req, res) => {
     try {
       const userId = parseInt(req.params.id);
       const { isActive } = req.body;
@@ -411,6 +425,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(user);
     } catch (error) {
       res.status(500).json({ error: "Failed to update user status" });
+    }
+  });
+
+  app.patch("/api/admin/listings/:id", async (req, res) => {
+    try {
+      const listingId = parseInt(req.params.id);
+      const { status } = req.body;
+      
+      const listing = await storage.updateListingStatus(listingId, status);
+      if (!listing) {
+        return res.status(404).json({ error: "Listing not found" });
+      }
+      res.json(listing);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to update listing status" });
     }
   });
 

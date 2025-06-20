@@ -5,6 +5,8 @@ interface DemoUser {
   email: string;
   phoneNumber: string;
   uid: string;
+  role?: string;
+  isActive?: boolean;
 }
 
 interface AuthContextType {
@@ -26,6 +28,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (demoUserData) {
       try {
         const demoUser = JSON.parse(demoUserData);
+        // Устанавливаем демо-пользователя как администратора
+        demoUser.role = 'admin';
+        demoUser.isActive = true;
         setUser(demoUser);
       } catch (error) {
         localStorage.removeItem('demo-user');
