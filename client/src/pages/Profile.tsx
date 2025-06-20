@@ -43,7 +43,6 @@ export default function Profile() {
   const menuItems = [
     { icon: User, label: "Мои данные", action: () => setLocation("/user-data") },
     { icon: Bell, label: "Поисковые уведомления", action: () => setLocation("/notifications") },
-    ...(user?.role === 'admin' ? [{ icon: Settings, label: "Админ панель", action: () => setLocation("/admin") }] : []),
     { icon: Globe, label: "Поменять язык", action: () => setLocation("/language") },
     { icon: HelpCircle, label: "Правила и условия", action: () => setLocation("/terms") },
     { icon: FileText, label: "Политика конфиденциальности", action: () => setLocation("/privacy") },
