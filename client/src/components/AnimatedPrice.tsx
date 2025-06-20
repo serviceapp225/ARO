@@ -51,7 +51,7 @@ export function AnimatedPrice({ value, className = "", onPriceUpdate }: Animated
           ? 'transform scale-110 text-green-600 drop-shadow-lg' 
           : 'transform scale-100'
       }`}>
-        {displayValue.toLocaleString()} С
+        {displayValue.toLocaleString()} сомони
       </div>
       
       {isAnimating && (

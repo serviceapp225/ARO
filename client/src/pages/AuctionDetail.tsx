@@ -738,10 +738,10 @@ export default function AuctionDetail() {
           <CardContent className="p-6">
             <div className="text-center mb-6">
               <div className="text-4xl font-bold text-green-600 mb-2">
-                {auction.currentBid.toLocaleString()} С
+                {auction.currentBid.toLocaleString()} сомони
               </div>
               <p className="text-gray-600 text-sm bg-gray-50 rounded-lg px-3 py-2 inline-block">
-                Следующая ставка от {(auction.currentBid + 500).toLocaleString()} С
+                Следующая ставка от {(auction.currentBid + 500).toLocaleString()} сомони
               </p>
               
               {/* Reserve Price Information */}
@@ -788,14 +788,14 @@ export default function AuctionDetail() {
                   onClick={() => handleQuickBid(500)}
                   className="text-sm"
                 >
-                  +500 С
+                  +500 сомони
                 </Button>
                 <Button 
                   variant="outline" 
                   onClick={() => handleQuickBid(1000)}
                   className="text-sm"
                 >
-                  +1,000 С
+                  +1,000 сомони
                 </Button>
                 <Button 
                   variant="outline" 

@@ -232,7 +232,7 @@ export default function FloatingNotificationButton() {
                   name="minPrice"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Мин. цена (С)</FormLabel>
+                      <FormLabel>Мин. цена (сомони)</FormLabel>
                       <FormControl>
                         <Input {...field} type="number" placeholder="0" />
                       </FormControl>
@@ -246,7 +246,7 @@ export default function FloatingNotificationButton() {
                   name="maxPrice"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Макс. цена (С)</FormLabel>
+                      <FormLabel>Макс. цена (сомони)</FormLabel>
                       <FormControl>
                         <Input {...field} type="number" placeholder="100000" />
                       </FormControl>
