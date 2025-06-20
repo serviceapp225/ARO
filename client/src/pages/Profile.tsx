@@ -112,9 +112,9 @@ export default function Profile() {
               
               {/* Name and Phone */}
               <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                {userData.fullName || user.email?.split('@')[0] || 'Пользователь'}
+                {user?.fullName || userData.fullName || user?.email?.split('@')[0] || 'Пользователь'}
               </h2>
-              <p className="text-gray-600 text-lg mb-3">{userData.phoneNumber}</p>
+              <p className="text-gray-600 text-lg mb-3">{user?.phoneNumber || userData.phoneNumber}</p>
               
               {/* Account Type and Status Badges */}
               <div className="flex items-center justify-center gap-2 flex-wrap">

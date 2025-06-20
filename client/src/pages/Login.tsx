@@ -89,7 +89,12 @@ export default function Login() {
                 type="text"
                 placeholder="Введите ваше полное имя"
                 value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  // Разрешаем только буквы (кириллица, латиница) и пробелы
+                  const lettersOnly = value.replace(/[^а-яёА-ЯЁa-zA-Z\s]/g, '');
+                  setFullName(lettersOnly);
+                }}
                 className="text-lg"
                 required
               />
