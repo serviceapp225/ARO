@@ -4,6 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { ActiveAuctions } from "@/components/ActiveAuctions";
 import { SellCarSection } from "@/components/SellCarSection";
+import { AdvertisementCarousel } from "@/components/AdvertisementCarousel";
 import { TopHeader } from "@/components/TopHeader";
 import { Link } from "wouter";
 import { useState } from "react";
@@ -58,6 +59,17 @@ export default function HomePage() {
             </div>
           </div>
         </div>
+
+        {/* Sell Car Section */}
+        <SellCarSection />
+
+        {/* Advertisement Carousel */}
+        <section>
+          <h2 className="text-xl font-bold text-gray-900 mb-4">
+            Специальные предложения
+          </h2>
+          <AdvertisementCarousel />
+        </section>
 
         {/* Active Auctions Section */}
         <section>

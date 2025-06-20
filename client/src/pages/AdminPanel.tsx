@@ -10,6 +10,7 @@ import { Users, Car, Bell, Shield, ShieldX, UserCheck, UserX, Search, Filter, Ey
 import { useAuth } from '@/contexts/AuthContext';
 import { useLocation } from 'wouter';
 import { SellCarSectionManagement } from '@/components/SellCarSectionManagement';
+import { AdvertisementCarouselManagement } from '@/components/AdvertisementCarouselManagement';
 
 interface User {
   id: number;
@@ -43,7 +44,7 @@ export default function AdminPanel() {
   const { user } = useAuth();
   const [, setLocation] = useLocation();
   const { toast } = useToast();
-  const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'listings' | 'sell-section'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'listings' | 'sell-section' | 'advertisement'>('overview');
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('all');
 
@@ -235,6 +236,16 @@ export default function AdminPanel() {
             }`}
           >
             Продай авто
+          </button>
+          <button
+            onClick={() => setActiveTab('advertisement')}
+            className={`flex-1 py-2 px-4 rounded-md font-medium transition-colors ${
+              activeTab === 'advertisement'
+                ? 'bg-white text-gray-900 shadow-sm'
+                : 'text-gray-600 hover:text-gray-900'
+            }`}
+          >
+            Реклама
           </button>
 
         </div>
@@ -475,6 +486,13 @@ export default function AdminPanel() {
         {activeTab === 'sell-section' && (
           <div className="space-y-6">
             <SellCarSectionManagement />
+          </div>
+        )}
+
+        {/* Advertisement Carousel Tab */}
+        {activeTab === 'advertisement' && (
+          <div className="space-y-6">
+            <AdvertisementCarouselManagement />
           </div>
         )}
 
