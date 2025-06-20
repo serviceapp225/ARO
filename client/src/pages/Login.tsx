@@ -126,13 +126,42 @@ export default function Login() {
             </Button>
           </form>
 
-          <div className="mt-6 text-center">
-            <p className="text-sm text-neutral-600">
-              Нет аккаунта?{" "}
-              <Link href="/register" className="text-primary hover:underline font-medium">
-                Зарегистрироваться
-              </Link>
-            </p>
+          <div className="mt-6 space-y-4">
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-white px-2 text-muted-foreground">или</span>
+              </div>
+            </div>
+            
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full"
+              onClick={() => {
+                const adminUser = {
+                  email: "admin@autoauction.tj",
+                  phoneNumber: "+992901234567",
+                  uid: "admin-user",
+                  role: "admin"
+                };
+                localStorage.setItem('demo-user', JSON.stringify(adminUser));
+                window.location.href = '/admin';
+              }}
+            >
+              Войти как администратор
+            </Button>
+            
+            <div className="text-center">
+              <p className="text-sm text-neutral-600">
+                Нет аккаунта?{" "}
+                <Link href="/register" className="text-primary hover:underline font-medium">
+                  Зарегистрироваться
+                </Link>
+              </p>
+            </div>
           </div>
         </CardContent>
       </Card>

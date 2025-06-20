@@ -28,8 +28,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (demoUserData) {
       try {
         const demoUser = JSON.parse(demoUserData);
-        // Устанавливаем демо-пользователя как администратора
-        demoUser.role = 'admin';
+        // Устанавливаем демо-пользователя как обычного пользователя
+        demoUser.role = demoUser.role || 'buyer';
         demoUser.isActive = true;
         setUser(demoUser);
       } catch (error) {
