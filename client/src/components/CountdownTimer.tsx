@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, memo } from 'react';
 import { Clock } from 'lucide-react';
 
 interface CountdownTimerProps {
@@ -164,3 +164,5 @@ export function CountdownTimer({ endTime, size = 'small', onTimeUp }: CountdownT
     </div>
   );
 }
+
+export const CountdownTimer = memo(CountdownTimerComponent);

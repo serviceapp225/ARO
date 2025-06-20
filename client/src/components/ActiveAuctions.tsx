@@ -7,7 +7,7 @@ import { AutoImageCarousel } from './AutoImageCarousel';
 import { useAuctions } from '@/contexts/AuctionContext';
 import { useFavorites } from '@/contexts/FavoritesContext';
 import { useLocation } from 'wouter';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, memo } from 'react';
 
 
 interface ActiveAuctionsProps {
@@ -31,38 +31,41 @@ export function ActiveAuctions({ searchQuery = "", customListings }: ActiveAucti
   // Use custom listings if provided, otherwise use filtered auctions
   const sourceAuctions = customListings || auctions;
   
-  // Filter auctions by search query (lot number or car name)
-  const filteredAuctions = sourceAuctions.filter((auction: any) => {
-    if (!searchQuery.trim()) return true;
-    
-    const query = searchQuery.toLowerCase();
-    const lotMatch = auction.lotNumber?.toLowerCase().includes(query);
-    const carNameMatch = `${auction.make} ${auction.model}`.toLowerCase().includes(query);
-    
-    return lotMatch || carNameMatch;
-  });
+  // Memoize filtered and sorted auctions for better performance
+  const displayedAuctions = useMemo(() => {
+    // Filter auctions by search query (lot number or car name)
+    const filteredAuctions = sourceAuctions.filter((auction: any) => {
+      if (!searchQuery.trim()) return true;
+      
+      const query = searchQuery.toLowerCase();
+      const lotMatch = auction.lotNumber?.toLowerCase().includes(query);
+      const carNameMatch = `${auction.make} ${auction.model}`.toLowerCase().includes(query);
+      
+      return lotMatch || carNameMatch;
+    });
 
-  // Sort auctions based on selected criteria
-  const sortedAuctions = [...filteredAuctions].sort((a: any, b: any) => {
-    switch (sortBy) {
-      case "price-low":
-        return a.currentBid - b.currentBid;
-      case "price-high":
-        return b.currentBid - a.currentBid;
-      case "year-new":
-        return b.year - a.year;
-      case "year-old":
-        return a.year - b.year;
-      case "time-ending":
-        return new Date(a.endTime).getTime() - new Date(b.endTime).getTime();
-      case "recent":
-      default:
-        return new Date(b.endTime).getTime() - new Date(a.endTime).getTime();
-    }
-  });
+    // Sort auctions based on selected criteria
+    const sortedAuctions = [...filteredAuctions].sort((a: any, b: any) => {
+      switch (sortBy) {
+        case "price-low":
+          return a.currentBid - b.currentBid;
+        case "price-high":
+          return b.currentBid - a.currentBid;
+        case "year-new":
+          return b.year - a.year;
+        case "year-old":
+          return a.year - b.year;
+        case "time-ending":
+          return new Date(a.endTime).getTime() - new Date(b.endTime).getTime();
+        case "recent":
+        default:
+          return new Date(b.endTime).getTime() - new Date(a.endTime).getTime();
+      }
+    });
 
-  // Calculate displayed auctions based on current page
-  const displayedAuctions = sortedAuctions.slice(0, page * ITEMS_PER_PAGE);
+    // Calculate displayed auctions based on current page
+    return sortedAuctions.slice(0, page * ITEMS_PER_PAGE);
+  }, [sourceAuctions, searchQuery, sortBy, page]);
 
   const handleToggleFavorite = (auctionId: string, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -91,7 +94,7 @@ export function ActiveAuctions({ searchQuery = "", customListings }: ActiveAucti
         
         // Load more items immediately
         const nextPage = page + 1;
-        const totalAvailable = sortedAuctions.length;
+        const totalAvailable = sourceAuctions.length;
         
         if (nextPage * ITEMS_PER_PAGE >= totalAvailable) {
           setHasMore(false);
