@@ -37,19 +37,25 @@ export function SearchAlertNotifications({ userId }: SearchAlertNotificationsPro
         throw new Error('Already deleting');
       }
       
-      setDeletingIds((prev: Set<number>) => new Set(prev).add(alertId));
-      
-      const response = await fetch(`/api/car-alerts/${alertId}`, {
-        method: 'DELETE',
-      });
-      if (!response.ok) {
-        if (response.status === 404) {
-          // Запрос уже удален, считаем это успехом
-          return {};
+      try {
+        const response = await fetch(`/api/car-alerts/${alertId}`, {
+          method: 'DELETE',
+        });
+        
+        if (!response.ok) {
+          if (response.status === 404) {
+            // Запрос уже удален, считаем это успехом
+            return {};
+          }
+          const errorText = await response.text();
+          console.error('Delete error response:', response.status, errorText);
+          throw new Error(`Ошибка удаления: ${response.status}`);
         }
-        throw new Error(`Failed to delete car alert: ${response.status}`);
+        return {};
+      } catch (error) {
+        console.error('Delete mutation error:', error);
+        throw error;
       }
-      return {};
     },
     onMutate: async (alertId) => {
       // Добавляем в список удаляемых для показа индикатора загрузки
@@ -66,6 +72,8 @@ export function SearchAlertNotifications({ userId }: SearchAlertNotificationsPro
       return { previousAlerts };
     },
     onError: (error, alertId, context) => {
+      console.error('Delete alert error:', error);
+      
       // Убираем из списка удаляемых
       setDeletingIds((prev: Set<number>) => {
         const newSet = new Set(prev);
@@ -77,10 +85,13 @@ export function SearchAlertNotifications({ userId }: SearchAlertNotificationsPro
       if (context?.previousAlerts) {
         queryClient.setQueryData(['/api/car-alerts', userId], context.previousAlerts);
       }
+      
+      const errorMessage = error instanceof Error ? error.message : 'Неизвестная ошибка';
       toast({
         title: "Ошибка при удалении",
+        description: errorMessage,
         variant: "destructive", 
-        duration: 2000,
+        duration: 3000,
       });
     },
     onSuccess: async (_, alertId) => {
