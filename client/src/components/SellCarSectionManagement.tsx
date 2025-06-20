@@ -67,11 +67,27 @@ export function SellCarSectionManagement() {
       linkUrl: "/sell",
       isActive: true,
       overlayOpacity: 40,
-      textColor: "white",
-      buttonColor: "white",
-      buttonTextColor: "emerald-700",
+      textColor: "#ffffff",
+      buttonColor: "#ffffff",
+      buttonTextColor: "#059669",
     }
   });
+
+  // Function to convert color names to hex or return as is
+  const getColorValue = (color: string) => {
+    const colorMap: Record<string, string> = {
+      'white': '#ffffff',
+      'black': '#000000',
+      'emerald-700': '#059669',
+      'emerald-600': '#059669',
+      'blue-600': '#2563eb',
+      'red-600': '#dc2626',
+      'green-600': '#16a34a',
+      'gray-800': '#1f2937',
+      'gray-900': '#111827'
+    };
+    return colorMap[color] || color;
+  };
 
   // Update form when data loads
   useState(() => {
@@ -203,8 +219,8 @@ export function SellCarSectionManagement() {
                   <span 
                     className="px-4 py-2 rounded-full text-sm font-bold inline-flex items-center gap-1"
                     style={{ 
-                      backgroundColor: form.watch('buttonColor') || section?.buttonColor,
-                      color: form.watch('buttonTextColor') || section?.buttonTextColor 
+                      backgroundColor: getColorValue(form.watch('buttonColor') || section?.buttonColor || '#ffffff'),
+                      color: getColorValue(form.watch('buttonTextColor') || section?.buttonTextColor || '#059669')
                     }}
                   >
                     {form.watch('buttonText') || section?.buttonText} →

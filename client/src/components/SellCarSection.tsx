@@ -36,9 +36,25 @@ export function SellCarSection() {
     linkUrl: "/sell",
     isActive: true,
     overlayOpacity: 40,
-    textColor: "white",
-    buttonColor: "white",
-    buttonTextColor: "emerald-700"
+    textColor: "#ffffff",
+    buttonColor: "#ffffff",
+    buttonTextColor: "#059669"
+  };
+
+  // Function to convert color names to hex or return as is
+  const getColorValue = (color: string) => {
+    const colorMap: Record<string, string> = {
+      'white': '#ffffff',
+      'black': '#000000',
+      'emerald-700': '#059669',
+      'emerald-600': '#059669',
+      'blue-600': '#2563eb',
+      'red-600': '#dc2626',
+      'green-600': '#16a34a',
+      'gray-800': '#1f2937',
+      'gray-900': '#111827'
+    };
+    return colorMap[color] || color;
   };
 
   const sectionData = section || defaultSection;
@@ -77,13 +93,13 @@ export function SellCarSection() {
       <div className="relative z-10 space-y-2">
         <h2 
           className="text-2xl font-bold"
-          style={{ color: sectionData.textColor }}
+          style={{ color: getColorValue(sectionData.textColor) }}
         >
           {sectionData.title}
         </h2>
         <p 
           className="text-base leading-relaxed opacity-90"
-          style={{ color: sectionData.textColor }}
+          style={{ color: getColorValue(sectionData.textColor) }}
         >
           {sectionData.subtitle}
         </p>
@@ -92,8 +108,8 @@ export function SellCarSection() {
             <span 
               className={`px-4 py-2 rounded-full text-sm font-bold hover:opacity-90 transition-all duration-300 cursor-pointer inline-flex items-center gap-1`}
               style={{ 
-                backgroundColor: sectionData.buttonColor,
-                color: sectionData.buttonTextColor 
+                backgroundColor: getColorValue(sectionData.buttonColor),
+                color: getColorValue(sectionData.buttonTextColor) 
               }}
             >
               <Plus className="w-4 h-4" />
