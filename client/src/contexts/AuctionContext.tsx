@@ -51,9 +51,16 @@ export function AuctionProvider({ children }: { children: ReactNode }) {
       console.log("Response:", response.status, response.ok);
       
       if (response.ok) {
+        console.log("About to parse JSON...");
         const data = await response.json();
-        console.log("Direct fetch received data:", data?.length, "items, first item:", data?.[0]);
-        setListings(Array.isArray(data) ? data : []);
+        console.log("JSON parsed successfully. Data length:", data?.length, "Type:", typeof data);
+        if (Array.isArray(data)) {
+          setListings(data);
+          console.log("State updated with", data.length, "listings");
+        } else {
+          console.log("Data is not array:", data);
+          setListings([]);
+        }
       } else {
         console.error("Response not ok:", response.status);
         setListings([]);
