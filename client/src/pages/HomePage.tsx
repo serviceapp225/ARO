@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { ActiveAuctions } from "@/components/ActiveAuctions";
-import { AdvertisementBanner } from "@/components/AdvertisementBanner";
+
 import { TopHeader } from "@/components/TopHeader";
 import { Link } from "wouter";
 import { useState } from "react";
@@ -70,9 +70,9 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* Dynamic Advertisement Banner */}
+        {/* Банеры удалены */}
         <div className="space-y-4">
-          <AdvertisementBanner />
+          {/* Все рекламные банеры убраны */}
 
 
 

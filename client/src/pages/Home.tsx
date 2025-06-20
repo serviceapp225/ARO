@@ -6,9 +6,7 @@ import { ActiveAuctions } from '@/components/ActiveAuctions';
 import { SellYourCar } from '@/components/SellYourCar';
 import { Footer } from '@/components/Footer';
 import { AuctionDetailModal } from '@/components/AuctionDetailModal';
-import { BannerDisplay } from '@/components/BannerDisplay';
-import { SellCarBanner } from '@/components/SellCarBanner';
-import { HeroBanners } from '@/components/HeroBanners';
+
 
 export default function Home() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -17,9 +15,6 @@ export default function Home() {
     <div className="min-h-screen bg-neutral-50">
       <Header />
       <HeroSection onSearch={setSearchQuery} />
-      
-      {/* Hero Banners - Main promotional banners */}
-      <HeroBanners />
       
       {/* Main content area */}
       <div className="container mx-auto px-4 py-8">
@@ -31,9 +26,9 @@ export default function Home() {
             <SellYourCar />
           </div>
           
-          {/* Sidebar with additional banners */}
+          {/* Пустая боковая панель */}
           <div className="lg:col-span-1 space-y-6">
-            <BannerDisplay position="sidebar" className="sticky top-4" />
+            {/* Банеры удалены */}
           </div>
         </div>
       </div>
