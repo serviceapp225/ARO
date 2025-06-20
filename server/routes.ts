@@ -679,12 +679,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.json(cached);
       }
       
-      const alerts = await storage.getCarAlertsByUser(userId);
+      let alerts = await storage.getCarAlertsByUser(userId);
       
-      // Кэшируем результат
-      setCache(cacheKey, alerts);
+      // Фильтруем удаленные алерты
+      const filteredAlerts = [];
+      for (const alert of alerts) {
+        const alertData = JSON.stringify({
+          make: alert.make,
+          model: alert.model,
+          minPrice: alert.minPrice,
+          maxPrice: alert.maxPrice,
+          minYear: alert.minYear,
+          maxYear: alert.maxYear
+        });
+        
+        const deletedCheck = await db.execute(
+          sql`SELECT id FROM deleted_alerts WHERE user_id = ${userId} AND alert_data = ${alertData}`
+        );
+        
+        if (deletedCheck.rows.length === 0) {
+          filteredAlerts.push(alert);
+        }
+      }
       
-      res.json(alerts);
+      // Кэшируем отфильтрованный результат
+      setCache(cacheKey, filteredAlerts);
+      
+      res.json(filteredAlerts);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch car alerts" });
     }
