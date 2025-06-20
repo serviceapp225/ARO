@@ -139,12 +139,16 @@ export class DatabaseStorage implements IStorage {
       
       const listings = await query;
       
-      // Return minimal data for performance - exclude photos completely
-      return listings.map(listing => ({
-        ...listing,
-        photos: [], // Empty array for list view to reduce size
-        description: listing.description?.substring(0, 100) + '...' || '' // Truncate description
-      }));
+      // Return data with first photo for thumbnail
+      return listings.map(listing => {
+        const photos = listing.photos;
+        const photoArray = Array.isArray(photos) ? photos : (photos ? [photos] : []);
+        return {
+          ...listing,
+          photos: photoArray.length > 0 ? [photoArray[0]] : [], // Only first photo for thumbnail
+          description: listing.description?.substring(0, 100) + '...' || '' // Truncate description
+        };
+      });
     } catch (error) {
       console.error('Error fetching listings:', error);
       return [];

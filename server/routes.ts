@@ -46,13 +46,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const listingsWithBidCounts = listings.map(listing => ({
         ...listing,
-        bidCount: bidCounts[listing.id] || 0
+        bidCount: bidCounts[listing.id] || 0,
+        // Add first photo thumbnail for preview
+        thumbnailPhoto: listing.photos && listing.photos.length > 0 ? listing.photos[0] : null
       }));
       
       res.json(listingsWithBidCounts);
     } catch (error) {
       console.error("Error fetching listings:", error);
       res.status(500).json({ error: "Failed to fetch listings" });
+    }
+  });
+
+  // New endpoint for getting listing photos
+  app.get("/api/listings/:id/photos", async (req, res) => {
+    try {
+      const listing = await storage.getListing(Number(req.params.id));
+      if (!listing) {
+        return res.status(404).json({ error: "Listing not found" });
+      }
+      
+      res.json({ photos: listing.photos || [] });
+    } catch (error) {
+      console.error("Error fetching listing photos:", error);
+      res.status(500).json({ error: "Failed to fetch photos" });
     }
   });
 
