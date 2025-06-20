@@ -41,19 +41,43 @@ export function AuctionProvider({ children }: { children: ReactNode }) {
     queryClient.removeQueries({ queryKey: ['/api/listings'] });
   }, []);
 
-  // Fetch real data from API with automatic refresh
+  // Fetch real data from API with custom fetch function
   const { data: listings, isLoading, refetch } = useQuery({
     queryKey: ['/api/listings'],
-    staleTime: 0, // Always consider data stale to force fresh requests
-    gcTime: 0, // No cache time - always fresh
+    queryFn: async () => {
+      console.log("Fetching listings from API...");
+      const response = await fetch('/api/listings', {
+        credentials: 'include'
+      });
+      console.log("Response status:", response.status, response.statusText);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      console.log("Fetched listings:", data.length, "items");
+      return data;
+    },
+    staleTime: 0,
+    gcTime: 0,
     refetchOnWindowFocus: true,
-    refetchInterval: 1000, // Refetch every second
+    refetchInterval: 30000, // Refetch every 30 seconds instead of 1 second
     retry: 3,
     retryDelay: 1000,
     enabled: true,
     refetchOnMount: true
   });
 
+  // Debug logging
+  console.log("AuctionContext DEBUG:", {
+    listingsType: typeof listings,
+    isArray: Array.isArray(listings),
+    auctionsCount: Array.isArray(listings) ? listings.length : 0,
+    loading: isLoading,
+    error: listings
+  });
+  
   // Transform listings data to auction format
   const auctions: Auction[] = Array.isArray(listings) ? listings.map((listing: any) => ({
     id: listing.id.toString(),

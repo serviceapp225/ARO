@@ -31,10 +31,19 @@ export function ActiveAuctions({ searchQuery = "", customListings }: ActiveAucti
   // Use custom listings if provided, otherwise use filtered auctions
   const sourceAuctions = customListings || auctions;
   
+  // Debug logging
+  console.log("ActiveAuctions - loading:", loading, "auctions:", auctions.length, "customListings:", customListings?.length || null);
+  
   // Memoize filtered and sorted auctions for better performance
   const displayedAuctions = useMemo(() => {
-    // Filter auctions by search query (lot number or car name)
-    const filteredAuctions = sourceAuctions.filter((auction: any) => {
+    console.log("Source auctions:", sourceAuctions.length, "Sample:", sourceAuctions[0]);
+    
+    // First filter for active auctions only
+    const activeAuctions = sourceAuctions.filter((auction: any) => auction.status === 'active');
+    console.log("Active auctions after filter:", activeAuctions.length);
+    
+    // Then filter by search query (lot number or car name)
+    const filteredAuctions = activeAuctions.filter((auction: any) => {
       if (!searchQuery.trim()) return true;
       
       const query = searchQuery.toLowerCase();
