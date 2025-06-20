@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -90,8 +90,8 @@ export function SellCarSectionManagement() {
   };
 
   // Update form when data loads
-  useState(() => {
-    if (section) {
+  useEffect(() => {
+    if (section && !isEditing) {
       form.reset({
         title: section.title,
         subtitle: section.subtitle,
@@ -105,7 +105,7 @@ export function SellCarSectionManagement() {
         buttonTextColor: section.buttonTextColor,
       });
     }
-  });
+  }, [section, form, isEditing]);
 
   const updateMutation = useMutation({
     mutationFn: (data: SellCarSectionForm) => 
