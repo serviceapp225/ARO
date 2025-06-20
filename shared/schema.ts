@@ -163,3 +163,29 @@ export const insertBannerSchema = createInsertSchema(banners).omit({
 
 export type InsertBanner = z.infer<typeof insertBannerSchema>;
 export type Banner = typeof banners.$inferSelect;
+
+// Таблица для управления секцией "Продай свой авто"
+export const sellCarSection = pgTable("sell_car_section", {
+  id: serial("id").primaryKey(),
+  title: text("title").notNull().default("Продай свое авто"),
+  subtitle: text("subtitle").notNull().default("Получи максимальную цену за свой автомобиль на нашем аукционе"),
+  buttonText: text("button_text").notNull().default("Начать продажу"),
+  backgroundImageUrl: text("background_image_url").notNull().default("https://images.unsplash.com/photo-1503376780353-7e6692767b70?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"),
+  linkUrl: text("link_url").notNull().default("/sell"),
+  isActive: boolean("is_active").default(true),
+  overlayOpacity: integer("overlay_opacity").default(40), // 0-100
+  textColor: text("text_color").default("white"),
+  buttonColor: text("button_color").default("white"),
+  buttonTextColor: text("button_text_color").default("emerald-700"),
+  updatedAt: timestamp("updated_at").defaultNow(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertSellCarSectionSchema = createInsertSchema(sellCarSection).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertSellCarSection = z.infer<typeof insertSellCarSectionSchema>;
+export type SellCarSection = typeof sellCarSection.$inferSelect;

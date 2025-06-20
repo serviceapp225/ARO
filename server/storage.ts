@@ -1,4 +1,4 @@
-import { users, carListings, bids, favorites, notifications, carAlerts, banners, type User, type InsertUser, type CarListing, type InsertCarListing, type Bid, type InsertBid, type Favorite, type InsertFavorite, type Notification, type InsertNotification, type CarAlert, type InsertCarAlert, type Banner, type InsertBanner } from "@shared/schema";
+import { users, carListings, bids, favorites, notifications, carAlerts, banners, sellCarSection, type User, type InsertUser, type CarListing, type InsertCarListing, type Bid, type InsertBid, type Favorite, type InsertFavorite, type Notification, type InsertNotification, type CarAlert, type InsertCarAlert, type Banner, type InsertBanner, type SellCarSection, type InsertSellCarSection } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, desc, sql, or, ilike, inArray } from "drizzle-orm";
 
@@ -58,6 +58,10 @@ export interface IStorage {
   createBanner(banner: InsertBanner): Promise<Banner>;
   updateBanner(id: number, banner: Partial<InsertBanner>): Promise<Banner | undefined>;
   deleteBanner(id: number): Promise<boolean>;
+
+  // Sell Car Section operations
+  getSellCarSection(): Promise<SellCarSection | undefined>;
+  updateSellCarSection(data: Partial<InsertSellCarSection>): Promise<SellCarSection | undefined>;
 
   // Admin operations
   getAdminStats(): Promise<{
@@ -464,6 +468,28 @@ export class DatabaseStorage implements IStorage {
       totalUsers: totalUsers.count,
       bannedUsers: bannedUsers.count
     };
+  }
+
+  async getSellCarSection(): Promise<SellCarSection | undefined> {
+    const [section] = await db.select().from(sellCarSection).limit(1);
+    return section || undefined;
+  }
+
+  async updateSellCarSection(data: Partial<InsertSellCarSection>): Promise<SellCarSection | undefined> {
+    // Update the first record or create if none exists
+    const existingSection = await this.getSellCarSection();
+    
+    if (existingSection) {
+      const [updated] = await db
+        .update(sellCarSection)
+        .set({ ...data, updatedAt: new Date() })
+        .where(eq(sellCarSection.id, existingSection.id))
+        .returning();
+      return updated || undefined;
+    } else {
+      const [created] = await db.insert(sellCarSection).values(data).returning();
+      return created;
+    }
   }
 }
 
