@@ -31,7 +31,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const demoUser = JSON.parse(demoUserData);
         // Устанавливаем демо-пользователя как обычного пользователя
         demoUser.role = demoUser.role || 'buyer';
-        demoUser.isActive = true;
+        // Не переопределяем isActive - берем из localStorage или сервера
         setUser(demoUser);
       } catch (error) {
         localStorage.removeItem('demo-user');

@@ -4,12 +4,22 @@ import { useUserData } from "@/contexts/UserDataContext";
 import { User, Globe, Bell, Heart, HelpCircle, FileText, LogOut, Camera, Edit, ChevronRight, MessageCircle, Building2, UserCheck, Shield, ShieldX, Settings } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { useRef } from "react";
+import { useQuery } from "@tanstack/react-query";
 
 export default function Profile() {
   const { user, logout } = useAuth();
   const { userData, updateUserData } = useUserData();
   const [, setLocation] = useLocation();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  
+  // Загружаем актуальные данные пользователя с сервера
+  const { data: serverUser } = useQuery({
+    queryKey: ['/api/users/3'], // Используем ID текущего пользователя
+    enabled: !!user,
+  });
+  
+  // Используем данные с сервера, если они доступны
+  const currentUser = serverUser || user;
 
   const handlePhotoSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -132,23 +142,23 @@ export default function Profile() {
                 </div>
                 
                 <div className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
-                  user.isActive 
+                  currentUser?.isActive 
                     ? 'bg-green-100 text-green-800' 
                     : 'bg-red-100 text-red-800'
                 }`}>
-                  {user.isActive ? (
+                  {currentUser?.isActive ? (
                     <Shield className="w-4 h-4 mr-2" />
                   ) : (
                     <ShieldX className="w-4 h-4 mr-2" />
                   )}
-                  {user.isActive ? 'Активирован' : 'Не активирован'}
+                  {currentUser?.isActive ? 'Активирован' : 'Не активирован'}
                 </div>
               </div>
             </div>
           </div>
 
           {/* Activation Status Notice */}
-          {!user.isActive && (
+          {!currentUser.isActive && (
             <div className="bg-yellow-50 border border-yellow-200 rounded-2xl p-4 mb-6">
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 bg-yellow-100 rounded-full flex items-center justify-center">
