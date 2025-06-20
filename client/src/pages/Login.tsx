@@ -9,7 +9,7 @@ import { Link, useLocation } from "wouter";
 import { useAuth } from "@/contexts/AuthContext";
 
 export default function Login() {
-  const [phoneNumber, setPhoneNumber] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("+992 ");
   const [agreeToTerms, setAgreeToTerms] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [, navigate] = useLocation();
@@ -41,16 +41,23 @@ export default function Login() {
   };
 
   const formatPhoneNumber = (value: string) => {
-    // Remove all non-digits
-    const phoneNumber = value.replace(/\D/g, '');
+    // Remove all non-digits and the +992 prefix if it exists
+    let phoneNumber = value.replace(/\D/g, '');
+    
+    // Remove 992 prefix if it exists at the beginning
+    if (phoneNumber.startsWith('992')) {
+      phoneNumber = phoneNumber.slice(3);
+    }
+    
+    // Limit to 9 digits (Tajikistan phone numbers after country code)
+    phoneNumber = phoneNumber.slice(0, 9);
     
     // Format as +992 (XX) XXX-XX-XX
-    if (phoneNumber.length === 0) return '';
-    if (phoneNumber.length <= 3) return `+992 (${phoneNumber}`;
-    if (phoneNumber.length <= 5) return `+992 (${phoneNumber.slice(3)}`;
-    if (phoneNumber.length <= 8) return `+992 (${phoneNumber.slice(3, 5)}) ${phoneNumber.slice(5)}`;
-    if (phoneNumber.length <= 10) return `+992 (${phoneNumber.slice(3, 5)}) ${phoneNumber.slice(5, 8)}-${phoneNumber.slice(8)}`;
-    return `+992 (${phoneNumber.slice(3, 5)}) ${phoneNumber.slice(5, 8)}-${phoneNumber.slice(8, 10)}-${phoneNumber.slice(10, 12)}`;
+    if (phoneNumber.length === 0) return '+992 ';
+    if (phoneNumber.length <= 2) return `+992 (${phoneNumber}`;
+    if (phoneNumber.length <= 5) return `+992 (${phoneNumber.slice(0, 2)}) ${phoneNumber.slice(2)}`;
+    if (phoneNumber.length <= 7) return `+992 (${phoneNumber.slice(0, 2)}) ${phoneNumber.slice(2, 5)}-${phoneNumber.slice(5)}`;
+    return `+992 (${phoneNumber.slice(0, 2)}) ${phoneNumber.slice(2, 5)}-${phoneNumber.slice(5, 7)}-${phoneNumber.slice(7, 9)}`;
   };
 
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -113,7 +120,7 @@ export default function Login() {
             <Button
               type="submit"
               className="w-full"
-              disabled={!phoneNumber || !agreeToTerms || isLoading}
+              disabled={phoneNumber.length < 8 || !agreeToTerms || isLoading}
             >
               {isLoading ? (
                 "Отправляем код..."
