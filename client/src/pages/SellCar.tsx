@@ -271,7 +271,7 @@ export default function SellCar() {
         title: "Заполните все обязательные поля",
         description: `Первое незаполненное поле: ${firstEmptyField.name}`,
         variant: "destructive",
-        duration: 3000,
+        duration: 2000,
       });
       return;
     }

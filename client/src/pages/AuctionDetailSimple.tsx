@@ -80,7 +80,7 @@ export default function AuctionDetail() {
       toast({
         title: "🎉 Ставка принята!",
         description: `Ваша ставка ${parseFloat(variables.amount).toLocaleString()} Сомони была успешно размещена.`,
-        duration: 4000,
+        duration: 2000,
       });
       
       // Refetch auction data and bidding history to get updated price
@@ -157,7 +157,7 @@ export default function AuctionDetail() {
       toast({
         title: "🎉 Поздравляем! Вы выиграли аукцион!",
         description: `Ваша ставка ${parseFloat(highestBid.amount).toLocaleString()} Сомони была наивысшей.`,
-        duration: 8000,
+        duration: 2000,
       });
       setShowConfetti(true);
     } else {
@@ -168,7 +168,7 @@ export default function AuctionDetail() {
           title: "Аукцион завершен",
           description: "К сожалению, ваша ставка не была наивысшей. Аукцион завершен.",
           variant: "destructive",
-          duration: 5000,
+          duration: 2000,
         });
       }
     }

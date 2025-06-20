@@ -271,7 +271,7 @@ export default function AuctionDetail() {
         toast({
           title: "Аукцион завершен",
           description: "К сожалению, вы не выиграли этот аукцион",
-          duration: 5000,
+          duration: 2000,
         });
       }
     }
@@ -310,7 +310,7 @@ export default function AuctionDetail() {
         title: "Аукцион завершен",
         description: "К сожалению, ваша ставка не была высокой. Аукцион уже завершен.",
         variant: "destructive",
-        duration: 5000,
+        duration: 2000,
       });
       return;
     }
