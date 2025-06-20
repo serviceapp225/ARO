@@ -4,6 +4,7 @@ import { useToast } from '@/hooks/use-toast';
 interface DemoUser {
   email: string;
   phoneNumber: string;
+  fullName?: string;
   uid: string;
   role?: string;
   isActive?: boolean;
@@ -43,14 +44,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       localStorage.removeItem('demo-user');
       setUser(null);
-      toast({
-        title: "Выход выполнен",
-      });
     } catch (error) {
-      toast({
-        title: "Ошибка выхода",
-        variant: "destructive",
-      });
+      console.error('Logout error:', error);
     }
   };
 

@@ -10,6 +10,7 @@ import { useAuth } from "@/contexts/AuthContext";
 
 export default function Login() {
   const [phoneNumber, setPhoneNumber] = useState("+992 ");
+  const [fullName, setFullName] = useState("");
   const [agreeToTerms, setAgreeToTerms] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [, navigate] = useLocation();
@@ -22,7 +23,7 @@ export default function Login() {
     }
 
     setIsLoading(true);
-    console.log("Authenticating with phone:", phoneNumber);
+    console.log("Authenticating with phone:", phoneNumber, "Name:", fullName);
     
     // Simulate successful login after 1 second
     setTimeout(() => {
@@ -31,6 +32,7 @@ export default function Login() {
       const demoUser = {
         email: phoneNumber + "@autoauction.tj",
         phoneNumber: phoneNumber,
+        fullName: fullName,
         uid: "demo-user-" + Date.now()
       };
       localStorage.setItem('demo-user', JSON.stringify(demoUser));
@@ -81,6 +83,19 @@ export default function Login() {
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
+              <Label htmlFor="fullName">ФИО</Label>
+              <Input
+                id="fullName"
+                type="text"
+                placeholder="Введите ваше полное имя"
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                className="text-lg"
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
               <Label htmlFor="phone">Номер телефона</Label>
               <Input
                 id="phone"
@@ -120,7 +135,7 @@ export default function Login() {
             <Button
               type="submit"
               className="w-full"
-              disabled={phoneNumber.length < 8 || !agreeToTerms || isLoading}
+              disabled={!fullName.trim() || phoneNumber.length < 8 || !agreeToTerms || isLoading}
             >
               {isLoading ? (
                 "Отправляем код..."
