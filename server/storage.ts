@@ -148,9 +148,7 @@ export class DatabaseStorage implements IStorage {
           technicalInspectionDate: carListings.technicalInspectionDate,
           tinted: carListings.tinted,
           tintingDate: carListings.tintingDate,
-          condition: carListings.condition,
-          // Load only first photo URL instead of all photos
-          photos: carListings.photos
+          condition: carListings.condition
         })
         .from(carListings)
         .where(eq(carListings.status, status))
@@ -163,10 +161,10 @@ export class DatabaseStorage implements IStorage {
         listings = await query;
       }
       
-      // Limit photos to first 3 to reduce payload size
+      // Add placeholder photos array for UI compatibility
       const optimizedListings = listings.map(listing => ({
         ...listing,
-        photos: Array.isArray(listing.photos) ? listing.photos.slice(0, 3) : []
+        photos: [`/api/listings/${listing.id}/photo/0`, `/api/listings/${listing.id}/photo/1`, `/api/listings/${listing.id}/photo/2`]
       }));
       
       return optimizedListings;
