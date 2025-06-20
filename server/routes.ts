@@ -58,9 +58,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Endpoint for getting individual photo by index
+  // Cached endpoint for getting individual photo by index
+  const photoCache = new Map<string, Buffer>();
+  const photoCacheTypes = new Map<string, string>();
+  
   app.get("/api/listings/:id/photo/:index", async (req, res) => {
     try {
+      const cacheKey = `${req.params.id}-${req.params.index}`;
+      
+      // Check cache first
+      if (photoCache.has(cacheKey)) {
+        const buffer = photoCache.get(cacheKey)!;
+        const mimeType = photoCacheTypes.get(cacheKey) || 'image/jpeg';
+        
+        res.set('Content-Type', mimeType);
+        res.set('Cache-Control', 'public, max-age=86400');
+        res.send(buffer);
+        return;
+      }
+      
       const listing = await storage.getListing(Number(req.params.id));
       if (!listing) {
         return res.status(404).json({ error: "Listing not found" });
@@ -79,7 +95,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (photoIndex >= 0 && photoIndex < photoArray.length) {
         const photoData = photoArray[photoIndex];
         
-        // Extract base64 data and set appropriate content type
         if (photoData.startsWith('data:image/')) {
           const matches = photoData.match(/data:image\/([^;]+);base64,(.+)/);
           if (matches) {
@@ -87,8 +102,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
             const base64Data = matches[2];
             const buffer = Buffer.from(base64Data, 'base64');
             
+            // Cache the processed image
+            photoCache.set(cacheKey, buffer);
+            photoCacheTypes.set(cacheKey, mimeType);
+            
             res.set('Content-Type', mimeType);
-            res.set('Cache-Control', 'public, max-age=86400'); // Cache for 24 hours
+            res.set('Cache-Control', 'public, max-age=86400');
             res.send(buffer);
             return;
           }

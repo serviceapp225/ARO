@@ -127,8 +127,40 @@ export class DatabaseStorage implements IStorage {
 
   async getListingsByStatus(status: string, limit?: number): Promise<CarListing[]> {
     try {
+      // Fast query without photos field for maximum performance
       let query = db
-        .select()
+        .select({
+          id: carListings.id,
+          sellerId: carListings.sellerId,
+          lotNumber: carListings.lotNumber,
+          make: carListings.make,
+          model: carListings.model,
+          year: carListings.year,
+          mileage: carListings.mileage,
+          description: carListings.description,
+          startingPrice: carListings.startingPrice,
+          currentBid: carListings.currentBid,
+          auctionDuration: carListings.auctionDuration,
+          status: carListings.status,
+          auctionStartTime: carListings.auctionStartTime,
+          auctionEndTime: carListings.auctionEndTime,
+          customsCleared: carListings.customsCleared,
+          recycled: carListings.recycled,
+          technicalInspectionValid: carListings.technicalInspectionValid,
+          technicalInspectionDate: carListings.technicalInspectionDate,
+          tinted: carListings.tinted,
+          tintingDate: carListings.tintingDate,
+          engine: carListings.engine,
+          transmission: carListings.transmission,
+          fuelType: carListings.fuelType,
+          bodyType: carListings.bodyType,
+          driveType: carListings.driveType,
+          color: carListings.color,
+          condition: carListings.condition,
+          vin: carListings.vin,
+          location: carListings.location,
+          createdAt: carListings.createdAt
+        })
         .from(carListings)
         .where(eq(carListings.status, status))
         .orderBy(desc(carListings.createdAt));
@@ -139,29 +171,12 @@ export class DatabaseStorage implements IStorage {
       
       const listings = await query;
       
-      // Return data with photo URLs for performance instead of base64
-      return listings.map(listing => {
-        let hasPhotos = false;
-        try {
-          if (listing.photos) {
-            if (Array.isArray(listing.photos)) {
-              hasPhotos = listing.photos.length > 0;
-            } else if (typeof listing.photos === 'string') {
-              const photoArray = JSON.parse(listing.photos);
-              hasPhotos = photoArray.length > 0;
-            }
-          }
-        } catch (e) {
-          hasPhotos = false;
-        }
-        
-        return {
-          ...listing,
-          // Use photo endpoint URL instead of heavy base64 data
-          photos: hasPhotos ? [`/api/listings/${listing.id}/photo/0`] : [],
-          description: listing.description?.substring(0, 100) + '...' || ''
-        };
-      });
+      // Add photo URL and truncate description
+      return listings.map(listing => ({
+        ...listing,
+        photos: [`/api/listings/${listing.id}/photo/0`], // Always assume photos exist
+        description: listing.description?.substring(0, 100) + '...' || ''
+      }));
     } catch (error) {
       console.error('Error fetching listings:', error);
       return [];
