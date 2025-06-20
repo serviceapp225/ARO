@@ -21,7 +21,6 @@ export default function Login() {
       return;
     }
 
-    setIsLoading(true);
     console.log("Authenticating with phone:", phoneNumber);
     
     // Create demo user in localStorage immediately
