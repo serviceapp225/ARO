@@ -46,40 +46,23 @@ export default function AdminPanel() {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('all');
 
-  // Проверка доступа админа
-  if (!user || user.role !== 'admin') {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center pb-20">
-        <div className="bg-white rounded-2xl p-8 shadow-lg text-center max-w-md mx-4">
-          <Shield className="w-16 h-16 text-red-400 mx-auto mb-4" />
-          <h2 className="text-xl font-semibold text-gray-700 mb-2">
-            Доступ запрещен
-          </h2>
-          <p className="text-gray-500 mb-4">
-            У вас нет прав доступа к административной панели
-          </p>
-          <Button onClick={() => setLocation('/')}>
-            На главную
-          </Button>
-        </div>
-      </div>
-    );
-  }
-
   // Запросы данных
   const { data: stats, isLoading: statsLoading } = useQuery<AdminStats>({
     queryKey: ['/api/admin/stats'],
     staleTime: 30000,
+    enabled: user?.role === 'admin',
   });
 
   const { data: users = [], isLoading: usersLoading } = useQuery<User[]>({
     queryKey: ['/api/admin/users'],
     staleTime: 30000,
+    enabled: user?.role === 'admin',
   });
 
   const { data: listings = [], isLoading: listingsLoading } = useQuery<CarListing[]>({
     queryKey: ['/api/admin/listings'],
     staleTime: 30000,
+    enabled: user?.role === 'admin',
   });
 
   // Мутации для управления пользователями
@@ -179,6 +162,26 @@ export default function AdminPanel() {
         return <Badge className="bg-gray-100 text-gray-800">{status}</Badge>;
     }
   };
+
+  // Проверка доступа админа
+  if (!user || user.role !== 'admin') {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center pb-20">
+        <div className="bg-white rounded-2xl p-8 shadow-lg text-center max-w-md mx-4">
+          <Shield className="w-16 h-16 text-red-400 mx-auto mb-4" />
+          <h2 className="text-xl font-semibold text-gray-700 mb-2">
+            Доступ запрещен
+          </h2>
+          <p className="text-gray-500 mb-4">
+            У вас нет прав доступа к административной панели
+          </p>
+          <Button onClick={() => setLocation('/')}>
+            На главную
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 pb-20">
