@@ -10,6 +10,7 @@ interface NotificationBellProps {
 
 export function NotificationBell({ userId }: NotificationBellProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [deletingIds, setDeletingIds] = useState<Set<number>>(new Set());
   const queryClient = useQueryClient();
   const [, setLocation] = useLocation();
 
@@ -37,6 +38,9 @@ export function NotificationBell({ userId }: NotificationBellProps) {
 
   const deleteNotificationMutation = useMutation({
     mutationFn: async (notificationId: number) => {
+      // Add to deleting set
+      setDeletingIds(prev => new Set(prev).add(notificationId));
+      
       const response = await fetch(`/api/notifications/${notificationId}`, {
         method: 'DELETE',
       });
@@ -44,6 +48,11 @@ export function NotificationBell({ userId }: NotificationBellProps) {
       return response.json();
     },
     onMutate: async (notificationId: number) => {
+      // Prevent multiple deletions of the same notification
+      if (deletingIds.has(notificationId)) {
+        throw new Error('Already deleting this notification');
+      }
+      
       // Cancel any outgoing refetches
       await queryClient.cancelQueries({ queryKey: [`/api/notifications/${userId}`] });
       
@@ -61,12 +70,23 @@ export function NotificationBell({ userId }: NotificationBellProps) {
       return { previousNotifications };
     },
     onError: (err, notificationId, context) => {
-      // Rollback on error
+      // Rollback on error and remove from deleting set
       if (context?.previousNotifications) {
         queryClient.setQueryData([`/api/notifications/${userId}`], context.previousNotifications);
       }
+      setDeletingIds(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(notificationId);
+        return newSet;
+      });
     },
-    onSettled: () => {
+    onSettled: (data, error, notificationId) => {
+      // Remove from deleting set regardless of success/error
+      setDeletingIds(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(notificationId);
+        return newSet;
+      });
       queryClient.invalidateQueries({ queryKey: [`/api/notifications/${userId}`] });
     },
   });
@@ -228,11 +248,11 @@ export function NotificationBell({ userId }: NotificationBellProps) {
                       onClick={(e) => {
                         e.stopPropagation();
                         e.preventDefault();
-                        if (!deleteNotificationMutation.isPending) {
+                        if (!deletingIds.has(notification.id) && !deleteNotificationMutation.isPending) {
                           deleteNotificationMutation.mutate(notification.id);
                         }
                       }}
-                      disabled={deleteNotificationMutation.isPending}
+                      disabled={deletingIds.has(notification.id) || deleteNotificationMutation.isPending}
                       className="text-red-500 hover:text-red-700 p-1 rounded disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex-shrink-0"
                       title="Удалить уведомление"
                     >
