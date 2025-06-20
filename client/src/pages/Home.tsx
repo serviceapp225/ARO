@@ -8,6 +8,7 @@ import { Footer } from '@/components/Footer';
 import { AuctionDetailModal } from '@/components/AuctionDetailModal';
 import { BannerDisplay } from '@/components/BannerDisplay';
 import { SellCarBanner } from '@/components/SellCarBanner';
+import { HeroBanners } from '@/components/HeroBanners';
 
 export default function Home() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -17,7 +18,10 @@ export default function Home() {
       <Header />
       <HeroSection onSearch={setSearchQuery} />
       
-      {/* Main content area with banners */}
+      {/* Hero Banners - Main promotional banners */}
+      <HeroBanners />
+      
+      {/* Main content area */}
       <div className="container mx-auto px-4 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           {/* Main content */}
@@ -27,17 +31,11 @@ export default function Home() {
             <SellYourCar />
           </div>
           
-          {/* Sidebar with banners */}
+          {/* Sidebar with additional banners */}
           <div className="lg:col-span-1 space-y-6">
-            <SellCarBanner />
             <BannerDisplay position="sidebar" className="sticky top-4" />
           </div>
         </div>
-      </div>
-      
-      {/* Main banners section */}
-      <div className="container mx-auto px-4 py-8">
-        <BannerDisplay position="main" />
       </div>
       
       <Footer />
