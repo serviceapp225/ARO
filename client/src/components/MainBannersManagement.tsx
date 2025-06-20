@@ -141,7 +141,9 @@ export function MainBannersManagement() {
     mutationFn: (data: MainBannerFormData) => 
       apiRequest('POST', '/api/admin/banners', { ...data, position: "main" }),
     onSuccess: () => {
+      // Обновляем все кеши связанные с банерами
       queryClient.invalidateQueries({ queryKey: ['/api/banners'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/banners', 'main'] });
       toast({ title: "Банер создан", description: "Новый банер успешно добавлен" });
       setEditingIndex(null);
       form.reset();
@@ -155,7 +157,9 @@ export function MainBannersManagement() {
     mutationFn: ({ id, data }: { id: number; data: MainBannerFormData }) => 
       apiRequest('PUT', `/api/admin/banners/${id}`, { ...data, position: "main" }),
     onSuccess: () => {
+      // Обновляем все кеши связанные с банерами
       queryClient.invalidateQueries({ queryKey: ['/api/banners'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/banners', 'main'] });
       toast({ title: "Банер обновлен", description: "Изменения сохранены" });
       setEditingIndex(null);
       form.reset();
@@ -168,7 +172,9 @@ export function MainBannersManagement() {
   const deleteMutation = useMutation({
     mutationFn: (id: number) => apiRequest('DELETE', `/api/admin/banners/${id}`),
     onSuccess: () => {
+      // Обновляем все кеши связанные с банерами
       queryClient.invalidateQueries({ queryKey: ['/api/banners'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/banners', 'main'] });
       toast({ title: "Банер удален", description: "Банер успешно удален" });
     },
     onError: (error: any) => {

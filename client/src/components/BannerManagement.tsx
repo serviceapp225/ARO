@@ -72,6 +72,7 @@ export function BannerManagement() {
     mutationFn: (data: BannerFormData) => apiRequest('POST', '/api/admin/banners', data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/banners'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/banners', 'main'] });
       toast({ title: "Банер создан", description: "Новый банер успешно добавлен" });
       setIsDialogOpen(false);
       form.reset();
@@ -86,6 +87,7 @@ export function BannerManagement() {
       apiRequest('PUT', `/api/admin/banners/${id}`, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/banners'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/banners', 'main'] });
       toast({ title: "Банер обновлен", description: "Изменения сохранены" });
       setIsDialogOpen(false);
       setEditingBanner(null);
@@ -100,6 +102,7 @@ export function BannerManagement() {
     mutationFn: (id: number) => apiRequest('DELETE', `/api/admin/banners/${id}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/banners'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/banners', 'main'] });
       toast({ title: "Банер удален", description: "Банер успешно удален" });
     },
     onError: (error: any) => {

@@ -83,7 +83,9 @@ export function SellBannerManagement() {
       }
     },
     onSuccess: () => {
+      // Обновляем все кеши связанные с банерами
       queryClient.invalidateQueries({ queryKey: ['/api/banners'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/banners', 'main'] });
       toast({ title: "Банер обновлен", description: "Изменения сохранены успешно" });
     },
     onError: (error: any) => {

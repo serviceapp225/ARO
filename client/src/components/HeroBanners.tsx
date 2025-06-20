@@ -25,7 +25,9 @@ export function HeroBanners() {
       const response = await fetch('/api/banners?position=main');
       if (!response.ok) throw new Error('Failed to fetch banners');
       return response.json();
-    }
+    },
+    staleTime: 30000, // 30 секунд - быстрее обновление для админов
+    refetchOnWindowFocus: true
   });
 
   // Сортируем банеры по порядку и берем первые 3
