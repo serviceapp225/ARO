@@ -1,6 +1,9 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
+import { db } from "./db";
+import { carListings } from "../shared/schema";
+import { eq } from "drizzle-orm";
 import { insertCarListingSchema, insertBidSchema, insertFavoriteSchema, insertNotificationSchema, insertCarAlertSchema, insertBannerSchema, type CarAlert } from "@shared/schema";
 import { z } from "zod";
 
@@ -77,7 +80,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return;
       }
       
-      const listing = await storage.getListing(Number(req.params.id));
+      // Get photos directly from database for this endpoint only
+      const [listing] = await db.select({ photos: carListings.photos }).from(carListings).where(eq(carListings.id, Number(req.params.id)));
       if (!listing) {
         return res.status(404).json({ error: "Listing not found" });
       }

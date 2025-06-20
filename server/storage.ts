@@ -121,8 +121,56 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getListing(id: number): Promise<CarListing | undefined> {
-    const [listing] = await db.select().from(carListings).where(eq(carListings.id, id));
-    return listing || undefined;
+    // Fast query without photos for detail pages
+    const [listing] = await db
+      .select({
+        id: carListings.id,
+        sellerId: carListings.sellerId,
+        lotNumber: carListings.lotNumber,
+        make: carListings.make,
+        model: carListings.model,
+        year: carListings.year,
+        mileage: carListings.mileage,
+        description: carListings.description,
+        startingPrice: carListings.startingPrice,
+        currentBid: carListings.currentBid,
+        auctionDuration: carListings.auctionDuration,
+        status: carListings.status,
+        auctionStartTime: carListings.auctionStartTime,
+        auctionEndTime: carListings.auctionEndTime,
+        customsCleared: carListings.customsCleared,
+        recycled: carListings.recycled,
+        technicalInspectionValid: carListings.technicalInspectionValid,
+        technicalInspectionDate: carListings.technicalInspectionDate,
+        tinted: carListings.tinted,
+        tintingDate: carListings.tintingDate,
+        engine: carListings.engine,
+        transmission: carListings.transmission,
+        fuelType: carListings.fuelType,
+        bodyType: carListings.bodyType,
+        driveType: carListings.driveType,
+        color: carListings.color,
+        condition: carListings.condition,
+        vin: carListings.vin,
+        location: carListings.location,
+        createdAt: carListings.createdAt
+      })
+      .from(carListings)
+      .where(eq(carListings.id, id));
+    
+    if (!listing) return undefined;
+    
+    // Add photo URLs for detail page
+    return {
+      ...listing,
+      photos: [
+        `/api/listings/${id}/photo/0`,
+        `/api/listings/${id}/photo/1`,
+        `/api/listings/${id}/photo/2`,
+        `/api/listings/${id}/photo/3`,
+        `/api/listings/${id}/photo/4`
+      ]
+    };
   }
 
   async getListingsByStatus(status: string, limit?: number): Promise<CarListing[]> {
