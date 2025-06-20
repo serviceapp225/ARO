@@ -37,7 +37,7 @@ export default function UserData() {
       toast({
         title: "Файл загружен",
         description: `${type === 'front' ? 'Передняя' : 'Задняя'} часть паспорта загружена`,
-        duration: 2000,
+        duration: 3000,
       });
     }
   };
@@ -48,7 +48,7 @@ export default function UserData() {
     toast({
       title: "Данные сохранены",
       description: "Ваши личные данные успешно обновлены",
-      duration: 2000,
+      duration: 3000,
     });
   };
 

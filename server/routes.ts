@@ -36,36 +36,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { status = "active", limit } = req.query;
       const cacheKey = `listings_${status}_${limit || 'all'}`;
       
-      console.log(`[API] Getting listings with status: ${status}, limit: ${limit}`);
+      // Check cache first
+      const cached = getCached(cacheKey);
+      if (cached) {
+        return res.json(cached);
+      }
       
-      // Skip cache for now to debug
-      // const cached = getCached(cacheKey);
-      // if (cached) {
-      //   console.log(`[API] Returning cached listings: ${cached.length} items`);
-      //   return res.json(cached);
-      // }
-      
-      console.log(`[API] Fetching listings from database...`);
       const listings = await storage.getListingsByStatus(
         status as string, 
         limit ? Number(limit) : undefined
       );
       
-      console.log(`[API] Found ${listings.length} listings`);
+      // Get bid counts for each listing
+      const listingIds = listings.map(l => l.id);
+      const bidCounts = await storage.getBidCountsForListings(listingIds);
       
-      // Add default bid count of 0 for now (optimization)
       const listingsWithBidCounts = listings.map(listing => ({
         ...listing,
-        bidCount: 0
+        bidCount: bidCounts[listing.id] || 0
       }));
       
-      // Cache the result for 30 seconds
+      // Cache the result
       setCache(cacheKey, listingsWithBidCounts);
       
-      console.log(`[API] Returning ${listingsWithBidCounts.length} listings`);
       res.json(listingsWithBidCounts);
     } catch (error) {
-      console.error('[API] Error fetching listings:', error);
       res.status(500).json({ error: "Failed to fetch listings" });
     }
   });

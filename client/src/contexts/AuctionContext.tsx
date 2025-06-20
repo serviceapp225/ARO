@@ -39,43 +39,16 @@ export function AuctionProvider({ children }: { children: ReactNode }) {
   // Clear cache on mount to ensure fresh data
   useEffect(() => {
     queryClient.removeQueries({ queryKey: ['/api/listings'] });
-    queryClient.invalidateQueries({ queryKey: ['/api/listings'] });
   }, []);
 
-  // Fetch real data from API with fresh data
-  const { data: listings, isLoading, refetch, error } = useQuery({
+  // Fetch real data from API with automatic refresh
+  const { data: listings, isLoading, refetch } = useQuery({
     queryKey: ['/api/listings'],
-    queryFn: async () => {
-      console.log('Fetching listings from API...');
-      try {
-        const response = await fetch('/api/listings', {
-          credentials: 'include',
-          headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
-          }
-        });
-        
-        console.log('Response status:', response.status, response.statusText);
-        
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        
-        const data = await response.json();
-        console.log('API Response received:', Array.isArray(data) ? `Array with ${data.length} items` : typeof data);
-        console.log('First item:', data[0]);
-        return data;
-      } catch (error) {
-        console.error('API Request failed:', error);
-        throw error;
-      }
-    },
-    staleTime: 0,
-    gcTime: 0,
-    refetchOnWindowFocus: false,
-    refetchInterval: false,
-    retry: 2,
+    staleTime: 0, // Always consider data stale to force fresh requests
+    gcTime: 0, // No cache time - always fresh
+    refetchOnWindowFocus: true,
+    refetchInterval: 1000, // Refetch every second
+    retry: 3,
     retryDelay: 1000,
     enabled: true,
     refetchOnMount: true
@@ -102,16 +75,6 @@ export function AuctionProvider({ children }: { children: ReactNode }) {
     tintingDate: listing.tintingDate,
     condition: listing.condition
   })) : [];
-
-  // Debug logging
-  console.log('AuctionContext DEBUG:', {
-    listings: listings,
-    listingsType: typeof listings,
-    isArray: Array.isArray(listings),
-    auctionsCount: auctions.length,
-    loading: isLoading,
-    error: error
-  });
 
 
 

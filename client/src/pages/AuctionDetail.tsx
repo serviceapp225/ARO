@@ -161,7 +161,7 @@ export default function AuctionDetail() {
       toast({
         title: "🎉 Ставка принята!",
         description: `Ваша ставка ${parseFloat(variables.amount).toLocaleString()} Сомони успешно размещена`,
-        duration: 2000,
+        duration: 3000,
       });
       
       // Refetch auction data and bidding history to get updated price
@@ -182,14 +182,14 @@ export default function AuctionDetail() {
           title: "Аукцион завершен",
           description: "К сожалению, ваша ставка не была высокой. Аукцион уже завершен.",
           variant: "destructive",
-          duration: 2000,
+          duration: 5000,
         });
       } else {
         toast({
           title: "Ошибка",
           description: error.message || "Не удалось разместить ставку. Попробуйте снова.",
           variant: "destructive",
-          duration: 2000,
+          duration: 3000,
         });
       }
     },
@@ -274,7 +274,7 @@ export default function AuctionDetail() {
         toast({
           title: "Аукцион завершен",
           description: "К сожалению, вы не выиграли этот аукцион",
-          duration: 2000,
+          duration: 5000,
         });
       }
     }
@@ -318,7 +318,7 @@ export default function AuctionDetail() {
         toast({
           title: "⏰ Аукцион продлен!",
           description: "Время продлено на 10 секунд из-за новой ставки",
-          duration: 2000,
+          duration: 3000,
         });
         
         console.log("Аукцион продлен на 10 секунд из-за ставки в последние 10 секунд");
@@ -335,7 +335,7 @@ export default function AuctionDetail() {
         title: "Аукцион завершен",
         description: "К сожалению, ваша ставка не была высокой. Аукцион уже завершен.",
         variant: "destructive",
-        duration: 2000,
+        duration: 5000,
       });
       return;
     }
@@ -348,7 +348,7 @@ export default function AuctionDetail() {
         title: "Ставка слишком низкая",
         description: `Минимальная ставка: ${(currentBidValue + 100).toLocaleString()} Сомони`,
         variant: "destructive",
-        duration: 2000,
+        duration: 3000,
       });
       return;
     }

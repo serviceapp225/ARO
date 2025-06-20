@@ -5,13 +5,11 @@ import { setupVite, serveStatic, log } from "./vite";
 
 const app = express();
 
-// Add headers for API and static assets
+// Add caching headers for better performance
 app.use((req, res, next) => {
   if (req.path.startsWith('/api/')) {
-    // No cache for API responses to ensure fresh data
-    res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
-    res.set('Pragma', 'no-cache');
-    res.set('Expires', '0');
+    // Cache API responses for 30 seconds
+    res.set('Cache-Control', 'public, max-age=30');
   } else if (req.path.match(/\.(css|js|png|jpg|jpeg|gif|ico|svg)$/)) {
     // Cache static assets for 1 hour
     res.set('Cache-Control', 'public, max-age=3600');

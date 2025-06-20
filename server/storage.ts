@@ -128,28 +128,7 @@ export class DatabaseStorage implements IStorage {
   async getListingsByStatus(status: string, limit?: number): Promise<CarListing[]> {
     try {
       const query = db
-        .select({
-          id: carListings.id,
-          sellerId: carListings.sellerId,
-          lotNumber: carListings.lotNumber,
-          make: carListings.make,
-          model: carListings.model,
-          year: carListings.year,
-          mileage: carListings.mileage,
-          startingPrice: carListings.startingPrice,
-          currentBid: carListings.currentBid,
-          status: carListings.status,
-          auctionStartTime: carListings.auctionStartTime,
-          auctionEndTime: carListings.auctionEndTime,
-          createdAt: carListings.createdAt,
-          customsCleared: carListings.customsCleared,
-          recycled: carListings.recycled,
-          technicalInspectionValid: carListings.technicalInspectionValid,
-          technicalInspectionDate: carListings.technicalInspectionDate,
-          tinted: carListings.tinted,
-          tintingDate: carListings.tintingDate,
-          condition: carListings.condition
-        })
+        .select()
         .from(carListings)
         .where(eq(carListings.status, status))
         .orderBy(desc(carListings.createdAt));
@@ -161,13 +140,7 @@ export class DatabaseStorage implements IStorage {
         listings = await query;
       }
       
-      // Add placeholder photos array for UI compatibility
-      const optimizedListings = listings.map(listing => ({
-        ...listing,
-        photos: [`/api/listings/${listing.id}/photo/0`, `/api/listings/${listing.id}/photo/1`, `/api/listings/${listing.id}/photo/2`]
-      }));
-      
-      return optimizedListings;
+      return listings;
     } catch (error) {
       console.error('Error fetching listings:', error);
       return [];
