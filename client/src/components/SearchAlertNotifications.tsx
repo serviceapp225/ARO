@@ -15,6 +15,11 @@ export function SearchAlertNotifications({ userId }: SearchAlertNotificationsPro
 
   const { data: carAlerts = [], isLoading } = useQuery<CarAlert[]>({
     queryKey: ['/api/car-alerts', userId],
+    queryFn: async () => {
+      const response = await fetch(`/api/car-alerts/${userId}`);
+      if (!response.ok) throw new Error('Failed to fetch car alerts');
+      return response.json();
+    },
     staleTime: 60000, // Кэш на 1 минуту
     gcTime: 300000, // Хранить в кэше 5 минут
     refetchOnWindowFocus: false,

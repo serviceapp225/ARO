@@ -536,18 +536,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/car-alerts", async (req, res) => {
-    try {
-      const { userId } = req.query;
-      if (!userId) {
-        return res.status(400).json({ error: "userId is required" });
-      }
-      const alerts = await storage.getCarAlertsByUser(parseInt(userId as string));
-      res.json(alerts);
-    } catch (error) {
-      res.status(500).json({ error: "Failed to fetch alerts" });
-    }
-  });
+
 
   app.post("/api/car-alerts", async (req, res) => {
     try {

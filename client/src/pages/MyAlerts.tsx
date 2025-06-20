@@ -26,7 +26,7 @@ export default function MyAlerts() {
   const { data: alerts = [], isLoading } = useQuery({
     queryKey: ['/api/car-alerts', userId],
     queryFn: async () => {
-      const response = await fetch(`/api/car-alerts?userId=${userId}`);
+      const response = await fetch(`/api/car-alerts/${userId}`);
       if (!response.ok) throw new Error('Failed to fetch alerts');
       return response.json();
     }
