@@ -98,14 +98,14 @@ export default function AuctionDetail() {
           title: "Аукцион завершен",
           description: "К сожалению, ваша ставка не была высокой. Аукцион уже завершен.",
           variant: "destructive",
-          duration: 5000,
+          duration: 2000,
         });
       } else {
         toast({
           title: "Ошибка",
           description: error.message || "Не удалось разместить ставку. Попробуйте снова.",
           variant: "destructive",
-          duration: 3000,
+          duration: 2000,
         });
       }
     },

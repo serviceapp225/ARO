@@ -323,7 +323,7 @@ export default function AuctionDetail() {
         title: "Ставка слишком низкая",
         description: `Минимальная ставка: ${(currentBidValue + 100).toLocaleString()} Сомони`,
         variant: "destructive",
-        duration: 3000,
+        duration: 2000,
       });
       return;
     }
@@ -457,7 +457,7 @@ export default function AuctionDetail() {
         title: "Ошибка",
         description: "Не удалось разместить ставку. Попробуйте еще раз.",
         variant: "destructive",
-        duration: 3000,
+        duration: 2000,
       });
     } finally {
       setIsPlacingBid(false);
@@ -470,7 +470,7 @@ export default function AuctionDetail() {
         title: "Войдите в систему",
         description: "Для добавления в избранное необходимо войти в систему",
         variant: "destructive",
-        duration: 3000,
+        duration: 2000,
       });
       return;
     }
