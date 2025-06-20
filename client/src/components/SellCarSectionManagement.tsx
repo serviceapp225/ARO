@@ -70,8 +70,12 @@ export function SellCarSectionManagement() {
       textColor: "#ffffff",
       buttonColor: "#ffffff",
       buttonTextColor: "#059669",
-    }
+    },
+    mode: "onChange" // Enable real-time validation and updates
   });
+
+  // Watch all form values for instant preview updates
+  const formValues = form.watch();
 
   // Function to convert color names to hex or return as is
   const getColorValue = (color: string) => {
@@ -110,22 +114,9 @@ export function SellCarSectionManagement() {
   const updateMutation = useMutation({
     mutationFn: (data: SellCarSectionForm) => 
       apiRequest('PUT', '/api/admin/sell-car-section', data),
-    onSuccess: (updatedSection) => {
+    onSuccess: () => {
       toast({ title: "Успешно", description: "Секция обновлена" });
       setIsEditing(false);
-      // Update form with saved data to sync state
-      form.reset({
-        title: updatedSection.title,
-        subtitle: updatedSection.subtitle,
-        buttonText: updatedSection.buttonText,
-        backgroundImageUrl: updatedSection.backgroundImageUrl,
-        linkUrl: updatedSection.linkUrl,
-        isActive: updatedSection.isActive,
-        overlayOpacity: updatedSection.overlayOpacity,
-        textColor: updatedSection.textColor,
-        buttonColor: updatedSection.buttonColor,
-        buttonTextColor: updatedSection.buttonTextColor,
-      });
     },
     onError: (error: any) => {
       toast({ 
@@ -205,37 +196,37 @@ export function SellCarSectionManagement() {
               <div 
                 className="absolute inset-0 bg-cover bg-center bg-no-repeat rounded-2xl"
                 style={{
-                  backgroundImage: `url('${form.watch('backgroundImageUrl') || section?.backgroundImageUrl}')`
+                  backgroundImage: `url('${formValues.backgroundImageUrl || section?.backgroundImageUrl}')`
                 }}
               ></div>
               <div 
                 className="absolute inset-0 bg-black rounded-2xl"
                 style={{
-                  opacity: (form.watch('overlayOpacity') || section?.overlayOpacity || 40) / 100
+                  opacity: (formValues.overlayOpacity || section?.overlayOpacity || 40) / 100
                 }}
               ></div>
               <div className="relative z-10 space-y-2">
                 <h2 
                   className="text-2xl font-bold"
-                  style={{ color: form.watch('textColor') || section?.textColor }}
+                  style={{ color: formValues.textColor || section?.textColor }}
                 >
-                  {form.watch('title') || section?.title}
+                  {formValues.title || section?.title}
                 </h2>
                 <p 
                   className="text-base leading-relaxed opacity-90"
-                  style={{ color: form.watch('textColor') || section?.textColor }}
+                  style={{ color: formValues.textColor || section?.textColor }}
                 >
-                  {form.watch('subtitle') || section?.subtitle}
+                  {formValues.subtitle || section?.subtitle}
                 </p>
                 <div className="mt-4">
                   <span 
                     className="px-4 py-2 rounded-full text-sm font-bold inline-flex items-center gap-1"
                     style={{ 
-                      backgroundColor: getColorValue(form.watch('buttonColor') || section?.buttonColor || '#ffffff'),
-                      color: getColorValue(form.watch('buttonTextColor') || section?.buttonTextColor || '#059669')
+                      backgroundColor: getColorValue(formValues.buttonColor || section?.buttonColor || '#ffffff'),
+                      color: getColorValue(formValues.buttonTextColor || section?.buttonTextColor || '#059669')
                     }}
                   >
-                    {form.watch('buttonText') || section?.buttonText} →
+                    {formValues.buttonText || section?.buttonText} →
                   </span>
                 </div>
               </div>
