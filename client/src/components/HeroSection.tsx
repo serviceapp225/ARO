@@ -55,7 +55,7 @@ export function HeroSection({ onSearch }: HeroSectionProps) {
               <div className="text-blue-200">Активных аукционов</div>
             </div>
             <div>
-              <div className="text-3xl font-bold text-blue-100">$2.4M</div>
+              <div className="text-3xl font-bold text-blue-100">2.4М Сомони</div>
               <div className="text-blue-200">Продано авто</div>
             </div>
             <div>

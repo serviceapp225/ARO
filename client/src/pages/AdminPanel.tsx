@@ -442,7 +442,7 @@ export default function AdminPanel() {
                             </div>
                             <div className="text-sm text-gray-500">Лот: {listing.lotNumber}</div>
                             <div className="text-sm text-gray-500">
-                              Текущая ставка: ${listing.currentBid || 'Нет ставок'}
+                              Текущая ставка: {listing.currentBid ? `${Number(listing.currentBid).toLocaleString()} Сомони` : 'Нет ставок'}
                             </div>
                             <div className="text-xs text-gray-400">Создано: {formatDate(listing.createdAt)}</div>
                           </div>

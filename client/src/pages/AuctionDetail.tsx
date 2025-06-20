@@ -160,7 +160,7 @@ export default function AuctionDetail() {
       // Show success toast
       toast({
         title: "🎉 Ставка принята!",
-        description: `Ваша ставка $${parseFloat(variables.amount).toLocaleString()} успешно размещена`,
+        description: `Ваша ставка ${parseFloat(variables.amount).toLocaleString()} Сомони успешно размещена`,
         duration: 3000,
       });
       
@@ -264,7 +264,7 @@ export default function AuctionDetail() {
       // Показываем сообщение о победе
       toast({
         title: "🏆 Поздравляем! Вы победили!",
-        description: `Вы выиграли аукцион со ставкой $${parseFloat(highestBid.amount).toLocaleString()}`,
+        description: `Вы выиграли аукцион со ставкой ${parseFloat(highestBid.amount).toLocaleString()} Сомони`,
         duration: 10000,
       });
     } else {
@@ -346,7 +346,7 @@ export default function AuctionDetail() {
     if (bidValue <= currentBidValue) {
       toast({
         title: "Ставка слишком низкая",
-        description: `Минимальная ставка: $${(currentBidValue + 100).toLocaleString()}`,
+        description: `Минимальная ставка: ${(currentBidValue + 100).toLocaleString()} Сомони`,
         variant: "destructive",
         duration: 3000,
       });
@@ -859,7 +859,7 @@ export default function AuctionDetail() {
                     <div className={`text-xl font-bold ${
                       index === 0 ? 'text-green-600' : 'text-gray-900'
                     }`}>
-                      ${parseFloat(bid.amount).toLocaleString()}
+                      {parseFloat(bid.amount).toLocaleString()} Сомони
                     </div>
                     {index === 0 && (
                       <div className="text-xs text-green-600 font-medium">

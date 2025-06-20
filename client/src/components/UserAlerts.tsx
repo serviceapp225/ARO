@@ -46,11 +46,11 @@ export function UserAlerts() {
     
     if (alert.minPrice || alert.maxPrice) {
       if (alert.minPrice && alert.maxPrice) {
-        parts.push(`$${alert.minPrice}-${alert.maxPrice}`);
+        parts.push(`${alert.minPrice}-${alert.maxPrice} Сомони`);
       } else if (alert.minPrice) {
-        parts.push(`от $${alert.minPrice}`);
+        parts.push(`от ${alert.minPrice} Сомони`);
       } else if (alert.maxPrice) {
-        parts.push(`до $${alert.maxPrice}`);
+        parts.push(`до ${alert.maxPrice} Сомони`);
       }
     }
     
