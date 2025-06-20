@@ -36,31 +36,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { status = "active", limit } = req.query;
       const cacheKey = `listings_${status}_${limit || 'all'}`;
       
+      console.log(`[API] Getting listings with status: ${status}, limit: ${limit}`);
+      
       // Check cache first
       const cached = getCached(cacheKey);
       if (cached) {
+        console.log(`[API] Returning cached listings: ${cached.length} items`);
         return res.json(cached);
       }
       
+      console.log(`[API] Fetching listings from database...`);
       const listings = await storage.getListingsByStatus(
         status as string, 
         limit ? Number(limit) : undefined
       );
       
-      // Get bid counts for each listing
-      const listingIds = listings.map(l => l.id);
-      const bidCounts = await storage.getBidCountsForListings(listingIds);
+      console.log(`[API] Found ${listings.length} listings`);
       
-      const listingsWithBidCounts = listings.map(listing => ({
-        ...listing,
-        bidCount: bidCounts[listing.id] || 0
-      }));
+      // Get bid counts for each listing (only if we have listings)
+      let listingsWithBidCounts = listings;
+      if (listings.length > 0) {
+        console.log(`[API] Getting bid counts for ${listings.length} listings...`);
+        const listingIds = listings.map(l => l.id);
+        const bidCounts = await storage.getBidCountsForListings(listingIds);
+        
+        listingsWithBidCounts = listings.map(listing => ({
+          ...listing,
+          bidCount: bidCounts[listing.id] || 0
+        }));
+        console.log(`[API] Added bid counts to listings`);
+      }
       
-      // Cache the result
+      // Cache the result for 30 seconds
       setCache(cacheKey, listingsWithBidCounts);
       
+      console.log(`[API] Returning ${listingsWithBidCounts.length} listings with bid counts`);
       res.json(listingsWithBidCounts);
     } catch (error) {
+      console.error('[API] Error fetching listings:', error);
       res.status(500).json({ error: "Failed to fetch listings" });
     }
   });

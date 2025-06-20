@@ -41,15 +41,15 @@ export function AuctionProvider({ children }: { children: ReactNode }) {
     queryClient.removeQueries({ queryKey: ['/api/listings'] });
   }, []);
 
-  // Fetch real data from API with automatic refresh
+  // Fetch real data from API with reasonable refresh
   const { data: listings, isLoading, refetch } = useQuery({
     queryKey: ['/api/listings'],
-    staleTime: 0, // Always consider data stale to force fresh requests
-    gcTime: 0, // No cache time - always fresh
-    refetchOnWindowFocus: true,
-    refetchInterval: 1000, // Refetch every second
-    retry: 3,
-    retryDelay: 1000,
+    staleTime: 30000, // Consider data fresh for 30 seconds
+    gcTime: 60000, // Keep in cache for 1 minute
+    refetchOnWindowFocus: false,
+    refetchInterval: 30000, // Refetch every 30 seconds
+    retry: 2,
+    retryDelay: 2000,
     enabled: true,
     refetchOnMount: true
   });

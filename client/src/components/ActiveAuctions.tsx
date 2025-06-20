@@ -109,6 +109,9 @@ export function ActiveAuctions({ searchQuery = "", customListings }: ActiveAucti
     return () => window.removeEventListener('scroll', handleScroll);
   }, [page, loadingMore, hasMore, auctions.length]);
 
+  // Debug logging
+  console.log('ActiveAuctions - loading:', loading, 'auctions count:', sourceAuctions.length, 'displayed count:', displayedAuctions.length);
+
   if (loading) {
     return (
       <div className="grid grid-cols-2 gap-3 mb-20">
@@ -122,6 +125,16 @@ export function ActiveAuctions({ searchQuery = "", customListings }: ActiveAucti
             </CardContent>
           </Card>
         ))}
+      </div>
+    );
+  }
+
+  if (displayedAuctions.length === 0) {
+    return (
+      <div className="text-center py-12">
+        <Car className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+        <h3 className="text-lg font-semibold text-gray-600 mb-2">Аукционы не найдены</h3>
+        <p className="text-gray-500">В данный момент нет активных аукционов</p>
       </div>
     );
   }
