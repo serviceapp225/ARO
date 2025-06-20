@@ -423,17 +423,8 @@ export default function AuctionDetail() {
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         if (response.status === 403 && errorData.error === "Account not activated") {
-          // Show activation dialog instead of toast
-          const result = window.confirm(
-            "Аккаунт не активирован\n\n" +
-            "Вы можете просматривать аукционы, но не можете делать ставки. " +
-            "Для активации аккаунта обратитесь в службу поддержки через WhatsApp.\n\n" +
-            "Нажмите OK, чтобы связаться с поддержкой"
-          );
-          
-          if (result) {
-            window.open("https://wa.me/992000000000?text=Здравствуйте! Мне нужно активировать аккаунт на AUTOBID.TJ", "_blank");
-          }
+          // Show activation dialog
+          setShowActivationDialog(true);
           return;
         }
         throw new Error('Failed to place bid');
@@ -1074,6 +1065,38 @@ export default function AuctionDetail() {
           ))}
         </div>
       )}
+
+      {/* Activation Dialog */}
+      <Dialog open={showActivationDialog} onOpenChange={setShowActivationDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center">
+                <span className="text-red-600">⚠️</span>
+              </div>
+              Аккаунт не активирован
+            </DialogTitle>
+            <DialogDescription>
+              Вы можете просматривать аукционы, но не можете делать ставки. 
+              Для активации аккаунта обратитесь в службу поддержки через WhatsApp.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-2">
+            <Button variant="outline" onClick={() => setShowActivationDialog(false)}>
+              Закрыть
+            </Button>
+            <Button 
+              onClick={() => {
+                window.open("https://wa.me/992000000000?text=Здравствуйте! Мне нужно активировать аккаунт на AUTOBID.TJ", "_blank");
+                setShowActivationDialog(false);
+              }}
+              className="bg-green-600 hover:bg-green-700"
+            >
+              Связаться с поддержкой
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
