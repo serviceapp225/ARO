@@ -90,7 +90,7 @@ export function SellCarSection() {
       ></div>
       
       {/* Content */}
-      <div className="relative z-10 space-y-2">
+      <div className="relative z-10 h-full flex flex-col justify-center items-center text-center space-y-2">
         <h2 
           className="text-2xl font-bold"
           style={{ color: getColorValue(sectionData.textColor) }}
