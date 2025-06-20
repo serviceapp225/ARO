@@ -43,15 +43,25 @@ export function AuctionProvider({ children }: { children: ReactNode }) {
     const fetchListings = async () => {
       try {
         setIsLoading(true);
+        console.log("Fetching listings from /api/listings...");
         const response = await fetch('/api/listings');
+        console.log("Response status:", response.status, response.ok);
+        
         if (response.ok) {
+          console.log("About to parse JSON...");
           const data = await response.json();
+          console.log("Received data:", data, "Type:", typeof data, "Is Array:", Array.isArray(data), "Length:", data?.length);
           setListings(Array.isArray(data) ? data : []);
+          console.log("State updated with listings:", Array.isArray(data) ? data.length : 0);
+        } else {
+          console.error("Response not ok:", response.status, response.statusText);
+          setListings([]);
         }
       } catch (error) {
         console.error('Error fetching listings:', error);
         setListings([]);
       } finally {
+        console.log("Setting loading to false");
         setIsLoading(false);
       }
     };
