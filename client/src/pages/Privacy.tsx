@@ -56,34 +56,7 @@ export default function Privacy() {
             </div>
           </div>
 
-          {/* Quick Summary */}
-          <div className="mt-6 bg-green-50 rounded-2xl p-6">
-            <h3 className="text-lg font-semibold text-green-900 mb-4">
-              Основные принципы защиты данных:
-            </h3>
-            <ul className="space-y-2 text-green-800">
-              <li className="flex items-start gap-2">
-                <span className="w-2 h-2 bg-green-600 rounded-full mt-2 flex-shrink-0"></span>
-                Мы собираем только необходимые для работы сервиса данные
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="w-2 h-2 bg-green-600 rounded-full mt-2 flex-shrink-0"></span>
-                Персональные данные надежно защищены и зашифрованы
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="w-2 h-2 bg-green-600 rounded-full mt-2 flex-shrink-0"></span>
-                Мы не передаем данные третьим лицам без согласия
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="w-2 h-2 bg-green-600 rounded-full mt-2 flex-shrink-0"></span>
-                Пользователи могут запросить удаление своих данных
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="w-2 h-2 bg-green-600 rounded-full mt-2 flex-shrink-0"></span>
-                Все платежные данные обрабатываются через защищенные системы
-              </li>
-            </ul>
-          </div>
+
         </div>
       </main>
     </div>
