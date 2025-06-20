@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserData } from "@/contexts/UserDataContext";
-import { User, Globe, Bell, Heart, HelpCircle, FileText, LogOut, Camera, Edit, ChevronRight, MessageCircle, Building2, UserCheck } from "lucide-react";
+import { User, Globe, Bell, Heart, HelpCircle, FileText, LogOut, Camera, Edit, ChevronRight, MessageCircle, Building2, UserCheck, Shield, ShieldX } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { useRef } from "react";
 
@@ -116,8 +116,8 @@ export default function Profile() {
               </h2>
               <p className="text-gray-600 text-lg mb-3">{userData.phoneNumber}</p>
               
-              {/* Account Type Badge */}
-              <div className="flex items-center justify-center">
+              {/* Account Type and Status Badges */}
+              <div className="flex items-center justify-center gap-2 flex-wrap">
                 <div className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
                   userData.accountType === 'dealer' 
                     ? 'bg-blue-100 text-blue-800' 
@@ -129,6 +129,19 @@ export default function Profile() {
                     <UserCheck className="w-4 h-4 mr-2" />
                   )}
                   {userData.accountType === 'dealer' ? 'Дилер' : 'Частное лицо'}
+                </div>
+                
+                <div className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
+                  user.isActive 
+                    ? 'bg-green-100 text-green-800' 
+                    : 'bg-red-100 text-red-800'
+                }`}>
+                  {user.isActive ? (
+                    <Shield className="w-4 h-4 mr-2" />
+                  ) : (
+                    <ShieldX className="w-4 h-4 mr-2" />
+                  )}
+                  {user.isActive ? 'Активирован' : 'Не активирован'}
                 </div>
               </div>
             </div>
