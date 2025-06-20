@@ -127,20 +127,24 @@ export class DatabaseStorage implements IStorage {
 
   async getListingsByStatus(status: string, limit?: number): Promise<CarListing[]> {
     try {
-      const query = db
+      let query = db
         .select()
         .from(carListings)
         .where(eq(carListings.status, status))
         .orderBy(desc(carListings.createdAt));
       
-      let listings;
       if (limit) {
-        listings = await query.limit(limit);
-      } else {
-        listings = await query;
+        query = query.limit(limit);
       }
       
-      return listings;
+      const listings = await query;
+      
+      // Return minimal data for performance - exclude photos
+      return listings.map(listing => ({
+        ...listing,
+        photos: [], // Empty array for list view to reduce size
+        description: listing.description?.substring(0, 100) + '...' || '' // Truncate description
+      }));
     } catch (error) {
       console.error('Error fetching listings:', error);
       return [];
