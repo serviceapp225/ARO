@@ -9,6 +9,7 @@ import { ArrowLeft, Heart, Share2, Eye, Car, Users, Calendar, MapPin, Fuel, Pale
 import { useToast } from "@/hooks/use-toast";
 import { useFavorites } from "@/contexts/FavoritesContext";
 import { useAuctions } from "@/contexts/AuctionContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { CountdownTimer } from "@/components/CountdownTimer";
 import { ConfettiEffect } from "@/components/ConfettiEffect";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -18,6 +19,7 @@ export default function AuctionDetail() {
   const [, setLocation] = useLocation();
   const { isFavorite, addToFavorites, removeFromFavorites } = useFavorites();
   const { auctions } = useAuctions();
+  const { currentUser } = useAuth();
   
   const [bidAmount, setBidAmount] = useState("");
   const [auctionEndTime, setAuctionEndTime] = useState<Date | null>(null);

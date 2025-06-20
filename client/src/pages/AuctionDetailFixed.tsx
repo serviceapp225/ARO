@@ -304,6 +304,8 @@ export default function AuctionDetail() {
         variant: "destructive",
         duration: 3000,
       });
+      // Перенаправляем на страницу входа
+      setLocation('/login');
       return;
     }
 
@@ -803,7 +805,19 @@ export default function AuctionDetail() {
               {/* Bidding Controls */}
               {!showBidInput ? (
                 <Button 
-                  onClick={() => setShowBidInput(true)}
+                  onClick={() => {
+                    if (!currentUser) {
+                      toast({
+                        title: "Войдите в систему",
+                        description: "Для участия в аукционе необходимо войти в систему",
+                        variant: "destructive",
+                        duration: 3000,
+                      });
+                      setLocation('/login');
+                      return;
+                    }
+                    setShowBidInput(true);
+                  }}
                   className="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-3"
                   size="lg"
                 >
