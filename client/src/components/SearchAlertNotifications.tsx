@@ -14,6 +14,14 @@ export function SearchAlertNotifications({ userId }: SearchAlertNotificationsPro
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const [deletingIds, setDeletingIds] = useState<Set<number>>(new Set());
+  
+  const handleDelete = (alertId: number) => {
+    // Предотвращаем множественные клики
+    if (deletingIds.has(alertId) || deleteCarAlertMutation.isPending) {
+      return;
+    }
+    deleteCarAlertMutation.mutate(alertId);
+  };
 
   const { data: carAlerts = [], isLoading } = useQuery<CarAlert[]>({
     queryKey: ['/api/car-alerts', userId],
@@ -32,11 +40,6 @@ export function SearchAlertNotifications({ userId }: SearchAlertNotificationsPro
 
   const deleteCarAlertMutation = useMutation({
     mutationFn: async (alertId: number) => {
-      // Проверяем, не удаляется ли уже этот элемент
-      if (deletingIds.has(alertId)) {
-        throw new Error('Already deleting');
-      }
-      
       try {
         const response = await fetch(`/api/car-alerts/${alertId}`, {
           method: 'DELETE',
@@ -58,6 +61,11 @@ export function SearchAlertNotifications({ userId }: SearchAlertNotificationsPro
       }
     },
     onMutate: async (alertId) => {
+      // Проверяем, не удаляется ли уже этот элемент
+      if (deletingIds.has(alertId)) {
+        throw new Error('Элемент уже удаляется');
+      }
+      
       // Добавляем в список удаляемых для показа индикатора загрузки
       setDeletingIds((prev: Set<number>) => new Set(prev).add(alertId));
       
@@ -67,14 +75,12 @@ export function SearchAlertNotifications({ userId }: SearchAlertNotificationsPro
       // Получаем предыдущие данные для возможного отката
       const previousAlerts = queryClient.getQueryData<CarAlert[]>(['/api/car-alerts', userId]);
       
-      // НЕ делаем оптимистическое обновление - ждем подтверждения с сервера
-      
       return { previousAlerts };
     },
     onError: (error, alertId, context) => {
       console.error('Delete alert error:', error);
       
-      // Убираем из списка удаляемых
+      // Принудительно убираем из списка удаляемых
       setDeletingIds((prev: Set<number>) => {
         const newSet = new Set(prev);
         newSet.delete(alertId);
@@ -87,12 +93,16 @@ export function SearchAlertNotifications({ userId }: SearchAlertNotificationsPro
       }
       
       const errorMessage = error instanceof Error ? error.message : 'Неизвестная ошибка';
-      toast({
-        title: "Ошибка при удалении",
-        description: errorMessage,
-        variant: "destructive", 
-        duration: 3000,
-      });
+      
+      // Игнорируем ошибку "уже удаляется" - это нормальное поведение
+      if (errorMessage !== 'Элемент уже удаляется') {
+        toast({
+          title: "Ошибка при удалении",
+          description: errorMessage,
+          variant: "destructive", 
+          duration: 3000,
+        });
+      }
     },
     onSuccess: async (_, alertId) => {
       // Убираем из списка удаляемых
@@ -116,7 +126,14 @@ export function SearchAlertNotifications({ userId }: SearchAlertNotificationsPro
         duration: 2000,
       });
     },
-    onSettled: () => {
+    onSettled: (data, error, alertId) => {
+      // Принудительно убираем из списка удаляемых в любом случае
+      setDeletingIds((prev: Set<number>) => {
+        const newSet = new Set(prev);
+        newSet.delete(alertId);
+        return newSet;
+      });
+      
       // Очищаем весь кеш для этого пользователя
       queryClient.removeQueries({ queryKey: ['/api/car-alerts', userId] });
       queryClient.invalidateQueries({ queryKey: ['/api/car-alerts', userId] });
@@ -243,8 +260,8 @@ export function SearchAlertNotifications({ userId }: SearchAlertNotificationsPro
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => deleteCarAlertMutation.mutate(alert.id)}
-                  disabled={deletingIds.has(alert.id)}
+                  onClick={() => handleDelete(alert.id)}
+                  disabled={deletingIds.has(alert.id) || deleteCarAlertMutation.isPending}
                   className="border-red-300 text-red-600 hover:bg-red-50 disabled:opacity-50"
                 >
                   {deletingIds.has(alert.id) ? (
