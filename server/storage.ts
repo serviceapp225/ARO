@@ -141,8 +141,21 @@ export class DatabaseStorage implements IStorage {
       
       // Return data with first photo for thumbnail
       return listings.map(listing => {
-        const photos = listing.photos;
-        const photoArray = Array.isArray(photos) ? photos : (photos ? [photos] : []);
+        let photoArray: string[] = [];
+        try {
+          // Handle photos field - it comes as JSON string from PostgreSQL
+          if (listing.photos) {
+            if (Array.isArray(listing.photos)) {
+              photoArray = listing.photos;
+            } else if (typeof listing.photos === 'string') {
+              photoArray = JSON.parse(listing.photos);
+            }
+          }
+        } catch (e) {
+          console.error('Error parsing photos for listing', listing.id, e);
+          photoArray = [];
+        }
+        
         return {
           ...listing,
           photos: photoArray.length > 0 ? [photoArray[0]] : [], // Only first photo for thumbnail
