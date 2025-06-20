@@ -101,11 +101,11 @@ export default function MyBids() {
                         <div className="grid grid-cols-2 gap-4 mb-3">
                           <div>
                             <p className="text-xs text-neutral-500">Моя ставка</p>
-                            <p className="font-semibold text-neutral-900">{bid.myBid.toLocaleString()} С</p>
+                            <p className="font-semibold text-neutral-900">{bid.myBid.toLocaleString()} сомони</p>
                           </div>
                           <div>
                             <p className="text-xs text-neutral-500">Текущая ставка</p>
-                            <p className="font-semibold text-emerald-600">{bid.currentBid.toLocaleString()} С</p>
+                            <p className="font-semibold text-emerald-600">{bid.currentBid.toLocaleString()} сомони</p>
                           </div>
                         </div>
 
@@ -178,11 +178,11 @@ export default function MyBids() {
                         <div className="grid grid-cols-2 gap-4 mb-3">
                           <div>
                             <p className="text-xs text-neutral-500">Моя ставка</p>
-                            <p className="font-semibold text-neutral-900">{bid.myBid.toLocaleString()} С</p>
+                            <p className="font-semibold text-neutral-900">{bid.myBid.toLocaleString()} сомони</p>
                           </div>
                           <div>
                             <p className="text-xs text-neutral-500">Финальная цена</p>
-                            <p className="font-semibold text-neutral-900">{bid.finalBid.toLocaleString()} С</p>
+                            <p className="font-semibold text-neutral-900">{bid.finalBid.toLocaleString()} сомони</p>
                           </div>
                         </div>
 

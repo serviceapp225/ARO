@@ -802,7 +802,7 @@ export default function AuctionDetail() {
                   onClick={() => handleQuickBid(2500)}
                   className="text-sm"
                 >
-                  +2,500 С
+                  +2,500 сомони
                 </Button>
               </div>
             </div>

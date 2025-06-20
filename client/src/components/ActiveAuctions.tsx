@@ -234,7 +234,7 @@ export function ActiveAuctions({ searchQuery = "", customListings }: ActiveAucti
               <div className="mb-2">
                 <p className="text-xs text-gray-500">Текущая ставка</p>
                 <p className="text-sm font-bold text-green-600">
-                  {auction.currentBid ? Number(auction.currentBid).toLocaleString() : Number(auction.startingPrice).toLocaleString()} С
+                  {auction.currentBid ? Number(auction.currentBid).toLocaleString() : Number(auction.startingPrice).toLocaleString()} сомони
                 </p>
               </div>
               <div className="flex justify-between items-center text-xs text-gray-500">
