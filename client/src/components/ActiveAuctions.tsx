@@ -109,8 +109,7 @@ export function ActiveAuctions({ searchQuery = "", customListings }: ActiveAucti
     return () => window.removeEventListener('scroll', handleScroll);
   }, [page, loadingMore, hasMore, auctions.length]);
 
-  // Debug logging
-  console.log('ActiveAuctions - loading:', loading, 'auctions count:', sourceAuctions.length, 'displayed count:', displayedAuctions.length);
+
 
   if (loading) {
     return (
