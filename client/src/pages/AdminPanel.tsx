@@ -9,9 +9,7 @@ import { queryClient, apiRequest } from '@/lib/queryClient';
 import { Users, Car, Bell, Shield, ShieldX, UserCheck, UserX, Search, Filter, Eye } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLocation } from 'wouter';
-import { BannerManagement } from '@/components/BannerManagement';
-import { SellBannerManagement } from '@/components/SellBannerManagement';
-import { MainBannersManagement } from '@/components/MainBannersManagement';
+
 
 interface User {
   id: number;
@@ -45,7 +43,7 @@ export default function AdminPanel() {
   const { user } = useAuth();
   const [, setLocation] = useLocation();
   const { toast } = useToast();
-  const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'listings' | 'main-banners' | 'sell-banner' | 'banners'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'listings'>('overview');
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('all');
 
@@ -228,36 +226,7 @@ export default function AdminPanel() {
           >
             Объявления
           </button>
-          <button
-            onClick={() => setActiveTab('main-banners')}
-            className={`flex-1 py-2 px-4 rounded-md font-medium transition-colors ${
-              activeTab === 'main-banners'
-                ? 'bg-white text-gray-900 shadow-sm'
-                : 'text-gray-600 hover:text-gray-900'
-            }`}
-          >
-            Главные банеры
-          </button>
-          <button
-            onClick={() => setActiveTab('sell-banner')}
-            className={`flex-1 py-2 px-4 rounded-md font-medium transition-colors ${
-              activeTab === 'sell-banner'
-                ? 'bg-white text-gray-900 shadow-sm'
-                : 'text-gray-600 hover:text-gray-900'
-            }`}
-          >
-            Начать продажу
-          </button>
-          <button
-            onClick={() => setActiveTab('banners')}
-            className={`flex-1 py-2 px-4 rounded-md font-medium transition-colors ${
-              activeTab === 'banners'
-                ? 'bg-white text-gray-900 shadow-sm'
-                : 'text-gray-600 hover:text-gray-900'
-            }`}
-          >
-            Банеры
-          </button>
+
         </div>
 
         {/* Overview Tab */}
@@ -492,26 +461,7 @@ export default function AdminPanel() {
           </div>
         )}
 
-        {/* Main Banners Tab */}
-        {activeTab === 'main-banners' && (
-          <div className="space-y-6">
-            <MainBannersManagement />
-          </div>
-        )}
 
-        {/* Sell Banner Tab */}
-        {activeTab === 'sell-banner' && (
-          <div className="space-y-6">
-            <SellBannerManagement />
-          </div>
-        )}
-
-        {/* Banners Tab */}
-        {activeTab === 'banners' && (
-          <div className="space-y-6">
-            <BannerManagement />
-          </div>
-        )}
       </main>
     </div>
   );
