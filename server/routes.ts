@@ -61,6 +61,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       res.json(listingsWithBidCounts);
     } catch (error) {
+      console.error("Error fetching listings:", error);
       res.status(500).json({ error: "Failed to fetch listings" });
     }
   });

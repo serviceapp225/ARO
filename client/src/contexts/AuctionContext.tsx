@@ -35,39 +35,33 @@ const AuctionContext = createContext<AuctionContextType | undefined>(undefined);
 
 export function AuctionProvider({ children }: { children: ReactNode }) {
   const [selectedAuction, setSelectedAuction] = useState<Auction | null>(null);
-  
-  // Clear cache on mount to ensure fresh data
-  useEffect(() => {
-    queryClient.removeQueries({ queryKey: ['/api/listings'] });
-  }, []);
+  const [listings, setListings] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Fetch real data from API with custom fetch function
-  const { data: listings, isLoading, refetch } = useQuery({
-    queryKey: ['/api/listings'],
-    queryFn: async () => {
-      console.log("Fetching listings from API...");
-      const response = await fetch('/api/listings', {
-        credentials: 'include'
-      });
-      console.log("Response status:", response.status, response.statusText);
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+  // Fetch listings directly without React Query for now
+  useEffect(() => {
+    const fetchListings = async () => {
+      try {
+        setIsLoading(true);
+        const response = await fetch('/api/listings');
+        if (response.ok) {
+          const data = await response.json();
+          setListings(Array.isArray(data) ? data : []);
+        }
+      } catch (error) {
+        console.error('Error fetching listings:', error);
+        setListings([]);
+      } finally {
+        setIsLoading(false);
       }
-      
-      const data = await response.json();
-      console.log("Fetched listings:", data.length, "items");
-      return data;
-    },
-    staleTime: 0,
-    gcTime: 0,
-    refetchOnWindowFocus: true,
-    refetchInterval: 30000, // Refetch every 30 seconds instead of 1 second
-    retry: 3,
-    retryDelay: 1000,
-    enabled: true,
-    refetchOnMount: true
-  });
+    };
+
+    fetchListings();
+    
+    // Refetch every 30 seconds
+    const interval = setInterval(fetchListings, 30000);
+    return () => clearInterval(interval);
+  }, []);
 
   // Debug logging
   console.log("AuctionContext DEBUG:", {
@@ -75,7 +69,7 @@ export function AuctionProvider({ children }: { children: ReactNode }) {
     isArray: Array.isArray(listings),
     auctionsCount: Array.isArray(listings) ? listings.length : 0,
     loading: isLoading,
-    error: listings
+    rawListings: listings
   });
   
   // Transform listings data to auction format
@@ -102,9 +96,20 @@ export function AuctionProvider({ children }: { children: ReactNode }) {
 
 
 
-  const refreshAuctions = useCallback(() => {
-    refetch();
-  }, [refetch]);
+  const refreshAuctions = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      const response = await fetch('/api/listings');
+      if (response.ok) {
+        const data = await response.json();
+        setListings(Array.isArray(data) ? data : []);
+      }
+    } catch (error) {
+      console.error('Error refreshing listings:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
 
   return (
     <AuctionContext.Provider value={{ auctions, loading: isLoading, selectedAuction, setSelectedAuction, refreshAuctions }}>
