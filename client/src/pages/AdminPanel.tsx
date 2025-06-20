@@ -9,6 +9,7 @@ import { queryClient, apiRequest } from '@/lib/queryClient';
 import { Users, Car, Bell, Shield, ShieldX, UserCheck, UserX, Search, Filter, Eye } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLocation } from 'wouter';
+import { BannerManagement } from '@/components/BannerManagement';
 
 interface User {
   id: number;
@@ -224,6 +225,16 @@ export default function AdminPanel() {
             }`}
           >
             Объявления
+          </button>
+          <button
+            onClick={() => setActiveTab('banners')}
+            className={`flex-1 py-2 px-4 rounded-md font-medium transition-colors ${
+              activeTab === 'banners'
+                ? 'bg-white text-gray-900 shadow-sm'
+                : 'text-gray-600 hover:text-gray-900'
+            }`}
+          >
+            Банеры
           </button>
         </div>
 
@@ -456,6 +467,13 @@ export default function AdminPanel() {
                 </div>
               </CardContent>
             </Card>
+          </div>
+        )}
+
+        {/* Banners Tab */}
+        {activeTab === 'banners' && (
+          <div className="space-y-6">
+            <BannerManagement />
           </div>
         )}
       </main>

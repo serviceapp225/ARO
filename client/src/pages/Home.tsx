@@ -6,6 +6,7 @@ import { ActiveAuctions } from '@/components/ActiveAuctions';
 import { SellYourCar } from '@/components/SellYourCar';
 import { Footer } from '@/components/Footer';
 import { AuctionDetailModal } from '@/components/AuctionDetailModal';
+import { BannerDisplay } from '@/components/BannerDisplay';
 
 export default function Home() {
   const [searchQuery, setSearchQuery] = useState('');

@@ -69,7 +69,7 @@ export function BannerManagement() {
   });
 
   const createMutation = useMutation({
-    mutationFn: (data: BannerFormData) => apiRequest('/api/admin/banners', { method: 'POST', body: data }),
+    mutationFn: (data: BannerFormData) => apiRequest('POST', '/api/admin/banners', data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/banners'] });
       toast({ title: "Банер создан", description: "Новый банер успешно добавлен" });
@@ -83,7 +83,7 @@ export function BannerManagement() {
 
   const updateMutation = useMutation({
     mutationFn: ({ id, data }: { id: number; data: BannerFormData }) => 
-      apiRequest(`/api/admin/banners/${id}`, { method: 'PUT', body: data }),
+      apiRequest('PUT', `/api/admin/banners/${id}`, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/banners'] });
       toast({ title: "Банер обновлен", description: "Изменения сохранены" });
@@ -97,7 +97,7 @@ export function BannerManagement() {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id: number) => apiRequest(`/api/admin/banners/${id}`, { method: 'DELETE' }),
+    mutationFn: (id: number) => apiRequest('DELETE', `/api/admin/banners/${id}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/banners'] });
       toast({ title: "Банер удален", description: "Банер успешно удален" });
