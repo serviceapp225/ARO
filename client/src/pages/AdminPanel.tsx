@@ -9,7 +9,7 @@ import { queryClient, apiRequest } from '@/lib/queryClient';
 import { Users, Car, Bell, Shield, ShieldX, UserCheck, UserX, Search, Filter, Eye } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLocation } from 'wouter';
-
+import { SellCarSectionManagement } from '@/components/SellCarSectionManagement';
 
 interface User {
   id: number;
@@ -43,7 +43,7 @@ export default function AdminPanel() {
   const { user } = useAuth();
   const [, setLocation] = useLocation();
   const { toast } = useToast();
-  const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'listings'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'listings' | 'sell-section'>('overview');
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('all');
 
@@ -225,6 +225,16 @@ export default function AdminPanel() {
             }`}
           >
             Объявления
+          </button>
+          <button
+            onClick={() => setActiveTab('sell-section')}
+            className={`flex-1 py-2 px-4 rounded-md font-medium transition-colors ${
+              activeTab === 'sell-section'
+                ? 'bg-white text-gray-900 shadow-sm'
+                : 'text-gray-600 hover:text-gray-900'
+            }`}
+          >
+            Продай авто
           </button>
 
         </div>
@@ -461,6 +471,12 @@ export default function AdminPanel() {
           </div>
         )}
 
+        {/* Sell Car Section Tab */}
+        {activeTab === 'sell-section' && (
+          <div className="space-y-6">
+            <SellCarSectionManagement />
+          </div>
+        )}
 
       </main>
     </div>

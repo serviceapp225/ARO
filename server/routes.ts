@@ -652,6 +652,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Sell Car Section routes
+  app.get("/api/sell-car-section", async (req, res) => {
+    try {
+      const section = await storage.getSellCarSection();
+      res.json(section);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch sell car section" });
+    }
+  });
+
+  app.put("/api/admin/sell-car-section", async (req, res) => {
+    try {
+      const validatedData = req.body; // Will validate in component
+      const section = await storage.updateSellCarSection(validatedData);
+      res.json(section);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to update sell car section" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

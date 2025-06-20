@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { ActiveAuctions } from "@/components/ActiveAuctions";
-
+import { SellCarSection } from "@/components/SellCarSection";
 import { TopHeader } from "@/components/TopHeader";
 import { Link } from "wouter";
 import { useState } from "react";
@@ -39,36 +39,8 @@ export default function HomePage() {
           </form>
         </div>
 
-        {/* Sell Car Section */}
-        <div className="relative h-44 rounded-2xl p-6 text-white overflow-hidden shadow-2xl">
-          {/* Dark Car Background Image */}
-          <div 
-            className="absolute inset-0 bg-cover bg-center bg-no-repeat rounded-2xl"
-            style={{
-              backgroundImage: `url('https://images.unsplash.com/photo-1503376780353-7e6692767b70?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80')`
-            }}
-          ></div>
-          {/* Dark overlay */}
-          <div className="absolute inset-0 bg-black bg-opacity-40 rounded-2xl"></div>
-          
-          {/* Content */}
-          <div className="relative z-10 space-y-2">
-            
-            <h2 className="text-2xl font-bold">Продай свое авто</h2>
-            <p className="text-white/80 text-base leading-relaxed">
-              Получи максимальную цену за свой<br />
-              автомобиль на нашем аукционе
-            </p>
-            <div className="mt-4">
-              <Link href="/sell">
-                <span className="bg-white text-emerald-700 px-4 py-2 rounded-full text-sm font-bold hover:bg-emerald-50 transition-colors duration-300 cursor-pointer inline-flex items-center gap-1">
-                  <Plus className="w-4 h-4" />
-                  Начать продажу →
-                </span>
-              </Link>
-            </div>
-          </div>
-        </div>
+        {/* Dynamic Sell Car Section */}
+        <SellCarSection />
 
         {/* Банеры удалены */}
         <div className="space-y-4">
