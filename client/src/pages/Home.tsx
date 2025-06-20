@@ -7,6 +7,7 @@ import { SellYourCar } from '@/components/SellYourCar';
 import { Footer } from '@/components/Footer';
 import { AuctionDetailModal } from '@/components/AuctionDetailModal';
 import { BannerDisplay } from '@/components/BannerDisplay';
+import { SellCarBanner } from '@/components/SellCarBanner';
 
 export default function Home() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -27,7 +28,8 @@ export default function Home() {
           </div>
           
           {/* Sidebar with banners */}
-          <div className="lg:col-span-1">
+          <div className="lg:col-span-1 space-y-6">
+            <SellCarBanner />
             <BannerDisplay position="sidebar" className="sticky top-4" />
           </div>
         </div>
