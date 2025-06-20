@@ -64,19 +64,7 @@ export default function Terms() {
             <ul className="space-y-2 text-blue-800">
               <li className="flex items-start gap-2">
                 <span className="w-2 h-2 bg-blue-600 rounded-full mt-2 flex-shrink-0"></span>
-                Пользователи должны предоставлять достоверную информацию
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="w-2 h-2 bg-blue-600 rounded-full mt-2 flex-shrink-0"></span>
-                Запрещено размещение недостоверных объявлений
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="w-2 h-2 bg-blue-600 rounded-full mt-2 flex-shrink-0"></span>
                 Все транзакции проходят через защищенную систему
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="w-2 h-2 bg-blue-600 rounded-full mt-2 flex-shrink-0"></span>
-                Платформа оставляет за собой право модерации контента
               </li>
             </ul>
           </div>
