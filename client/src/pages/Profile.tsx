@@ -158,7 +158,7 @@ export default function Profile() {
           </div>
 
           {/* Activation Status Notice */}
-          {!currentUser.isActive && (
+          {!currentUser?.isActive && (
             <div className="bg-yellow-50 border border-yellow-200 rounded-2xl p-4 mb-6">
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 bg-yellow-100 rounded-full flex items-center justify-center">
