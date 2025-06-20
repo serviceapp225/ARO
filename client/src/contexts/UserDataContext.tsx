@@ -36,7 +36,7 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
         const parsed = JSON.parse(savedData);
         setUserData(prev => ({
           ...prev,
-          fullName: parsed.fullName || "",
+          fullName: "", // Всегда начинаем с пустого имени
           email: parsed.email || "",
           accountType: parsed.accountType || 'individual',
           profilePhoto: parsed.profilePhoto || null,
