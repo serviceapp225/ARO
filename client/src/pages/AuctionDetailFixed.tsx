@@ -298,12 +298,6 @@ export default function AuctionDetail() {
 
   const handlePlaceBid = async () => {
     if (!currentUser) {
-      toast({
-        title: "Войдите в систему",
-        description: "Для участия в аукционе необходимо войти в систему",
-        variant: "destructive",
-        duration: 3000,
-      });
       return;
     }
 
