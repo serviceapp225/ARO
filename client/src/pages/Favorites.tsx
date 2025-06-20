@@ -192,7 +192,7 @@ export default function Favorites() {
                       <div className="space-y-2">
                         <div className="flex justify-between items-center">
                           <span className="text-sm text-neutral-600">Текущая ставка:</span>
-                          <span className="font-bold text-blue-600">${formatPrice(car.currentBid)}</span>
+                          <span className="font-bold text-blue-600">{formatPrice(car.currentBid)} С</span>
                         </div>
                       </div>
 

@@ -171,7 +171,7 @@ export default function SearchAlertButton({ searchFilters = {} }: SearchAlertBut
                 name="minPrice"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Мин. цена ($)</FormLabel>
+                    <FormLabel>Мин. цена (С)</FormLabel>
                     <FormControl>
                       <Input {...field} type="number" placeholder="0" />
                     </FormControl>
@@ -185,7 +185,7 @@ export default function SearchAlertButton({ searchFilters = {} }: SearchAlertBut
                 name="maxPrice"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Макс. цена ($)</FormLabel>
+                    <FormLabel>Макс. цена (С)</FormLabel>
                     <FormControl>
                       <Input {...field} type="number" placeholder="100000" />
                     </FormControl>
