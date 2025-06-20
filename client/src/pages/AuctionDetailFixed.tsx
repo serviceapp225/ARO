@@ -419,6 +419,16 @@ export default function AuctionDetail() {
       });
 
       if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        if (response.status === 403 && errorData.error === "Account not activated") {
+          toast({
+            title: "Аккаунт не активирован",
+            description: "Ваш аккаунт не активирован. Пожалуйста, обратитесь в службу поддержки через WhatsApp для активации аккаунта.",
+            variant: "destructive",
+            duration: 8000,
+          });
+          return;
+        }
         throw new Error('Failed to place bid');
       }
       

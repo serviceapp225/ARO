@@ -389,6 +389,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
       };
       
       const validatedData = insertBidSchema.parse(bidData);
+      
+      // Check if user is active before allowing bid
+      const user = await storage.getUser(validatedData.bidderId);
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+      
+      if (!user.isActive) {
+        return res.status(403).json({ 
+          error: "Account not activated", 
+          message: "Ваш аккаунт не активирован. Пожалуйста, обратитесь в службу поддержки через WhatsApp для активации аккаунта."
+        });
+      }
+      
       const bid = await storage.createBid(validatedData);
       
       // Update listing's current bid
