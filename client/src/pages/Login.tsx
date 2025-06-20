@@ -75,9 +75,6 @@ export default function Login() {
             <Phone className="w-8 h-8 text-white" />
           </div>
           <CardTitle className="text-2xl font-bold">Вход в AUTOAUCTION</CardTitle>
-          <p className="text-neutral-600">
-            Войдите с помощью номера телефона
-          </p>
         </CardHeader>
         
         <CardContent>

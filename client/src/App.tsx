@@ -1,4 +1,4 @@
-import { Switch, Route } from "wouter";
+import { Switch, Route, useLocation } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
@@ -29,6 +29,11 @@ import { BottomNavigation } from "@/components/BottomNavigation";
 import { ScrollToTop } from "@/components/ScrollToTop";
 
 function Router() {
+  const [location] = useLocation();
+  
+  // Скрываем нижнюю навигацию на странице входа
+  const hideBottomNav = location === '/login';
+  
   return (
     <>
       <ScrollToTop />
@@ -52,7 +57,7 @@ function Router() {
         <Route path="/flutter-preview" component={FlutterPreview} />
         <Route component={NotFound} />
       </Switch>
-      <BottomNavigation />
+      {!hideBottomNav && <BottomNavigation />}
     </>
   );
 }
