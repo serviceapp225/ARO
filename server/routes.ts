@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { db } from "./db";
-import { carListings, notifications, alertViews } from "../shared/schema";
+import { carListings, notifications, alertViews, carAlerts } from "../shared/schema";
 import { eq, sql } from "drizzle-orm";
 import sharp from "sharp";
 import { insertCarListingSchema, insertBidSchema, insertFavoriteSchema, insertNotificationSchema, insertCarAlertSchema, insertBannerSchema, type CarAlert } from "@shared/schema";
@@ -695,6 +695,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/car-alerts", async (req, res) => {
     try {
       const validatedData = insertCarAlertSchema.parse(req.body);
+      
+      // Проверяем, не был ли такой алерт удален ранее
+      const alertData = JSON.stringify({
+        make: validatedData.make,
+        model: validatedData.model,
+        minPrice: validatedData.minPrice,
+        maxPrice: validatedData.maxPrice,
+        minYear: validatedData.minYear,
+        maxYear: validatedData.maxYear
+      });
+      
+      const deletedAlertCheck = await db.execute(
+        sql`SELECT id FROM deleted_alerts WHERE user_id = ${validatedData.userId} AND alert_data = ${alertData}`
+      );
+      
+      if (deletedAlertCheck.rows.length > 0) {
+        // Удаляем запись из deleted_alerts, чтобы разрешить повторное создание
+        await db.execute(
+          sql`DELETE FROM deleted_alerts WHERE user_id = ${validatedData.userId} AND alert_data = ${alertData}`
+        );
+        console.log(`Removed deleted alert restriction for user ${validatedData.userId}`);
+      }
+      
       const alert = await storage.createCarAlert(validatedData);
       
       // Очищаем кэш для этого пользователя
@@ -712,16 +735,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.delete("/api/car-alerts/:id", async (req, res) => {
     try {
       const alertId = parseInt(req.params.id);
+      
+      // Получаем данные алерта перед удалением
+      const alertResult = await db.select().from(carAlerts).where(eq(carAlerts.id, alertId));
+      const alert = alertResult[0];
+      
+      if (!alert) {
+        return res.status(404).json({ error: "Alert not found" });
+      }
+      
+      // Сохраняем информацию об удаленном алерте
+      const alertData = JSON.stringify({
+        make: alert.make,
+        model: alert.model,
+        minPrice: alert.minPrice,
+        maxPrice: alert.maxPrice,
+        minYear: alert.minYear,
+        maxYear: alert.maxYear
+      });
+      
+      try {
+        await db.execute(
+          sql`INSERT INTO deleted_alerts (user_id, alert_data) 
+              VALUES (${alert.userId}, ${alertData})
+              ON CONFLICT (user_id, alert_data) DO NOTHING`
+        );
+        console.log(`Marked alert ${alertId} as deleted for user ${alert.userId}`);
+      } catch (deleteError) {
+        console.log('Error marking alert as deleted:', deleteError);
+      }
+      
       const success = await storage.deleteCarAlert(alertId);
       if (!success) {
         return res.status(404).json({ error: "Alert not found" });
       }
       
-      // Очищаем весь кэш car-alerts (не знаем userId удаленного алерта)
-      clearCachePattern('car-alerts-');
+      // Очищаем кэш для конкретного пользователя
+      clearCachePattern(`car-alerts-${alert.userId}`);
       
       res.status(204).send();
     } catch (error) {
+      console.error('Error deleting car alert:', error);
       res.status(500).json({ error: "Failed to delete alert" });
     }
   });
