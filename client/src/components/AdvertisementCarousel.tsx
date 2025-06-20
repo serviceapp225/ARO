@@ -86,29 +86,24 @@ export function AdvertisementCarousel() {
                   style={{ backgroundImage: `url('${item.imageUrl}')` }}
                 >
                   <div className="absolute inset-0 bg-black bg-opacity-40"></div>
-                  <div className="relative z-10 h-full flex items-center justify-center text-center p-6">
-                    <div className="max-w-xl space-y-3">
-                      <h2 className="text-2xl font-bold text-white">
-                        {item.title}
-                      </h2>
-                      {item.description && (
-                        <p className="text-base text-white opacity-90">
-                          {item.description}
-                        </p>
-                      )}
-                      {item.linkUrl && (
-                        <div className="pt-2">
-                          <a href={item.linkUrl} className="inline-block">
-                            <Button 
-                              size="default" 
-                              className="bg-white text-emerald-700 hover:bg-gray-100 font-bold"
-                            >
-                              {item.buttonText || 'Подробнее'} →
-                            </Button>
-                          </a>
-                        </div>
-                      )}
-                    </div>
+                  <div className="relative z-10 h-full flex flex-col justify-center items-center text-center space-y-2 p-6">
+                    <h2 className="text-2xl font-bold text-white">
+                      {item.title}
+                    </h2>
+                    {item.description && (
+                      <p className="text-base text-white opacity-90 leading-relaxed">
+                        {item.description}
+                      </p>
+                    )}
+                    {item.linkUrl && (
+                      <div className="mt-4">
+                        <a href={item.linkUrl} className="inline-block">
+                          <span className="px-4 py-2 rounded-full text-sm font-bold bg-white text-emerald-700 hover:bg-gray-100 transition-all duration-300 cursor-pointer inline-flex items-center gap-1">
+                            {item.buttonText || 'Подробнее'} →
+                          </span>
+                        </a>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
