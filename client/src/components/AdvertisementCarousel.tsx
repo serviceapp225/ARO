@@ -114,23 +114,7 @@ export function AdvertisementCarousel() {
               </div>
             ))}
 
-            {/* Navigation arrows */}
-            {carouselItems.length > 1 && (
-              <>
-                <button
-                  onClick={prevSlide}
-                  className="absolute left-4 top-1/2 -translate-y-1/2 z-20 bg-white bg-opacity-20 hover:bg-opacity-30 rounded-full p-2 transition-all"
-                >
-                  <ChevronLeft className="h-6 w-6 text-white" />
-                </button>
-                <button
-                  onClick={nextSlide}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 z-20 bg-white bg-opacity-20 hover:bg-opacity-30 rounded-full p-2 transition-all"
-                >
-                  <ChevronRight className="h-6 w-6 text-white" />
-                </button>
-              </>
-            )}
+
 
             {/* Dots indicator */}
             {carouselItems.length > 1 && (
