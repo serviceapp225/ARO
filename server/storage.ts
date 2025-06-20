@@ -128,7 +128,30 @@ export class DatabaseStorage implements IStorage {
   async getListingsByStatus(status: string, limit?: number): Promise<CarListing[]> {
     try {
       const query = db
-        .select()
+        .select({
+          id: carListings.id,
+          sellerId: carListings.sellerId,
+          lotNumber: carListings.lotNumber,
+          make: carListings.make,
+          model: carListings.model,
+          year: carListings.year,
+          mileage: carListings.mileage,
+          startingPrice: carListings.startingPrice,
+          currentBid: carListings.currentBid,
+          status: carListings.status,
+          auctionStartTime: carListings.auctionStartTime,
+          auctionEndTime: carListings.auctionEndTime,
+          createdAt: carListings.createdAt,
+          customsCleared: carListings.customsCleared,
+          recycled: carListings.recycled,
+          technicalInspectionValid: carListings.technicalInspectionValid,
+          technicalInspectionDate: carListings.technicalInspectionDate,
+          tinted: carListings.tinted,
+          tintingDate: carListings.tintingDate,
+          condition: carListings.condition,
+          // Load only first photo URL instead of all photos
+          photos: carListings.photos
+        })
         .from(carListings)
         .where(eq(carListings.status, status))
         .orderBy(desc(carListings.createdAt));
@@ -140,7 +163,13 @@ export class DatabaseStorage implements IStorage {
         listings = await query;
       }
       
-      return listings;
+      // Limit photos to first 3 to reduce payload size
+      const optimizedListings = listings.map(listing => ({
+        ...listing,
+        photos: Array.isArray(listing.photos) ? listing.photos.slice(0, 3) : []
+      }));
+      
+      return optimizedListings;
     } catch (error) {
       console.error('Error fetching listings:', error);
       return [];

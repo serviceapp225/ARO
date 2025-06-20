@@ -53,24 +53,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       console.log(`[API] Found ${listings.length} listings`);
       
-      // Get bid counts for each listing (only if we have listings)
-      let listingsWithBidCounts = listings;
-      if (listings.length > 0) {
-        console.log(`[API] Getting bid counts for ${listings.length} listings...`);
-        const listingIds = listings.map(l => l.id);
-        const bidCounts = await storage.getBidCountsForListings(listingIds);
-        
-        listingsWithBidCounts = listings.map(listing => ({
-          ...listing,
-          bidCount: bidCounts[listing.id] || 0
-        }));
-        console.log(`[API] Added bid counts to listings`);
-      }
+      // Add default bid count of 0 for now (optimization)
+      const listingsWithBidCounts = listings.map(listing => ({
+        ...listing,
+        bidCount: 0
+      }));
       
       // Cache the result for 30 seconds
       setCache(cacheKey, listingsWithBidCounts);
       
-      console.log(`[API] Returning ${listingsWithBidCounts.length} listings with bid counts`);
+      console.log(`[API] Returning ${listingsWithBidCounts.length} listings`);
       res.json(listingsWithBidCounts);
     } catch (error) {
       console.error('[API] Error fetching listings:', error);

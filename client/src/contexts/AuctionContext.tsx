@@ -47,21 +47,29 @@ export function AuctionProvider({ children }: { children: ReactNode }) {
     queryKey: ['/api/listings'],
     queryFn: async () => {
       console.log('Fetching listings from API...');
-      const response = await fetch('/api/listings', {
-        credentials: 'include',
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json'
+      try {
+        const response = await fetch('/api/listings', {
+          credentials: 'include',
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        console.log('Response status:', response.status, response.statusText);
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
         }
-      });
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        
+        const data = await response.json();
+        console.log('API Response received:', Array.isArray(data) ? `Array with ${data.length} items` : typeof data);
+        console.log('First item:', data[0]);
+        return data;
+      } catch (error) {
+        console.error('API Request failed:', error);
+        throw error;
       }
-      
-      const data = await response.json();
-      console.log('API Response:', data);
-      return data;
     },
     staleTime: 0,
     gcTime: 0,
