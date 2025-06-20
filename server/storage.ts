@@ -139,11 +139,10 @@ export class DatabaseStorage implements IStorage {
       
       const listings = await query;
       
-      // Return data with placeholder URLs instead of heavy base64 images
+      // Return data with photo URLs for performance instead of base64
       return listings.map(listing => {
         let hasPhotos = false;
         try {
-          // Check if listing has photos without loading them
           if (listing.photos) {
             if (Array.isArray(listing.photos)) {
               hasPhotos = listing.photos.length > 0;
@@ -153,15 +152,14 @@ export class DatabaseStorage implements IStorage {
             }
           }
         } catch (e) {
-          console.error('Error checking photos for listing', listing.id, e);
           hasPhotos = false;
         }
         
         return {
           ...listing,
-          // Use placeholder URL instead of heavy base64 for performance
+          // Use photo endpoint URL instead of heavy base64 data
           photos: hasPhotos ? [`/api/listings/${listing.id}/photo/0`] : [],
-          description: listing.description?.substring(0, 100) + '...' || '' // Truncate description
+          description: listing.description?.substring(0, 100) + '...' || ''
         };
       });
     } catch (error) {
