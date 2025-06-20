@@ -6,7 +6,7 @@ import { z } from "zod";
 
 // Simple in-memory cache
 const cache = new Map();
-const CACHE_TTL = 1000; // 1 second for faster updates
+const CACHE_TTL = 10000; // 10 seconds for better performance
 
 function getCached(key: string) {
   const cached = cache.get(key);
@@ -36,6 +36,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { status = "active", limit } = req.query;
       const cacheKey = `listings_${status}_${limit || 'all'}`;
       
+      // Check cache first
+      const cached = getCached(cacheKey);
+      if (cached) {
+        return res.json(cached);
+      }
+      
       const listings = await storage.getListingsByStatus(
         status as string, 
         limit ? Number(limit) : undefined
@@ -49,6 +55,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ...listing,
         bidCount: bidCounts[listing.id] || 0
       }));
+      
+      // Cache the result
+      setCache(cacheKey, listingsWithBidCounts);
       
       res.json(listingsWithBidCounts);
     } catch (error) {
@@ -71,8 +80,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Create cache key from filters
       const cacheKey = `search_${JSON.stringify(filters)}`;
       
-      // Clear all search cache entries to prevent stale data
-      clearCachePattern('search_');
+      // Check cache first for search results
+      const cached = getCached(cacheKey);
+      if (cached) {
+        return res.json(cached);
+      }
       
       const listings = await storage.searchListings(filters);
       

@@ -57,7 +57,10 @@ export const bids = pgTable("bids", {
   bidderId: integer("bidder_id").notNull(),
   amount: numeric("amount", { precision: 12, scale: 2 }).notNull(),
   createdAt: timestamp("created_at").defaultNow(),
-});
+}, (table) => ({
+  listingIdx: index("bids_listing_idx").on(table.listingId),
+  bidderIdx: index("bids_bidder_idx").on(table.bidderId),
+}));
 
 export const favorites = pgTable("favorites", {
   id: serial("id").primaryKey(),
@@ -76,7 +79,10 @@ export const notifications = pgTable("notifications", {
   listingId: integer("listing_id"), // optional, for car-related notifications
   alertId: integer("alert_id"), // optional, for notifications related to car alerts
   createdAt: timestamp("created_at").defaultNow(),
-});
+}, (table) => ({
+  userIdx: index("notifications_user_idx").on(table.userId),
+  isReadIdx: index("notifications_is_read_idx").on(table.isRead),
+}));
 
 export const carAlerts = pgTable("car_alerts", {
   id: serial("id").primaryKey(),
