@@ -72,7 +72,7 @@ export function AdvertisementCarousel() {
     <div className="w-full">
       <Card className="overflow-hidden">
         <CardContent className="p-0">
-          <div className="relative h-80 overflow-hidden">
+          <div className="relative h-48 overflow-hidden">
             {carouselItems.map((item, index) => (
               <div
                 key={item.id}
@@ -86,21 +86,21 @@ export function AdvertisementCarousel() {
                   style={{ backgroundImage: `url('${item.imageUrl}')` }}
                 >
                   <div className="absolute inset-0 bg-black bg-opacity-40"></div>
-                  <div className="relative z-10 h-full flex items-center justify-center text-center p-8">
-                    <div className="max-w-2xl space-y-4">
-                      <h2 className="text-3xl font-bold text-white">
+                  <div className="relative z-10 h-full flex items-center justify-center text-center p-6">
+                    <div className="max-w-xl space-y-3">
+                      <h2 className="text-2xl font-bold text-white">
                         {item.title}
                       </h2>
                       {item.description && (
-                        <p className="text-lg text-white opacity-90">
+                        <p className="text-base text-white opacity-90">
                           {item.description}
                         </p>
                       )}
                       {item.linkUrl && (
-                        <div className="pt-4">
+                        <div className="pt-2">
                           <a href={item.linkUrl} className="inline-block">
                             <Button 
-                              size="lg" 
+                              size="default" 
                               className="bg-white text-emerald-700 hover:bg-gray-100 font-bold"
                             >
                               {item.buttonText || 'Подробнее'} →
