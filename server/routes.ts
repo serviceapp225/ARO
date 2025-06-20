@@ -449,6 +449,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Admin route to activate/deactivate users
+  app.patch("/api/admin/users/:id/activate", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.id);
+      const { isActive } = req.body;
+      
+      const updatedUser = await storage.updateUserStatus(userId, isActive);
+      if (!updatedUser) {
+        return res.status(404).json({ error: "User not found" });
+      }
+      
+      res.json(updatedUser);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to update user status" });
+    }
+  });
+
   app.get("/api/users/:id/listings", async (req, res) => {
     try {
       const userId = parseInt(req.params.id);

@@ -8,7 +8,7 @@ export const users = pgTable("users", {
   username: text("username").notNull().unique(),
   role: text("role").notNull(), // 'buyer', 'seller', 'admin'
   profilePhoto: text("profile_photo"),
-  isActive: boolean("is_active").default(true),
+  isActive: boolean("is_active").default(false),
   createdAt: timestamp("created_at").defaultNow(),
 });
 

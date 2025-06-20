@@ -23,11 +23,12 @@ export default function Login() {
 
     console.log("Authenticating with phone:", phoneNumber);
     
-    // Create demo user in localStorage immediately
+    // Create demo user in localStorage immediately with inactive status
     const demoUser = {
       email: phoneNumber + "@autoauction.tj",
       phoneNumber: phoneNumber,
-      uid: "demo-user-" + Date.now()
+      uid: "demo-user-" + Date.now(),
+      isActive: false // All new users are inactive by default
     };
     localStorage.setItem('demo-user', JSON.stringify(demoUser));
     
