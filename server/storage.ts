@@ -675,19 +675,16 @@ export class DatabaseStorage implements IStorage {
   }
 
   async hasUserViewedAlert(userId: number, alertId: number, listingId: number): Promise<boolean> {
-    const result = await db
-      .select({ id: alertViews.id })
-      .from(alertViews)
-      .where(
-        and(
-          eq(alertViews.userId, userId),
-          eq(alertViews.alertId, alertId),
-          eq(alertViews.listingId, listingId)
-        )
-      )
-      .limit(1);
-    
-    return result.length > 0;
+    try {
+      const result = await db.select({ count: sql<number>`count(*)` })
+        .from(sql`alert_views`)
+        .where(sql`user_id = ${userId} AND alert_id = ${alertId} AND listing_id = ${listingId}`);
+      
+      return result[0]?.count > 0;
+    } catch (error) {
+      console.error('Error checking alert view:', error);
+      return false;
+    }
   }
 }
 

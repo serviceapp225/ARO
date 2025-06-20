@@ -2,8 +2,8 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { db } from "./db";
-import { carListings } from "../shared/schema";
-import { eq } from "drizzle-orm";
+import { carListings, notifications, alertViews } from "../shared/schema";
+import { eq, sql } from "drizzle-orm";
 import sharp from "sharp";
 import { insertCarListingSchema, insertBidSchema, insertFavoriteSchema, insertNotificationSchema, insertCarAlertSchema, insertBannerSchema, type CarAlert } from "@shared/schema";
 import { z } from "zod";
@@ -277,6 +277,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         for (const alert of matchingAlerts) {
           console.log('Creating notification for user:', alert.userId, 'alert:', alert.id);
           
+          // Check if user has already viewed this alert for this listing
+          const hasViewed = await storage.hasUserViewedAlert(alert.userId, alert.id, listing.id);
+          
           // Check if notification for this listing and alert already exists
           const existingNotifications = await storage.getNotificationsByUser(alert.userId);
           const duplicateExists = existingNotifications.some(n => 
@@ -285,7 +288,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             n.alertId === alert.id
           );
           
-          if (!duplicateExists) {
+          if (!hasViewed && !duplicateExists) {
             await storage.createNotification({
               userId: alert.userId,
               title: "Найден автомобиль по вашему запросу",
@@ -296,7 +299,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               isRead: false
             });
           } else {
-            console.log('Notification already exists for listing:', listing.id, 'alert:', alert.id);
+            console.log('User has already viewed this alert or notification exists for listing:', listing.id, 'alert:', alert.id);
           }
         }
       } catch (alertError) {
@@ -616,6 +619,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (isNaN(notificationId)) {
         console.log(`Invalid notification ID: ${req.params.id}`);
         return res.status(400).json({ error: "Invalid notification ID" });
+      }
+      
+      // First, get notification details to mark as viewed
+      try {
+        const result = await db.execute(
+          sql`SELECT user_id, alert_id, listing_id, type FROM notifications WHERE id = ${notificationId}`
+        );
+        
+        if (result.rows.length > 0) {
+          const notification = result.rows[0] as any;
+          
+          if (notification.type === "car_found" && notification.listing_id && notification.alert_id) {
+            // Mark this alert as viewed so it won't appear again
+            await db.execute(
+              sql`INSERT INTO alert_views (user_id, alert_id, listing_id) 
+                  VALUES (${notification.user_id}, ${notification.alert_id}, ${notification.listing_id})
+                  ON CONFLICT (user_id, alert_id, listing_id) DO NOTHING`
+            );
+            console.log(`Marked alert ${notification.alert_id} for listing ${notification.listing_id} as viewed`);
+          }
+        }
+      } catch (viewError) {
+        console.log('Error marking alert as viewed:', viewError);
       }
       
       const success = await storage.deleteNotification(notificationId);
