@@ -1,6 +1,6 @@
 import { users, carListings, bids, favorites, notifications, carAlerts, banners, sellCarSection, advertisementCarousel, documents, alertViews, type User, type InsertUser, type CarListing, type InsertCarListing, type Bid, type InsertBid, type Favorite, type InsertFavorite, type Notification, type InsertNotification, type CarAlert, type InsertCarAlert, type Banner, type InsertBanner, type SellCarSection, type InsertSellCarSection, type AdvertisementCarousel, type InsertAdvertisementCarousel, type Document, type InsertDocument, type AlertView, type InsertAlertView } from "@shared/schema";
 import { db } from "./db";
-import { eq, and, desc, sql, or, ilike, inArray } from "drizzle-orm";
+import { eq, and, desc, sql, or, ilike, inArray, isNull } from "drizzle-orm";
 
 export interface IStorage {
   // User operations
@@ -413,11 +413,38 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getNotificationsByUser(userId: number): Promise<Notification[]> {
-    return await db
-      .select()
+    // Get notifications and exclude those that have been viewed via alert_views
+    const result = await db
+      .select({
+        id: notifications.id,
+        userId: notifications.userId,
+        type: notifications.type,
+        title: notifications.title,
+        message: notifications.message,
+        isRead: notifications.isRead,
+        listingId: notifications.listingId,
+        alertId: notifications.alertId,
+        createdAt: notifications.createdAt
+      })
       .from(notifications)
-      .where(eq(notifications.userId, userId))
+      .leftJoin(
+        alertViews,
+        and(
+          eq(alertViews.userId, notifications.userId),
+          eq(alertViews.alertId, notifications.alertId),
+          eq(alertViews.listingId, notifications.listingId)
+        )
+      )
+      .where(
+        and(
+          eq(notifications.userId, userId),
+          // Exclude notifications that have been viewed (alert_views entry exists)
+          sql`${alertViews.id} IS NULL`
+        )
+      )
       .orderBy(desc(notifications.createdAt));
+    
+    return result;
   }
 
   async createNotification(insertNotification: InsertNotification): Promise<Notification> {
