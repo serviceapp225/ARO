@@ -38,12 +38,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       console.log(`[API] Getting listings with status: ${status}, limit: ${limit}`);
       
-      // Check cache first
-      const cached = getCached(cacheKey);
-      if (cached) {
-        console.log(`[API] Returning cached listings: ${cached.length} items`);
-        return res.json(cached);
-      }
+      // Skip cache for now to debug
+      // const cached = getCached(cacheKey);
+      // if (cached) {
+      //   console.log(`[API] Returning cached listings: ${cached.length} items`);
+      //   return res.json(cached);
+      // }
       
       console.log(`[API] Fetching listings from database...`);
       const listings = await storage.getListingsByStatus(

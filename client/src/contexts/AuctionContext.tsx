@@ -39,17 +39,18 @@ export function AuctionProvider({ children }: { children: ReactNode }) {
   // Clear cache on mount to ensure fresh data
   useEffect(() => {
     queryClient.removeQueries({ queryKey: ['/api/listings'] });
+    queryClient.invalidateQueries({ queryKey: ['/api/listings'] });
   }, []);
 
-  // Fetch real data from API with reasonable refresh
+  // Fetch real data from API with fresh data
   const { data: listings, isLoading, refetch } = useQuery({
     queryKey: ['/api/listings'],
-    staleTime: 30000, // Consider data fresh for 30 seconds
-    gcTime: 60000, // Keep in cache for 1 minute
-    refetchOnWindowFocus: false,
-    refetchInterval: 30000, // Refetch every 30 seconds
+    staleTime: 0, // Always consider data stale
+    gcTime: 0, // No cache
+    refetchOnWindowFocus: true,
+    refetchInterval: false,
     retry: 2,
-    retryDelay: 2000,
+    retryDelay: 1000,
     enabled: true,
     refetchOnMount: true
   });
@@ -75,6 +76,10 @@ export function AuctionProvider({ children }: { children: ReactNode }) {
     tintingDate: listing.tintingDate,
     condition: listing.condition
   })) : [];
+
+  // Debug logging
+  console.log('AuctionContext - listings:', listings, 'auctions:', auctions.length, 'loading:', isLoading);
+  console.log('AuctionContext - first listing:', listings?.[0]);
 
 
 

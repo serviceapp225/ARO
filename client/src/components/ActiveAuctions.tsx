@@ -19,6 +19,9 @@ export function ActiveAuctions({ searchQuery = "", customListings }: ActiveAucti
   const { auctions, loading } = useAuctions();
   const { isFavorite, addToFavorites, removeFromFavorites } = useFavorites();
   
+  // Debug logging
+  console.log('ActiveAuctions - loading:', loading, 'auctions:', auctions.length, 'customListings:', customListings?.length);
+  
 
   const [, setLocation] = useLocation();
   const [page, setPage] = useState(1);
