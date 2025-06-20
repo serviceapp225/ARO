@@ -19,7 +19,7 @@ export default function AuctionDetail() {
   const [, setLocation] = useLocation();
   const { isFavorite, addToFavorites, removeFromFavorites } = useFavorites();
   const { auctions } = useAuctions();
-  const { currentUser } = useAuth();
+  const { user: currentUser } = useAuth();
   
   const [bidAmount, setBidAmount] = useState("");
   const [auctionEndTime, setAuctionEndTime] = useState<Date | null>(null);
@@ -179,6 +179,17 @@ export default function AuctionDetail() {
   // Handle bid submission
   const handleBidSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!currentUser) {
+      toast({
+        title: "Войдите в систему",
+        description: "Для участия в аукционе необходимо войти в систему",
+        variant: "destructive",
+        duration: 3000,
+      });
+      setLocation('/login');
+      return;
+    }
     
     if (!bidAmount || !auction) return;
     
