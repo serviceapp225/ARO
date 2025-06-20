@@ -327,7 +327,7 @@ export default function AuctionDetail() {
     if (bidValue <= currentBidValue) {
       toast({
         title: "Ставка слишком низкая",
-        description: `Минимальная ставка: $${(currentBidValue + 100).toLocaleString()}`,
+        description: `Минимальная ставка: ${(currentBidValue + 100).toLocaleString()} Сомони`,
         variant: "destructive",
         duration: 3000,
       });
@@ -767,10 +767,10 @@ export default function AuctionDetail() {
             <CardContent className="space-y-4">
               <div>
                 <div className="text-3xl font-bold text-green-600">
-                  ${currentBid.toLocaleString()}
+                  {currentBid.toLocaleString()} Сомони
                 </div>
                 <p className="text-sm text-gray-600 mt-1">
-                  Стартовая цена: ${parseFloat(auction.startingPrice).toLocaleString()}
+                  Стартовая цена: {parseFloat(auction.startingPrice).toLocaleString()} Сомони
                 </p>
               </div>
 
@@ -813,10 +813,10 @@ export default function AuctionDetail() {
                 <div className="space-y-3">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Ваша ставка (минимум: ${(currentBid + 100).toLocaleString()})
+                      Ваша ставка (минимум: {(currentBid + 100).toLocaleString()} Сомони)
                     </label>
                     <div className="relative">
-                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">Сомони</span>
                       <input
                         type="number"
                         value={bidAmount}

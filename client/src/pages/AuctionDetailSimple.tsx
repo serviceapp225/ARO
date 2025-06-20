@@ -556,7 +556,7 @@ export default function AuctionDetail() {
               <div className="text-center">
                 <p className="text-sm text-muted-foreground">Текущая цена</p>
                 <p className="text-3xl font-bold text-green-600">
-                  {currentHighestBid.toLocaleString()} сом
+                  {currentHighestBid.toLocaleString()} Сомони
                 </p>
                 <p className="text-sm text-muted-foreground">
                   Ставок: {sortedBids.length}
