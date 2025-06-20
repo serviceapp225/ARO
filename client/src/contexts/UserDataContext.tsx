@@ -39,7 +39,7 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
           fullName: "", // Всегда начинаем с пустого имени
           email: parsed.email || "",
           accountType: parsed.accountType || 'individual',
-          profilePhoto: parsed.profilePhoto || null,
+          profilePhoto: null, // Всегда начинаем без фотографии
           phoneNumber: parsed.phoneNumber || prev.phoneNumber,
         }));
       } catch (error) {

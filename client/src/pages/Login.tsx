@@ -24,20 +24,16 @@ export default function Login() {
     setIsLoading(true);
     console.log("Authenticating with phone:", phoneNumber);
     
-    // Simulate successful login after 1 second
-    setTimeout(() => {
-      setIsLoading(false);
-      // Create demo user in localStorage
-      const demoUser = {
-        email: phoneNumber + "@autoauction.tj",
-        phoneNumber: phoneNumber,
-        uid: "demo-user-" + Date.now()
-      };
-      localStorage.setItem('demo-user', JSON.stringify(demoUser));
-      
-      // Trigger page reload to update auth state
-      window.location.href = '/profile';
-    }, 1000);
+    // Create demo user in localStorage immediately
+    const demoUser = {
+      email: phoneNumber + "@autoauction.tj",
+      phoneNumber: phoneNumber,
+      uid: "demo-user-" + Date.now()
+    };
+    localStorage.setItem('demo-user', JSON.stringify(demoUser));
+    
+    // Redirect immediately
+    window.location.href = '/profile';
   };
 
   const formatPhoneNumber = (value: string) => {
@@ -72,7 +68,7 @@ export default function Login() {
           <div className="mx-auto w-16 h-16 bg-primary rounded-full flex items-center justify-center mb-4">
             <Phone className="w-8 h-8 text-white" />
           </div>
-          <CardTitle className="text-2xl font-bold">Вход в AUTOAUCTION</CardTitle>
+          <CardTitle className="text-2xl font-bold">Вход в AUTOBID.TJ</CardTitle>
         </CardHeader>
         
         <CardContent>
