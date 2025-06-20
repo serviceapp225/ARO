@@ -4,6 +4,7 @@ import { storage } from "./storage";
 import { db } from "./db";
 import { carListings } from "../shared/schema";
 import { eq } from "drizzle-orm";
+import sharp from "sharp";
 import { insertCarListingSchema, insertBidSchema, insertFavoriteSchema, insertNotificationSchema, insertCarAlertSchema, insertBannerSchema, type CarAlert } from "@shared/schema";
 import { z } from "zod";
 
@@ -102,17 +103,69 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (photoData.startsWith('data:image/')) {
           const matches = photoData.match(/data:image\/([^;]+);base64,(.+)/);
           if (matches) {
-            const mimeType = `image/${matches[1]}`;
+            const originalMimeType = `image/${matches[1]}`;
             const base64Data = matches[2];
-            const buffer = Buffer.from(base64Data, 'base64');
+            const originalBuffer = Buffer.from(base64Data, 'base64');
+            
+            // Compress image automatically to reduce size while maintaining quality
+            let compressedBuffer: Buffer;
+            let outputMimeType = 'image/jpeg';
+            
+            try {
+              const originalSize = originalBuffer.length;
+              
+              // Compress images larger than 150KB for better performance
+              if (originalSize > 150 * 1024) {
+                // Determine optimal settings based on image size
+                let quality = 85;
+                let maxWidth = 1200;
+                let maxHeight = 800;
+                
+                if (originalSize > 2 * 1024 * 1024) { // > 2MB - aggressive compression
+                  quality = 75;
+                  maxWidth = 1000;
+                  maxHeight = 667;
+                } else if (originalSize > 1 * 1024 * 1024) { // > 1MB - moderate compression
+                  quality = 80;
+                  maxWidth = 1100;
+                  maxHeight = 733;
+                }
+                
+                compressedBuffer = await sharp(originalBuffer)
+                  .jpeg({ 
+                    quality,
+                    progressive: true,
+                    mozjpeg: true,
+                    optimiseScans: true
+                  })
+                  .resize(maxWidth, maxHeight, {
+                    fit: 'inside',
+                    withoutEnlargement: true
+                  })
+                  .toBuffer();
+                
+                const compressedSize = compressedBuffer.length;
+                const compressionRatio = ((originalSize - compressedSize) / originalSize * 100).toFixed(1);
+                
+                console.log(`Image compressed: ${(originalSize/1024).toFixed(1)}KB -> ${(compressedSize/1024).toFixed(1)}KB (${compressionRatio}% reduction)`);
+              } else {
+                // Small images - use original
+                compressedBuffer = originalBuffer;
+                outputMimeType = originalMimeType;
+              }
+            } catch (error) {
+              console.error('Image compression failed, using original:', error);
+              compressedBuffer = originalBuffer;
+              outputMimeType = originalMimeType;
+            }
             
             // Cache the processed image
-            photoCache.set(cacheKey, buffer);
-            photoCacheTypes.set(cacheKey, mimeType);
+            photoCache.set(cacheKey, compressedBuffer);
+            photoCacheTypes.set(cacheKey, outputMimeType);
             
-            res.set('Content-Type', mimeType);
+            res.set('Content-Type', outputMimeType);
             res.set('Cache-Control', 'public, max-age=86400');
-            res.send(buffer);
+            res.send(compressedBuffer);
             return;
           }
         }
