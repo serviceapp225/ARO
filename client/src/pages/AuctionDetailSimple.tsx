@@ -214,14 +214,14 @@ export default function AuctionDetail() {
         if (error.status === 403 && error.data?.error === "Account not activated") {
           toast({
             title: "Аккаунт не активирован",
-            description: "Ваш аккаунт не активирован. Пожалуйста, обратитесь в службу поддержки через WhatsApp для активации аккаунта.",
+            description: "Ваш аккаунт не активирован. Обратитесь в службу поддержки через WhatsApp.",
             variant: "destructive",
             duration: 8000,
-            action: {
-              altText: "Связаться с поддержкой",
-              onClick: () => window.open("https://wa.me/992000000000", "_blank")
-            }
           });
+          // Automatically open WhatsApp after showing toast
+          setTimeout(() => {
+            window.open("https://wa.me/992000000000?text=Здравствуйте! Мне нужно активировать аккаунт на AUTOBID.TJ", "_blank");
+          }, 1000);
         } else {
           toast({
             title: "Ошибка",
