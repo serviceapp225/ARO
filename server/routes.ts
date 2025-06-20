@@ -58,6 +58,50 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Endpoint for getting individual photo by index
+  app.get("/api/listings/:id/photo/:index", async (req, res) => {
+    try {
+      const listing = await storage.getListing(Number(req.params.id));
+      if (!listing) {
+        return res.status(404).json({ error: "Listing not found" });
+      }
+      
+      let photoArray: string[] = [];
+      if (listing.photos) {
+        if (Array.isArray(listing.photos)) {
+          photoArray = listing.photos;
+        } else if (typeof listing.photos === 'string') {
+          photoArray = JSON.parse(listing.photos);
+        }
+      }
+      
+      const photoIndex = Number(req.params.index);
+      if (photoIndex >= 0 && photoIndex < photoArray.length) {
+        const photoData = photoArray[photoIndex];
+        
+        // Extract base64 data and set appropriate content type
+        if (photoData.startsWith('data:image/')) {
+          const matches = photoData.match(/data:image\/([^;]+);base64,(.+)/);
+          if (matches) {
+            const mimeType = `image/${matches[1]}`;
+            const base64Data = matches[2];
+            const buffer = Buffer.from(base64Data, 'base64');
+            
+            res.set('Content-Type', mimeType);
+            res.set('Cache-Control', 'public, max-age=86400'); // Cache for 24 hours
+            res.send(buffer);
+            return;
+          }
+        }
+      }
+      
+      res.status(404).json({ error: "Photo not found" });
+    } catch (error) {
+      console.error("Error fetching photo:", error);
+      res.status(500).json({ error: "Failed to fetch photo" });
+    }
+  });
+
   // New endpoint for getting listing photos
   app.get("/api/listings/:id/photos", async (req, res) => {
     try {

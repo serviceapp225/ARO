@@ -139,26 +139,28 @@ export class DatabaseStorage implements IStorage {
       
       const listings = await query;
       
-      // Return data with first photo for thumbnail
+      // Return data with placeholder URLs instead of heavy base64 images
       return listings.map(listing => {
-        let photoArray: string[] = [];
+        let hasPhotos = false;
         try {
-          // Handle photos field - it comes as JSON string from PostgreSQL
+          // Check if listing has photos without loading them
           if (listing.photos) {
             if (Array.isArray(listing.photos)) {
-              photoArray = listing.photos;
+              hasPhotos = listing.photos.length > 0;
             } else if (typeof listing.photos === 'string') {
-              photoArray = JSON.parse(listing.photos);
+              const photoArray = JSON.parse(listing.photos);
+              hasPhotos = photoArray.length > 0;
             }
           }
         } catch (e) {
-          console.error('Error parsing photos for listing', listing.id, e);
-          photoArray = [];
+          console.error('Error checking photos for listing', listing.id, e);
+          hasPhotos = false;
         }
         
         return {
           ...listing,
-          photos: photoArray.length > 0 ? [photoArray[0]] : [], // Only first photo for thumbnail
+          // Use placeholder URL instead of heavy base64 for performance
+          photos: hasPhotos ? [`/api/listings/${listing.id}/photo/0`] : [],
           description: listing.description?.substring(0, 100) + '...' || '' // Truncate description
         };
       });
