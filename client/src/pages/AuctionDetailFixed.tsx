@@ -821,7 +821,7 @@ export default function AuctionDetail() {
                         type="number"
                         value={bidAmount}
                         onChange={(e) => setBidAmount(e.target.value)}
-                        className="w-full pl-8 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        className="w-full pl-20 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                         placeholder="Введите сумму"
                         min={currentBid + 100}
                         step="100"
