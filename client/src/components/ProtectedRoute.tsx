@@ -19,15 +19,7 @@ export function ProtectedRoute({ children, title, description }: ProtectedRouteP
     return (
       <div className="min-h-screen bg-gradient-to-b from-blue-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-center justify-center p-4">
         <Card className="w-full max-w-md">
-          <CardHeader className="text-center">
-            <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Lock className="w-8 h-8 text-blue-600 dark:text-blue-400" />
-            </div>
-            <CardTitle className="text-xl font-bold text-gray-900 dark:text-gray-100">
-              войти autobid.tj
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="p-8 text-center">
             <Button 
               onClick={() => setLocation('/login')} 
               className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3"
