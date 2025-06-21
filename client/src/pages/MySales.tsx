@@ -14,11 +14,7 @@ export default function MySales() {
     enabled: !!(user as any)?.userId,
   });
 
-  console.log('MySales - User:', user);
-  console.log('MySales - User ID:', (user as any)?.userId);
-  console.log('MySales - Loading:', isLoading);
-  console.log('MySales - Data:', myListings);
-  console.log('MySales - Error:', error);
+  // Debug logs removed for production
 
   if (!user) {
     return (

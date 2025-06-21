@@ -250,7 +250,19 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getListingsBySeller(sellerId: number): Promise<CarListing[]> {
-    return await db.select().from(carListings).where(eq(carListings.sellerId, sellerId));
+    try {
+      const listings = await db
+        .select()
+        .from(carListings)
+        .where(eq(carListings.sellerId, sellerId))
+        .orderBy(desc(carListings.createdAt));
+      
+      // Return listings with their existing photos
+      return listings;
+    } catch (error) {
+      console.error('Error fetching seller listings:', error);
+      return [];
+    }
   }
 
   async createListing(insertListing: InsertCarListing): Promise<CarListing> {

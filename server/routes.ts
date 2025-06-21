@@ -254,6 +254,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/listings/seller/:sellerId", async (req, res) => {
     try {
       const sellerId = parseInt(req.params.sellerId);
+      
+      // Create cache key for seller listings
+      const cacheKey = `seller_listings_${sellerId}`;
+      
+      // Check cache first
+      const cached = getCached(cacheKey);
+      if (cached) {
+        return res.json(cached);
+      }
+      
       const listings = await storage.getListingsBySeller(sellerId);
       
       // Get bid counts for listings in batch
@@ -267,6 +277,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           bidCount: bidCounts[listing.id] || 0
         }));
       }
+      
+      // Cache the result for 30 seconds
+      setCache(cacheKey, enrichedListings);
       
       res.json(enrichedListings);
     } catch (error) {
