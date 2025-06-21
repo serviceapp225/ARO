@@ -66,7 +66,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ...listing,
         bidCount: bidCounts[listing.id] || 0,
         // Add first photo thumbnail for preview
-        thumbnailPhoto: listing.photos && listing.photos.length > 0 ? listing.photos[0] : null
+        thumbnailPhoto: Array.isArray(listing.photos) && listing.photos.length > 0 ? listing.photos[0] : null
       }));
       
       res.json(listingsWithBidCounts);

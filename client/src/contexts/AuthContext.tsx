@@ -24,20 +24,37 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const { toast } = useToast();
 
   useEffect(() => {
-    // Check for demo user in localStorage
-    const demoUserData = localStorage.getItem('demo-user');
-    if (demoUserData) {
-      try {
-        const demoUser = JSON.parse(demoUserData);
-        // Устанавливаем демо-пользователя как обычного пользователя
-        demoUser.role = demoUser.role || 'buyer';
-        // Не переопределяем isActive - берем из localStorage или сервера
-        setUser(demoUser);
-      } catch (error) {
-        localStorage.removeItem('demo-user');
+    const loadUser = async () => {
+      // Check for demo user in localStorage
+      const demoUserData = localStorage.getItem('demo-user');
+      if (demoUserData) {
+        try {
+          const demoUser = JSON.parse(demoUserData);
+          demoUser.role = demoUser.role || 'buyer';
+          
+          // Fetch user activation status from database
+          try {
+            const response = await fetch(`/api/users/3`); // Using fixed user ID 3 for demo
+            if (response.ok) {
+              const dbUser = await response.json();
+              demoUser.isActive = dbUser.isActive;
+            } else {
+              demoUser.isActive = false; // Default to inactive if server error
+            }
+          } catch (error) {
+            console.error('Failed to fetch user activation status:', error);
+            demoUser.isActive = false; // Default to inactive on error
+          }
+          
+          setUser(demoUser);
+        } catch (error) {
+          localStorage.removeItem('demo-user');
+        }
       }
-    }
-    setLoading(false);
+      setLoading(false);
+    };
+
+    loadUser();
   }, []);
 
   const logout = async () => {
