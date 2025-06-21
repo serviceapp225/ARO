@@ -251,6 +251,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/listings/seller/:sellerId", async (req, res) => {
+    try {
+      const sellerId = parseInt(req.params.sellerId);
+      const listings = await storage.getListingsBySeller(sellerId);
+      
+      // Get bid counts for listings in batch
+      let enrichedListings = listings;
+      if (listings.length > 0) {
+        const listingIds = listings.map(listing => listing.id);
+        const bidCounts = await storage.getBidCountsForListings(listingIds);
+        
+        enrichedListings = listings.map(listing => ({
+          ...listing,
+          bidCount: bidCounts[listing.id] || 0
+        }));
+      }
+      
+      res.json(enrichedListings);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch seller listings" });
+    }
+  });
+
   app.get("/api/listings/:id", async (req, res) => {
     try {
       const listingId = parseInt(req.params.id);

@@ -18,6 +18,7 @@ import Profile from "@/pages/Profile";
 import Notifications from "@/pages/Notifications";
 import MyAlerts from "@/pages/MyAlerts";
 import UserData from "@/pages/UserData";
+import MySales from "@/pages/MySales";
 import LanguageSelector from "@/components/LanguageSelector";
 import Terms from "@/pages/Terms";
 import Privacy from "@/pages/Privacy";
@@ -49,6 +50,7 @@ function Router() {
         <Route path="/notifications" component={Notifications} />
         <Route path="/my-alerts" component={MyAlerts} />
         <Route path="/user-data" component={UserData} />
+        <Route path="/my-sales" component={MySales} />
         <Route path="/language" component={LanguageSelector} />
         <Route path="/terms" component={Terms} />
         <Route path="/privacy" component={Privacy} />
