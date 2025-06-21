@@ -36,10 +36,10 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
         const parsed = JSON.parse(savedData);
         setUserData(prev => ({
           ...prev,
-          fullName: "", // Всегда начинаем с пустого имени
+          fullName: parsed.fullName || "", // Сохраняем введенное имя
           email: parsed.email || "",
           accountType: parsed.accountType || 'individual',
-          profilePhoto: null, // Всегда начинаем без фотографии
+          profilePhoto: parsed.profilePhoto || null, // Сохраняем фото профиля
           phoneNumber: parsed.phoneNumber || prev.phoneNumber,
         }));
       } catch (error) {
