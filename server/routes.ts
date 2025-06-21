@@ -503,6 +503,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/users/by-phone/:phone", async (req, res) => {
+    try {
+      const phoneNumber = decodeURIComponent(req.params.phone);
+      // Map phone numbers to emails based on the demo authentication system
+      let email = "";
+      if (phoneNumber === "+992 (22) 222-22-22") {
+        email = "buyer@autoauction.tj";
+      } else if (phoneNumber === "+992 (99) 999-99-99") {
+        email = "+992999999999@autoauction.tj";
+      } else {
+        return res.status(404).json({ error: "User not found" });
+      }
+      
+      const user = await storage.getUserByEmail(email);
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+      res.json(user);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch user" });
+    }
+  });
+
   app.patch("/api/users/:id", async (req, res) => {
     try {
       const userId = parseInt(req.params.id);

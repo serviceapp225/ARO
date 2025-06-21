@@ -8,6 +8,7 @@ import { useLocation } from "wouter";
 import { useToast } from "@/hooks/use-toast";
 import { useUserData } from "@/contexts/UserDataContext";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function UserData() {
   const [, setLocation] = useLocation();
@@ -15,6 +16,7 @@ export default function UserData() {
   const { userData, updateUserData } = useUserData();
   const [tempData, setTempData] = useState(userData);
   const queryClient = useQueryClient();
+  const { user } = useAuth();
 
   // Синхронизируем tempData с userData при изменениях
   useEffect(() => {
@@ -24,7 +26,19 @@ export default function UserData() {
   // Mutation to update user profile in database
   const updateProfileMutation = useMutation({
     mutationFn: async (data: { fullName?: string; profilePhoto?: string }) => {
-      const response = await fetch('/api/users/3', {
+      if (!user?.phoneNumber) {
+        throw new Error('User not authenticated');
+      }
+      
+      // Get user ID by phone number
+      const userResponse = await fetch(`/api/users/by-phone/${encodeURIComponent(user.phoneNumber)}`);
+      if (!userResponse.ok) {
+        throw new Error('User not found');
+      }
+      const userData = await userResponse.json();
+      
+      // Update user profile
+      const response = await fetch(`/api/users/${userData.id}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -38,9 +52,9 @@ export default function UserData() {
       
       return response.json();
     },
-    onSuccess: () => {
+    onSuccess: (updatedUser) => {
       // Invalidate user data cache to refetch updated data
-      queryClient.invalidateQueries({ queryKey: ['/api/users/3'] });
+      queryClient.invalidateQueries({ queryKey: [`/api/users/${updatedUser.id}`] });
       toast({
         title: "Профиль обновлен",
         description: "Ваши данные успешно сохранены",
