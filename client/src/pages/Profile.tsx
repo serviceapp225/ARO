@@ -14,14 +14,14 @@ export default function Profile() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   // Загружаем актуальные данные пользователя с сервера
-  const { data: serverUser } = useQuery({
+  const { data: serverUser } = useQuery<User>({
     queryKey: [`/api/users/${(user as any)?.userId}`],
     enabled: !!user && !!(user as any)?.userId,
   });
   
   // Используем данные с сервера, если они доступны, иначе данные из контекста
   const currentUser = serverUser || user;
-  const isUserActive = (serverUser as any)?.isActive ?? (user as any)?.isActive ?? false;
+  const isUserActive = serverUser?.isActive ?? (user as any)?.isActive ?? false;
 
   const handlePhotoSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -53,7 +53,7 @@ export default function Profile() {
   };
   
   const menuItems = [
-    { icon: User, label: "Мои данные", action: () => setLocation("/user-data") },
+    { icon: UserIcon, label: "Мои данные", action: () => setLocation("/user-data") },
     { icon: Car, label: "Мои продажи", action: () => setLocation("/my-sales") },
     { icon: Bell, label: "Поисковые уведомления", action: () => setLocation("/notifications") },
     { icon: Globe, label: "Поменять язык", action: () => setLocation("/language") },
@@ -66,7 +66,7 @@ export default function Profile() {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center pb-20">
         <div className="bg-white rounded-2xl p-8 shadow-lg text-center max-w-md mx-4">
-          <User className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+          <UserIcon className="w-16 h-16 text-gray-400 mx-auto mb-4" />
           <h2 className="text-xl font-semibold text-gray-700 mb-2">
             Необходимо войти
           </h2>
@@ -105,7 +105,7 @@ export default function Profile() {
                       className="w-full h-full object-cover"
                     />
                   ) : (
-                    <User className="w-12 h-12 text-gray-600" />
+                    <UserIcon className="w-12 h-12 text-gray-600" />
                   )}
                 </div>
                 <button 
