@@ -11,7 +11,7 @@ interface FastLoginData {
 }
 
 const FAST_LOGIN_CACHE = 'fast-login-cache';
-const CACHE_DURATION = 2 * 60 * 1000; // 2 minutes
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
 export const prepareFastLogin = async (userId: number) => {
   try {
