@@ -7,17 +7,55 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useLocation } from "wouter";
 import { useToast } from "@/hooks/use-toast";
 import { useUserData } from "@/contexts/UserDataContext";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 export default function UserData() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const { userData, updateUserData } = useUserData();
   const [tempData, setTempData] = useState(userData);
+  const queryClient = useQueryClient();
 
   // Синхронизируем tempData с userData при изменениях
   useEffect(() => {
     setTempData(userData);
   }, [userData]);
+
+  // Mutation to update user profile in database
+  const updateProfileMutation = useMutation({
+    mutationFn: async (data: { fullName?: string; profilePhoto?: string }) => {
+      const response = await fetch('/api/users/3', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to update profile');
+      }
+      
+      return response.json();
+    },
+    onSuccess: () => {
+      // Invalidate user data cache to refetch updated data
+      queryClient.invalidateQueries({ queryKey: ['/api/users/3'] });
+      toast({
+        title: "Профиль обновлен",
+        description: "Ваши данные успешно сохранены",
+        duration: 3000,
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Ошибка",
+        description: "Не удалось сохранить изменения",
+        variant: "destructive",
+        duration: 3000,
+      });
+    }
+  });
 
   const handleFileUpload = (type: 'front' | 'back') => (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -37,6 +75,11 @@ export default function UserData() {
   const handleInputChange = (field: string, value: string) => {
     setTempData(prev => ({ ...prev, [field]: value }));
     updateUserData({ [field]: value });
+    
+    // Save fullName to database immediately when changed
+    if (field === 'fullName') {
+      updateProfileMutation.mutate({ fullName: value });
+    }
   };
 
   const currentData = userData;
