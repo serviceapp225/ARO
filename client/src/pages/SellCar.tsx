@@ -310,6 +310,9 @@ export default function SellCar() {
     }, 1000);
 
     try {
+      console.log('Current user for listing:', user);
+      console.log('User ID:', (user as any)?.id);
+      
       // Create listing data matching database schema
       const listingData = {
         sellerId: (user as any)?.id || 2, // Use current user ID
