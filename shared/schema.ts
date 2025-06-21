@@ -6,6 +6,7 @@ export const users = pgTable("users", {
   id: serial("id").primaryKey(),
   email: text("email").notNull().unique(),
   username: text("username").notNull().unique(),
+  fullName: text("full_name"), // Real name from profile
   role: text("role").notNull(), // 'buyer', 'seller', 'admin'
   profilePhoto: text("profile_photo"),
   isActive: boolean("is_active").default(false),
