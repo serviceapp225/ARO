@@ -24,8 +24,8 @@ export default function AuctionDetail() {
   
   // Fetch current user activation status from database
   const { data: serverUser } = useQuery({
-    queryKey: ['/api/users/3'], // Fixed user ID for demo
-    enabled: !!currentUser,
+    queryKey: [`/api/users/${(currentUser as any)?.userId}`],
+    enabled: !!currentUser && !!(currentUser as any)?.userId,
   });
   
   const [bidAmount, setBidAmount] = useState("");
@@ -192,8 +192,8 @@ export default function AuctionDetail() {
 
     // Find highest bid (first in sorted array)
     const highestBid = bidsArray[0];
-    const currentUserId = 3; // Current user ID
-    const isWinner = highestBid.bidderId === currentUserId;
+    const currentUserId = (currentUser as any)?.userId;
+    const isWinner = currentUserId && highestBid.bidderId === currentUserId;
 
     if (isWinner) {
       // User won the auction
