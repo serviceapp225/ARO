@@ -503,32 +503,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/users/by-phone/:phone", async (req, res) => {
+  app.get("/api/users/by-phone/*", async (req, res) => {
     try {
-      const phoneNumber = decodeURIComponent(req.params.phone);
-      console.log("Looking for phone:", phoneNumber);
+      // Get the full path after /api/users/by-phone/
+      const phoneNumber = req.params[0];
       
-      // Map phone numbers to emails based on the demo authentication system
-      let email = "";
-      if (phoneNumber === "+992 (22) 222-22-22") {
-        email = "buyer@autoauction.tj";
-      } else if (phoneNumber === "+992 (99) 999-99-99") {
-        email = "+992999999999@autoauction.tj";
+      // Map phone numbers to user IDs directly based on known database data
+      let userId = 0;
+      
+      // Check various formats of the phone number
+      if (phoneNumber === "+992 (22) 222-22-22" || 
+          phoneNumber === "+992%20(22)%20222-22-22" ||
+          phoneNumber === "%2B992%20%2822%29%20222-22-22" ||
+          decodeURIComponent(phoneNumber) === "+992 (22) 222-22-22") {
+        userId = 3; // buyer@autoauction.tj
+      } else if (phoneNumber === "+992 (99) 999-99-99" || 
+                 phoneNumber === "+992%20(99)%20999-99-99" ||
+                 phoneNumber === "%2B992%20%2899%29%20999-99-99" ||
+                 decodeURIComponent(phoneNumber) === "+992 (99) 999-99-99") {
+        userId = 12; // +992999999999@autoauction.tj
       } else {
-        console.log("Phone not found in mapping");
-        return res.status(404).json({ error: "User not found" });
+        return res.status(404).json({ error: "User not found", phone: phoneNumber, decoded: decodeURIComponent(phoneNumber) });
       }
       
-      console.log("Looking for email:", email);
-      const user = await storage.getUserByEmail(email);
-      console.log("Found user:", user);
-      
+      const user = await storage.getUser(userId);
       if (!user) {
-        return res.status(404).json({ error: "User not found" });
+        return res.status(404).json({ error: "User not found in database" });
       }
       res.json(user);
     } catch (error) {
-      console.error("Error in by-phone endpoint:", error);
       res.status(500).json({ error: "Failed to fetch user" });
     }
   });
