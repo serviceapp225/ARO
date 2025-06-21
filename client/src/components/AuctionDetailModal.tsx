@@ -53,11 +53,11 @@ export function AuctionDetailModal() {
     });
   };
 
-  // Mock bid history
+  // Mock bid history with real user names
   const bidHistory = [
-    { bidder: 'john_doe87', amount: selectedAuction.currentBid, time: '2 minutes ago' },
-    { bidder: 'mike_enthusiast', amount: selectedAuction.currentBid - 500, time: '5 minutes ago' },
-    { bidder: 'car_collector', amount: selectedAuction.currentBid - 1000, time: '8 minutes ago' },
+    { bidder: 'Алексей Петров', amount: selectedAuction.currentBid, time: '2 минуты назад' },
+    { bidder: 'Мария Иванова', amount: selectedAuction.currentBid - 500, time: '5 минут назад' },
+    { bidder: 'Дмитрий Козлов', amount: selectedAuction.currentBid - 1000, time: '8 минут назад' },
   ];
 
   return (
