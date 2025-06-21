@@ -21,7 +21,7 @@ export function NotificationBell({ userId }: NotificationBellProps) {
       queryClient.invalidateQueries({ queryKey: [`/api/notifications/${userId}`] });
     }
   };
-  const [deletingIds, setDeletingIds] = useState<Set<number>>(new Set());
+
   const queryClient = useQueryClient();
   const [, setLocation] = useLocation();
 
@@ -49,58 +49,21 @@ export function NotificationBell({ userId }: NotificationBellProps) {
 
   const deleteNotificationMutation = useMutation({
     mutationFn: async (notificationId: number) => {
-      // Add to deleting set
-      setDeletingIds(prev => new Set(prev).add(notificationId));
-      
       const response = await fetch(`/api/notifications/${notificationId}`, {
         method: 'DELETE',
       });
-      if (!response.ok) throw new Error('Failed to delete notification');
-      return response.json();
+      if (!response.ok && response.status !== 404) throw new Error('Failed to delete notification');
+      return notificationId;
     },
-    onMutate: async (notificationId: number) => {
-      // Prevent multiple deletions of the same notification
-      if (deletingIds.has(notificationId)) {
-        throw new Error('Already deleting this notification');
-      }
-      
-      // Cancel any outgoing refetches
-      await queryClient.cancelQueries({ queryKey: [`/api/notifications/${userId}`] });
-      
-      // Snapshot the previous value
-      const previousNotifications = queryClient.getQueryData<Notification[]>([`/api/notifications/${userId}`]);
-      
-      // Optimistically remove the notification
-      if (previousNotifications) {
-        queryClient.setQueryData<Notification[]>(
-          [`/api/notifications/${userId}`],
-          previousNotifications.filter(n => n.id !== notificationId)
-        );
-      }
-      
-      return { previousNotifications };
+    onSuccess: (notificationId) => {
+      // Immediately update local state to remove the notification
+      queryClient.setQueryData<Notification[]>(
+        [`/api/notifications/${userId}`],
+        (oldData) => oldData ? oldData.filter(n => n.id !== notificationId) : []
+      );
     },
-    onError: (err, notificationId, context) => {
-      // Rollback on error and remove from deleting set
-      if (context?.previousNotifications) {
-        queryClient.setQueryData([`/api/notifications/${userId}`], context.previousNotifications);
-      }
-      setDeletingIds(prev => {
-        const newSet = new Set(prev);
-        newSet.delete(notificationId);
-        return newSet;
-      });
-    },
-    onSettled: (data, error, notificationId) => {
-      // Remove from deleting set regardless of success/error
-      setDeletingIds(prev => {
-        const newSet = new Set(prev);
-        newSet.delete(notificationId);
-        return newSet;
-      });
-      // Force cache invalidation and immediate refetch
-      queryClient.removeQueries({ queryKey: [`/api/notifications/${userId}`] });
-      queryClient.invalidateQueries({ queryKey: [`/api/notifications/${userId}`] });
+    onError: (error) => {
+      console.error('Failed to delete notification:', error);
     },
   });
 
@@ -266,11 +229,9 @@ export function NotificationBell({ userId }: NotificationBellProps) {
                       onClick={(e) => {
                         e.stopPropagation();
                         e.preventDefault();
-                        if (!deletingIds.has(notification.id) && !deleteNotificationMutation.isPending) {
-                          deleteNotificationMutation.mutate(notification.id);
-                        }
+                        deleteNotificationMutation.mutate(notification.id);
                       }}
-                      disabled={deletingIds.has(notification.id) || deleteNotificationMutation.isPending}
+                      disabled={deleteNotificationMutation.isPending}
                       className="text-red-500 hover:text-red-700 p-1 rounded disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex-shrink-0"
                       title="Удалить уведомление"
                     >
