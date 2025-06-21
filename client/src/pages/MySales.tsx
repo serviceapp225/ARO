@@ -14,7 +14,15 @@ export default function MySales() {
     enabled: !!(user as any)?.userId,
   });
 
-  // Debug logs removed for production
+  const listings = Array.isArray(myListings) ? myListings : [];
+
+  // Debug info
+  console.log('MySales - user:', user);
+  console.log('MySales - myListings:', myListings);
+  console.log('MySales - isLoading:', isLoading);
+  console.log('MySales - error:', error);
+  console.log('MySales - isArray check:', Array.isArray(myListings));
+  console.log('MySales - length:', myListings?.length);
 
   if (!user) {
     return (
@@ -69,7 +77,7 @@ export default function MySales() {
                 </div>
               ))}
             </div>
-          ) : !myListings || !Array.isArray(myListings) || myListings.length === 0 ? (
+          ) : listings.length === 0 ? (
             <div className="bg-white rounded-2xl p-8 shadow-sm text-center">
               <Car className="w-16 h-16 text-gray-400 mx-auto mb-4" />
               <h2 className="text-xl font-semibold text-gray-700 mb-2">
