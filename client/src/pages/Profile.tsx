@@ -1,10 +1,11 @@
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserData } from "@/contexts/UserDataContext";
-import { User, Globe, Bell, Heart, HelpCircle, FileText, LogOut, Camera, Edit, ChevronRight, MessageCircle, Building2, UserCheck, Shield, ShieldX, Settings, Car } from "lucide-react";
+import { User as UserIcon, Globe, Bell, Heart, HelpCircle, FileText, LogOut, Camera, Edit, ChevronRight, MessageCircle, Building2, UserCheck, Shield, ShieldX, Settings, Car } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
+import type { User } from "@shared/schema";
 
 export default function Profile() {
   const { user, logout } = useAuth();
@@ -20,7 +21,7 @@ export default function Profile() {
   
   // Используем данные с сервера, если они доступны, иначе данные из контекста
   const currentUser = serverUser || user;
-  const isUserActive = serverUser?.isActive ?? (user as any)?.isActive ?? false;
+  const isUserActive = (serverUser as any)?.isActive ?? (user as any)?.isActive ?? false;
 
   const handlePhotoSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];

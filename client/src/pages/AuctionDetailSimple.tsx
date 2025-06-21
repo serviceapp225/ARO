@@ -233,7 +233,7 @@ export default function AuctionDetail() {
     }
     
     // Check if user is active before allowing bid submission - use server data if available
-    const isUserActive = serverUser?.isActive ?? (currentUser as any)?.isActive ?? false;
+    const isUserActive = (serverUser as any)?.isActive ?? (currentUser as any)?.isActive ?? false;
     if (!isUserActive) {
       setShowActivationDialog(true);
       return;
