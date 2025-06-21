@@ -14,7 +14,7 @@ export default function Privacy() {
             <ArrowLeft className="w-5 h-5 mr-2" />
             Назад
           </Button>
-          <h1 className="text-xl font-bold text-gray-900">Политика конфиденциальности</h1>
+
           <div className="w-16"></div>
         </div>
       </header>
