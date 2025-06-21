@@ -503,6 +503,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.patch("/api/users/:id", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.id);
+      const { fullName, profilePhoto } = req.body;
+      
+      const user = await storage.updateUserProfile(userId, { fullName, profilePhoto });
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+      res.json(user);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to update user profile" });
+    }
+  });
+
   // Admin route to activate/deactivate users
   app.patch("/api/admin/users/:id/activate", async (req, res) => {
     try {

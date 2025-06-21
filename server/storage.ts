@@ -9,6 +9,7 @@ export interface IStorage {
   getUserByEmail(email: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
   updateUserStatus(id: number, isActive: boolean): Promise<User | undefined>;
+  updateUserProfile(id: number, data: { fullName?: string; profilePhoto?: string }): Promise<User | undefined>;
   getAllUsers(): Promise<User[]>;
 
   // Car listing operations
@@ -115,6 +116,19 @@ export class DatabaseStorage implements IStorage {
     const [user] = await db
       .update(users)
       .set({ isActive })
+      .where(eq(users.id, id))
+      .returning();
+    return user || undefined;
+  }
+
+  async updateUserProfile(id: number, data: { fullName?: string; profilePhoto?: string }): Promise<User | undefined> {
+    const updateData: any = {};
+    if (data.fullName !== undefined) updateData.fullName = data.fullName;
+    if (data.profilePhoto !== undefined) updateData.profilePhoto = data.profilePhoto;
+    
+    const [user] = await db
+      .update(users)
+      .set(updateData)
       .where(eq(users.id, id))
       .returning();
     return user || undefined;
