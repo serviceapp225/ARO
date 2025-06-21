@@ -180,7 +180,7 @@ export default function AuctionDetail() {
   const { user: currentUser } = useAuth();
 
   // Fetch current user activation status from database
-  const { data: serverUser } = useQuery({
+  const { data: serverUser } = useQuery<User>({
     queryKey: [`/api/users/${(currentUser as any)?.userId}`],
     enabled: !!currentUser && !!(currentUser as any)?.userId,
   });
@@ -348,7 +348,7 @@ export default function AuctionDetail() {
     }
 
     // Check if user is active before allowing bid - use server data if available
-    const isUserActive = (serverUser as any)?.isActive ?? (currentUser as any)?.isActive ?? false;
+    const isUserActive = serverUser?.isActive ?? (currentUser as any)?.isActive ?? false;
     if (!isUserActive) {
       setShowActivationDialog(true);
       return;
