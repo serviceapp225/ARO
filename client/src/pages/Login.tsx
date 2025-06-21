@@ -102,13 +102,13 @@ export default function Login() {
               <div className="text-xs">
                 <Label htmlFor="terms" className="cursor-pointer leading-tight">
                   Я согласен с{" "}
-                  <span className="text-primary">
+                  <Link href="/terms" className="text-primary hover:underline">
                     условиями использования
-                  </span>
+                  </Link>
                   {" "}и{" "}
-                  <span className="text-primary">
+                  <Link href="/privacy" className="text-primary hover:underline">
                     политикой конфиденциальности
-                  </span>
+                  </Link>
                 </Label>
               </div>
             </div>

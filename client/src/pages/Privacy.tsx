@@ -10,11 +10,11 @@ export default function Privacy() {
       {/* Header */}
       <header className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-40">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <Button variant="ghost" size="sm" onClick={() => setLocation("/profile")}>
+          <Button variant="ghost" size="sm" onClick={() => setLocation("/login")}>
             <ArrowLeft className="w-5 h-5 mr-2" />
-            Назад
+            Назад к входу
           </Button>
-
+          <h1 className="text-xl font-bold text-gray-900">Политика конфиденциальности</h1>
           <div className="w-16"></div>
         </div>
       </header>
