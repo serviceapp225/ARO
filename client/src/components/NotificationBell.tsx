@@ -22,9 +22,6 @@ export function NotificationBell({ userId }: NotificationBellProps) {
 
   // Показываем все уведомления (найденные машины и перебитые ставки)
   const notifications = allNotifications;
-  
-  // Отладочная информация
-  console.log('NotificationBell: userId =', userId, 'notifications count =', notifications.length, 'unread =', notifications.filter(n => !n.isRead).length);
 
   const markAsReadMutation = useMutation({
     mutationFn: async (notificationId: number) => {
