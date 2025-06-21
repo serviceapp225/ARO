@@ -12,7 +12,6 @@ interface Language {
 const languages: Language[] = [
   { code: "tj", name: "Tajik", nativeName: "Тоҷики" },
   { code: "ru", name: "Russian", nativeName: "Русский" },
-  { code: "en", name: "English", nativeName: "English" },
 ];
 
 export default function LanguageSelector() {
