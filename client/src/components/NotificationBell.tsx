@@ -10,14 +10,25 @@ interface NotificationBellProps {
 
 export function NotificationBell({ userId }: NotificationBellProps) {
   const [isOpen, setIsOpen] = useState(false);
+  
+  // Manual refetch when opening notifications
+  const handleToggleOpen = () => {
+    const newOpenState = !isOpen;
+    setIsOpen(newOpenState);
+    
+    // Only refetch when opening (not closing) and only if we don't have recent data
+    if (newOpenState) {
+      queryClient.invalidateQueries({ queryKey: [`/api/notifications/${userId}`] });
+    }
+  };
   const [deletingIds, setDeletingIds] = useState<Set<number>>(new Set());
   const queryClient = useQueryClient();
   const [, setLocation] = useLocation();
 
   const { data: allNotifications = [], isLoading } = useQuery<Notification[]>({
     queryKey: [`/api/notifications/${userId}`],
-    refetchInterval: isOpen ? 30000 : 60000, // Poll less frequently: 30s when open, 60s when closed
-    staleTime: 5000, // Consider data fresh for 5 seconds only
+    refetchInterval: isOpen ? false : 60000, // Disable auto-refresh when open, 60s when closed
+    staleTime: 1000, // Consider data fresh for 1 second only
   });
 
   // Показываем все уведомления (найденные машины и перебитые ставки)
@@ -160,7 +171,7 @@ export function NotificationBell({ userId }: NotificationBellProps) {
   return (
     <div className="relative">
       <button
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={handleToggleOpen}
         className="relative p-2 text-gray-600 hover:text-gray-800 dark:text-gray-300 dark:hover:text-white transition-colors"
       >
         <Bell className="w-6 h-6" />
