@@ -8,6 +8,7 @@ import { useLocation } from "wouter";
 import { useFavorites } from "@/contexts/FavoritesContext";
 import { useAuctions } from "@/contexts/AuctionContext";
 import { CountdownTimer } from "@/components/CountdownTimer";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
 
 interface FavoriteCar {
   id: string;
@@ -76,7 +77,11 @@ export default function Favorites() {
   });
 
   return (
-    <div className="min-h-screen bg-neutral-50 pb-20">
+    <ProtectedRoute 
+      title="Требуется авторизация"
+      description="Для просмотра избранных автомобилей необходимо войти в систему"
+    >
+      <div className="min-h-screen bg-neutral-50 pb-20">
       {/* Header */}
       <header className="bg-white shadow-sm border-b border-neutral-200">
         <div className="container mx-auto px-4 py-4">
@@ -214,6 +219,7 @@ export default function Favorites() {
           </>
         )}
       </main>
-    </div>
+      </div>
+    </ProtectedRoute>
   );
 }

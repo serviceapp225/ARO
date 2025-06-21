@@ -12,6 +12,7 @@ import { CAR_MAKES_MODELS, getModelsForMake } from "../../../shared/car-data";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
 import { queryClient } from "@/lib/queryClient";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
 
 const TAJIKISTAN_CITIES = [
   "Душанбе",
@@ -419,7 +420,11 @@ export default function SellCar() {
   };
 
   return (
-    <div className="min-h-screen bg-neutral-50 pb-20">
+    <ProtectedRoute 
+      title="Требуется авторизация"
+      description="Для размещения объявлений необходимо войти в систему"
+    >
+      <div className="min-h-screen bg-neutral-50 pb-20">
       {/* Header */}
       <header className="bg-white shadow-sm border-b border-neutral-200">
         <div className="container mx-auto px-4 py-4">
@@ -925,6 +930,7 @@ export default function SellCar() {
           </div>
         </DialogContent>
       </Dialog>
-    </div>
+      </div>
+    </ProtectedRoute>
   );
 }
