@@ -79,8 +79,18 @@ export default function AuctionFeed() {
     staleTime: 30000
   });
 
-  // Фильтруем аукционы по выбранным критериям
+  // Фильтруем аукционы по выбранным критериям (только активные)
   const searchResults = allAuctions.filter((auction: any) => {
+    // Сначала проверяем, что аукцион активен
+    if (auction.status !== 'active') {
+      return false;
+    }
+    
+    // Проверяем, что аукцион не завершился по времени
+    if (auction.endTime && new Date(auction.endTime) <= new Date()) {
+      return false;
+    }
+    
     // Фильтр по тексту (поиск в марке, модели, номере лота)
     if (searchFilters.query.trim()) {
       const query = searchFilters.query.toLowerCase();
