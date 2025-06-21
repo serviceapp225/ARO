@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Bell, X, Car, Trash2, Trash } from 'lucide-react';
+import { Bell, X, Car, Trash2, Trash, Gavel } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useLocation } from 'wouter';
 import type { Notification } from '@shared/schema';
@@ -20,8 +20,8 @@ export function NotificationBell({ userId }: NotificationBellProps) {
     staleTime: 30000, // Consider data fresh for 30 seconds
   });
 
-  // Фильтруем только уведомления о найденных машинах
-  const notifications = allNotifications.filter(n => n.type === 'car_found');
+  // Показываем все уведомления (найденные машины и перебитые ставки)
+  const notifications = allNotifications;
 
   const markAsReadMutation = useMutation({
     mutationFn: async (notificationId: number) => {
@@ -108,11 +108,11 @@ export function NotificationBell({ userId }: NotificationBellProps) {
       // Snapshot the previous value
       const previousNotifications = queryClient.getQueryData<Notification[]>([`/api/notifications/${userId}`]);
       
-      // Optimistically clear all car_found notifications
+      // Optimistically clear all notifications
       if (previousNotifications) {
         queryClient.setQueryData<Notification[]>(
           [`/api/notifications/${userId}`],
-          previousNotifications.filter(n => n.type !== 'car_found')
+          []
         );
       }
       
@@ -136,8 +136,8 @@ export function NotificationBell({ userId }: NotificationBellProps) {
       markAsReadMutation.mutate(notification.id);
     }
     
-    // Navigate to auction page if notification is about a found car
-    if (notification.type === 'car_found' && notification.listingId) {
+    // Navigate to auction page for both car_found and bid_outbid notifications
+    if ((notification.type === 'car_found' || notification.type === 'bid_outbid') && notification.listingId) {
       setIsOpen(false);
       setLocation(`/auction/${notification.listingId}`);
     }
@@ -216,6 +216,9 @@ export function NotificationBell({ userId }: NotificationBellProps) {
                   <div className="flex items-start gap-3">
                     {notification.type === 'car_found' && (
                       <Car className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+                    )}
+                    {notification.type === 'bid_outbid' && (
+                      <Gavel className="w-5 h-5 text-red-600 mt-0.5 flex-shrink-0" />
                     )}
                     <div 
                       className="flex-1 cursor-pointer"
