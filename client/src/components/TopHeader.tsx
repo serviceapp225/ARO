@@ -3,7 +3,6 @@ import { FaWhatsapp } from "react-icons/fa";
 import { useLocation, Link } from "wouter";
 import { NotificationBell } from "./NotificationBell";
 import { useAuth } from "@/contexts/AuthContext";
-import { useQuery } from "@tanstack/react-query";
 
 interface TopHeaderProps {
   title?: string;
