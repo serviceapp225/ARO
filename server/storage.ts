@@ -252,13 +252,28 @@ export class DatabaseStorage implements IStorage {
   async getListingsBySeller(sellerId: number): Promise<CarListing[]> {
     try {
       const listings = await db
-        .select()
+        .select({
+          id: carListings.id,
+          sellerId: carListings.sellerId,
+          lotNumber: carListings.lotNumber,
+          make: carListings.make,
+          model: carListings.model,
+          year: carListings.year,
+          mileage: carListings.mileage,
+          description: carListings.description,
+          startingPrice: carListings.startingPrice,
+          currentBid: carListings.currentBid,
+          status: carListings.status,
+          auctionEndTime: carListings.auctionEndTime,
+          photos: carListings.photos,
+          createdAt: carListings.createdAt
+        })
         .from(carListings)
         .where(eq(carListings.sellerId, sellerId))
-        .orderBy(desc(carListings.createdAt));
+        .orderBy(desc(carListings.createdAt))
+        .limit(20); // Limit to 20 most recent listings
       
-      // Return listings with their existing photos
-      return listings;
+      return listings as CarListing[];
     } catch (error) {
       console.error('Error fetching seller listings:', error);
       return [];

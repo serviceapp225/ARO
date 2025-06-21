@@ -254,6 +254,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/listings/seller/:sellerId", async (req, res) => {
     try {
       const sellerId = parseInt(req.params.sellerId);
+      const startTime = Date.now();
       
       // Create cache key for seller listings
       const cacheKey = `seller_listings_${sellerId}`;
@@ -261,28 +262,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Check cache first
       const cached = getCached(cacheKey);
       if (cached) {
+        console.log(`Seller listings cache hit for ${sellerId}`);
         return res.json(cached);
       }
       
+      console.log(`Fetching seller listings for ${sellerId}...`);
       const listings = await storage.getListingsBySeller(sellerId);
+      console.log(`Seller listings query took ${Date.now() - startTime}ms`);
       
-      // Get bid counts for listings in batch
-      let enrichedListings = listings;
-      if (listings.length > 0) {
-        const listingIds = listings.map(listing => listing.id);
-        const bidCounts = await storage.getBidCountsForListings(listingIds);
-        
-        enrichedListings = listings.map(listing => ({
-          ...listing,
-          bidCount: bidCounts[listing.id] || 0
-        }));
-      }
+      // For seller listings, we'll skip bid count to optimize speed
+      const enrichedListings = listings.map(listing => ({
+        ...listing,
+        bidCount: 0
+      }));
       
-      // Cache the result for 30 seconds
+      // Cache the result for 10 minutes
       setCache(cacheKey, enrichedListings);
       
       res.json(enrichedListings);
     } catch (error) {
+      console.error('Error in seller listings endpoint:', error);
       res.status(500).json({ error: "Failed to fetch seller listings" });
     }
   });
