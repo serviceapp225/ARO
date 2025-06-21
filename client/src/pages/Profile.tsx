@@ -18,8 +18,9 @@ export default function Profile() {
     enabled: !!user,
   });
   
-  // Используем данные с сервера, если они доступны
+  // Используем данные с сервера, если они доступны, иначе данные из контекста
   const currentUser = serverUser || user;
+  const isUserActive = serverUser?.isActive ?? (user as any)?.isActive ?? false;
 
   const handlePhotoSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -142,23 +143,23 @@ export default function Profile() {
                 </div>
                 
                 <div className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
-                  currentUser?.isActive 
+                  isUserActive 
                     ? 'bg-green-100 text-green-800' 
                     : 'bg-red-100 text-red-800'
                 }`}>
-                  {currentUser?.isActive ? (
+                  {isUserActive ? (
                     <Shield className="w-4 h-4 mr-2" />
                   ) : (
                     <ShieldX className="w-4 h-4 mr-2" />
                   )}
-                  {currentUser?.isActive ? 'Активирован' : 'Не активирован'}
+                  {isUserActive ? 'Активирован' : 'Не активирован'}
                 </div>
               </div>
             </div>
           </div>
 
           {/* Activation Status Notice */}
-          {!currentUser?.isActive && (
+          {!isUserActive && (
             <div className="bg-yellow-50 border border-yellow-200 rounded-2xl p-4 mb-6">
               <div className="flex flex-col items-center text-center">
                 <div className="w-8 h-8 bg-yellow-100 rounded-full flex items-center justify-center mb-3">

@@ -1298,6 +1298,6 @@ async function sendSMSCode(phoneNumber: string, code: string): Promise<{success:
     
   } catch (error) {
     console.error("SMS sending failed:", error);
-    return { success: false, message: error.message };
+    return { success: false, message: error instanceof Error ? error.message : "Unknown error" };
   }
 }
