@@ -39,9 +39,6 @@ export function ProtectedRoute({ children, title, description }: ProtectedRouteP
               <LogIn className="w-5 h-5 mr-2" />
               Войти в систему
             </Button>
-            <p className="text-sm text-gray-500 dark:text-gray-400 text-center">
-              Уже есть аккаунт? Войдите, чтобы получить доступ к этой странице.
-            </p>
           </CardContent>
         </Card>
       </div>
