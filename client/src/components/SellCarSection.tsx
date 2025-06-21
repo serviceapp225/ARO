@@ -18,14 +18,22 @@ interface SellCarSectionData {
 }
 
 export function SellCarSection() {
-  const { data: section, isLoading } = useQuery<SellCarSectionData>({
-    queryKey: ['/api/sell-car-section'],
-    queryFn: async () => {
-      const response = await fetch('/api/sell-car-section');
-      if (!response.ok) throw new Error('Failed to fetch sell car section');
-      return response.json();
-    }
-  });
+  // Use static data for instant loading
+  const section: SellCarSectionData = {
+    id: 1,
+    title: "Продай свое авто сейчас",
+    subtitle: "Быстрый и удобный способ продать автомобиль",
+    buttonText: "Продать авто",
+    backgroundImageUrl: "",
+    linkUrl: "/sell-car",
+    isActive: true,
+    overlayOpacity: 0.7,
+    textColor: "#ffffff",
+    buttonColor: "#3b82f6",
+    buttonTextColor: "#ffffff"
+  };
+
+  const isLoading = false;
 
   // Default fallback data
   const defaultSection = {

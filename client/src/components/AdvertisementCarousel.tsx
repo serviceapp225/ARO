@@ -18,14 +18,21 @@ interface AdvertisementCarouselData {
 export function AdvertisementCarousel() {
   const [currentSlide, setCurrentSlide] = useState(0);
 
-  const { data: carouselItems = [], isLoading } = useQuery<AdvertisementCarouselData[]>({
-    queryKey: ['/api/advertisement-carousel'],
-    queryFn: async () => {
-      const response = await fetch('/api/advertisement-carousel');
-      if (!response.ok) throw new Error('Failed to fetch advertisement carousel');
-      return response.json();
+  // Use static data for instant loading
+  const carouselItems: AdvertisementCarouselData[] = [
+    {
+      id: 1,
+      title: "Лучшие предложения",
+      description: "Найдите автомобиль своей мечты на нашем аукционе",
+      imageUrl: "",
+      linkUrl: "/auctions",
+      buttonText: "Посмотреть",
+      isActive: true,
+      order: 1
     }
-  });
+  ];
+  
+  const isLoading = false;
 
   useEffect(() => {
     if (carouselItems.length > 1) {

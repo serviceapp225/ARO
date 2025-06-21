@@ -14,17 +14,23 @@ const INSTANT_USERS: Record<string, InstantUser> = {
     userId: 19,
     fullName: "Тестовый пользователь"
   },
-  "+992 (22) 222-22-22": {
-    phoneNumber: "+992 (22) 222-22-22", 
+  "+992 (88) 888-88-88": {
+    phoneNumber: "+992 (88) 888-88-88",
     isActive: true,
-    userId: 3,
-    fullName: "Покупатель"
+    userId: 17,
+    fullName: "Ericson"
   },
-  "+992 (99) 999-99-99": {
-    phoneNumber: "+992 (99) 999-99-99",
+  "+992 (22) 222-22-22": {
+    phoneNumber: "+992 (22) 222-22-22",
     isActive: true,
-    userId: 12,
-    fullName: "Пользователь"
+    userId: 18,
+    fullName: "Sony Vaio0"
+  },
+  "seller@autoauction.tj": {
+    phoneNumber: "seller@autoauction.tj",
+    isActive: true,
+    userId: 2,
+    fullName: "Продавец"
   }
 };
 
