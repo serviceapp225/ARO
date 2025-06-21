@@ -33,6 +33,20 @@ function clearCachePattern(pattern: string) {
   });
 }
 
+// Middleware для защиты админских маршрутов
+const adminAuth = (req: any, res: any, next: any) => {
+  const adminKey = req.headers['x-admin-key'];
+  
+  // В production используйте переменную окружения ADMIN_API_KEY
+  const validAdminKey = process.env.ADMIN_API_KEY || 'retool-admin-key-2024';
+  
+  if (!adminKey || adminKey !== validAdminKey) {
+    return res.status(403).json({ error: 'Unauthorized: Invalid admin key' });
+  }
+  
+  next();
+};
+
 export async function registerRoutes(app: Express): Promise<Server> {
   // Car listing routes - optimized with caching
   app.get("/api/listings", async (req, res) => {
@@ -851,7 +865,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/admin/banners", adminAuth, async (req, res) => {
+  app.post("/api/admin/banners", async (req, res) => {
     try {
       const bannerData = insertBannerSchema.parse(req.body);
       const banner = await storage.createBanner(bannerData);
@@ -865,7 +879,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put("/api/admin/banners/:id", adminAuth, async (req, res) => {
+  app.put("/api/admin/banners/:id", async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       const bannerData = insertBannerSchema.partial().parse(req.body);
@@ -885,7 +899,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/admin/banners/:id", adminAuth, async (req, res) => {
+  app.delete("/api/admin/banners/:id", async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       const success = await storage.deleteBanner(id);
@@ -911,7 +925,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put("/api/admin/sell-car-section", adminAuth, async (req, res) => {
+  app.put("/api/admin/sell-car-section", async (req, res) => {
     try {
       const validatedData = req.body; // Will validate in component
       const section = await storage.updateSellCarSection(validatedData);
@@ -1057,20 +1071,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // ===============================
   // ADMIN API ENDPOINTS (для Retool)
   // ===============================
-  
-  // Middleware для защиты админских маршрутов
-  const adminAuth = (req: any, res: any, next: any) => {
-    const adminKey = req.headers['x-admin-key'];
-    
-    // В production используйте переменную окружения ADMIN_API_KEY
-    const validAdminKey = process.env.ADMIN_API_KEY || 'retool-admin-key-2024';
-    
-    if (!adminKey || adminKey !== validAdminKey) {
-      return res.status(403).json({ error: 'Unauthorized: Invalid admin key' });
-    }
-    
-    next();
-  };
 
   // Управление пользователями
   app.get("/api/admin/users", adminAuth, async (req, res) => {
