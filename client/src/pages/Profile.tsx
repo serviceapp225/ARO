@@ -202,7 +202,10 @@ export default function Profile() {
           {/* Logout Button */}
           <div className="bg-white rounded-2xl shadow-sm">
             <button
-              onClick={logout}
+              onClick={async () => {
+                await logout();
+                setLocation('/home');
+              }}
               className="w-full flex items-center justify-between p-4 hover:bg-red-50 transition-colors rounded-2xl"
             >
               <div className="flex items-center gap-3">
