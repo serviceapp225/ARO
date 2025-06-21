@@ -45,17 +45,14 @@ export function TopHeader({
     }
   };
 
-  // Hide notifications on auction-related and profile pages
+  // Hide notifications on specific pages only
   const shouldHideNotifications = () => {
     if (!showNotifications) return true;
     
     // Hide on auction detail pages (pattern: /auction/*)
     if (location.startsWith('/auction/')) return true;
     
-    // Hide on profile and related pages
-    if (location === '/profile') return true;
-    if (location === '/favorites') return true;
-    if (location === '/bids') return true;
+    // Hide on sell page only
     if (location === '/sell') return true;
     
     return false;
