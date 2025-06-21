@@ -23,15 +23,9 @@ export function ProtectedRoute({ children, title, description }: ProtectedRouteP
             <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center mx-auto mb-4">
               <Lock className="w-8 h-8 text-blue-600 dark:text-blue-400" />
             </div>
-            <CardTitle className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-              {title}
+            <CardTitle className="text-xl font-bold text-gray-900 dark:text-gray-100">
+              войти autobid.tj
             </CardTitle>
-            <p className="text-gray-600 dark:text-gray-400 mt-2">
-              {description}
-            </p>
-            <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">
-              вход autobid.tj
-            </p>
           </CardHeader>
           <CardContent className="space-y-4">
             <Button 
