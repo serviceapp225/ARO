@@ -276,7 +276,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         bidCount: 0
       }));
       
-      // Cache the result for 10 minutes
+      // Cache the result for 30 minutes to reduce DB calls
       setCache(cacheKey, enrichedListings);
       
       res.json(enrichedListings);
