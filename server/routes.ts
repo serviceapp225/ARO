@@ -1149,6 +1149,155 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // SMS-отправка для кодов подтверждения
+  app.post("/api/auth/send-sms", async (req, res) => {
+    try {
+      const { phoneNumber } = req.body;
+      
+      if (!phoneNumber) {
+        return res.status(400).json({ error: "Phone number is required" });
+      }
+
+      // Генерируем 6-значный код
+      const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+      
+      // Сохраняем код в кэше с TTL 5 минут
+      const cacheKey = `sms_code_${phoneNumber}`;
+      cache.set(cacheKey, { 
+        code: verificationCode, 
+        timestamp: Date.now(),
+        attempts: 0
+      });
+
+      // В production здесь будет интеграция с SMS-провайдером
+      // Например: Twilio, Nexmo, или локальный SMS-шлюз
+      console.log(`SMS Code for ${phoneNumber}: ${verificationCode}`);
+      
+      // Имитация отправки SMS (в production заменить на реальный SMS API)
+      const smsResult = await sendSMSCode(phoneNumber, verificationCode);
+      
+      if (smsResult.success) {
+        res.json({ 
+          success: true, 
+          message: "SMS код отправлен",
+          // В production не возвращайте код в ответе!
+          ...(process.env.NODE_ENV === 'development' && { code: verificationCode })
+        });
+      } else {
+        res.status(500).json({ error: "Ошибка отправки SMS" });
+      }
+    } catch (error) {
+      console.error("SMS sending error:", error);
+      res.status(500).json({ error: "Ошибка сервера при отправке SMS" });
+    }
+  });
+
+  // Проверка SMS-кода
+  app.post("/api/auth/verify-sms", async (req, res) => {
+    try {
+      const { phoneNumber, code } = req.body;
+      
+      if (!phoneNumber || !code) {
+        return res.status(400).json({ error: "Phone number and code are required" });
+      }
+
+      const cacheKey = `sms_code_${phoneNumber}`;
+      const cachedData = cache.get(cacheKey);
+      
+      if (!cachedData) {
+        return res.status(400).json({ error: "Код истек или не найден" });
+      }
+
+      const { code: storedCode, timestamp, attempts } = cachedData.data;
+      
+      // Проверяем, не истек ли код (5 минут)
+      if (Date.now() - timestamp > 300000) {
+        cache.delete(cacheKey);
+        return res.status(400).json({ error: "Код истек" });
+      }
+
+      // Проверяем количество попыток
+      if (attempts >= 3) {
+        cache.delete(cacheKey);
+        return res.status(400).json({ error: "Превышено количество попыток" });
+      }
+
+      if (code !== storedCode) {
+        // Увеличиваем счетчик попыток
+        cache.set(cacheKey, {
+          ...cachedData.data,
+          attempts: attempts + 1
+        });
+        return res.status(400).json({ error: "Неверный код" });
+      }
+
+      // Код верный - удаляем из кэша
+      cache.delete(cacheKey);
+      
+      res.json({ 
+        success: true, 
+        message: "Код подтвержден",
+        phoneNumber: phoneNumber
+      });
+    } catch (error) {
+      console.error("SMS verification error:", error);
+      res.status(500).json({ error: "Ошибка сервера при проверке кода" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
+}
+
+// Функция для отправки SMS (заменить на реальную интеграцию)
+async function sendSMSCode(phoneNumber: string, code: string): Promise<{success: boolean, message?: string}> {
+  // В production здесь будет реальная интеграция с SMS-провайдером
+  // Примеры популярных провайдеров в Таджикистане:
+  
+  // 1. Tcell SMS API
+  // 2. Beeline SMS Gateway  
+  // 3. Megafon SMS API
+  // 4. Twilio (международный)
+  
+  try {
+    // Имитация задержки отправки SMS
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    // В production раскомментируйте нужную интеграцию:
+    
+    /* Пример интеграции с Twilio:
+    const accountSid = process.env.TWILIO_ACCOUNT_SID;
+    const authToken = process.env.TWILIO_AUTH_TOKEN;
+    const client = require('twilio')(accountSid, authToken);
+    
+    const message = await client.messages.create({
+      body: `Ваш код подтверждения AUTOBID.TJ: ${code}`,
+      from: process.env.TWILIO_PHONE_NUMBER,
+      to: phoneNumber
+    });
+    
+    return { success: true, message: message.sid };
+    */
+    
+    /* Пример с локальным SMS-шлюзом:
+    const response = await fetch('http://localhost:8080/send-sms', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        phone: phoneNumber,
+        text: `Код подтверждения AUTOBID.TJ: ${code}`
+      })
+    });
+    
+    return response.ok ? { success: true } : { success: false };
+    */
+    
+    // Текущая заглушка для разработки
+    console.log(`[SMS DEMO] Отправка SMS на ${phoneNumber}: ${code}`);
+    return { success: true, message: "SMS отправлен (демо-режим)" };
+    
+  } catch (error) {
+    console.error("SMS sending failed:", error);
+    return { success: false, message: error.message };
+  }
 }
