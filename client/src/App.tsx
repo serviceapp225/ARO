@@ -18,7 +18,7 @@ import Profile from "@/pages/Profile";
 import Notifications from "@/pages/Notifications";
 import MyAlerts from "@/pages/MyAlerts";
 import UserData from "@/pages/UserData";
-import MySales from "@/pages/MySales";
+import MySales from "@/pages/MySalesSimple";
 import LanguageSelector from "@/components/LanguageSelector";
 import Terms from "@/pages/Terms";
 import Privacy from "@/pages/Privacy";
