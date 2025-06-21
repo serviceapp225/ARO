@@ -69,6 +69,9 @@ export default function Login() {
             <Phone className="w-8 h-8 text-white" />
           </div>
           <CardTitle className="text-2xl font-bold">Вход в AUTOBID.TJ</CardTitle>
+          <p className="text-sm text-gray-600 mt-2">
+            Для просмотра аукционов необходимо войти в систему
+          </p>
         </CardHeader>
         
         <CardContent>
