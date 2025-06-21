@@ -16,9 +16,8 @@ export function NotificationBell({ userId }: NotificationBellProps) {
     const newOpenState = !isOpen;
     setIsOpen(newOpenState);
     
-    // Force fresh data when opening
-    if (newOpenState) {
-      queryClient.removeQueries({ queryKey: [`/api/notifications/${userId}`] });
+    // Only fetch if we have no data at all
+    if (newOpenState && !allNotifications.length) {
       queryClient.refetchQueries({ queryKey: [`/api/notifications/${userId}`] });
     }
   };
