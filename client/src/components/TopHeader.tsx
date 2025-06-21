@@ -2,6 +2,8 @@ import { ArrowLeft, Gavel } from "lucide-react";
 import { FaWhatsapp } from "react-icons/fa";
 import { useLocation, Link } from "wouter";
 import { NotificationBell } from "./NotificationBell";
+import { useAuth } from "@/contexts/AuthContext";
+import { useQuery } from "@tanstack/react-query";
 
 interface TopHeaderProps {
   title?: string;
@@ -17,9 +19,16 @@ export function TopHeader({
   showNotifications = true 
 }: TopHeaderProps) {
   const [location] = useLocation();
+  const { user } = useAuth();
 
-  // Mock user ID for now - in real app this would come from auth context
-  const currentUserId = 3; // Using buyer user from storage
+  // Get current user ID from database based on phone number
+  const { data: currentUser } = useQuery({
+    queryKey: [`/api/users/by-phone/${user?.phoneNumber}`],
+    enabled: !!user?.phoneNumber,
+    staleTime: 5 * 60 * 1000, // Cache for 5 minutes
+  });
+
+  const currentUserId = currentUser?.id || 3; // Fallback to user ID 3
 
   const getTitle = () => {
     if (title) return title;
