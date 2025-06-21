@@ -3,7 +3,6 @@ import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft, Clock, Eye, Users, TrendingUp, Car, Plus } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
-import { CarListing } from "@shared/schema";
 
 export default function MySales() {
   const { user } = useAuth();
@@ -11,8 +10,8 @@ export default function MySales() {
 
   // Получаем продажи текущего пользователя
   const { data: myListings, isLoading } = useQuery({
-    queryKey: [`/api/listings/seller/${user?.id}`],
-    enabled: !!user?.id,
+    queryKey: [`/api/listings/seller/${(user as any)?.id}`],
+    enabled: !!(user as any)?.id,
   });
 
   if (!user) {
@@ -68,7 +67,7 @@ export default function MySales() {
                 </div>
               ))}
             </div>
-          ) : !myListings || myListings.length === 0 ? (
+          ) : !myListings || (myListings as any)?.length === 0 ? (
             <div className="bg-white rounded-2xl p-8 shadow-sm text-center">
               <Car className="w-16 h-16 text-gray-400 mx-auto mb-4" />
               <h2 className="text-xl font-semibold text-gray-700 mb-2">
@@ -87,7 +86,7 @@ export default function MySales() {
             </div>
           ) : (
             <div className="space-y-4">
-              {myListings.map((listing: CarListing) => (
+              {(myListings as any)?.map((listing: any) => (
                 <div key={listing.id} className="bg-white rounded-2xl shadow-sm overflow-hidden">
                   <div className="p-6">
                     <div className="flex gap-4">
@@ -132,18 +131,18 @@ export default function MySales() {
                         <div className="flex items-center gap-4 text-sm text-gray-600 mb-3">
                           <div className="flex items-center gap-1">
                             <TrendingUp className="w-4 h-4" />
-                            <span>{listing.currentBid?.toLocaleString()} сомони</span>
+                            <span>{listing.currentBid ? parseFloat(listing.currentBid).toLocaleString() : parseFloat(listing.startingPrice).toLocaleString()} сомони</span>
                           </div>
                           <div className="flex items-center gap-1">
                             <Users className="w-4 h-4" />
                             <span>{listing.bidCount || 0} ставок</span>
                           </div>
-                          {listing.status === 'active' && listing.endTime && (
+                          {listing.status === 'active' && listing.auctionEndTime && (
                             <div className="flex items-center gap-1">
                               <Clock className="w-4 h-4" />
                               <span>
-                                {new Date(listing.endTime) > new Date() 
-                                  ? `До ${new Date(listing.endTime).toLocaleDateString()}`
+                                {new Date(listing.auctionEndTime) > new Date() 
+                                  ? `До ${new Date(listing.auctionEndTime).toLocaleDateString()}`
                                   : 'Завершен'
                                 }
                               </span>

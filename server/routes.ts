@@ -440,6 +440,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
+      // Check if user is trying to bid on their own listing
+      if (listing.sellerId === validatedData.bidderId) {
+        return res.status(403).json({ 
+          error: "Cannot bid on own listing", 
+          message: "Вы не можете делать ставки на собственные автомобили."
+        });
+      }
+      
       const bid = await storage.createBid(validatedData);
       
       // Update listing's current bid
