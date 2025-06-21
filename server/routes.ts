@@ -506,6 +506,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/users/by-phone/:phone", async (req, res) => {
     try {
       const phoneNumber = decodeURIComponent(req.params.phone);
+      console.log("Looking for phone:", phoneNumber);
+      
       // Map phone numbers to emails based on the demo authentication system
       let email = "";
       if (phoneNumber === "+992 (22) 222-22-22") {
@@ -513,15 +515,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
       } else if (phoneNumber === "+992 (99) 999-99-99") {
         email = "+992999999999@autoauction.tj";
       } else {
+        console.log("Phone not found in mapping");
         return res.status(404).json({ error: "User not found" });
       }
       
+      console.log("Looking for email:", email);
       const user = await storage.getUserByEmail(email);
+      console.log("Found user:", user);
+      
       if (!user) {
         return res.status(404).json({ error: "User not found" });
       }
       res.json(user);
     } catch (error) {
+      console.error("Error in by-phone endpoint:", error);
       res.status(500).json({ error: "Failed to fetch user" });
     }
   });
