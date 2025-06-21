@@ -439,6 +439,16 @@ export default function AuctionDetail() {
       // Мгновенно обновляем локальное состояние текущей ставки
       setLocalCurrentBid(bidValue);
       
+      // Автоматически добавляем в избранное при размещении ставки
+      if (!isFavorite(id!)) {
+        addToFavorites(id!);
+        toast({
+          title: "Добавлено в избранное",
+          description: "Аукцион автоматически добавлен в избранное",
+          duration: 2000,
+        });
+      }
+      
       // Мгновенно обновляем локальное состояние для быстрой реакции
       queryClient.setQueryData([`/api/listings/${id}`], (oldData: any) => {
         if (oldData) {
