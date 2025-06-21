@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { fastCache, preCacheUserData, getCachedUserData } from '@/lib/fastCache';
+import { getInstantUserData, isInstantUser } from '@/lib/instantAuth';
 
 interface DemoUser {
   email: string;
@@ -34,7 +35,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           const demoUser = JSON.parse(demoUserData);
           demoUser.role = demoUser.role || 'buyer';
           
-          // Check ultra-fast cache first
+          // Check for instant user data first (bypasses all network calls)
+          const instantData = getInstantUserData(demoUser.phoneNumber);
+          if (instantData) {
+            demoUser.isActive = instantData.isActive;
+            demoUser.userId = instantData.userId;
+            demoUser.fullName = instantData.fullName;
+            setUser(demoUser);
+            setLoading(false);
+            return;
+          }
+
+          // Check ultra-fast cache second
           const cachedData = getCachedUserData(demoUser.phoneNumber);
           if (cachedData) {
             demoUser.isActive = cachedData.isActive;
@@ -44,7 +56,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             return;
           }
 
-          // Fetch user activation status from database
+          // Only fallback to database for unknown users
           try {
             const emailFromPhone = demoUser.phoneNumber.replace(/\D/g, '') + '@autoauction.tj';
             const response = await fetch(`/api/users/by-email/${encodeURIComponent(emailFromPhone)}`);
@@ -54,7 +66,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               demoUser.isActive = dbUser.isActive;
               demoUser.userId = dbUser.id;
               
-              // Cache in ultra-fast cache for instant future access
+              // Cache for future instant access
               preCacheUserData(demoUser.phoneNumber, {
                 isActive: dbUser.isActive,
                 userId: dbUser.id

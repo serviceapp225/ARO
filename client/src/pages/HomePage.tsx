@@ -7,12 +7,22 @@ import { SellCarSection } from "@/components/SellCarSection";
 import { AdvertisementCarousel } from "@/components/AdvertisementCarousel";
 import { TopHeader } from "@/components/TopHeader";
 import { Link } from "wouter";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 
 export default function HomePage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [, setLocation] = useLocation();
+  const [showSecondaryContent, setShowSecondaryContent] = useState(false);
+
+  // Delay loading of secondary content to prioritize core auctions
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowSecondaryContent(true);
+    }, 100); // Load secondary content after initial render
+
+    return () => clearTimeout(timer);
+  }, []);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,16 +50,18 @@ export default function HomePage() {
           </form>
         </div>
 
-        {/* Sell Car Section */}
-        <SellCarSection />
+        {/* Sell Car Section - Lazy loaded */}
+        {showSecondaryContent && <SellCarSection />}
 
-        {/* Advertisement Carousel */}
-        <section>
-          <h2 className="text-xl font-bold text-gray-900 mb-4">
-            Специальные предложения
-          </h2>
-          <AdvertisementCarousel />
-        </section>
+        {/* Advertisement Carousel - Lazy loaded */}
+        {showSecondaryContent && (
+          <section>
+            <h2 className="text-xl font-bold text-gray-900 mb-4">
+              Специальные предложения
+            </h2>
+            <AdvertisementCarousel />
+          </section>
+        )}
 
         {/* Security Banner */}
         <div className="bg-green-50 border border-green-200 rounded-xl p-4">
