@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { ActiveAuctions } from "@/components/ActiveAuctions";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import SimpleAlertButton from "@/components/SimpleAlertButton";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
 
 import { CAR_MAKES, getModelsForMake } from "@shared/car-data";
 import { useLocation } from "wouter";
@@ -148,7 +149,11 @@ export default function AuctionFeed() {
   };
 
   return (
-    <div className="min-h-screen bg-neutral-50 pb-20">
+    <ProtectedRoute 
+      title="Требуется авторизация"
+      description="Для просмотра аукционов необходимо войти в систему"
+    >
+      <div className="min-h-screen bg-neutral-50 pb-20">
       {/* Header */}
       <header className="bg-white shadow-sm border-b border-neutral-200">
         <div className="container mx-auto px-4 py-4">
@@ -429,6 +434,7 @@ export default function AuctionFeed() {
 
 
       </main>
-    </div>
+      </div>
+    </ProtectedRoute>
   );
 }
