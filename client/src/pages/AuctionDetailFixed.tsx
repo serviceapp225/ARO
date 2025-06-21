@@ -142,18 +142,18 @@ export default function AuctionDetail() {
     ? (bidsData as any[]).map(bid => bid.bidderId).filter((id, index, arr) => arr.indexOf(id) === index)
     : [];
 
-  // Fetch user data for all bidders (use conditional hook with consistent array length)
-  const userQueries = [3, 12, 10, 8, 11].map(bidderId => 
+  // Fetch user data for all bidders dynamically
+  const userQueries = bidderIds.map(bidderId => 
     useQuery({
       queryKey: [`/api/users/${bidderId}`],
-      enabled: bidderIds.includes(bidderId),
+      enabled: !!bidderId,
     })
   );
 
   // Create a map of user data by ID
   const userDataMap = userQueries.reduce((acc, query, index) => {
-    const bidderId = [3, 12, 10, 8, 11][index];
-    if (query.data) {
+    const bidderId = bidderIds[index];
+    if (query.data && bidderId) {
       acc[bidderId] = query.data;
     }
     return acc;
@@ -943,9 +943,9 @@ export default function AuctionDetail() {
                       <div>
                         <div className="font-medium text-gray-900">
                           {
-                            userDataMap[bid.bidderId]?.fullName || 
-                            userDataMap[bid.bidderId]?.username || 
-                            `Участник #${bid.bidderId}`
+                            userDataMap[bid.bidderId]?.fullName && userDataMap[bid.bidderId]?.fullName.trim() !== '' 
+                              ? userDataMap[bid.bidderId]?.fullName 
+                              : "(не указано)"
                           }
                         </div>
                         <div className="text-sm text-gray-600">
