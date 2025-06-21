@@ -251,33 +251,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // In-memory cache for seller listings
+  const sellerListingsCache = new Map();
+  
   app.get("/api/listings/seller/:sellerId", async (req, res) => {
     try {
       const sellerId = parseInt(req.params.sellerId);
-      const startTime = Date.now();
       
-      // Create cache key for seller listings
-      const cacheKey = `seller_listings_${sellerId}`;
-      
-      // Check cache first
-      const cached = getCached(cacheKey);
-      if (cached) {
-        console.log(`Seller listings cache hit for ${sellerId}`);
-        return res.json(cached);
+      // Check in-memory cache first
+      if (sellerListingsCache.has(sellerId)) {
+        console.log(`Fast cache hit for seller ${sellerId}`);
+        return res.json(sellerListingsCache.get(sellerId));
       }
       
       console.log(`Fetching seller listings for ${sellerId}...`);
+      const startTime = Date.now();
       const listings = await storage.getListingsBySeller(sellerId);
-      console.log(`Seller listings query took ${Date.now() - startTime}ms`);
+      console.log(`Query took ${Date.now() - startTime}ms`);
       
-      // For seller listings, we'll skip bid count to optimize speed
       const enrichedListings = listings.map(listing => ({
         ...listing,
         bidCount: 0
       }));
       
-      // Cache the result for 1 hour to minimize DB calls
-      setCache(cacheKey, enrichedListings);
+      // Cache for 10 minutes in memory
+      sellerListingsCache.set(sellerId, enrichedListings);
+      setTimeout(() => sellerListingsCache.delete(sellerId), 10 * 60 * 1000);
       
       res.json(enrichedListings);
     } catch (error) {
