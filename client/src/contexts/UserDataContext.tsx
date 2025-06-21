@@ -28,37 +28,53 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
 
   // Загружаем данные из localStorage при инициализации
   useEffect(() => {
-    const savedData = localStorage.getItem('userData');
+    // Очищаем старые глобальные данные пользователя
+    localStorage.removeItem('userData');
+    
     const demoUserData = localStorage.getItem('demo-user');
+    let currentPhoneNumber = "";
     
-    if (savedData) {
-      try {
-        const parsed = JSON.parse(savedData);
-        setUserData(prev => ({
-          ...prev,
-          fullName: parsed.fullName || "", // Сохраняем введенное имя
-          email: parsed.email || "",
-          accountType: parsed.accountType || 'individual',
-          profilePhoto: parsed.profilePhoto || null, // Сохраняем фото профиля
-          phoneNumber: parsed.phoneNumber || prev.phoneNumber,
-        }));
-      } catch (error) {
-        console.error('Error loading user data:', error);
-      }
-    }
-    
-    // Если есть demo user, используем его номер телефона
+    // Сначала получаем номер телефона текущего пользователя
     if (demoUserData) {
       try {
         const demoUser = JSON.parse(demoUserData);
-        if (demoUser.phoneNumber) {
-          setUserData(prev => ({
-            ...prev,
-            phoneNumber: demoUser.phoneNumber
-          }));
-        }
+        currentPhoneNumber = demoUser.phoneNumber || "";
+        setUserData(prev => ({
+          ...prev,
+          phoneNumber: currentPhoneNumber
+        }));
       } catch (error) {
         console.error('Error loading demo user data:', error);
+      }
+    }
+    
+    // Загружаем данные для конкретного номера телефона
+    if (currentPhoneNumber) {
+      const userDataKey = `userData_${currentPhoneNumber}`;
+      const savedData = localStorage.getItem(userDataKey);
+      
+      if (savedData) {
+        try {
+          const parsed = JSON.parse(savedData);
+          setUserData(prev => ({
+            ...prev,
+            fullName: parsed.fullName || "",
+            email: parsed.email || "",
+            accountType: parsed.accountType || 'individual',
+            profilePhoto: parsed.profilePhoto || null,
+          }));
+        } catch (error) {
+          console.error('Error loading user data:', error);
+        }
+      } else {
+        // Для нового пользователя очищаем все данные кроме номера телефона
+        setUserData(prev => ({
+          ...prev,
+          fullName: "",
+          email: "",
+          accountType: 'individual',
+          profilePhoto: null,
+        }));
       }
     }
   }, []);
@@ -67,15 +83,17 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
     setUserData(prev => {
       const newData = { ...prev, ...data };
       
-      // Сохраняем в localStorage (без файлов)
-      const dataToSave = {
-        fullName: newData.fullName,
-        email: newData.email,
-        accountType: newData.accountType,
-        profilePhoto: newData.profilePhoto,
-        phoneNumber: newData.phoneNumber,
-      };
-      localStorage.setItem('userData', JSON.stringify(dataToSave));
+      // Сохраняем в localStorage используя номер телефона как ключ
+      if (newData.phoneNumber) {
+        const userDataKey = `userData_${newData.phoneNumber}`;
+        const dataToSave = {
+          fullName: newData.fullName,
+          email: newData.email,
+          accountType: newData.accountType,
+          profilePhoto: newData.profilePhoto,
+        };
+        localStorage.setItem(userDataKey, JSON.stringify(dataToSave));
+      }
       
       return newData;
     });
