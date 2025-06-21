@@ -22,17 +22,17 @@ export function TopHeader({
 
   // Determine current user ID based on phone number
   const getCurrentUserId = () => {
-    if (!user?.phoneNumber) return 3;
+    if (!user?.phoneNumber) return 18;
     
-    // Map phone numbers to user IDs
+    // Map phone numbers to user IDs (based on actual database IDs)
     const phoneToUserIdMap: Record<string, number> = {
-      "+992 (22) 222-22-22": 3,
-      "+992 (99) 999-99-99": 12,
-      "+992222222222": 3,
-      "+992999999999": 12
+      "+992 (22) 222-22-22": 18,  // Sony Vaio0
+      "+992 (88) 888-88-88": 17,  // Тестовый пользователь
+      "+992222222222": 18,
+      "+992888888888": 17
     };
     
-    return phoneToUserIdMap[user.phoneNumber] || 3;
+    return phoneToUserIdMap[user.phoneNumber] || 18;
   };
 
   const currentUserId = getCurrentUserId();
