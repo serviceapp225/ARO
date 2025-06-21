@@ -33,7 +33,7 @@ export default function Login() {
     localStorage.setItem('demo-user', JSON.stringify(demoUser));
     
     // Redirect immediately
-    window.location.href = '/profile';
+    window.location.href = '/home';
   };
 
   const formatPhoneNumber = (value: string) => {
