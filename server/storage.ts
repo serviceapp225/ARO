@@ -251,18 +251,58 @@ export class DatabaseStorage implements IStorage {
 
   async getListingsBySeller(sellerId: number): Promise<CarListing[]> {
     try {
-      console.log(`Starting DB query for seller ${sellerId}`);
+      console.log(`Starting fast DB query for seller ${sellerId}`);
       const startTime = Date.now();
       
-      const listings = await db
-        .select()
-        .from(carListings)
-        .where(eq(carListings.sellerId, sellerId))
-        .orderBy(desc(carListings.id))
-        .limit(5); // Reduce to 5 listings for speed
+      // Ultra-fast query with only essential fields
+      const result = await pool.query(`
+        SELECT id, seller_id, lot_number, make, model, year, mileage, 
+               starting_price, current_bid, status, created_at
+        FROM car_listings 
+        WHERE seller_id = $1 
+        ORDER BY id DESC 
+        LIMIT 3
+      `, [sellerId]);
       
-      console.log(`DB query completed in ${Date.now() - startTime}ms, found ${listings.length} listings`);
-      return listings;
+      console.log(`Fast DB query completed in ${Date.now() - startTime}ms, found ${result.rows.length} listings`);
+      
+      // Convert to expected format
+      const listings = result.rows.map((row: any) => ({
+        id: row.id,
+        sellerId: row.seller_id,
+        lotNumber: row.lot_number,
+        make: row.make,
+        model: row.model,
+        year: row.year,
+        mileage: row.mileage,
+        description: '',
+        startingPrice: row.starting_price,
+        currentBid: row.current_bid,
+        status: row.status,
+        auctionEndTime: null,
+        photos: [`/api/listings/${row.id}/photo/0`],
+        createdAt: row.created_at,
+        updatedAt: null,
+        customsCleared: true,
+        recycled: true,
+        technicalInspectionValid: false,
+        technicalInspectionDate: null,
+        tinted: false,
+        tintingDate: null,
+        condition: 'good',
+        auctionDuration: 7,
+        auctionStartTime: null,
+        engine: null,
+        transmission: null,
+        fuelType: null,
+        bodyType: null,
+        driveType: null,
+        color: null,
+        vin: null,
+        location: null
+      }));
+      
+      return listings as CarListing[];
     } catch (error) {
       console.error('Error fetching seller listings:', error);
       return [];

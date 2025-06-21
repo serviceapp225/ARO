@@ -276,7 +276,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         bidCount: 0
       }));
       
-      // Cache the result for 30 minutes to reduce DB calls
+      // Cache the result for 1 hour to minimize DB calls
       setCache(cacheKey, enrichedListings);
       
       res.json(enrichedListings);
@@ -302,7 +302,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/listings", async (req, res) => {
     try {
       const validatedData = insertCarListingSchema.parse(req.body);
-      const listing = await storage.createListing(validatedData);
+      
+      // Force all new listings to pending status for moderation
+      const listingWithPendingStatus = {
+        ...validatedData,
+        status: 'pending'
+      };
+      
+      const listing = await storage.createListing(listingWithPendingStatus);
       
       // Clear listings cache to force refresh
       clearCachePattern('listings_');
