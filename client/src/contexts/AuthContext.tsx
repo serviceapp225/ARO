@@ -32,9 +32,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           const demoUser = JSON.parse(demoUserData);
           demoUser.role = demoUser.role || 'buyer';
           
-          // Fetch user activation status from database
+          // Fetch user activation status from database based on phone number
           try {
-            const response = await fetch(`/api/users/3`); // Using fixed user ID 3 for demo
+            // Map phone numbers to user IDs
+            let userId = 3; // default fallback
+            if (demoUser.phoneNumber === "+992 (22) 222-22-22") {
+              userId = 3; // buyer@autoauction.tj
+            } else if (demoUser.phoneNumber === "+992 (99) 999-99-99") {
+              userId = 12; // +992999999999@autoauction.tj
+            }
+            
+            const response = await fetch(`/api/users/${userId}`);
             if (response.ok) {
               const dbUser = await response.json();
               demoUser.isActive = dbUser.isActive;

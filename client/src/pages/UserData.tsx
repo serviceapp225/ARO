@@ -23,22 +23,29 @@ export default function UserData() {
     setTempData(userData);
   }, [userData]);
 
+  // Function to get current user ID based on phone number
+  const getCurrentUserId = () => {
+    if (!user?.phoneNumber) return null;
+    
+    // Map phone numbers to user IDs directly
+    if (user.phoneNumber === "+992 (22) 222-22-22") {
+      return 3; // buyer@autoauction.tj
+    } else if (user.phoneNumber === "+992 (99) 999-99-99") {
+      return 12; // +992999999999@autoauction.tj
+    }
+    return null;
+  };
+
   // Mutation to update user profile in database
   const updateProfileMutation = useMutation({
     mutationFn: async (data: { fullName?: string; profilePhoto?: string }) => {
-      if (!user?.phoneNumber) {
+      const userId = getCurrentUserId();
+      if (!userId) {
         throw new Error('User not authenticated');
       }
       
-      // Get user ID by phone number
-      const userResponse = await fetch(`/api/users/by-phone/${encodeURIComponent(user.phoneNumber)}`);
-      if (!userResponse.ok) {
-        throw new Error('User not found');
-      }
-      const userData = await userResponse.json();
-      
       // Update user profile
-      const response = await fetch(`/api/users/${userData.id}`, {
+      const response = await fetch(`/api/users/${userId}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
