@@ -59,6 +59,28 @@ export default function AuctionDetail() {
     enabled: !!id,
   });
 
+  // Get unique bidder IDs to fetch user data
+  const bidderIds = Array.isArray(realBiddingHistory) 
+    ? (realBiddingHistory as any[]).map(bid => bid.bidderId).filter((id, index, arr) => arr.indexOf(id) === index)
+    : [];
+
+  // Fetch user data for all bidders
+  const userQueries = bidderIds.map(bidderId => 
+    useQuery({
+      queryKey: [`/api/users/${bidderId}`],
+      enabled: !!bidderId,
+    })
+  );
+
+  // Create a map of user data by ID
+  const userDataMap = userQueries.reduce((acc, query, index) => {
+    const bidderId = bidderIds[index];
+    if (query.data) {
+      acc[bidderId] = query.data;
+    }
+    return acc;
+  }, {} as Record<number, any>);
+
   // Sort bids by amount (highest first) to show current winning bid at top
   const sortedBids = Array.isArray(realBiddingHistory) ? 
     (realBiddingHistory as any[]).sort((a, b) => parseFloat(b.amount) - parseFloat(a.amount)) : [];
@@ -557,16 +579,11 @@ export default function AuctionDetail() {
                           {index + 1}
                         </div>
                         <div>
-                          <p className="font-medium">{(() => {
-                            const userNames: Record<number, string> = {
-                              3: "Алексей Петров",
-                              12: "Мария Иванова", 
-                              10: "Дмитрий Козлов",
-                              8: "Анна Сидорова",
-                              11: "Сергей Волков"
-                            };
-                            return userNames[bid.bidderId] || `Участник #${bid.bidderId}`;
-                          })()}</p>
+                          <p className="font-medium">{
+                            userDataMap[bid.bidderId]?.fullName || 
+                            userDataMap[bid.bidderId]?.username || 
+                            `Участник #${bid.bidderId}`
+                          }</p>
                           <p className="text-sm text-muted-foreground">
                             {new Date(bid.createdAt).toLocaleString('ru-RU')}
                           </p>

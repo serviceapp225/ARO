@@ -137,6 +137,28 @@ export default function AuctionDetail() {
     enabled: !!id,
   });
 
+  // Get unique bidder IDs to fetch user data
+  const bidderIds = Array.isArray(bidsData) 
+    ? (bidsData as any[]).map(bid => bid.bidderId).filter((id, index, arr) => arr.indexOf(id) === index)
+    : [];
+
+  // Fetch user data for all bidders
+  const userQueries = bidderIds.map(bidderId => 
+    useQuery({
+      queryKey: [`/api/users/${bidderId}`],
+      enabled: !!bidderId,
+    })
+  );
+
+  // Create a map of user data by ID
+  const userDataMap = userQueries.reduce((acc, query, index) => {
+    const bidderId = bidderIds[index];
+    if (query.data) {
+      acc[bidderId] = query.data;
+    }
+    return acc;
+  }, {} as Record<number, any>);
+
   const { 
     auctions
   } = useAuctions();
@@ -920,16 +942,11 @@ export default function AuctionDetail() {
                       </div>
                       <div>
                         <div className="font-medium text-gray-900">
-                          {(() => {
-                            const userNames: Record<number, string> = {
-                              3: "Алексей Петров",
-                              12: "Мария Иванова", 
-                              10: "Дмитрий Козлов",
-                              8: "Анна Сидорова",
-                              11: "Сергей Волков"
-                            };
-                            return userNames[bid.bidderId] || `Участник #${bid.bidderId}`;
-                          })()}
+                          {
+                            userDataMap[bid.bidderId]?.fullName || 
+                            userDataMap[bid.bidderId]?.username || 
+                            `Участник #${bid.bidderId}`
+                          }
                         </div>
                         <div className="text-sm text-gray-600">
                           {new Date(bid.createdAt).toLocaleString('ru-RU')}
