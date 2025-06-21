@@ -16,13 +16,7 @@ export default function MySales() {
 
   const listings = Array.isArray(myListings) ? myListings : [];
 
-  // Debug info
-  console.log('MySales - user:', user);
-  console.log('MySales - myListings:', myListings);
-  console.log('MySales - isLoading:', isLoading);
-  console.log('MySales - error:', error);
-  console.log('MySales - isArray check:', Array.isArray(myListings));
-  console.log('MySales - length:', myListings?.length);
+  console.log('MySales component loaded - listings count:', listings.length);
 
   if (!user) {
     return (
@@ -96,7 +90,7 @@ export default function MySales() {
             </div>
           ) : (
             <div className="space-y-4">
-              {myListings?.map((listing: any) => (
+              {listings.map((listing: any) => (
                 <div key={listing.id} className="bg-white rounded-2xl shadow-sm overflow-hidden">
                   <div className="p-6">
                     <div className="flex gap-4">
