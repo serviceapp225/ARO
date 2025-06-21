@@ -23,12 +23,9 @@ export default function Notifications() {
             <ArrowLeft className="w-5 h-5 mr-2" />
             Назад
           </Button>
-          <div className="flex items-center gap-2">
-            <Search className="w-6 h-6 text-gray-700" />
-            <h1 className="text-xl font-bold text-gray-900">
-              История поисковых запросов
-            </h1>
-          </div>
+          <h1 className="text-xl font-bold text-gray-900">
+            Уведомления
+          </h1>
           <div className="w-16"></div> {/* Spacer for centering */}
         </div>
       </header>
