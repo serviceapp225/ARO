@@ -180,8 +180,8 @@ export default function AuctionDetail() {
 
   // Fetch current user activation status from database
   const { data: serverUser } = useQuery({
-    queryKey: ['/api/users/3'], // Fixed user ID for demo
-    enabled: !!currentUser,
+    queryKey: [`/api/users/${(currentUser as any)?.userId}`],
+    enabled: !!currentUser && !!(currentUser as any)?.userId,
   });
 
   // Use real auction data from database

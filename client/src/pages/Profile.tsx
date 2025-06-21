@@ -14,8 +14,8 @@ export default function Profile() {
   
   // Загружаем актуальные данные пользователя с сервера
   const { data: serverUser } = useQuery({
-    queryKey: ['/api/users/3'], // Используем ID текущего пользователя
-    enabled: !!user,
+    queryKey: [`/api/users/${(user as any)?.userId}`],
+    enabled: !!user && !!(user as any)?.userId,
   });
   
   // Используем данные с сервера, если они доступны, иначе данные из контекста
