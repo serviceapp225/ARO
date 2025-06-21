@@ -22,6 +22,12 @@ export default function AuctionDetail() {
   const { auctions } = useAuctions();
   const { user: currentUser } = useAuth();
   
+  // Fetch current user activation status from database
+  const { data: serverUser } = useQuery({
+    queryKey: ['/api/users/3'], // Fixed user ID for demo
+    enabled: !!currentUser,
+  });
+  
   const [bidAmount, setBidAmount] = useState("");
   const [auctionEndTime, setAuctionEndTime] = useState<Date | null>(null);
   const [isTimerReady, setIsTimerReady] = useState(false);
@@ -193,8 +199,9 @@ export default function AuctionDetail() {
       return;
     }
     
-    // Check if user is active before allowing bid submission
-    if (!currentUser.isActive) {
+    // Check if user is active before allowing bid submission - use server data if available
+    const isUserActive = serverUser?.isActive ?? (currentUser as any)?.isActive ?? false;
+    if (!isUserActive) {
       setShowActivationDialog(true);
       return;
     }
