@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { useToast } from '@/hooks/use-toast';
+import { fastCache, preCacheUserData, getCachedUserData } from '@/lib/fastCache';
 
 interface DemoUser {
   email: string;
@@ -33,25 +34,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           const demoUser = JSON.parse(demoUserData);
           demoUser.role = demoUser.role || 'buyer';
           
-          // Check if user data is already cached
-          const cachedUserKey = `user_data_${demoUser.phoneNumber}`;
-          const cachedUserData = localStorage.getItem(cachedUserKey);
-          const cacheExpiry = 5 * 60 * 1000; // 5 minutes cache
-          
-          if (cachedUserData) {
-            try {
-              const cached = JSON.parse(cachedUserData);
-              if (Date.now() - cached.timestamp < cacheExpiry) {
-                // Use cached data
-                demoUser.isActive = cached.isActive;
-                demoUser.userId = cached.userId;
-                setUser(demoUser);
-                setLoading(false);
-                return;
-              }
-            } catch (e) {
-              localStorage.removeItem(cachedUserKey);
-            }
+          // Check ultra-fast cache first
+          const cachedData = getCachedUserData(demoUser.phoneNumber);
+          if (cachedData) {
+            demoUser.isActive = cachedData.isActive;
+            demoUser.userId = cachedData.userId;
+            setUser(demoUser);
+            setLoading(false);
+            return;
           }
 
           // Fetch user activation status from database
@@ -64,12 +54,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               demoUser.isActive = dbUser.isActive;
               demoUser.userId = dbUser.id;
               
-              // Cache the user data
-              localStorage.setItem(cachedUserKey, JSON.stringify({
+              // Cache in ultra-fast cache for instant future access
+              preCacheUserData(demoUser.phoneNumber, {
                 isActive: dbUser.isActive,
-                userId: dbUser.id,
-                timestamp: Date.now()
-              }));
+                userId: dbUser.id
+              });
             } else {
               demoUser.isActive = false;
               demoUser.userId = null;
