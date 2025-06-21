@@ -1054,6 +1054,87 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ===============================
+  // ADMIN API ENDPOINTS (для Retool)
+  // ===============================
+
+  // Управление пользователями
+  app.get("/api/admin/users", async (req, res) => {
+    try {
+      const users = await storage.getAllUsers();
+      res.json(users);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch users" });
+    }
+  });
+
+  app.put("/api/admin/users/:id/status", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.id);
+      const { isActive } = req.body;
+      const user = await storage.updateUserStatus(userId, isActive);
+      res.json(user);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to update user status" });
+    }
+  });
+
+  // Модерация объявлений
+  app.get("/api/admin/listings", async (req, res) => {
+    try {
+      const { status } = req.query;
+      const listings = await storage.getListingsByStatus(status as string || "pending");
+      res.json(listings);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch listings" });
+    }
+  });
+
+  app.put("/api/admin/listings/:id/status", async (req, res) => {
+    try {
+      const listingId = parseInt(req.params.id);
+      const { status } = req.body;
+      const listing = await storage.updateListingStatus(listingId, status);
+      res.json(listing);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to update listing status" });
+    }
+  });
+
+  // Статистика для админа
+  app.get("/api/admin/stats", async (req, res) => {
+    try {
+      const stats = await storage.getAdminStats();
+      res.json(stats);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch admin stats" });
+    }
+  });
+
+  // Массовые уведомления
+  app.post("/api/admin/notifications/broadcast", async (req, res) => {
+    try {
+      const { title, message, type = "system" } = req.body;
+      const users = await storage.getAllUsers();
+      
+      const notifications = await Promise.all(
+        users.map(user => 
+          storage.createNotification({
+            userId: user.id,
+            type,
+            title,
+            message,
+            isRead: false
+          })
+        )
+      );
+      
+      res.json({ sent: notifications.length });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to send broadcast notification" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
