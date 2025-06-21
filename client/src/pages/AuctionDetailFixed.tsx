@@ -543,7 +543,7 @@ export default function AuctionDetail() {
     }
   };
 
-  const handleFavoriteToggle = () => {
+  const handleFavoriteToggle = async () => {
     if (!currentUser) {
       toast({
         title: "Войдите в систему",
@@ -554,19 +554,29 @@ export default function AuctionDetail() {
       return;
     }
 
-    if (isFavorite(id!)) {
-      removeFromFavorites(id!);
+    try {
+      if (isFavorite(id!)) {
+        await removeFromFavorites(id!);
+        toast({
+          title: "Удалено из избранного",
+          description: "Аукцион удален из вашего списка избранного",
+          duration: 2000,
+        });
+      } else {
+        await addToFavorites(id!);
+        toast({
+          title: "Добавлено в избранное",
+          description: "Аукцион добавлен в ваш список избранного",
+          duration: 2000,
+        });
+      }
+    } catch (error) {
+      console.error('Error toggling favorite:', error);
       toast({
-        title: "Удалено из избранного",
-        description: "Аукцион удален из вашего списка избранного",
-        duration: 2000,
-      });
-    } else {
-      addToFavorites(id!);
-      toast({
-        title: "Добавлено в избранное",
-        description: "Аукцион добавлен в ваш список избранного",
-        duration: 2000,
+        title: "Ошибка",
+        description: "Не удалось обновить избранное",
+        variant: "destructive",
+        duration: 3000,
       });
     }
   };

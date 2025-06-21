@@ -1,46 +1,103 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { useAuth } from './AuthContext';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 interface FavoritesContextType {
   favorites: Set<string>;
-  addToFavorites: (id: string) => void;
-  removeFromFavorites: (id: string) => void;
+  addToFavorites: (listingId: string) => Promise<void>;
+  removeFromFavorites: (listingId: string) => Promise<void>;
   isFavorite: (id: string) => boolean;
   getFavoritesList: () => string[];
+  isLoading: boolean;
 }
 
 const FavoritesContext = createContext<FavoritesContextType | undefined>(undefined);
 
 export function FavoritesProvider({ children }: { children: ReactNode }) {
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
 
-  // Загружаем избранное из localStorage при инициализации
-  useEffect(() => {
-    const savedFavorites = localStorage.getItem('auction-favorites');
-    if (savedFavorites) {
-      try {
-        const favoritesArray = JSON.parse(savedFavorites);
-        setFavorites(new Set(favoritesArray));
-      } catch (error) {
-        console.error('Ошибка загрузки избранного:', error);
-      }
-    }
-  }, []);
-
-  // Сохраняем избранное в localStorage при изменении
-  useEffect(() => {
-    localStorage.setItem('auction-favorites', JSON.stringify(Array.from(favorites)));
-  }, [favorites]);
-
-  const addToFavorites = (id: string) => {
-    setFavorites(prev => new Set(prev).add(id));
+  // Get current user ID
+  const getCurrentUserId = () => {
+    return (user as any)?.userId || null;
   };
 
-  const removeFromFavorites = (id: string) => {
-    setFavorites(prev => {
-      const newFavorites = new Set(prev);
-      newFavorites.delete(id);
-      return newFavorites;
-    });
+  const userId = getCurrentUserId();
+
+  // Fetch favorites from database
+  const { data: favoritesData, isLoading } = useQuery({
+    queryKey: [`/api/users/${userId}/favorites`],
+    enabled: !!userId,
+    queryFn: async () => {
+      const response = await fetch(`/api/users/${userId}/favorites`);
+      if (!response.ok) throw new Error('Failed to fetch favorites');
+      return response.json();
+    }
+  });
+
+  // Update local favorites when data changes
+  useEffect(() => {
+    if (favoritesData) {
+      const favoriteIds = favoritesData.map((fav: any) => fav.listingId.toString());
+      setFavorites(new Set(favoriteIds));
+    }
+  }, [favoritesData]);
+
+  // Add to favorites mutation
+  const addMutation = useMutation({
+    mutationFn: async (listingId: string) => {
+      if (!userId) throw new Error('User not authenticated');
+      
+      const response = await fetch('/api/favorites', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: userId,
+          listingId: parseInt(listingId)
+        })
+      });
+      
+      if (!response.ok) throw new Error('Failed to add favorite');
+      return response.json();
+    },
+    onSuccess: (data, listingId) => {
+      setFavorites(prev => new Set(prev).add(listingId));
+      queryClient.invalidateQueries({ queryKey: [`/api/users/${userId}/favorites`] });
+    }
+  });
+
+  // Remove from favorites mutation
+  const removeMutation = useMutation({
+    mutationFn: async (listingId: string) => {
+      if (!userId) throw new Error('User not authenticated');
+      
+      // Find the favorite ID to delete
+      const favorite = favoritesData?.find((fav: any) => fav.listingId.toString() === listingId);
+      if (!favorite) throw new Error('Favorite not found');
+      
+      const response = await fetch(`/api/favorites/${favorite.id}`, {
+        method: 'DELETE'
+      });
+      
+      if (!response.ok) throw new Error('Failed to remove favorite');
+    },
+    onSuccess: (data, listingId) => {
+      setFavorites(prev => {
+        const newFavorites = new Set(prev);
+        newFavorites.delete(listingId);
+        return newFavorites;
+      });
+      queryClient.invalidateQueries({ queryKey: [`/api/users/${userId}/favorites`] });
+    }
+  });
+
+  const addToFavorites = async (listingId: string) => {
+    await addMutation.mutateAsync(listingId);
+  };
+
+  const removeFromFavorites = async (listingId: string) => {
+    await removeMutation.mutateAsync(listingId);
   };
 
   const isFavorite = (id: string) => {
@@ -57,7 +114,8 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
       addToFavorites,
       removeFromFavorites,
       isFavorite,
-      getFavoritesList
+      getFavoritesList,
+      isLoading
     }}>
       {children}
     </FavoritesContext.Provider>

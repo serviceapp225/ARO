@@ -28,6 +28,8 @@ export function ActiveAuctions({ searchQuery = "", customListings }: ActiveAucti
 
   const ITEMS_PER_PAGE = 20;
 
+
+
   // Use custom listings if provided, otherwise use filtered auctions
   const sourceAuctions = customListings || auctions;
   
@@ -76,12 +78,16 @@ export function ActiveAuctions({ searchQuery = "", customListings }: ActiveAucti
     return sortedAuctions.slice(0, page * ITEMS_PER_PAGE);
   }, [sourceAuctions, searchQuery, sortBy, page]);
 
-  const handleToggleFavorite = (auctionId: string, e: React.MouseEvent) => {
+  const handleToggleFavorite = async (auctionId: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    if (isFavorite(auctionId)) {
-      removeFromFavorites(auctionId);
-    } else {
-      addToFavorites(auctionId);
+    try {
+      if (isFavorite(auctionId)) {
+        await removeFromFavorites(auctionId);
+      } else {
+        await addToFavorites(auctionId);
+      }
+    } catch (error) {
+      console.error('Error toggling favorite:', error);
     }
   };
 
