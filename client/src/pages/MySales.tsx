@@ -10,8 +10,8 @@ export default function MySales() {
 
   // Получаем продажи текущего пользователя
   const { data: myListings, isLoading } = useQuery({
-    queryKey: [`/api/listings/seller/${(user as any)?.id}`],
-    enabled: !!(user as any)?.id,
+    queryKey: [`/api/listings/seller/${(user as any)?.userId}`],
+    enabled: !!(user as any)?.userId,
   });
 
   if (!user) {

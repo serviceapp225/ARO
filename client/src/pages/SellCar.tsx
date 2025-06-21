@@ -311,11 +311,11 @@ export default function SellCar() {
 
     try {
       console.log('Current user for listing:', user);
-      console.log('User ID:', (user as any)?.id);
+      console.log('User ID:', (user as any)?.userId);
       
       // Create listing data matching database schema
       const listingData = {
-        sellerId: (user as any)?.id || 2, // Use current user ID
+        sellerId: (user as any)?.userId || 2, // Use current user ID
         lotNumber: `${Math.floor(100000 + Math.random() * 900000)}`,
         make: formData.make,
         model: formData.model,
