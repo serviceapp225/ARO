@@ -87,7 +87,8 @@ export default function AuctionFeed() {
     }
     
     // Проверяем, что аукцион не завершился по времени
-    if (auction.endTime && new Date(auction.endTime) <= new Date()) {
+    const endTime = auction.endTime || auction.auctionEndTime;
+    if (endTime && new Date(endTime) <= new Date()) {
       return false;
     }
     
