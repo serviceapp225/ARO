@@ -425,12 +425,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (listing) {
         // Get all previous bidders for this auction (excluding current bidder)
         const allBids = await storage.getBidsForListing(listingId);
-        const previousBidders = new Set<number>();
+        const previousBidders: number[] = [];
         
         // Collect unique bidder IDs (excluding current bidder)
         allBids.forEach(prevBid => {
-          if (prevBid.bidderId !== validatedData.bidderId) {
-            previousBidders.add(prevBid.bidderId);
+          if (prevBid.bidderId !== validatedData.bidderId && !previousBidders.includes(prevBid.bidderId)) {
+            previousBidders.push(prevBid.bidderId);
           }
         });
 
@@ -438,21 +438,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const usersWithFavorite = await storage.getUsersWithFavoriteListing(listingId);
         
         // Combine both groups: previous bidders and users with favorites
-        const allNotificationUsers = new Set([...previousBidders, ...usersWithFavorite]);
+        const allNotificationUsers: number[] = [...previousBidders];
+        usersWithFavorite.forEach(userId => {
+          if (userId !== validatedData.bidderId && !allNotificationUsers.includes(userId)) {
+            allNotificationUsers.push(userId);
+          }
+        });
         
-        // Remove current bidder from notification list
-        allNotificationUsers.delete(validatedData.bidderId);
+        console.log(`Sending outbid notifications to ${allNotificationUsers.length} users:`, allNotificationUsers);
         
         // Send notifications to all relevant users
         for (const userId of allNotificationUsers) {
-          await storage.createNotification({
-            userId,
-            title: "Ваша ставка перебита!",
-            message: `Новая ставка ${validatedData.amount} Сомони на ${listing.make} ${listing.model} ${listing.year}. Сделайте ставку выше!`,
-            type: "bid_outbid",
-            listingId: listingId,
-            isRead: false
-          });
+          try {
+            console.log(`Creating outbid notification for user ${userId}`);
+            await storage.createNotification({
+              userId,
+              title: "Ваша ставка перебита!",
+              message: `Новая ставка ${validatedData.amount} Сомони на ${listing.make} ${listing.model} ${listing.year}. Сделайте ставку выше!`,
+              type: "bid_outbid",
+              listingId: listingId,
+              isRead: false
+            });
+            console.log(`Notification created successfully for user ${userId}`);
+          } catch (notificationError) {
+            console.error(`Failed to create notification for user ${userId}:`, notificationError);
+          }
         }
       }
       
