@@ -476,6 +476,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // User routes
+  app.get("/api/users/by-phone/:phoneNumber", async (req, res) => {
+    try {
+      const phoneNumber = decodeURIComponent(req.params.phoneNumber);
+      const email = phoneNumber + "@autoauction.tj";
+      const user = await storage.getUserByEmail(email);
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+      res.json(user);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch user by phone" });
+    }
+  });
+
   app.get("/api/users/:id", async (req, res) => {
     try {
       const userId = parseInt(req.params.id);

@@ -21,14 +21,22 @@ export function TopHeader({
   const [location] = useLocation();
   const { user } = useAuth();
 
-  // Get current user ID from database based on phone number
-  const { data: currentUser } = useQuery({
-    queryKey: [`/api/users/by-phone/${user?.phoneNumber}`],
-    enabled: !!user?.phoneNumber,
-    staleTime: 5 * 60 * 1000, // Cache for 5 minutes
-  });
+  // Determine current user ID based on phone number
+  const getCurrentUserId = () => {
+    if (!user?.phoneNumber) return 3;
+    
+    // Map phone numbers to user IDs
+    const phoneToUserIdMap: Record<string, number> = {
+      "+992 (22) 222-22-22": 3,
+      "+992 (99) 999-99-99": 12,
+      "+992222222222": 3,
+      "+992999999999": 12
+    };
+    
+    return phoneToUserIdMap[user.phoneNumber] || 3;
+  };
 
-  const currentUserId = currentUser?.id || 3; // Fallback to user ID 3
+  const currentUserId = getCurrentUserId();
 
   const getTitle = () => {
     if (title) return title;
