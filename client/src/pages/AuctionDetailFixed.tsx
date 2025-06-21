@@ -450,6 +450,28 @@ export default function AuctionDetail() {
     setTimeout(() => setShowConfetti(false), 1500);
     
     try {
+      // Get current user ID based on phone number
+      const getCurrentUserId = () => {
+        if (!currentUser?.phoneNumber) return null;
+        
+        if (currentUser.phoneNumber === "+992 (11) 111-11-11") {
+          return 13; // +992111111111@autoauction.tj
+        } else if (currentUser.phoneNumber === "+992 (44) 444-44-44") {
+          return 14; // +992444444444@autoauction.tj
+        }
+        return null;
+      };
+
+      const userId = getCurrentUserId();
+      if (!userId) {
+        toast({
+          title: "Ошибка",
+          description: "Не удается определить пользователя",
+          variant: "destructive",
+        });
+        return;
+      }
+
       // Place bid using API
       const response = await fetch(`/api/listings/${id}/bids`, {
         method: 'POST',
@@ -458,7 +480,7 @@ export default function AuctionDetail() {
         },
         body: JSON.stringify({
           amount: bidValue.toString(),
-          bidderId: 3, // Using demo user ID
+          bidderId: userId,
         }),
       });
 

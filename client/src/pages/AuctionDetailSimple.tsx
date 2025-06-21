@@ -253,9 +253,31 @@ export default function AuctionDetail() {
       return;
     }
 
-    // Place the bid using current user ID (3)
+    // Get current user ID based on phone number
+    const getCurrentUserId = () => {
+      if (!currentUser?.phoneNumber) return null;
+      
+      if (currentUser.phoneNumber === "+992 (11) 111-11-11") {
+        return 13; // +992111111111@autoauction.tj
+      } else if (currentUser.phoneNumber === "+992 (44) 444-44-44") {
+        return 14; // +992444444444@autoauction.tj
+      }
+      return null;
+    };
+
+    const userId = getCurrentUserId();
+    if (!userId) {
+      toast({
+        title: "Ошибка",
+        description: "Не удается определить пользователя",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Place the bid using current user ID
     bidMutation.mutate({
-      bidderId: 3,
+      bidderId: userId,
       amount: bidAmount
     }, {
       onSuccess: () => {
