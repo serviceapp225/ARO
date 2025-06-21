@@ -9,10 +9,16 @@ export default function MySales() {
   const [, setLocation] = useLocation();
 
   // Получаем продажи текущего пользователя
-  const { data: myListings, isLoading } = useQuery({
+  const { data: myListings, isLoading, error } = useQuery({
     queryKey: [`/api/listings/seller/${(user as any)?.userId}`],
     enabled: !!(user as any)?.userId,
   });
+
+  console.log('MySales - User:', user);
+  console.log('MySales - User ID:', (user as any)?.userId);
+  console.log('MySales - Loading:', isLoading);
+  console.log('MySales - Data:', myListings);
+  console.log('MySales - Error:', error);
 
   if (!user) {
     return (
@@ -67,7 +73,7 @@ export default function MySales() {
                 </div>
               ))}
             </div>
-          ) : !myListings || (myListings as any)?.length === 0 ? (
+          ) : !myListings || !Array.isArray(myListings) || myListings.length === 0 ? (
             <div className="bg-white rounded-2xl p-8 shadow-sm text-center">
               <Car className="w-16 h-16 text-gray-400 mx-auto mb-4" />
               <h2 className="text-xl font-semibold text-gray-700 mb-2">
@@ -86,7 +92,7 @@ export default function MySales() {
             </div>
           ) : (
             <div className="space-y-4">
-              {(myListings as any)?.map((listing: any) => (
+              {myListings?.map((listing: any) => (
                 <div key={listing.id} className="bg-white rounded-2xl shadow-sm overflow-hidden">
                   <div className="p-6">
                     <div className="flex gap-4">
