@@ -57,11 +57,6 @@ export default function UserData() {
     onSuccess: (updatedUser) => {
       // Invalidate user data cache to refetch updated data
       queryClient.invalidateQueries({ queryKey: [`/api/users/${updatedUser.id}`] });
-      toast({
-        title: "Профиль обновлен",
-        description: "Ваши данные успешно сохранены",
-        duration: 3000,
-      });
     },
     onError: () => {
       toast({
