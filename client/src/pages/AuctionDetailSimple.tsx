@@ -64,22 +64,29 @@ export default function AuctionDetail() {
     ? (realBiddingHistory as any[]).map(bid => bid.bidderId).filter((id, index, arr) => arr.indexOf(id) === index)
     : [];
 
-  // Fetch user data for all bidders dynamically
-  const userQueries = bidderIds.map(bidderId => 
-    useQuery({
-      queryKey: [`/api/users/${bidderId}`],
-      enabled: !!bidderId,
-    })
-  );
+  // Use a single query to fetch all user data when bidderIds change
+  const { data: usersData = [] } = useQuery({
+    queryKey: ['users', bidderIds.sort().join(',')],
+    queryFn: async () => {
+      if (bidderIds.length === 0) return [];
+      
+      const userPromises = bidderIds.map(id => 
+        fetch(`/api/users/${id}`).then(res => res.ok ? res.json() : null)
+      );
+      
+      const users = await Promise.all(userPromises);
+      return users.filter(Boolean);
+    },
+    enabled: bidderIds.length > 0,
+  });
 
   // Create a map of user data by ID
-  const userDataMap = userQueries.reduce((acc, query, index) => {
-    const bidderId = bidderIds[index];
-    if (query.data && bidderId) {
-      acc[bidderId] = query.data;
+  const userDataMap = usersData.reduce((acc: Record<number, any>, user: any) => {
+    if (user && user.id) {
+      acc[user.id] = user;
     }
     return acc;
-  }, {} as Record<number, any>);
+  }, {});
 
   // Sort bids by amount (highest first) to show current winning bid at top
   const sortedBids = Array.isArray(realBiddingHistory) ? 
