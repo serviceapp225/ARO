@@ -423,45 +423,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
       await storage.updateListingCurrentBid(listingId, validatedData.amount);
       
       if (listing) {
-        // Get all previous bidders for this auction (excluding current bidder)
+        // Get all bids for this listing to find the previously highest bidder
         const allBids = await storage.getBidsForListing(listingId);
-        const previousBidders: number[] = [];
         
-        // Collect unique bidder IDs (excluding current bidder)
-        allBids.forEach(prevBid => {
-          if (prevBid.bidderId !== validatedData.bidderId && !previousBidders.includes(prevBid.bidderId)) {
-            previousBidders.push(prevBid.bidderId);
-          }
-        });
-
-        // Also get users who have this listing in favorites
-        const usersWithFavorite = await storage.getUsersWithFavoriteListing(listingId);
+        // Sort bids by amount (highest first) to find who was previously winning
+        const sortedBids = allBids
+          .filter(bid => bid.bidderId !== validatedData.bidderId) // Exclude current bidder
+          .sort((a, b) => parseFloat(b.amount) - parseFloat(a.amount));
         
-        // Combine both groups: previous bidders and users with favorites
-        const allNotificationUsers: number[] = [...previousBidders];
-        usersWithFavorite.forEach(userId => {
-          if (userId !== validatedData.bidderId && !allNotificationUsers.includes(userId)) {
-            allNotificationUsers.push(userId);
-          }
-        });
-        
-        console.log(`Sending outbid notifications to ${allNotificationUsers.length} users:`, allNotificationUsers);
-        
-        // Send notifications to all relevant users
-        for (const userId of allNotificationUsers) {
+        // Only notify the user whose bid was directly outbid (the previous highest bidder)
+        if (sortedBids.length > 0) {
+          const previousHighestBidder = sortedBids[0];
+          
           try {
-            console.log(`Creating outbid notification for user ${userId}`);
+            console.log(`Creating outbid notification for user ${previousHighestBidder.bidderId} (previous highest bidder)`);
             await storage.createNotification({
-              userId,
+              userId: previousHighestBidder.bidderId,
               title: "Ваша ставка перебита!",
               message: `Новая ставка ${validatedData.amount} Сомони на ${listing.make} ${listing.model} ${listing.year}. Сделайте ставку выше!`,
               type: "bid_outbid",
               listingId: listingId,
               isRead: false
             });
-            console.log(`Notification created successfully for user ${userId}`);
+            console.log(`Notification created successfully for user ${previousHighestBidder.bidderId}`);
           } catch (notificationError) {
-            console.error(`Failed to create notification for user ${userId}:`, notificationError);
+            console.error(`Failed to create notification for user ${previousHighestBidder.bidderId}:`, notificationError);
           }
         }
       }
