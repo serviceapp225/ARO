@@ -48,8 +48,12 @@ export default function Favorites() {
     return new Date(endTime) <= new Date();
   };
 
-  const removeFavorite = (id: string) => {
-    removeFromFavorites(id);
+  const removeFavorite = async (id: string) => {
+    try {
+      await removeFromFavorites(id);
+    } catch (error) {
+      console.error('Error removing favorite:', error);
+    }
   };
 
   const goToAuction = (id: string) => {
