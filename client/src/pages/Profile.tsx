@@ -160,19 +160,17 @@ export default function Profile() {
           {/* Activation Status Notice */}
           {!currentUser?.isActive && (
             <div className="bg-yellow-50 border border-yellow-200 rounded-2xl p-4 mb-6">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-yellow-100 rounded-full flex items-center justify-center">
+              <div className="flex flex-col items-center text-center">
+                <div className="w-8 h-8 bg-yellow-100 rounded-full flex items-center justify-center mb-3">
                   <ShieldX className="w-4 h-4 text-yellow-600" />
                 </div>
-                <div className="flex-1">
-                  <h3 className="font-medium text-yellow-800">Аккаунт не активирован</h3>
-                  <p className="text-sm text-yellow-700 mt-1">
-                    Вы можете просматривать аукционы, но не можете делать ставки. Для активации аккаунта обратитесь в службу поддержки через WhatsApp или по номеру 90000000.
-                  </p>
-                </div>
+                <h3 className="font-medium text-yellow-800 mb-2">Аккаунт не активирован</h3>
+                <p className="text-sm text-yellow-700 mb-4">
+                  Вы можете просматривать аукционы, но не можете делать ставки. Для активации аккаунта обратитесь в службу поддержки через WhatsApp или по номеру 90000000.
+                </p>
                 <button
                   onClick={() => window.open("https://wa.me/992000000000?text=Здравствуйте! Мне нужно активировать аккаунт на AUTOBID.TJ", "_blank")}
-                  className="bg-yellow-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-yellow-700 transition-colors"
+                  className="bg-yellow-600 text-white px-6 py-2 rounded-lg text-sm font-medium hover:bg-yellow-700 transition-colors"
                 >
                   Связаться с поддержкой
                 </button>
