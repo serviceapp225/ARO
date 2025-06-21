@@ -16,9 +16,10 @@ export function NotificationBell({ userId }: NotificationBellProps) {
     const newOpenState = !isOpen;
     setIsOpen(newOpenState);
     
-    // Only refetch when opening (not closing) and only if we don't have recent data
+    // Force fresh data when opening
     if (newOpenState) {
-      queryClient.invalidateQueries({ queryKey: [`/api/notifications/${userId}`] });
+      queryClient.removeQueries({ queryKey: [`/api/notifications/${userId}`] });
+      queryClient.refetchQueries({ queryKey: [`/api/notifications/${userId}`] });
     }
   };
 
@@ -27,8 +28,10 @@ export function NotificationBell({ userId }: NotificationBellProps) {
 
   const { data: allNotifications = [], isLoading } = useQuery<Notification[]>({
     queryKey: [`/api/notifications/${userId}`],
-    refetchInterval: isOpen ? false : 60000, // Disable auto-refresh when open, 60s when closed
-    staleTime: 1000, // Consider data fresh for 1 second only
+    refetchInterval: false, // Completely disable auto-refresh
+    staleTime: Infinity, // Never consider data stale
+    refetchOnWindowFocus: false, // Don't refetch when window gains focus
+    refetchOnMount: false, // Don't refetch on component mount
   });
 
   // Показываем все уведомления (найденные машины и перебитые ставки)
