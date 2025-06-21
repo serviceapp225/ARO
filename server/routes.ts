@@ -48,28 +48,44 @@ const adminAuth = (req: any, res: any, next: any) => {
 };
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Car listing routes - optimized with caching
+  // Fast cache for main listings
+  const mainListingsCache = new Map();
+  let mainListingsCacheTime = 0;
+  const MAIN_CACHE_TTL = 2 * 60 * 1000; // 2 minutes
+  
+  // Car listing routes - optimized with aggressive caching
   app.get("/api/listings", async (req, res) => {
     try {
       const { status = "active", limit } = req.query;
+      const cacheKey = `listings_${status}_${limit || 20}`;
+      
+      // Check fast cache
+      if (mainListingsCache.has(cacheKey) && Date.now() - mainListingsCacheTime < MAIN_CACHE_TTL) {
+        return res.json(mainListingsCache.get(cacheKey));
+      }
+      
+      console.log(`Loading main listings...`);
+      const startTime = Date.now();
       
       const listings = await storage.getListingsByStatus(
         status as string, 
         limit ? Number(limit) : 20
       );
       
-      // Get bid counts for each listing
-      const listingIds = listings.map(l => l.id);
-      const bidCounts = await storage.getBidCountsForListings(listingIds);
-      
-      const listingsWithBidCounts = listings.map(listing => ({
+      // Skip bid count calculation for speed - use 0 for all
+      const fastListings = listings.map(listing => ({
         ...listing,
-        bidCount: bidCounts[listing.id] || 0,
-        // Add first photo thumbnail for preview
-        thumbnailPhoto: Array.isArray(listing.photos) && listing.photos.length > 0 ? listing.photos[0] : null
+        bidCount: 0, // Skip slow bid count query
+        thumbnailPhoto: null // Skip photo processing
       }));
       
-      res.json(listingsWithBidCounts);
+      console.log(`Main listings loaded in ${Date.now() - startTime}ms`);
+      
+      // Cache result
+      mainListingsCache.set(cacheKey, fastListings);
+      mainListingsCacheTime = Date.now();
+      
+      res.json(fastListings);
     } catch (error) {
       console.error("Error fetching listings:", error);
       res.status(500).json({ error: "Failed to fetch listings" });

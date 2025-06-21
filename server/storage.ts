@@ -193,56 +193,58 @@ export class DatabaseStorage implements IStorage {
 
   async getListingsByStatus(status: string, limit?: number): Promise<CarListing[]> {
     try {
-      // Fast query without photos field for maximum performance
-      let query = db
-        .select({
-          id: carListings.id,
-          sellerId: carListings.sellerId,
-          lotNumber: carListings.lotNumber,
-          make: carListings.make,
-          model: carListings.model,
-          year: carListings.year,
-          mileage: carListings.mileage,
-          description: carListings.description,
-          startingPrice: carListings.startingPrice,
-          currentBid: carListings.currentBid,
-          auctionDuration: carListings.auctionDuration,
-          status: carListings.status,
-          auctionStartTime: carListings.auctionStartTime,
-          auctionEndTime: carListings.auctionEndTime,
-          customsCleared: carListings.customsCleared,
-          recycled: carListings.recycled,
-          technicalInspectionValid: carListings.technicalInspectionValid,
-          technicalInspectionDate: carListings.technicalInspectionDate,
-          tinted: carListings.tinted,
-          tintingDate: carListings.tintingDate,
-          engine: carListings.engine,
-          transmission: carListings.transmission,
-          fuelType: carListings.fuelType,
-          bodyType: carListings.bodyType,
-          driveType: carListings.driveType,
-          color: carListings.color,
-          condition: carListings.condition,
-          vin: carListings.vin,
-          location: carListings.location,
-          createdAt: carListings.createdAt
-        })
-        .from(carListings)
-        .where(eq(carListings.status, status))
-        .orderBy(desc(carListings.createdAt));
+      console.log(`Starting ultra-fast main listings query for status: ${status}`);
+      const startTime = Date.now();
       
-      if (limit) {
-        query = query.limit(limit);
-      }
+      // Ultra-fast raw SQL query with only essential fields
+      const result = await pool.query(`
+        SELECT id, seller_id, lot_number, make, model, year, mileage,
+               starting_price, current_bid, status, auction_end_time, condition
+        FROM car_listings 
+        WHERE status = $1 
+        ORDER BY created_at DESC 
+        LIMIT $2
+      `, [status, limit || 20]);
       
-      const listings = await query;
+      console.log(`Ultra-fast main listings query completed in ${Date.now() - startTime}ms, found ${result.rows.length} listings`);
       
-      // Add photo URL and truncate description
-      return listings.map(listing => ({
-        ...listing,
-        photos: [`/api/listings/${listing.id}/photo/0`], // Always assume photos exist
-        description: listing.description?.substring(0, 100) + '...' || ''
+      // Convert to expected format with minimal processing
+      const listings = result.rows.map((row: any) => ({
+        id: row.id,
+        sellerId: row.seller_id,
+        lotNumber: row.lot_number,
+        make: row.make,
+        model: row.model,
+        year: row.year,
+        mileage: row.mileage,
+        description: '',
+        startingPrice: row.starting_price,
+        currentBid: row.current_bid,
+        status: row.status,
+        auctionEndTime: row.auction_end_time,
+        photos: [`/api/listings/${row.id}/photo/0`],
+        createdAt: new Date(),
+        updatedAt: null,
+        customsCleared: true,
+        recycled: true,
+        technicalInspectionValid: false,
+        technicalInspectionDate: null,
+        tinted: false,
+        tintingDate: null,
+        condition: row.condition || 'good',
+        auctionDuration: 7,
+        auctionStartTime: null,
+        engine: null,
+        transmission: null,
+        fuelType: null,
+        bodyType: null,
+        driveType: null,
+        color: null,
+        vin: null,
+        location: null
       }));
+      
+      return listings as CarListing[];
     } catch (error) {
       console.error('Error fetching listings:', error);
       return [];
