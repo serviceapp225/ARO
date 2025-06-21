@@ -8,6 +8,23 @@ import sharp from "sharp";
 import { insertCarListingSchema, insertBidSchema, insertFavoriteSchema, insertNotificationSchema, insertCarAlertSchema, insertBannerSchema, type CarAlert } from "@shared/schema";
 import { z } from "zod";
 
+// Input validation schemas
+const idParamSchema = z.object({
+  id: z.string().regex(/^\d+$/, "ID must be a positive integer").transform(Number)
+});
+
+const queryParamsSchema = z.object({
+  status: z.string().optional(),
+  limit: z.string().regex(/^\d+$/).transform(Number).optional(),
+  query: z.string().max(100).optional(),
+  make: z.string().max(50).optional(),
+  model: z.string().max(50).optional(),
+  minPrice: z.string().regex(/^\d+(\.\d+)?$/).transform(Number).optional(),
+  maxPrice: z.string().regex(/^\d+(\.\d+)?$/).transform(Number).optional(),
+  minYear: z.string().regex(/^\d{4}$/).transform(Number).optional(),
+  maxYear: z.string().regex(/^\d{4}$/).transform(Number).optional()
+});
+
 // Simple in-memory cache
 const cache = new Map();
 const CACHE_TTL = 10000; // 10 seconds for better performance
@@ -118,8 +135,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return;
       }
       
+      // Validate input parameters for security
+      const listingId = parseInt(req.params.id);
+      const photoIndex = parseInt(req.params.index);
+      
+      if (isNaN(listingId) || listingId <= 0 || isNaN(photoIndex) || photoIndex < 0 || photoIndex > 99) {
+        return res.status(400).json({ error: "Invalid parameters" });
+      }
+      
       // Get photos directly from database for this endpoint only
-      const [listing] = await db.select({ photos: carListings.photos }).from(carListings).where(eq(carListings.id, Number(req.params.id)));
+      const [listing] = await db.select({ photos: carListings.photos }).from(carListings).where(eq(carListings.id, listingId));
       if (!listing) {
         return res.status(404).json({ error: "Listing not found" });
       }
@@ -133,9 +158,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
       
-      const photoIndex = Number(req.params.index);
-      if (photoIndex >= 0 && photoIndex < photoArray.length) {
-        const photoData = photoArray[photoIndex];
+      const requestedPhotoIndex = Number(req.params.index);
+      if (requestedPhotoIndex >= 0 && requestedPhotoIndex < photoArray.length) {
+        const photoData = photoArray[requestedPhotoIndex];
         
         if (photoData.startsWith('data:image/')) {
           const matches = photoData.match(/data:image\/([^;]+);base64,(.+)/);
@@ -232,15 +257,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/listings/search", async (req, res) => {
     try {
-      const filters = {
-        query: req.query.query as string,
-        make: req.query.make as string,
-        model: req.query.model as string,
-        minPrice: req.query.minPrice ? parseFloat(req.query.minPrice as string) : undefined,
-        maxPrice: req.query.maxPrice ? parseFloat(req.query.maxPrice as string) : undefined,
-        minYear: req.query.minYear ? parseInt(req.query.minYear as string) : undefined,
-        maxYear: req.query.maxYear ? parseInt(req.query.maxYear as string) : undefined
-      };
+      // Validate query parameters for security
+      const validatedQuery = queryParamsSchema.safeParse(req.query);
+      if (!validatedQuery.success) {
+        return res.status(400).json({ error: "Invalid search parameters" });
+      }
+      
+      const filters = validatedQuery.data;
       
       // Create cache key from filters
       const cacheKey = `search_${JSON.stringify(filters)}`;
