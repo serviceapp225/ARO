@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { ArrowLeft, User, Phone, Mail, Upload, Camera } from "lucide-react";
+import { ArrowLeft, User, Phone, Mail, Upload, Camera, Edit, Save, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -15,6 +15,8 @@ export default function UserData() {
   const { toast } = useToast();
   const { userData, updateUserData } = useUserData();
   const [tempData, setTempData] = useState(userData);
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [editedName, setEditedName] = useState(userData.fullName || '');
   const queryClient = useQueryClient();
   const { user } = useAuth();
 
