@@ -35,11 +35,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           // Fetch user activation status from database based on phone number
           try {
             // Map phone numbers to user IDs
-            let userId = 3; // default fallback
-            if (demoUser.phoneNumber === "+992 (22) 222-22-22") {
-              userId = 3; // buyer@autoauction.tj
-            } else if (demoUser.phoneNumber === "+992 (99) 999-99-99") {
-              userId = 12; // +992999999999@autoauction.tj
+            let userId = 2; // default fallback to seller
+            if (demoUser.phoneNumber === "+992 (11) 111-11-11") {
+              userId = 13; // +992111111111@autoauction.tj
+            } else if (demoUser.phoneNumber === "+992 (44) 444-44-44") {
+              userId = 14; // +992444444444@autoauction.tj
             }
             
             const response = await fetch(`/api/users/${userId}`);

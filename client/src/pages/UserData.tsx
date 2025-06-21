@@ -28,10 +28,10 @@ export default function UserData() {
     if (!user?.phoneNumber) return null;
     
     // Map phone numbers to user IDs directly
-    if (user.phoneNumber === "+992 (22) 222-22-22") {
-      return 3; // buyer@autoauction.tj
-    } else if (user.phoneNumber === "+992 (99) 999-99-99") {
-      return 12; // +992999999999@autoauction.tj
+    if (user.phoneNumber === "+992 (11) 111-11-11") {
+      return 13; // +992111111111@autoauction.tj
+    } else if (user.phoneNumber === "+992 (44) 444-44-44") {
+      return 14; // +992444444444@autoauction.tj
     }
     return null;
   };
