@@ -20,8 +20,7 @@ import MyAlerts from "@/pages/MyAlerts";
 import UserData from "@/pages/UserData";
 import MySales from "@/pages/MySalesSimple";
 import LanguageSelector from "@/components/LanguageSelector";
-import Terms from "@/pages/Terms";
-import Privacy from "@/pages/Privacy";
+
 import Login from "@/pages/Login";
 
 import NotFound from "@/pages/not-found";
@@ -52,8 +51,7 @@ function Router() {
         <Route path="/user-data" component={UserData} />
         <Route path="/my-sales" component={MySales} />
         <Route path="/language" component={LanguageSelector} />
-        <Route path="/terms" component={Terms} />
-        <Route path="/privacy" component={Privacy} />
+
         <Route path="/login" component={Login} />
 
         <Route path="/flutter-preview" component={FlutterPreview} />
