@@ -35,6 +35,7 @@ export function CountdownTimer({ endTime, size = 'small', onTimeUp }: CountdownT
       } else if (endTime instanceof Date) {
         endTimeDate = endTime;
       } else {
+        console.log('CountdownTimer: Invalid endTime type:', typeof endTime, endTime);
         setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0, total: 0 });
         setIsInitialized(true);
         return;
@@ -42,14 +43,23 @@ export function CountdownTimer({ endTime, size = 'small', onTimeUp }: CountdownT
       
       // Проверяем что дата валидна
       if (isNaN(endTimeDate.getTime())) {
+        console.log('CountdownTimer: Invalid date:', endTime);
         setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0, total: 0 });
         setIsInitialized(true);
         return;
       }
       
       const distance = endTimeDate.getTime() - now;
+      console.log('CountdownTimer:', {
+        endTime,
+        endTimeDate: endTimeDate.toISOString(),
+        now: new Date(now).toISOString(),
+        distance,
+        distanceInHours: distance / (1000 * 60 * 60)
+      });
 
-      if (distance < 0) {
+      if (distance <= 0) {
+        console.log('CountdownTimer: Time is up, distance:', distance);
         setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0, total: 0 });
         onTimeUp?.();
         setIsInitialized(true);
@@ -71,7 +81,7 @@ export function CountdownTimer({ endTime, size = 'small', onTimeUp }: CountdownT
     const timer = setInterval(calculateTime, 1000);
 
     return () => clearInterval(timer);
-  }, [endTime, onTimeUp, isInitialized]);
+  }, [endTime, onTimeUp]);
 
   const getColorClass = () => {
     if (timeLeft.total < 300000) return 'from-red-600 to-red-800'; // 5 minutes
