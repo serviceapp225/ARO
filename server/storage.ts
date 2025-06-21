@@ -312,14 +312,14 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createListing(insertListing: InsertCarListing): Promise<CarListing> {
-    // Automatically set new listings as active with proper auction timing
+    // All new listings must be pending for admin approval - preserve status from routes
     const now = new Date();
     const auctionEndTime = new Date(now.getTime() + (insertListing.auctionDuration * 60 * 60 * 1000));
     
     const listingData = {
       ...insertListing,
-      status: "active",
-      auctionStartTime: now,
+      // Keep the status as provided (should be "pending" from routes.ts)
+      auctionStartTime: insertListing.status === "pending" ? null : now,
       auctionEndTime: auctionEndTime
     };
     
@@ -328,9 +328,16 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updateListingStatus(id: number, status: string): Promise<CarListing | undefined> {
+    const updateData: any = { status };
+    
+    // When activating a listing, set auction start time
+    if (status === "active") {
+      updateData.auctionStartTime = new Date();
+    }
+    
     const [listing] = await db
       .update(carListings)
-      .set({ status })
+      .set(updateData)
       .where(eq(carListings.id, id))
       .returning();
     return listing || undefined;

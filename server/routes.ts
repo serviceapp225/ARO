@@ -53,6 +53,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   let mainListingsCacheTime = 0;
   const MAIN_CACHE_TTL = 2 * 60 * 1000; // 2 minutes
   
+  // Clear all caches when listings change
+  function clearAllCaches() {
+    mainListingsCache.clear();
+    mainListingsCacheTime = 0;
+    sellerListingsCache.clear();
+  }
+  
   // Car listing routes - optimized with aggressive caching
   app.get("/api/listings", async (req, res) => {
     try {
@@ -326,8 +333,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const listing = await storage.createListing(listingWithPendingStatus);
       
-      // Clear listings cache to force refresh
-      clearCachePattern('listings_');
+      // Clear all caches to force refresh
+      clearAllCaches();
       
       // Check for matching car alerts and send notifications
       try {
@@ -764,6 +771,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!listing) {
         return res.status(404).json({ error: "Listing not found" });
       }
+      
+      // Clear all caches when admin changes listing status
+      clearAllCaches();
+      
       res.json(listing);
     } catch (error) {
       res.status(500).json({ error: "Failed to update listing status" });
