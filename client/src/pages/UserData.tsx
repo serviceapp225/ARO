@@ -23,19 +23,12 @@ export default function UserData() {
   // Синхронизируем tempData с userData при изменениях
   useEffect(() => {
     setTempData(userData);
+    setEditedName(userData.fullName || '');
   }, [userData]);
 
-  // Function to get current user ID based on phone number
+  // Function to get current user ID from auth context
   const getCurrentUserId = () => {
-    if (!user?.phoneNumber) return null;
-    
-    // Map phone numbers to user IDs directly
-    if (user.phoneNumber === "+992 (11) 111-11-11") {
-      return 13; // +992111111111@autoauction.tj
-    } else if (user.phoneNumber === "+992 (44) 444-44-44") {
-      return 14; // +992444444444@autoauction.tj
-    }
-    return null;
+    return (user as any)?.userId || null;
   };
 
   // Mutation to update user profile in database
@@ -98,11 +91,36 @@ export default function UserData() {
   const handleInputChange = (field: string, value: string) => {
     setTempData(prev => ({ ...prev, [field]: value }));
     updateUserData({ [field]: value });
-    
-    // Save fullName to database immediately when changed
-    if (field === 'fullName') {
-      updateProfileMutation.mutate({ fullName: value });
+  };
+
+  const handleEditName = () => {
+    setIsEditingName(true);
+    setEditedName(userData.fullName || '');
+  };
+
+  const handleSaveName = () => {
+    if (editedName.trim() === '') {
+      toast({
+        title: "Ошибка",
+        description: "ФИО не может быть пустым",
+        variant: "destructive",
+        duration: 3000,
+      });
+      return;
     }
+
+    // Update local data
+    updateUserData({ fullName: editedName });
+    
+    // Save to database
+    updateProfileMutation.mutate({ fullName: editedName });
+    
+    setIsEditingName(false);
+  };
+
+  const handleCancelEdit = () => {
+    setEditedName(userData.fullName || '');
+    setIsEditingName(false);
   };
 
   const currentData = userData;
@@ -135,13 +153,53 @@ export default function UserData() {
             <CardContent className="space-y-4">
               <div>
                 <Label htmlFor="fullName">ФИО</Label>
-                <Input
-                  id="fullName"
-                  value={currentData.fullName}
-                  onChange={(e) => handleInputChange('fullName', e.target.value)}
-                  placeholder="Введите ваше полное имя"
-                  className="mt-1"
-                />
+                {!isEditingName ? (
+                  <div className="mt-1 flex items-center justify-between p-3 bg-gray-50 rounded-md border">
+                    <span className="text-gray-900">
+                      {currentData.fullName || "(не указано)"}
+                    </span>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleEditName}
+                      className="text-blue-600 hover:text-blue-700"
+                    >
+                      <Edit className="w-4 h-4 mr-1" />
+                      Редактировать
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="mt-1 space-y-2">
+                    <Input
+                      id="fullName"
+                      value={editedName}
+                      onChange={(e) => setEditedName(e.target.value)}
+                      placeholder="Введите ваше полное имя"
+                      className="w-full"
+                      autoFocus
+                    />
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        onClick={handleSaveName}
+                        disabled={updateProfileMutation.isPending}
+                        className="bg-green-600 hover:bg-green-700 text-white"
+                      >
+                        <Save className="w-4 h-4 mr-1" />
+                        {updateProfileMutation.isPending ? "Сохранение..." : "Сохранить"}
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={handleCancelEdit}
+                        disabled={updateProfileMutation.isPending}
+                      >
+                        <X className="w-4 h-4 mr-1" />
+                        Отмена
+                      </Button>
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div>
