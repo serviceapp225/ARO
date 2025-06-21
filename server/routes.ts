@@ -421,22 +421,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Update listing's current bid
       await storage.updateListingCurrentBid(listingId, validatedData.amount);
+      
       if (listing) {
-        // Find users who have this listing in favorites
+        // Get all previous bidders for this auction (excluding current bidder)
+        const allBids = await storage.getBidsForListing(listingId);
+        const previousBidders = new Set<number>();
+        
+        // Collect unique bidder IDs (excluding current bidder)
+        allBids.forEach(prevBid => {
+          if (prevBid.bidderId !== validatedData.bidderId) {
+            previousBidders.add(prevBid.bidderId);
+          }
+        });
+
+        // Also get users who have this listing in favorites
         const usersWithFavorite = await storage.getUsersWithFavoriteListing(listingId);
         
-        // Send notifications to users with this listing in favorites (excluding the bidder)
-        for (const userId of usersWithFavorite) {
-          if (userId !== validatedData.bidderId) {
-            await storage.createNotification({
-              userId,
-              title: "Новая ставка на избранный автомобиль",
-              message: `Новая ставка $${validatedData.amount} на ${listing.make} ${listing.model} ${listing.year}`,
-              type: "bid_update",
-              listingId: listingId,
-              isRead: false
-            });
-          }
+        // Combine both groups: previous bidders and users with favorites
+        const allNotificationUsers = new Set([...previousBidders, ...usersWithFavorite]);
+        
+        // Remove current bidder from notification list
+        allNotificationUsers.delete(validatedData.bidderId);
+        
+        // Send notifications to all relevant users
+        for (const userId of allNotificationUsers) {
+          await storage.createNotification({
+            userId,
+            title: "Ваша ставка перебита!",
+            message: `Новая ставка ${validatedData.amount} Сомони на ${listing.make} ${listing.model} ${listing.year}. Сделайте ставку выше!`,
+            type: "bid_outbid",
+            listingId: listingId,
+            isRead: false
+          });
         }
       }
       
