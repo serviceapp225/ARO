@@ -1161,7 +1161,7 @@ export default function AuctionDetail() {
               Аккаунт не активирован
             </DialogTitle>
             <DialogDescription>
-              Вы можете просматривать аукционы, но не можете делать ставки. Для активации аккаунта обратитесь в службу поддержки через WhatsApp или по номеру 90000000.
+              Для активации аккаунта необходимо пройти верификацию. Обратитесь в службу поддержки через WhatsApp или по номеру 9000000.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="flex flex-col items-center space-y-3 mt-4">
