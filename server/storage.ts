@@ -1,5 +1,5 @@
 import { users, carListings, bids, favorites, notifications, carAlerts, banners, sellCarSection, advertisementCarousel, documents, alertViews, type User, type InsertUser, type CarListing, type InsertCarListing, type Bid, type InsertBid, type Favorite, type InsertFavorite, type Notification, type InsertNotification, type CarAlert, type InsertCarAlert, type Banner, type InsertBanner, type SellCarSection, type InsertSellCarSection, type AdvertisementCarousel, type InsertAdvertisementCarousel, type Document, type InsertDocument, type AlertView, type InsertAlertView } from "@shared/schema";
-import { db } from "./db";
+import { db, pool } from "./db";
 import { eq, and, desc, sql, or, ilike, inArray, isNull } from "drizzle-orm";
 
 export interface IStorage {
@@ -251,29 +251,18 @@ export class DatabaseStorage implements IStorage {
 
   async getListingsBySeller(sellerId: number): Promise<CarListing[]> {
     try {
+      console.log(`Starting DB query for seller ${sellerId}`);
+      const startTime = Date.now();
+      
       const listings = await db
-        .select({
-          id: carListings.id,
-          sellerId: carListings.sellerId,
-          lotNumber: carListings.lotNumber,
-          make: carListings.make,
-          model: carListings.model,
-          year: carListings.year,
-          mileage: carListings.mileage,
-          description: carListings.description,
-          startingPrice: carListings.startingPrice,
-          currentBid: carListings.currentBid,
-          status: carListings.status,
-          auctionEndTime: carListings.auctionEndTime,
-          photos: carListings.photos,
-          createdAt: carListings.createdAt
-        })
+        .select()
         .from(carListings)
         .where(eq(carListings.sellerId, sellerId))
-        .orderBy(desc(carListings.createdAt))
-        .limit(20); // Limit to 20 most recent listings
+        .orderBy(desc(carListings.id))
+        .limit(5); // Reduce to 5 listings for speed
       
-      return listings as CarListing[];
+      console.log(`DB query completed in ${Date.now() - startTime}ms, found ${listings.length} listings`);
+      return listings;
     } catch (error) {
       console.error('Error fetching seller listings:', error);
       return [];
