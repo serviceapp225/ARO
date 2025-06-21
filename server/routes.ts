@@ -490,6 +490,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/users/by-email/:email", async (req, res) => {
+    try {
+      const email = decodeURIComponent(req.params.email);
+      const user = await storage.getUserByEmail(email);
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+      res.json(user);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch user by email" });
+    }
+  });
+
   app.get("/api/users/:id", async (req, res) => {
     try {
       const userId = parseInt(req.params.id);
@@ -1321,10 +1334,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Код верный - удаляем из кэша
       cache.delete(cacheKey);
       
+      // Проверяем, существует ли пользователь в базе данных
+      const emailFromPhone = phoneNumber.replace(/\D/g, '') + '@autoauction.tj';
+      let user = await storage.getUserByEmail(emailFromPhone);
+      
+      // Если пользователь не существует, создаем его как неактивного
+      if (!user) {
+        console.log(`Creating new inactive user for phone: ${phoneNumber}`);
+        user = await storage.createUser({
+          email: emailFromPhone,
+          username: phoneNumber,
+          fullName: null,
+          isActive: false, // По умолчанию все новые пользователи неактивны
+          role: 'buyer'
+        });
+        console.log(`Created new user with ID: ${user.id}, isActive: ${user.isActive}`);
+      }
+      
       res.json({ 
         success: true, 
         message: "Код подтвержден",
-        phoneNumber: phoneNumber
+        phoneNumber: phoneNumber,
+        user: {
+          id: user.id,
+          email: user.email,
+          isActive: user.isActive
+        }
       });
     } catch (error) {
       console.error("SMS verification error:", error);

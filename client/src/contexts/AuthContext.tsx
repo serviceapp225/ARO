@@ -34,24 +34,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           
           // Fetch user activation status from database based on phone number
           try {
-            // Map phone numbers to user IDs
-            let userId = 2; // default fallback to seller
-            if (demoUser.phoneNumber === "+992 (11) 111-11-11") {
-              userId = 13; // +992111111111@autoauction.tj
-            } else if (demoUser.phoneNumber === "+992 (44) 444-44-44") {
-              userId = 14; // +992444444444@autoauction.tj
-            }
+            // Try to get user by phone number email format
+            const emailFromPhone = demoUser.phoneNumber.replace(/\D/g, '') + '@autoauction.tj';
+            const response = await fetch(`/api/users/by-email/${encodeURIComponent(emailFromPhone)}`);
             
-            const response = await fetch(`/api/users/${userId}`);
             if (response.ok) {
               const dbUser = await response.json();
               demoUser.isActive = dbUser.isActive;
+              demoUser.userId = dbUser.id; // Store the actual user ID
             } else {
-              demoUser.isActive = false; // Default to inactive if server error
+              demoUser.isActive = false; // Default to inactive if user not found
+              demoUser.userId = null; // No user ID if not found
             }
           } catch (error) {
             console.error('Failed to fetch user activation status:', error);
             demoUser.isActive = false; // Default to inactive on error
+            demoUser.userId = null;
           }
           
           setUser(demoUser);
