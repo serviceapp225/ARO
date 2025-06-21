@@ -12,6 +12,7 @@ import { CAR_MAKES_MODELS, getModelsForMake } from "../../../shared/car-data";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
 import { queryClient } from "@/lib/queryClient";
+import { useAuth } from "@/contexts/AuthContext";
 
 
 const TAJIKISTAN_CITIES = [
@@ -41,6 +42,7 @@ const TAJIKISTAN_CITIES = [
 ];
 
 export default function SellCar() {
+  const { user } = useAuth();
   const [uploadedImages, setUploadedImages] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
@@ -310,7 +312,7 @@ export default function SellCar() {
     try {
       // Create listing data matching database schema
       const listingData = {
-        sellerId: 2, // Demo seller ID
+        sellerId: (user as any)?.id || 2, // Use current user ID
         lotNumber: `${Math.floor(100000 + Math.random() * 900000)}`,
         make: formData.make,
         model: formData.model,
