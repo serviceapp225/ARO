@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useState, ReactNode } from 'react
 import { useToast } from '@/hooks/use-toast';
 import { fastCache, preCacheUserData, getCachedUserData } from '@/lib/fastCache';
 import { getInstantUserData, isInstantUser } from '@/lib/instantAuth';
+import { preloadCriticalData } from '@/lib/preloadData';
 
 interface DemoUser {
   email: string;

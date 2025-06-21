@@ -9,20 +9,33 @@ import { TopHeader } from "@/components/TopHeader";
 import { Link } from "wouter";
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
+import { useAuth } from "@/contexts/AuthContext";
+import { loadFastLoginData, prepareFastLogin } from "@/lib/fastLogin";
 
 export default function HomePage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [, setLocation] = useLocation();
   const [showSecondaryContent, setShowSecondaryContent] = useState(false);
+  const { user } = useAuth();
 
-  // Delay loading of secondary content to prioritize core auctions
+  // Ultra-fast loading optimization
   useEffect(() => {
+    if (user?.userId) {
+      // Try to load cached data immediately
+      const cachedData = loadFastLoginData(user.userId);
+      if (!cachedData) {
+        // Prepare data for next time
+        prepareFastLogin(user.userId);
+      }
+    }
+
+    // Load secondary content after minimal delay
     const timer = setTimeout(() => {
       setShowSecondaryContent(true);
-    }, 100); // Load secondary content after initial render
+    }, 25);
 
     return () => clearTimeout(timer);
-  }, []);
+  }, [user?.userId]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
