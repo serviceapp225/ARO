@@ -8,6 +8,7 @@ interface DemoUser {
   uid: string;
   role?: string;
   isActive?: boolean;
+  userId?: number;
 }
 
 interface AuthContextType {

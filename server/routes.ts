@@ -1308,7 +1308,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Код истек или не найден" });
       }
 
-      const { code: storedCode, timestamp, attempts } = cachedData.data;
+      const { code: storedCode, timestamp, attempts } = cachedData;
       
       // Проверяем, не истек ли код (5 минут)
       if (Date.now() - timestamp > 300000) {
@@ -1325,7 +1325,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (code !== storedCode) {
         // Увеличиваем счетчик попыток
         cache.set(cacheKey, {
-          ...cachedData.data,
+          ...cachedData,
           attempts: attempts + 1
         });
         return res.status(400).json({ error: "Неверный код" });
