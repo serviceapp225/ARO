@@ -17,7 +17,7 @@ export function NotificationBell({ userId }: NotificationBellProps) {
   const { data: allNotifications = [], isLoading } = useQuery<Notification[]>({
     queryKey: [`/api/notifications/${userId}`],
     refetchInterval: isOpen ? 30000 : 60000, // Poll less frequently: 30s when open, 60s when closed
-    staleTime: 30000, // Consider data fresh for 30 seconds
+    staleTime: 5000, // Consider data fresh for 5 seconds only
   });
 
   // Показываем все уведомления (найденные машины и перебитые ставки)
@@ -87,6 +87,8 @@ export function NotificationBell({ userId }: NotificationBellProps) {
         newSet.delete(notificationId);
         return newSet;
       });
+      // Force cache invalidation and immediate refetch
+      queryClient.removeQueries({ queryKey: [`/api/notifications/${userId}`] });
       queryClient.invalidateQueries({ queryKey: [`/api/notifications/${userId}`] });
     },
   });
@@ -125,6 +127,8 @@ export function NotificationBell({ userId }: NotificationBellProps) {
       }
     },
     onSettled: () => {
+      // Force cache invalidation and immediate refetch
+      queryClient.removeQueries({ queryKey: [`/api/notifications/${userId}`] });
       queryClient.invalidateQueries({ queryKey: [`/api/notifications/${userId}`] });
     },
   });
