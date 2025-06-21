@@ -29,6 +29,9 @@ export function ProtectedRoute({ children, title, description }: ProtectedRouteP
             <p className="text-gray-600 dark:text-gray-400 mt-2">
               {description}
             </p>
+            <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">
+              вход autobid.tj
+            </p>
           </CardHeader>
           <CardContent className="space-y-4">
             <Button 
