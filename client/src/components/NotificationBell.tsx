@@ -10,6 +10,7 @@ interface NotificationBellProps {
 
 export function NotificationBell({ userId }: NotificationBellProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [deletedNotificationIds, setDeletedNotificationIds] = useState<Set<number>>(new Set());
   
   // Manual refetch when opening notifications
   const handleToggleOpen = () => {
@@ -33,8 +34,8 @@ export function NotificationBell({ userId }: NotificationBellProps) {
     refetchOnMount: false, // Don't refetch on component mount
   });
 
-  // Показываем все уведомления (найденные машины и перебитые ставки)
-  const notifications = allNotifications;
+  // Показываем все уведомления кроме удаленных локально
+  const notifications = allNotifications.filter(n => !deletedNotificationIds.has(n.id));
 
   const markAsReadMutation = useMutation({
     mutationFn: async (notificationId: number) => {
@@ -58,7 +59,10 @@ export function NotificationBell({ userId }: NotificationBellProps) {
       return notificationId;
     },
     onSuccess: (notificationId) => {
-      // Immediately update local state to remove the notification
+      // Add to local deleted list to prevent showing again
+      setDeletedNotificationIds(prev => new Set(prev).add(notificationId));
+      
+      // Also update cache to remove immediately
       queryClient.setQueryData<Notification[]>(
         [`/api/notifications/${userId}`],
         (oldData) => oldData ? oldData.filter(n => n.id !== notificationId) : []
