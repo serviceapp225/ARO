@@ -84,7 +84,7 @@ export default function Profile() {
       {/* Header */}
       <header className="bg-white shadow-sm border-b border-gray-200">
         <div className="container mx-auto px-4 py-4">
-          <h1 className="text-2xl font-bold text-gray-900">Профиль</h1>
+          <h1 className="text-2xl font-bold text-gray-900 text-center">Профиль</h1>
         </div>
       </header>
 
