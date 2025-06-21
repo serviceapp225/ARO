@@ -33,23 +33,50 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           const demoUser = JSON.parse(demoUserData);
           demoUser.role = demoUser.role || 'buyer';
           
-          // Fetch user activation status from database based on phone number
+          // Check if user data is already cached
+          const cachedUserKey = `user_data_${demoUser.phoneNumber}`;
+          const cachedUserData = localStorage.getItem(cachedUserKey);
+          const cacheExpiry = 5 * 60 * 1000; // 5 minutes cache
+          
+          if (cachedUserData) {
+            try {
+              const cached = JSON.parse(cachedUserData);
+              if (Date.now() - cached.timestamp < cacheExpiry) {
+                // Use cached data
+                demoUser.isActive = cached.isActive;
+                demoUser.userId = cached.userId;
+                setUser(demoUser);
+                setLoading(false);
+                return;
+              }
+            } catch (e) {
+              localStorage.removeItem(cachedUserKey);
+            }
+          }
+
+          // Fetch user activation status from database
           try {
-            // Try to get user by phone number email format
             const emailFromPhone = demoUser.phoneNumber.replace(/\D/g, '') + '@autoauction.tj';
             const response = await fetch(`/api/users/by-email/${encodeURIComponent(emailFromPhone)}`);
             
             if (response.ok) {
               const dbUser = await response.json();
               demoUser.isActive = dbUser.isActive;
-              demoUser.userId = dbUser.id; // Store the actual user ID
+              demoUser.userId = dbUser.id;
+              
+              // Cache the user data
+              localStorage.setItem(cachedUserKey, JSON.stringify({
+                isActive: dbUser.isActive,
+                userId: dbUser.id,
+                timestamp: Date.now()
+              }));
             } else {
-              demoUser.isActive = false; // Default to inactive if user not found
-              demoUser.userId = null; // No user ID if not found
+              demoUser.isActive = false;
+              demoUser.userId = null;
             }
           } catch (error) {
             console.error('Failed to fetch user activation status:', error);
-            demoUser.isActive = false; // Default to inactive on error
+            demoUser.isActive = false;
             demoUser.userId = null;
           }
           
