@@ -1093,18 +1093,18 @@ export default function AuctionDetail() {
               Вы можете просматривать аукционы, но не можете делать ставки. Для активации аккаунта обратитесь в службу поддержки через WhatsApp или по номеру 90000000.
             </DialogDescription>
           </DialogHeader>
-          <DialogFooter className="flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-2">
-            <Button variant="outline" onClick={() => setShowActivationDialog(false)}>
-              Закрыть
-            </Button>
+          <DialogFooter className="flex flex-col items-center space-y-3 mt-4">
             <Button 
               onClick={() => {
                 window.open("https://wa.me/992000000000?text=Здравствуйте! Мне нужно активировать аккаунт на AUTOBID.TJ", "_blank");
                 setShowActivationDialog(false);
               }}
-              className="bg-green-600 hover:bg-green-700"
+              className="bg-green-600 hover:bg-green-700 w-full max-w-xs"
             >
               Связаться с поддержкой
+            </Button>
+            <Button variant="outline" onClick={() => setShowActivationDialog(false)} className="w-full max-w-xs">
+              Закрыть
             </Button>
           </DialogFooter>
         </DialogContent>
