@@ -9,6 +9,10 @@ const __dirname = dirname(__filename);
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+console.log('Starting AutoAuction production server...');
+console.log('Environment:', process.env.NODE_ENV);
+console.log('Port:', PORT);
+
 // Basic middleware
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true }));
