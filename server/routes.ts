@@ -785,6 +785,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/admin/stats", async (req, res) => {
+    try {
+      const stats = await storage.getAdminStats();
+      res.json(stats);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch admin stats" });
+    }
+  });
+
+  app.get("/api/admin/pending-listings", async (req, res) => {
+    try {
+      const pendingListings = await storage.getListingsByStatus("pending");
+      res.json(pendingListings);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch pending listings" });
+    }
+  });
+
   app.get("/api/admin/listings", async (req, res) => {
     try {
       const allListings = await storage.getListingsByStatus("pending");
@@ -799,7 +817,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.patch("/api/admin/users/:id", async (req, res) => {
+  app.post("/api/admin/users/:id/status", async (req, res) => {
     try {
       const userId = parseInt(req.params.id);
       const { isActive } = req.body;
@@ -811,6 +829,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(user);
     } catch (error) {
       res.status(500).json({ error: "Failed to update user status" });
+    }
+  });
+
+  app.post("/api/admin/listings/:id/approve", async (req, res) => {
+    try {
+      const listingId = parseInt(req.params.id);
+      
+      const listing = await storage.updateListingStatus(listingId, "active");
+      if (!listing) {
+        return res.status(404).json({ error: "Listing not found" });
+      }
+      
+      // Clear all caches when admin approves listing
+      clearAllCaches();
+      
+      res.json({ success: true, listing });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to approve listing" });
+    }
+  });
+
+  app.post("/api/admin/listings/:id/reject", async (req, res) => {
+    try {
+      const listingId = parseInt(req.params.id);
+      const { reason } = req.body;
+      
+      const listing = await storage.updateListingStatus(listingId, "rejected");
+      if (!listing) {
+        return res.status(404).json({ error: "Listing not found" });
+      }
+      
+      // Clear all caches when admin rejects listing
+      clearAllCaches();
+      
+      // TODO: Send notification to seller with rejection reason
+      
+      res.json({ success: true, listing, reason });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to reject listing" });
     }
   });
 
