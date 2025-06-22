@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AutoBid.tj - Админ Панель</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <div id="app" class="min-h-screen">
+        <!-- Login Form -->
+        <div id="loginForm" class="min-h-screen flex items-center justify-center">
+            <div class="bg-white p-8 rounded-lg shadow-lg w-96">
+                <h1 class="text-2xl font-bold text-center mb-6">Админ Панель AutoBid.tj</h1>
+                <div class="space-y-4">
+                    <input 
+                        type="text" 
+                        id="username" 
+                        placeholder="Логин администратора"
+                        class="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                    <input 
+                        type="password" 
+                        id="password" 
+                        placeholder="Пароль"
+                        class="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                    <button 
+                        onclick="adminLogin()"
+                        class="w-full bg-blue-600 text-white p-3 rounded-lg hover:bg-blue-700 transition"
+                    >
+                        Войти
+                    </button>
+                </div>
+                <div id="loginError" class="text-red-500 text-sm mt-2 hidden"></div>
+            </div>
+        </div>
+
+        <!-- Admin Dashboard -->
+        <div id="adminDashboard" class="hidden">
+            <nav class="bg-blue-600 text-white p-4">
+                <div class="flex justify-between items-center">
+                    <h1 class="text-xl font-bold">AutoBid.tj Админ Панель</h1>
+                    <button onclick="logout()" class="bg-blue-700 px-4 py-2 rounded hover:bg-blue-800">Выйти</button>
+                </div>
+            </nav>
+
+            <div class="container mx-auto p-6">
+                <!-- Stats Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                    <div class="bg-white p-6 rounded-lg shadow">
+                        <h3 class="text-gray-500 text-sm">На модерации</h3>
+                        <p id="pendingCount" class="text-2xl font-bold text-orange-600">-</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow">
+                        <h3 class="text-gray-500 text-sm">Активные аукционы</h3>
+                        <p id="activeCount" class="text-2xl font-bold text-green-600">-</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow">
+                        <h3 class="text-gray-500 text-sm">Всего пользователей</h3>
+                        <p id="usersCount" class="text-2xl font-bold text-blue-600">-</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow">
+                        <h3 class="text-gray-500 text-sm">Заблокированные</h3>
+                        <p id="bannedCount" class="text-2xl font-bold text-red-600">-</p>
+                    </div>
+                </div>
+
+                <!-- Tabs -->
+                <div class="bg-white rounded-lg shadow">
+                    <div class="border-b">
+                        <nav class="flex space-x-8">
+                            <button onclick="showTab('pending')" class="tab-btn py-4 px-6 border-b-2 border-blue-600 text-blue-600">На модерации</button>
+                            <button onclick="showTab('users')" class="tab-btn py-4 px-6 text-gray-500 hover:text-gray-700">Пользователи</button>
+                            <button onclick="showTab('listings')" class="tab-btn py-4 px-6 text-gray-500 hover:text-gray-700">Все объявления</button>
+                        </nav>
+                    </div>
+
+                    <!-- Pending Listings Tab -->
+                    <div id="pendingTab" class="p-6">
+                        <h2 class="text-xl font-bold mb-4">Объявления на модерации</h2>
+                        <div id="pendingListings" class="space-y-4">
+                            <!-- Будет заполнено через JavaScript -->
+                        </div>
+                    </div>
+
+                    <!-- Users Tab -->
+                    <div id="usersTab" class="p-6 hidden">
+                        <h2 class="text-xl font-bold mb-4">Управление пользователями</h2>
+                        <div id="usersList" class="space-y-4">
+                            <!-- Будет заполнено через JavaScript -->
+                        </div>
+                    </div>
+
+                    <!-- All Listings Tab -->
+                    <div id="listingsTab" class="p-6 hidden">
+                        <h2 class="text-xl font-bold mb-4">Все объявления</h2>
+                        <div id="allListings" class="space-y-4">
+                            <!-- Будет заполнено через JavaScript -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let isLoggedIn = false;
+        let adminToken = null;
+
+        // Admin login
+        async function adminLogin() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const errorDiv = document.getElementById('loginError');
+
+            if (!username || !password) {
+                showError('Введите логин и пароль');
+                return;
+            }
+
+            // Simple admin credentials (в production используйте более безопасную аутентификацию)
+            if (username === 'admin' && password === 'autobid2025') {
+                isLoggedIn = true;
+                adminToken = 'admin-token-' + Date.now();
+                
+                document.getElementById('loginForm').classList.add('hidden');
+                document.getElementById('adminDashboard').classList.remove('hidden');
+                
+                loadDashboard();
+            } else {
+                showError('Неверный логин или пароль');
+            }
+        }
+
+        function showError(message) {
+            const errorDiv = document.getElementById('loginError');
+            errorDiv.textContent = message;
+            errorDiv.classList.remove('hidden');
+        }
+
+        function logout() {
+            isLoggedIn = false;
+            adminToken = null;
+            document.getElementById('loginForm').classList.remove('hidden');
+            document.getElementById('adminDashboard').classList.add('hidden');
+            document.getElementById('username').value = '';
+            document.getElementById('password').value = '';
+        }
+
+        // Load dashboard data
+        async function loadDashboard() {
+            await Promise.all([
+                loadStats(),
+                loadPendingListings(),
+                loadUsers(),
+                loadAllListings()
+            ]);
+        }
+
+        async function loadStats() {
+            try {
+                const response = await fetch('/api/admin/stats');
+                const stats = await response.json();
+                
+                document.getElementById('pendingCount').textContent = stats.pendingListings || 0;
+                document.getElementById('activeCount').textContent = stats.activeAuctions || 0;
+                document.getElementById('usersCount').textContent = stats.totalUsers || 0;
+                document.getElementById('bannedCount').textContent = stats.bannedUsers || 0;
+            } catch (error) {
+                console.error('Error loading stats:', error);
+            }
+        }
+
+        async function loadPendingListings() {
+            try {
+                const response = await fetch('/api/admin/pending-listings');
+                const listings = await response.json();
+                
+                const container = document.getElementById('pendingListings');
+                if (listings.length === 0) {
+                    container.innerHTML = '<p class="text-gray-500">Нет объявлений на модерации</p>';
+                    return;
+                }
+
+                container.innerHTML = listings.map(listing => `
+                    <div class="border rounded-lg p-4">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <h3 class="font-bold">${listing.make} ${listing.model} ${listing.year}</h3>
+                                <p class="text-gray-600">Лот: ${listing.lotNumber}</p>
+                                <p class="text-gray-600">Пробег: ${listing.mileage.toLocaleString()} км</p>
+                                <p class="text-green-600 font-bold">$${listing.startingPrice}</p>
+                            </div>
+                            <div class="space-x-2">
+                                <button onclick="approveListing(${listing.id})" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Одобрить</button>
+                                <button onclick="rejectListing(${listing.id})" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">Отклонить</button>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Error loading pending listings:', error);
+            }
+        }
+
+        async function loadUsers() {
+            try {
+                const response = await fetch('/api/admin/users');
+                const users = await response.json();
+                
+                const container = document.getElementById('usersList');
+                container.innerHTML = users.map(user => `
+                    <div class="border rounded-lg p-4">
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <h3 class="font-bold">${user.fullName || user.username}</h3>
+                                <p class="text-gray-600">${user.email}</p>
+                                <span class="inline-block px-2 py-1 text-xs rounded ${user.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">
+                                    ${user.isActive ? 'Активен' : 'Заблокирован'}
+                                </span>
+                            </div>
+                            <button onclick="toggleUserStatus(${user.id}, ${!user.isActive})" 
+                                    class="px-4 py-2 rounded ${user.isActive ? 'bg-red-600 hover:bg-red-700' : 'bg-green-600 hover:bg-green-700'} text-white">
+                                ${user.isActive ? 'Заблокировать' : 'Разблокировать'}
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Error loading users:', error);
+            }
+        }
+
+        async function loadAllListings() {
+            try {
+                const response = await fetch('/api/admin/listings');
+                const listings = await response.json();
+                
+                const container = document.getElementById('allListings');
+                container.innerHTML = listings.map(listing => `
+                    <div class="border rounded-lg p-4">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <h3 class="font-bold">${listing.make} ${listing.model} ${listing.year}</h3>
+                                <p class="text-gray-600">Лот: ${listing.lotNumber}</p>
+                                <span class="inline-block px-2 py-1 text-xs rounded ${getStatusColor(listing.status)}">
+                                    ${getStatusText(listing.status)}
+                                </span>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-green-600 font-bold">$${listing.startingPrice}</p>
+                                ${listing.currentBid ? `<p class="text-blue-600">Ставка: $${listing.currentBid}</p>` : ''}
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Error loading all listings:', error);
+            }
+        }
+
+        function getStatusColor(status) {
+            const colors = {
+                pending: 'bg-yellow-100 text-yellow-800',
+                active: 'bg-green-100 text-green-800',
+                ended: 'bg-gray-100 text-gray-800',
+                rejected: 'bg-red-100 text-red-800'
+            };
+            return colors[status] || 'bg-gray-100 text-gray-800';
+        }
+
+        function getStatusText(status) {
+            const texts = {
+                pending: 'На модерации',
+                active: 'Активен',
+                ended: 'Завершен',
+                rejected: 'Отклонен'
+            };
+            return texts[status] || status;
+        }
+
+        // Admin actions
+        async function approveListing(id) {
+            try {
+                const response = await fetch(`/api/admin/listings/${id}/approve`, {
+                    method: 'POST'
+                });
+                if (response.ok) {
+                    alert('Объявление одобрено');
+                    loadDashboard();
+                }
+            } catch (error) {
+                alert('Ошибка при одобрении объявления');
+            }
+        }
+
+        async function rejectListing(id) {
+            const reason = prompt('Причина отклонения:');
+            if (!reason) return;
+
+            try {
+                const response = await fetch(`/api/admin/listings/${id}/reject`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ reason })
+                });
+                if (response.ok) {
+                    alert('Объявление отклонено');
+                    loadDashboard();
+                }
+            } catch (error) {
+                alert('Ошибка при отклонении объявления');
+            }
+        }
+
+        async function toggleUserStatus(userId, newStatus) {
+            try {
+                const response = await fetch(`/api/admin/users/${userId}/status`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ isActive: newStatus })
+                });
+                if (response.ok) {
+                    alert(newStatus ? 'Пользователь разблокирован' : 'Пользователь заблокирован');
+                    loadDashboard();
+                }
+            } catch (error) {
+                alert('Ошибка при изменении статуса пользователя');
+            }
+        }
+
+        // Tab switching
+        function showTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('[id$="Tab"]').forEach(tab => tab.classList.add('hidden'));
+            
+            // Remove active state from all buttons
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('border-blue-600', 'text-blue-600');
+                btn.classList.add('text-gray-500');
+            });
+            
+            // Show selected tab
+            document.getElementById(tabName + 'Tab').classList.remove('hidden');
+            
+            // Set active button
+            event.target.classList.add('border-blue-600', 'text-blue-600');
+            event.target.classList.remove('text-gray-500');
+        }
+
+        // Auto-refresh every 30 seconds
+        setInterval(() => {
+            if (isLoggedIn) {
+                loadStats();
+            }
+        }, 30000);
+    </script>
+</body>
+</html>
