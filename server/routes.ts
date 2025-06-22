@@ -1833,12 +1833,25 @@ async function sendSMSCode(phoneNumber: string, code: string): Promise<{success:
     const cleanPhone = phoneNumber.replace(/[\s\(\)\-]/g, '');
     const encodedPhone = encodeURIComponent(cleanPhone);
     
-    const requestUrl = `${smsServer}?login=${smsLogin}&str_hash=${smsHash}&from=${smsSender}&phone_number=${encodedPhone}&msg=${message}&txn_id=${txnId}`;
-    console.log(`[SMS] Отправка SMS на ${phoneNumber} через OsonSMS`);
-    console.log(`[SMS] URL: ${requestUrl}`);
+    // Попробуем POST запрос с form data
+    const formData = new URLSearchParams({
+      login: smsLogin,
+      str_hash: smsHash,
+      from: smsSender,
+      phone_number: cleanPhone,
+      msg: `Код AUTOBID.TJ: ${code}`,
+      txn_id: txnId
+    });
 
-    const response = await fetch(requestUrl, {
-      method: 'GET'
+    console.log(`[SMS] Отправка SMS на ${phoneNumber} через OsonSMS (POST)`);
+    console.log(`[SMS] Параметры:`, Object.fromEntries(formData));
+
+    const response = await fetch(smsServer, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: formData
     });
 
     const result = await response.text();
@@ -1849,23 +1862,15 @@ async function sendSMSCode(phoneNumber: string, code: string): Promise<{success:
       const jsonResult = JSON.parse(result);
       if (jsonResult.success || jsonResult.status === 'success' || !jsonResult.error) {
         return { success: true, message: "SMS отправлен через OsonSMS" };
-      } else if (jsonResult.error && jsonResult.error.msg === "Incorrect hash") {
-        // Временное решение для неверного hash - используем демо режим
-        console.log(`[SMS] Неверный hash, используем демо-режим. Код: ${code}`);
-        return { success: true, message: "SMS отправлен (демо-режим - проверьте hash)" };
       } else {
-        // Для других ошибок тоже используем демо режим
-        console.log(`[SMS] Ошибка API, используем демо-режим. Код: ${code}`);
-        return { success: true, message: "SMS отправлен (демо-режим)" };
+        return { success: false, message: `Ошибка OsonSMS: ${JSON.stringify(jsonResult)}` };
       }
     } catch {
       // Если ответ не JSON, проверяем наличие success в тексте
       if (result.toLowerCase().includes('success') || result.toLowerCase().includes('ok')) {
         return { success: true, message: "SMS отправлен через OsonSMS" };
       } else {
-        // Используем демо режим для неизвестных форматов ответа
-        console.log(`[SMS] Неизвестный формат ответа, используем демо-режим. Код: ${code}`);
-        return { success: true, message: "SMS отправлен (демо-режим)" };
+        return { success: false, message: `Неизвестный формат ответа OsonSMS: ${result}` };
       }
     }
     
