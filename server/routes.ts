@@ -2,8 +2,8 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { db } from "./db";
-import { carListings, notifications, alertViews, carAlerts } from "../shared/schema";
-import { eq, sql } from "drizzle-orm";
+import { carListings, notifications, alertViews, carAlerts, deletedAlerts } from "../shared/schema";
+import { eq, and } from "drizzle-orm";
 import sharp from "sharp";
 import { insertCarListingSchema, insertBidSchema, insertFavoriteSchema, insertNotificationSchema, insertCarAlertSchema, insertBannerSchema, type CarAlert } from "@shared/schema";
 import { z } from "zod";
@@ -853,20 +853,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // First, get notification details to mark as viewed
       try {
-        const result = await db.execute(
-          sql`SELECT user_id, alert_id, listing_id, type FROM notifications WHERE id = ${notificationId}`
-        );
+        const result = await db.select({
+          user_id: notifications.userId,
+          alert_id: notifications.alertId,
+          listing_id: notifications.listingId,
+          type: notifications.type
+        }).from(notifications).where(eq(notifications.id, notificationId));
         
-        if (result.rows.length > 0) {
-          const notification = result.rows[0] as any;
+        if (result.length > 0) {
+          const notification = result[0];
           
           if (notification.type === "car_found" && notification.listing_id && notification.alert_id) {
             // Mark this alert as viewed so it won't appear again
-            await db.execute(
-              sql`INSERT INTO alert_views (user_id, alert_id, listing_id) 
-                  VALUES (${notification.user_id}, ${notification.alert_id}, ${notification.listing_id})
-                  ON CONFLICT (user_id, alert_id, listing_id) DO NOTHING`
-            );
+            await db.insert(alertViews).values({
+              userId: notification.user_id,
+              alertId: notification.alert_id,
+              listingId: notification.listing_id
+            }).onConflictDoNothing();
             console.log(`Marked alert ${notification.alert_id} for listing ${notification.listing_id} as viewed`);
           }
         }
@@ -923,11 +926,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
           maxYear: alert.maxYear
         });
         
-        const deletedCheck = await db.execute(
-          sql`SELECT id FROM deleted_alerts WHERE user_id = ${userId} AND alert_data = ${alertData}`
-        );
+        const deletedCheck = await db.select({ id: deletedAlerts.id })
+          .from(deletedAlerts)
+          .where(and(
+            eq(deletedAlerts.userId, userId),
+            eq(deletedAlerts.alertData, alertData)
+          ));
         
-        if (deletedCheck.rows.length === 0) {
+        if (deletedCheck.length === 0) {
           filteredAlerts.push(alert);
         }
       }
