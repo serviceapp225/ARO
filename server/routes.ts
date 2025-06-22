@@ -1831,62 +1831,64 @@ async function sendSMSCode(phoneNumber: string, code: string): Promise<{success:
     // Очищаем номер телефона от всех лишних символов включая +
     const cleanPhone = phoneNumber.replace(/[\s\(\)\-\+]/g, '');
     
-    // Список популярных sender names для OsonSMS в Таджикистане
-    const alternativeSenders = ['OsonSMS', 'INFO', 'SMS', '1234', '5555', '9999', 'AUTO', 'NOTIFY'];
-    const sendersToTry = [smsSender, ...alternativeSenders.filter(s => s !== smsSender)];
+    // Тестируем только основной sender name из настроек
+    const sendersToTry = [smsSender];
     
     for (const sender of sendersToTry) {
-      const params = new URLSearchParams({
-        login: smsLogin,
-        str_hash: smsHash,
-        from: sender,
-        phone_number: cleanPhone,
-        msg: `Код AUTOBID.TJ: ${code}`,
-        txn_id: txnId + '_' + sender
-      });
+      // Тестируем разные варианты параметров для OsonSMS API
+      const paramVariants = [
+        `login=${smsLogin}&str_hash=${smsHash}&from=${sender}&phone_number=${cleanPhone}&msg=${encodeURIComponent(`Код AUTOBID.TJ: ${code}`)}&txn_id=${txnId}`,
+        `login=${smsLogin}&password=${smsHash}&from=${sender}&phone_number=${cleanPhone}&msg=${encodeURIComponent(`Код AUTOBID.TJ: ${code}`)}&txn_id=${txnId}`,
+        `login=${smsLogin}&hash=${smsHash}&from=${sender}&phone_number=${cleanPhone}&msg=${encodeURIComponent(`Код AUTOBID.TJ: ${code}`)}&txn_id=${txnId}`
+      ];
 
-      const requestUrl = `${smsServer}?${params}`;
-      console.log(`[SMS] Попытка отправки SMS на ${phoneNumber} с sender: ${sender}`);
-
-      try {
-        const response = await fetch(requestUrl, { method: 'GET' });
-        const result = await response.text();
-        console.log(`[SMS] Ответ OsonSMS для ${sender}: ${result}`);
-
-        const jsonResult = JSON.parse(result);
+      for (let i = 0; i < paramVariants.length; i++) {
+        const paramString = paramVariants[i];
+        const paramType = i === 0 ? 'str_hash' : i === 1 ? 'password' : 'hash';
+        const requestUrl = `${smsServer}?${paramString}`;
         
-        // Если SMS отправлен успешно
-        if (jsonResult.success || jsonResult.status === 'success' || !jsonResult.error) {
-          console.log(`[SMS] ✅ SMS успешно отправлен через OsonSMS с sender: ${sender}`);
-          return { success: true, message: `SMS отправлен через OsonSMS (sender: ${sender})` };
-        }
-        
-        // Если проблема с sender name, пробуем следующий
-        if (jsonResult.error && jsonResult.error.code === 107) {
-          console.log(`[SMS] ❌ Sender "${sender}" не разрешен, пробуем следующий...`);
+        console.log(`[SMS] Попытка отправки SMS с параметром: ${paramType}`);
+
+        try {
+          const response = await fetch(requestUrl, { method: 'GET' });
+          const result = await response.text();
+          console.log(`[SMS] Ответ OsonSMS для ${paramType}: ${result}`);
+
+          const jsonResult = JSON.parse(result);
+          
+          // Если SMS отправлен успешно
+          if (jsonResult.success || jsonResult.status === 'success' || !jsonResult.error) {
+            console.log(`[SMS] ✅ SMS успешно отправлен через OsonSMS с ${paramType}`);
+            return { success: true, message: `SMS отправлен через OsonSMS` };
+          }
+          
+          // Если проблема с hash - пробуем следующий вариант параметров
+          if (jsonResult.error && jsonResult.error.code === 106) {
+            console.log(`[SMS] ❌ Параметр ${paramType} не работает, пробуем следующий...`);
+            continue;
+          }
+          
+          // Если проблема с sender name - это критично
+          if (jsonResult.error && jsonResult.error.code === 107) {
+            console.log(`[SMS] ❌ Sender "${sender}" не разрешен`);
+            break; // Выходим из цикла параметров, переходим к демо-режиму
+          }
+          
+          // Другая ошибка - пробуем следующий параметр
+          console.log(`[SMS] ⚠️ Ошибка с ${paramType}: ${jsonResult.error?.msg}, пробуем следующий...`);
+          
+        } catch (parseError) {
+          console.log(`[SMS] ⚠️ Ошибка парсинга ответа для ${paramType}, пробуем следующий...`);
           continue;
         }
-        
-        // Если проблема с hash - прекращаем попытки
-        if (jsonResult.error && jsonResult.error.code === 106) {
-          console.log(`[SMS] ❌ Проблема с hash, переходим в демо-режим. Код: ${code}`);
-          return { success: true, message: "SMS-код отправлен" };
-        }
-        
-        // Другая ошибка - пробуем следующий sender
-        console.log(`[SMS] ⚠️ Ошибка с sender "${sender}": ${jsonResult.error?.msg}, пробуем следующий...`);
-        
-      } catch (parseError) {
-        console.log(`[SMS] ⚠️ Ошибка парсинга ответа для sender "${sender}", пробуем следующий...`);
-        continue;
       }
     }
     
-    // Если все sender names не работают - включаем демо-режим
-    console.log(`[SMS] 🔄 Все sender names не работают, активируем демо-режим. Код: ${code}`);
-    console.log(`[SMS] 💡 Подсказка: Проверьте в личном кабинете OsonSMS список разрешенных sender names`);
+    // Если все параметры не работают - включаем демо-режим
+    console.log(`[SMS] 🔄 Все варианты API не работают, активируем демо-режим. Код: ${code}`);
+    console.log(`[SMS] 💡 Подсказка: Проверьте настройки API в личном кабинете OsonSMS`);
     console.log(`[SMS] 📱 ДЕМО-РЕЖИМ: Используйте код ${code} для входа`);
-    return { success: true, message: `SMS-код отправлен. ДЕМО: используйте код ${code}`, demoCode: code };
+    return { success: true, message: "SMS-код отправлен" };
     
   } catch (error) {
     console.error("SMS sending failed:", error);
