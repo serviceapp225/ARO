@@ -1,4 +1,4 @@
-import { users, carListings, bids, favorites, notifications, carAlerts, banners, sellCarSection, advertisementCarousel, documents, alertViews, type User, type InsertUser, type CarListing, type InsertCarListing, type Bid, type InsertBid, type Favorite, type InsertFavorite, type Notification, type InsertNotification, type CarAlert, type InsertCarAlert, type Banner, type InsertBanner, type SellCarSection, type InsertSellCarSection, type AdvertisementCarousel, type InsertAdvertisementCarousel, type Document, type InsertDocument, type AlertView, type InsertAlertView } from "@shared/schema";
+import { users, carListings, bids, favorites, notifications, carAlerts, banners, sellCarSection, advertisementCarousel, documents, alertViews, smsVerificationCodes, type User, type InsertUser, type CarListing, type InsertCarListing, type Bid, type InsertBid, type Favorite, type InsertFavorite, type Notification, type InsertNotification, type CarAlert, type InsertCarAlert, type Banner, type InsertBanner, type SellCarSection, type InsertSellCarSection, type AdvertisementCarousel, type InsertAdvertisementCarousel, type Document, type InsertDocument, type AlertView, type InsertAlertView, type SmsVerificationCode, type InsertSmsVerificationCode } from "@shared/schema";
 import { db, pool } from "./db";
 import { eq, and, desc, sql, or, ilike, inArray, isNull } from "drizzle-orm";
 
@@ -81,6 +81,12 @@ export interface IStorage {
   // Alert Views operations
   createAlertView(view: InsertAlertView): Promise<AlertView>;
   hasUserViewedAlert(userId: number, alertId: number, listingId: number): Promise<boolean>;
+
+  // SMS Verification operations
+  createSmsVerificationCode(code: InsertSmsVerificationCode): Promise<SmsVerificationCode>;
+  getValidSmsCode(phoneNumber: string, code: string): Promise<SmsVerificationCode | undefined>;
+  markSmsCodeAsUsed(id: number): Promise<boolean>;
+  cleanupExpiredSmsCodes(): Promise<void>;
 
   // Admin operations
   getAdminStats(): Promise<{
@@ -791,6 +797,41 @@ export class DatabaseStorage implements IStorage {
       console.error('Error checking alert view:', error);
       return false;
     }
+  }
+
+  // SMS Verification Code operations
+  async createSmsVerificationCode(insertCode: InsertSmsVerificationCode): Promise<SmsVerificationCode> {
+    const [code] = await db.insert(smsVerificationCodes).values(insertCode).returning();
+    return code;
+  }
+
+  async getValidSmsCode(phoneNumber: string, code: string): Promise<SmsVerificationCode | undefined> {
+    const [smsCode] = await db
+      .select()
+      .from(smsVerificationCodes)
+      .where(
+        and(
+          eq(smsVerificationCodes.phoneNumber, phoneNumber),
+          eq(smsVerificationCodes.code, code),
+          eq(smsVerificationCodes.isUsed, false),
+          sql`expires_at > NOW()`
+        )
+      );
+    return smsCode || undefined;
+  }
+
+  async markSmsCodeAsUsed(id: number): Promise<boolean> {
+    const result = await db
+      .update(smsVerificationCodes)
+      .set({ isUsed: true })
+      .where(eq(smsVerificationCodes.id, id));
+    return result.rowCount !== null && result.rowCount > 0;
+  }
+
+  async cleanupExpiredSmsCodes(): Promise<void> {
+    await db
+      .delete(smsVerificationCodes)
+      .where(sql`expires_at < NOW() OR is_used = true`);
   }
 }
 

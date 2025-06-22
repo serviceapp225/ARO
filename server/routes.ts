@@ -899,12 +899,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Неверный формат номера телефона" });
       }
 
+      // Очищаем истекшие коды
+      await storage.cleanupExpiredSmsCodes();
+
       // Генерируем 4-значный код
       const code = Math.floor(1000 + Math.random() * 9000).toString();
       
-      // Сохраняем код в памяти с TTL 5 минут
-      const codeKey = `sms_code_${phoneNumber}`;
-      setCache(codeKey, code, 300000); // 5 минут
+      // Время истечения - 5 минут
+      const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
+      
+      // Сохраняем код в базе данных
+      await storage.createSmsVerificationCode({
+        phoneNumber,
+        code,
+        expiresAt,
+        isUsed: false
+      });
       
       // Отправляем SMS
       const smsResult = await sendSMSCode(phoneNumber, code);
@@ -928,20 +938,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Номер телефона и код обязательны" });
       }
 
-      // Проверяем код
-      const codeKey = `sms_code_${phoneNumber}`;
-      const savedCode = getCached(codeKey);
+      // Проверяем код в базе данных
+      const smsCode = await storage.getValidSmsCode(phoneNumber, code);
       
-      if (!savedCode) {
+      if (!smsCode) {
         return res.status(400).json({ error: "Код истек или не найден" });
       }
 
-      if (savedCode !== code) {
-        return res.status(400).json({ error: "Неверный код" });
-      }
-
-      // Код верный, удаляем его из кеша
-      clearCachePattern(codeKey);
+      // Помечаем код как использованный
+      await storage.markSmsCodeAsUsed(smsCode.id);
       
       // Создаем или обновляем пользователя
       const email = phoneNumber + "@autoauction.tj";
@@ -951,13 +956,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Создаем нового пользователя
         user = await storage.createUser({
           email,
+          username: phoneNumber.replace('+', ''),
           phoneNumber,
+          role: 'buyer',
           fullName: `Пользователь ${phoneNumber}`,
           isActive: true
         });
       } else {
         // Активируем существующего пользователя
         user = await storage.updateUserStatus(user.id, true);
+      }
+
+      if (!user) {
+        return res.status(500).json({ error: "Не удалось создать пользователя" });
       }
 
       res.json({ 
