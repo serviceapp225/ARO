@@ -1825,44 +1825,47 @@ async function sendSMSCode(phoneNumber: string, code: string): Promise<{success:
     // Генерируем уникальный ID транзакции
     const txnId = Date.now().toString();
     
-    // Подготавливаем параметры для OsonSMS API
+    // Подготавливаем параметры для OsonSMS API в GET формате
     const params = new URLSearchParams({
       login: smsLogin,
-      str_hash: smsHash,
-      from: smsSender,
-      phone_number: phoneNumber,
-      msg: `Код AUTOBID.TJ: ${code}`,
+      hash: smsHash, // Используем 'hash' вместо 'str_hash'
+      sender: smsSender, // Используем 'sender' вместо 'from'
+      phone: phoneNumber, // Используем 'phone' вместо 'phone_number'
+      text: `Код AUTOBID.TJ: ${code}`, // Используем 'text' вместо 'msg'
       txn_id: txnId
     });
 
-    // Временно для тестирования используем демо-режим
-    // Когда credentials будут правильно настроены, раскомментируем реальный API
-    console.log(`[SMS DEMO] Отправка SMS на ${phoneNumber} с кодом: ${code}`);
-    console.log(`[SMS DEMO] Credentials: login=${smsLogin}, hash=${smsHash?.substring(0,8)}...`);
-    
-    // Для тестирования возвращаем успех
-    return { success: true, message: "SMS отправлен (демо-режим)" };
-
-    /* Реальная интеграция с OsonSMS (раскомментировать после настройки credentials):
     const requestUrl = `${smsServer}?${params}`;
-    console.log(`[SMS] URL запроса: ${requestUrl}`);
+    console.log(`[SMS] Отправка SMS на ${phoneNumber} через OsonSMS`);
+    console.log(`[SMS] URL: ${requestUrl}`);
 
     const response = await fetch(requestUrl, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-      }
+      method: 'GET'
     });
 
     const result = await response.text();
     console.log(`[SMS] Ответ OsonSMS: ${result}`);
 
-    if (response.ok && result.includes('success')) {
-      return { success: true, message: "SMS отправлен через OsonSMS" };
+    // Проверяем успешность отправки
+    if (response.ok) {
+      try {
+        const jsonResult = JSON.parse(result);
+        if (jsonResult.success || jsonResult.status === 'success' || !jsonResult.error) {
+          return { success: true, message: "SMS отправлен через OsonSMS" };
+        } else {
+          return { success: false, message: `Ошибка OsonSMS: ${result}` };
+        }
+      } catch {
+        // Если ответ не JSON, проверяем наличие success в тексте
+        if (result.toLowerCase().includes('success') || result.toLowerCase().includes('ok')) {
+          return { success: true, message: "SMS отправлен через OsonSMS" };
+        } else {
+          return { success: false, message: `Ошибка OsonSMS: ${result}` };
+        }
+      }
     } else {
-      return { success: false, message: `Ошибка OsonSMS: ${result}` };
+      return { success: false, message: `HTTP ошибка: ${response.status}` };
     }
-    */
     
   } catch (error) {
     console.error("SMS sending failed:", error);
