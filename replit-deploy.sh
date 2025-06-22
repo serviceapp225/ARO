@@ -1,47 +1,34 @@
 #!/bin/bash
 
-# Replit deployment script with fallback options
-echo "🚀 Starting Replit deployment with compatibility fixes..."
+# Optimized Replit deployment script
+echo "🚀 Starting Replit deployment..."
 
-# Clean previous builds
+# Stop any existing processes
+echo "Stopping existing processes..."
+pkill -f "node.*dist/index.js" || true
+pkill -f "tsx.*server/index.ts" || true
+
+# Clean and build
+echo "Cleaning build directory..."
 rm -rf dist/
-echo "✓ Cleaned previous builds"
 
-# Create dist directory
-mkdir -p dist/
+echo "Building application..."
+npm run build
 
-# Try primary build method
-echo "📦 Attempting primary build..."
-if npm run build; then
-    echo "✅ Primary build successful"
-else
-    echo "❌ Primary build failed, trying fallback..."
-    
-    # Fallback: Build without esbuild optimization
-    echo "📦 Building frontend only..."
-    npx vite build
-    
-    # Copy server files manually
-    echo "📦 Copying server files..."
-    cp -r server/ dist/server/
-    cp -r shared/ dist/shared/
-    cp package.json dist/
-    
-    # Create simple entry point
-    cat > dist/start.js << 'EOF'
-const path = require('path');
-process.chdir(__dirname);
-require('./server/index.ts');
-EOF
-    
-    echo "✅ Fallback build completed"
-fi
-
-# Verify build
-if [ -f "dist/index.js" ] || [ -f "dist/start.js" ]; then
-    echo "✅ Build verification passed"
-    echo "🎉 Deployment ready!"
-else
-    echo "❌ Build verification failed"
+if [ $? -ne 0 ]; then
+    echo "❌ Build failed"
     exit 1
 fi
+
+echo "✅ Build completed"
+
+# Check if built files exist
+if [ ! -f "dist/index.js" ]; then
+    echo "❌ Built files not found"
+    exit 1
+fi
+
+echo "Starting production server..."
+NODE_ENV=production PORT=5000 node dist/index.js
+
+echo "✅ Deployment completed"
