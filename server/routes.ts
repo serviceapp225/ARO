@@ -1812,10 +1812,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
 // Функция для отправки SMS (заменить на реальную интеграцию)
 async function sendSMSCode(phoneNumber: string, code: string): Promise<{success: boolean, message?: string}> {
   try {
-    const smsLogin = process.env.SMS_LOGIN || "zarex";
-    const smsHash = process.env.SMS_HASH || "a6d5d8b47551199899862d6d768a4cb1";
-    const smsSender = process.env.SMS_SENDER || "OsonSMS";
-    const smsServer = process.env.SMS_SERVER || "https://api.osonsms.com/sendsms_v1.php";
+    const smsLogin = process.env.SMS_LOGIN;
+    const smsHash = process.env.SMS_HASH;
+    const smsSender = process.env.SMS_SENDER;
+    const smsServer = process.env.SMS_SERVER;
+    
+    console.log(`[SMS] Debug - Hash from env: ${smsHash}`);
 
     if (!smsLogin || !smsHash || !smsSender || !smsServer) {
       console.error("SMS configuration missing");
