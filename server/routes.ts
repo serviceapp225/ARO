@@ -1829,29 +1829,25 @@ async function sendSMSCode(phoneNumber: string, code: string): Promise<{success:
     
     // Формируем URL вручную для точного соответствия API
     const message = encodeURIComponent(`Код AUTOBID.TJ: ${code}`);
-    // Очищаем номер телефона от лишних символов для OsonSMS
-    const cleanPhone = phoneNumber.replace(/[\s\(\)\-]/g, '');
-    const encodedPhone = encodeURIComponent(cleanPhone);
+    // Очищаем номер телефона от всех лишних символов включая +
+    const cleanPhone = phoneNumber.replace(/[\s\(\)\-\+]/g, '');
     
-    // Попробуем POST запрос с form data
-    const formData = new URLSearchParams({
+    // Попробуем с параметром password вместо str_hash
+    const params = new URLSearchParams({
       login: smsLogin,
-      str_hash: smsHash,
+      password: smsHash,
       from: smsSender,
       phone_number: cleanPhone,
       msg: `Код AUTOBID.TJ: ${code}`,
       txn_id: txnId
     });
 
-    console.log(`[SMS] Отправка SMS на ${phoneNumber} через OsonSMS (POST)`);
-    console.log(`[SMS] Параметры:`, Object.fromEntries(formData));
+    const requestUrl = `${smsServer}?${params}`;
+    console.log(`[SMS] Отправка SMS на ${phoneNumber} через OsonSMS (GET)`);
+    console.log(`[SMS] URL: ${requestUrl}`);
 
-    const response = await fetch(smsServer, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      body: formData
+    const response = await fetch(requestUrl, {
+      method: 'GET'
     });
 
     const result = await response.text();
