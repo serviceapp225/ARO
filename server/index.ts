@@ -73,15 +73,27 @@ app.use((req, res, next) => {
     serveStatic(app);
   }
 
-  // ALWAYS serve the app on port 5000
-  // this serves both the API and the client.
-  // It is the only port that is not firewalled.
+  // Dynamic port assignment for deployment compatibility
   const port = process.env.PORT || 5000;
-  server.listen({
+  
+  // Check if port is available before starting
+  const server_instance = server.listen({
     port: Number(port),
     host: "0.0.0.0",
-    reusePort: true,
-  }, () => {
+  }).on('error', (err: any) => {
+    if (err.code === 'EADDRINUSE') {
+      console.log(`Port ${port} in use, trying port ${Number(port) + 1}`);
+      const altPort = Number(port) + 1;
+      server.listen({
+        port: altPort,
+        host: "0.0.0.0",
+      }, () => {
+        log(`serving on port ${altPort}`);
+      });
+    } else {
+      throw err;
+    }
+  }).on('listening', () => {
     log(`serving on port ${port}`);
   });
 })();
