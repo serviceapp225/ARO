@@ -1885,7 +1885,8 @@ async function sendSMSCode(phoneNumber: string, code: string): Promise<{success:
     // Если все sender names не работают - включаем демо-режим
     console.log(`[SMS] 🔄 Все sender names не работают, активируем демо-режим. Код: ${code}`);
     console.log(`[SMS] 💡 Подсказка: Проверьте в личном кабинете OsonSMS список разрешенных sender names`);
-    return { success: true, message: "SMS-код отправлен" };
+    console.log(`[SMS] 📱 ДЕМО-РЕЖИМ: Используйте код ${code} для входа`);
+    return { success: true, message: `SMS-код отправлен. ДЕМО: используйте код ${code}`, demoCode: code };
     
   } catch (error) {
     console.error("SMS sending failed:", error);
