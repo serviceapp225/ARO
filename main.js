@@ -1,35 +1,30 @@
-// Direct production server for Replit Deployments
-process.env.NODE_ENV = 'production';
-process.env.PORT = process.env.PORT || '5000';
+const { execSync } = require('child_process');
+const fs = require('fs');
 
-const express = require('express');
-const path = require('path');
+console.log('Starting Auto Auction App...');
 
-const app = express();
-const PORT = process.env.PORT || 5000;
+// Check if we have a production build
+const hasBuild = fs.existsSync('./dist/index.js');
 
-// Serve static files
-app.use(express.static(path.join(__dirname, 'dist/public')));
-
-// Health check
-app.get('/health', (req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() });
-});
-
-// Try to load the built server, fallback to basic server
-let server;
-try {
-  server = require('./dist/index.js');
-  console.log('Production server loaded');
-} catch (error) {
-  console.log('Fallback to basic server');
+if (process.env.NODE_ENV === 'production') {
+  if (!hasBuild) {
+    console.log('Building for production...');
+    try {
+      execSync('npm run build', { stdio: 'inherit' });
+    } catch (error) {
+      console.error('Build failed, falling back to development mode');
+      process.env.NODE_ENV = 'development';
+    }
+  }
   
-  // Basic fallback server
-  app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, 'dist/public/index.html'));
-  });
-  
-  server = app.listen(PORT, '0.0.0.0', () => {
-    console.log(`Fallback server running on port ${PORT}`);
-  });
+  if (fs.existsSync('./dist/index.js')) {
+    console.log('Starting production server...');
+    require('./dist/index.js');
+  } else {
+    console.log('No build found, starting development server...');
+    execSync('npm run dev', { stdio: 'inherit' });
+  }
+} else {
+  console.log('Starting development server...');
+  execSync('npm run dev', { stdio: 'inherit' });
 }

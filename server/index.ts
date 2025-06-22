@@ -73,27 +73,24 @@ app.use((req, res, next) => {
     serveStatic(app);
   }
 
-  // Dynamic port assignment for deployment compatibility
+  // Production deployment with fallback port handling
   const port = process.env.PORT || 5000;
+  const host = process.env.HOST || "0.0.0.0";
   
-  // Check if port is available before starting
-  const server_instance = server.listen({
-    port: Number(port),
-    host: "0.0.0.0",
-  }).on('error', (err: any) => {
+  try {
+    server.listen(Number(port), host, () => {
+      log(`🚀 Auto Auction App serving on ${host}:${port}`);
+      log(`Environment: ${process.env.NODE_ENV || 'development'}`);
+    });
+  } catch (err: any) {
     if (err.code === 'EADDRINUSE') {
-      console.log(`Port ${port} in use, trying port ${Number(port) + 1}`);
-      const altPort = Number(port) + 1;
-      server.listen({
-        port: altPort,
-        host: "0.0.0.0",
-      }, () => {
-        log(`serving on port ${altPort}`);
+      const fallbackPort = Number(port) + Math.floor(Math.random() * 1000);
+      log(`Port ${port} busy, using fallback port ${fallbackPort}`);
+      server.listen(fallbackPort, host, () => {
+        log(`🚀 Auto Auction App serving on ${host}:${fallbackPort}`);
       });
     } else {
       throw err;
     }
-  }).on('listening', () => {
-    log(`serving on port ${port}`);
-  });
+  }
 })();
