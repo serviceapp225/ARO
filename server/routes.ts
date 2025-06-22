@@ -37,8 +37,8 @@ function getCached(key: string) {
   return null;
 }
 
-function setCache(key: string, data: any) {
-  cache.set(key, { data, timestamp: Date.now() });
+function setCache(key: string, data: any, ttl: number = 300000) {
+  cache.set(key, { data, timestamp: Date.now(), ttl });
 }
 
 function clearCachePattern(pattern: string) {
@@ -1076,13 +1076,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { position } = req.query;
       const cacheKey = `banners_${position || 'all'}`;
       
+      // Set cache headers for faster loading
+      res.set({
+        'Cache-Control': 'public, max-age=300', // 5 minutes
+        'ETag': `banners-${position || 'all'}-${Date.now()}`
+      });
+      
       const cached = getCached(cacheKey);
       if (cached) {
         return res.json(cached);
       }
       
       const banners = await storage.getBanners(position as string);
-      setCache(cacheKey, banners);
+      
+      // Cache for 10 minutes
+      setCache(cacheKey, banners, 600000);
       res.json(banners);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch banners" });
