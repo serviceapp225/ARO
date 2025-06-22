@@ -85,12 +85,14 @@ export default function Login() {
         const data = await response.json();
         
         if (response.ok) {
-          // Создаем пользователя после успешной верификации
+          // Используем данные пользователя из ответа сервера
           const user = {
-            email: phoneNumber + "@autoauction.tj",
-            phoneNumber: phoneNumber,
-            uid: "user-" + Date.now(),
-            isActive: true,
+            id: data.user.id,
+            email: data.user.email,
+            phoneNumber: data.user.phoneNumber,
+            fullName: data.user.fullName,
+            uid: "user-" + data.user.id,
+            isActive: data.user.isActive,
             verified: true
           };
           localStorage.setItem('demo-user', JSON.stringify(user));
