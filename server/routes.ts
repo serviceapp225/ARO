@@ -1462,6 +1462,158 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ADMIN ROUTES FOR RETOOL
+  
+  // Получить всех пользователей
+  app.get("/api/admin/users", adminAuth, async (req, res) => {
+    try {
+      const users = await storage.getAllUsers();
+      res.json(users);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch users" });
+    }
+  });
+
+  // Получить статистику для админ-панели
+  app.get("/api/admin/stats", adminAuth, async (req, res) => {
+    try {
+      const stats = await storage.getAdminStats();
+      res.json(stats);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch admin stats" });
+    }
+  });
+
+  // Обновить статус пользователя (активировать/деактивировать)
+  app.patch("/api/admin/users/:id/status", adminAuth, async (req, res) => {
+    try {
+      const userId = parseInt(req.params.id);
+      const { isActive } = req.body;
+      
+      if (typeof isActive !== 'boolean') {
+        return res.status(400).json({ error: "isActive must be a boolean" });
+      }
+
+      const user = await storage.updateUserStatus(userId, isActive);
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+      
+      res.json(user);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to update user status" });
+    }
+  });
+
+  // Обновить профиль пользователя
+  app.patch("/api/admin/users/:id/profile", adminAuth, async (req, res) => {
+    try {
+      const userId = parseInt(req.params.id);
+      const { fullName, profilePhoto } = req.body;
+      
+      const user = await storage.updateUserProfile(userId, { fullName, profilePhoto });
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+      
+      res.json(user);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to update user profile" });
+    }
+  });
+
+  // Получить все объявления с расширенной информацией для админки
+  app.get("/api/admin/listings", adminAuth, async (req, res) => {
+    try {
+      const { status, limit = 100 } = req.query;
+      
+      let listings;
+      if (status) {
+        listings = await storage.getListingsByStatus(status as string, Number(limit));
+      } else {
+        // Получить все объявления всех статусов
+        const allStatuses = ['pending', 'active', 'ended', 'rejected'];
+        const allListings = await Promise.all(
+          allStatuses.map(s => storage.getListingsByStatus(s, Number(limit) / allStatuses.length))
+        );
+        listings = allListings.flat();
+      }
+
+      // Обогащаем данными о продавце и количестве ставок
+      const enrichedListings = await Promise.all(
+        listings.map(async (listing) => {
+          const seller = await storage.getUser(listing.sellerId);
+          const bidCount = await storage.getBidCountForListing(listing.id);
+          
+          return {
+            ...listing,
+            seller: {
+              id: seller?.id,
+              username: seller?.username,
+              email: seller?.email,
+              fullName: seller?.fullName,
+              isActive: seller?.isActive
+            },
+            bidCount
+          };
+        })
+      );
+      
+      res.json(enrichedListings);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch admin listings" });
+    }
+  });
+
+  // Получить все ставки с информацией о пользователях
+  app.get("/api/admin/bids", adminAuth, async (req, res) => {
+    try {
+      const { listingId, userId, limit = 100 } = req.query;
+      
+      let bids;
+      if (listingId) {
+        bids = await storage.getBidsForListing(Number(listingId));
+      } else if (userId) {
+        bids = await storage.getBidsByUser(Number(userId));
+      } else {
+        // Получить все ставки через storage метод
+        const allListings = await storage.getListingsByStatus('active', Number(limit));
+        const allBidPromises = allListings.map(listing => storage.getBidsForListing(listing.id));
+        const allBidsArrays = await Promise.all(allBidPromises);
+        bids = allBidsArrays.flat().slice(0, Number(limit));
+      }
+
+      // Обогащаем данными о пользователе и объявлении
+      const enrichedBids = await Promise.all(
+        bids.map(async (bid) => {
+          const bidder = await storage.getUser(bid.bidderId);
+          const listing = await storage.getListing(bid.listingId);
+          
+          return {
+            ...bid,
+            bidder: {
+              id: bidder?.id,
+              username: bidder?.username,
+              email: bidder?.email,
+              fullName: bidder?.fullName
+            },
+            listing: {
+              id: listing?.id,
+              make: listing?.make,
+              model: listing?.model,
+              year: listing?.year,
+              lotNumber: listing?.lotNumber
+            }
+          };
+        })
+      );
+      
+      res.json(enrichedBids);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch admin bids" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

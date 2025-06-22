@@ -1,0 +1,289 @@
+{
+  "resource": {
+    "name": "AutoAuction API",
+    "type": "REST API",
+    "baseUrl": "https://your-repl-name.replit.app",
+    "headers": {
+      "Content-Type": "application/json",
+      "x-admin-key": "retool-admin-key-2024"
+    }
+  },
+  "queries": {
+    "getUsers": {
+      "url": "/api/admin/users",
+      "method": "GET",
+      "runWhenPageLoads": true,
+      "cacheResponse": 10000
+    },
+    "getStats": {
+      "url": "/api/admin/stats", 
+      "method": "GET",
+      "runWhenPageLoads": true,
+      "cacheResponse": 30000
+    },
+    "getListings": {
+      "url": "/api/admin/listings",
+      "method": "GET",
+      "urlParams": {
+        "status": "{{ statusFilter.value || '' }}",
+        "limit": "100"
+      },
+      "runWhenPageLoads": true
+    },
+    "getBids": {
+      "url": "/api/admin/bids",
+      "method": "GET", 
+      "urlParams": {
+        "limit": "50",
+        "listingId": "{{ listingIdFilter.value || '' }}"
+      }
+    },
+    "getBanners": {
+      "url": "/api/banners",
+      "method": "GET",
+      "runWhenPageLoads": true
+    },
+    "updateUserStatus": {
+      "url": "/api/admin/users/{{ usersTable.selectedRow.id }}/status",
+      "method": "PATCH",
+      "body": {
+        "isActive": "{{ !usersTable.selectedRow.isActive }}"
+      },
+      "onSuccess": [
+        {
+          "action": "trigger",
+          "query": "getUsers"
+        },
+        {
+          "action": "trigger", 
+          "query": "getStats"
+        }
+      ]
+    },
+    "approveListing": {
+      "url": "/api/listings/{{ listingsTable.selectedRow.id }}/status",
+      "method": "PATCH",
+      "body": {
+        "status": "active"
+      },
+      "onSuccess": [
+        {
+          "action": "trigger",
+          "query": "getListings"
+        },
+        {
+          "action": "trigger",
+          "query": "getStats"
+        }
+      ]
+    },
+    "rejectListing": {
+      "url": "/api/listings/{{ listingsTable.selectedRow.id }}/status", 
+      "method": "PATCH",
+      "body": {
+        "status": "rejected"
+      },
+      "onSuccess": [
+        {
+          "action": "trigger",
+          "query": "getListings"
+        },
+        {
+          "action": "trigger",
+          "query": "getStats"
+        }
+      ]
+    },
+    "createBanner": {
+      "url": "/api/admin/banners",
+      "method": "POST",
+      "body": {
+        "title": "{{ bannerTitle.value }}",
+        "description": "{{ bannerDescription.value }}",
+        "imageUrl": "{{ bannerImageUrl.value }}",
+        "linkUrl": "{{ bannerLinkUrl.value }}",
+        "position": "{{ bannerPosition.value }}",
+        "isActive": "{{ bannerIsActive.value }}"
+      },
+      "onSuccess": [
+        {
+          "action": "trigger",
+          "query": "getBanners"
+        }
+      ]
+    }
+  },
+  "components": {
+    "statsContainer": {
+      "type": "container",
+      "components": [
+        {
+          "type": "stat",
+          "label": "Pending Listings",
+          "value": "{{ getStats.data.pendingListings }}",
+          "color": "orange"
+        },
+        {
+          "type": "stat", 
+          "label": "Active Auctions",
+          "value": "{{ getStats.data.activeAuctions }}",
+          "color": "green"
+        },
+        {
+          "type": "stat",
+          "label": "Total Users", 
+          "value": "{{ getStats.data.totalUsers }}",
+          "color": "blue"
+        },
+        {
+          "type": "stat",
+          "label": "Banned Users",
+          "value": "{{ getStats.data.bannedUsers }}",
+          "color": "red"
+        }
+      ]
+    },
+    "usersTable": {
+      "type": "table",
+      "data": "{{ getUsers.data }}",
+      "columns": [
+        {
+          "name": "id",
+          "type": "number",
+          "editable": false
+        },
+        {
+          "name": "username", 
+          "type": "string",
+          "editable": false
+        },
+        {
+          "name": "email",
+          "type": "string", 
+          "editable": false
+        },
+        {
+          "name": "fullName",
+          "type": "string",
+          "editable": false
+        },
+        {
+          "name": "isActive",
+          "type": "boolean",
+          "editable": false
+        },
+        {
+          "name": "role",
+          "type": "string",
+          "editable": false
+        },
+        {
+          "name": "createdAt",
+          "type": "datetime",
+          "editable": false
+        }
+      ],
+      "actions": [
+        {
+          "type": "button",
+          "text": "Toggle Status",
+          "query": "updateUserStatus",
+          "disabled": "{{ !usersTable.selectedRow }}"
+        }
+      ]
+    },
+    "listingsTable": {
+      "type": "table",
+      "data": "{{ getListings.data }}",
+      "columns": [
+        {
+          "name": "id",
+          "type": "number"
+        },
+        {
+          "name": "lotNumber", 
+          "type": "string"
+        },
+        {
+          "name": "make",
+          "type": "string"
+        },
+        {
+          "name": "model",
+          "type": "string"
+        },
+        {
+          "name": "year",
+          "type": "number"
+        },
+        {
+          "name": "startingPrice",
+          "type": "currency"
+        },
+        {
+          "name": "currentBid",
+          "type": "currency"
+        },
+        {
+          "name": "status",
+          "type": "badge"
+        },
+        {
+          "name": "seller.username",
+          "type": "string",
+          "displayName": "Seller"
+        },
+        {
+          "name": "bidCount",
+          "type": "number"
+        }
+      ],
+      "actions": [
+        {
+          "type": "button",
+          "text": "Approve",
+          "color": "green",
+          "query": "approveListing",
+          "disabled": "{{ !listingsTable.selectedRow || listingsTable.selectedRow.status !== 'pending' }}"
+        },
+        {
+          "type": "button", 
+          "text": "Reject",
+          "color": "red",
+          "query": "rejectListing",
+          "disabled": "{{ !listingsTable.selectedRow || listingsTable.selectedRow.status !== 'pending' }}"
+        }
+      ]
+    },
+    "filters": {
+      "type": "container",
+      "components": [
+        {
+          "type": "select",
+          "name": "statusFilter",
+          "label": "Status Filter",
+          "options": [
+            {"label": "All", "value": ""},
+            {"label": "Pending", "value": "pending"},
+            {"label": "Active", "value": "active"},
+            {"label": "Ended", "value": "ended"},
+            {"label": "Rejected", "value": "rejected"}
+          ],
+          "defaultValue": "pending",
+          "onChange": [
+            {
+              "action": "trigger",
+              "query": "getListings"
+            }
+          ]
+        },
+        {
+          "type": "textInput",
+          "name": "userSearchInput", 
+          "label": "Search Users",
+          "placeholder": "Search by username or email"
+        }
+      ]
+    }
+  }
+}
