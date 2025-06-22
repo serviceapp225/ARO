@@ -399,7 +399,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           // Check if user has already viewed this alert for this listing
           const hasViewed = await storage.hasUserViewedAlert(alert.userId, alert.id, listing.id);
           
-          // Check if notification for this listing and alert already exists
+          // Check if notification for this listing and alert already exists or was dismissed
           const existingNotifications = await storage.getNotificationsByUser(alert.userId);
           const duplicateExists = existingNotifications.some(n => 
             n.type === "car_found" && 
@@ -407,7 +407,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
             n.alertId === alert.id
           );
           
-          if (!hasViewed && !duplicateExists) {
+          // Also check if this exact alert+listing combination was previously viewed/dismissed
+          const wasViewedBefore = await storage.hasUserViewedAlert(alert.userId, alert.id, listing.id);
+          
+          if (!hasViewed && !duplicateExists && !wasViewedBefore) {
+            // Final check - prevent duplicates by marking as viewed immediately
+            await storage.createAlertView({
+              userId: alert.userId,
+              alertId: alert.id,
+              listingId: listing.id
+            });
+            
             await storage.createNotification({
               userId: alert.userId,
               title: "Найден автомобиль по вашему запросу",
@@ -417,8 +427,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
               alertId: alert.id,
               isRead: false
             });
+            console.log(`Created notification for user ${alert.userId}, alert ${alert.id}, listing ${listing.id}`);
           } else {
-            console.log('User has already viewed this alert or notification exists for listing:', listing.id, 'alert:', alert.id);
+            console.log('Skipping notification - already viewed/exists for listing:', listing.id, 'alert:', alert.id);
           }
         }
       } catch (alertError) {
