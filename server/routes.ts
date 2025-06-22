@@ -1829,7 +1829,9 @@ async function sendSMSCode(phoneNumber: string, code: string): Promise<{success:
     
     // Формируем URL вручную для точного соответствия API
     const message = encodeURIComponent(`Код AUTOBID.TJ: ${code}`);
-    const encodedPhone = encodeURIComponent(phoneNumber);
+    // Очищаем номер телефона от лишних символов для OsonSMS
+    const cleanPhone = phoneNumber.replace(/[\s\(\)\-]/g, '');
+    const encodedPhone = encodeURIComponent(cleanPhone);
     
     const requestUrl = `${smsServer}?login=${smsLogin}&str_hash=${smsHash}&from=${smsSender}&phone_number=${encodedPhone}&msg=${message}&txn_id=${txnId}`;
     console.log(`[SMS] Отправка SMS на ${phoneNumber} через OsonSMS`);
