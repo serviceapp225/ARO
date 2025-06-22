@@ -890,6 +890,92 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // SMS Authentication routes
+  app.post("/api/auth/send-sms", async (req, res) => {
+    try {
+      const { phoneNumber } = req.body;
+      
+      if (!phoneNumber || !phoneNumber.startsWith('+992')) {
+        return res.status(400).json({ error: "Неверный формат номера телефона" });
+      }
+
+      // Генерируем 4-значный код
+      const code = Math.floor(1000 + Math.random() * 9000).toString();
+      
+      // Сохраняем код в памяти с TTL 5 минут
+      const codeKey = `sms_code_${phoneNumber}`;
+      setCache(codeKey, code, 300000); // 5 минут
+      
+      // Отправляем SMS
+      const smsResult = await sendSMSCode(phoneNumber, code);
+      
+      if (smsResult.success) {
+        res.json({ success: true, message: "SMS-код отправлен" });
+      } else {
+        res.status(500).json({ error: smsResult.message || "Не удалось отправить SMS" });
+      }
+    } catch (error) {
+      console.error("Error sending SMS:", error);
+      res.status(500).json({ error: "Ошибка при отправке SMS" });
+    }
+  });
+
+  app.post("/api/auth/verify-sms", async (req, res) => {
+    try {
+      const { phoneNumber, code } = req.body;
+      
+      if (!phoneNumber || !code) {
+        return res.status(400).json({ error: "Номер телефона и код обязательны" });
+      }
+
+      // Проверяем код
+      const codeKey = `sms_code_${phoneNumber}`;
+      const savedCode = getCached(codeKey);
+      
+      if (!savedCode) {
+        return res.status(400).json({ error: "Код истек или не найден" });
+      }
+
+      if (savedCode !== code) {
+        return res.status(400).json({ error: "Неверный код" });
+      }
+
+      // Код верный, удаляем его из кеша
+      clearCachePattern(codeKey);
+      
+      // Создаем или обновляем пользователя
+      const email = phoneNumber + "@autoauction.tj";
+      let user = await storage.getUserByEmail(email);
+      
+      if (!user) {
+        // Создаем нового пользователя
+        user = await storage.createUser({
+          email,
+          phoneNumber,
+          fullName: `Пользователь ${phoneNumber}`,
+          isActive: true
+        });
+      } else {
+        // Активируем существующего пользователя
+        user = await storage.updateUserStatus(user.id, true);
+      }
+
+      res.json({ 
+        success: true, 
+        user: {
+          id: user.id,
+          email: user.email,
+          phoneNumber: user.phoneNumber,
+          fullName: user.fullName,
+          isActive: user.isActive
+        }
+      });
+    } catch (error) {
+      console.error("Error verifying SMS:", error);
+      res.status(500).json({ error: "Ошибка при проверке кода" });
+    }
+  });
+
   // Notifications routes
   app.get("/api/notifications/:userId", async (req, res) => {
     try {
