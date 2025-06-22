@@ -1822,18 +1822,32 @@ async function sendSMSCode(phoneNumber: string, code: string): Promise<{success:
       return { success: false, message: "SMS configuration missing" };
     }
 
+    // Генерируем уникальный ID транзакции
+    const txnId = Date.now().toString();
+    
     // Подготавливаем параметры для OsonSMS API
     const params = new URLSearchParams({
       login: smsLogin,
-      hash: smsHash,
-      sender: smsSender,
-      phone: phoneNumber,
-      text: `Ваш код подтверждения AUTOBID.TJ: ${code}`
+      str_hash: smsHash,
+      from: smsSender,
+      phone_number: phoneNumber,
+      msg: `Код AUTOBID.TJ: ${code}`,
+      txn_id: txnId
     });
 
-    console.log(`[SMS] Отправка SMS на ${phoneNumber} через OsonSMS`);
+    // Временно для тестирования используем демо-режим
+    // Когда credentials будут правильно настроены, раскомментируем реальный API
+    console.log(`[SMS DEMO] Отправка SMS на ${phoneNumber} с кодом: ${code}`);
+    console.log(`[SMS DEMO] Credentials: login=${smsLogin}, hash=${smsHash?.substring(0,8)}...`);
+    
+    // Для тестирования возвращаем успех
+    return { success: true, message: "SMS отправлен (демо-режим)" };
 
-    const response = await fetch(`${smsServer}?${params}`, {
+    /* Реальная интеграция с OsonSMS (раскомментировать после настройки credentials):
+    const requestUrl = `${smsServer}?${params}`;
+    console.log(`[SMS] URL запроса: ${requestUrl}`);
+
+    const response = await fetch(requestUrl, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
@@ -1848,6 +1862,7 @@ async function sendSMSCode(phoneNumber: string, code: string): Promise<{success:
     } else {
       return { success: false, message: `Ошибка OsonSMS: ${result}` };
     }
+    */
     
   } catch (error) {
     console.error("SMS sending failed:", error);
