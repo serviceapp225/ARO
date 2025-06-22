@@ -1800,50 +1800,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
 // Функция для отправки SMS (заменить на реальную интеграцию)
 async function sendSMSCode(phoneNumber: string, code: string): Promise<{success: boolean, message?: string}> {
-  // В production здесь будет реальная интеграция с SMS-провайдером
-  // Примеры популярных провайдеров в Таджикистане:
-  
-  // 1. Tcell SMS API
-  // 2. Beeline SMS Gateway  
-  // 3. Megafon SMS API
-  // 4. Twilio (международный)
-  
   try {
-    // Имитация задержки отправки SMS
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    // В production раскомментируйте нужную интеграцию:
-    
-    /* Пример интеграции с Twilio:
-    const accountSid = process.env.TWILIO_ACCOUNT_SID;
-    const authToken = process.env.TWILIO_AUTH_TOKEN;
-    const client = require('twilio')(accountSid, authToken);
-    
-    const message = await client.messages.create({
-      body: `Ваш код подтверждения AUTOBID.TJ: ${code}`,
-      from: process.env.TWILIO_PHONE_NUMBER,
-      to: phoneNumber
+    const smsLogin = process.env.SMS_LOGIN;
+    const smsHash = process.env.SMS_HASH;
+    const smsSender = process.env.SMS_SENDER;
+    const smsServer = process.env.SMS_SERVER;
+
+    if (!smsLogin || !smsHash || !smsSender || !smsServer) {
+      console.error("SMS configuration missing");
+      return { success: false, message: "SMS configuration missing" };
+    }
+
+    // Подготавливаем параметры для OsonSMS API
+    const params = new URLSearchParams({
+      login: smsLogin,
+      hash: smsHash,
+      sender: smsSender,
+      phone: phoneNumber,
+      text: `Ваш код подтверждения AUTOBID.TJ: ${code}`
     });
-    
-    return { success: true, message: message.sid };
-    */
-    
-    /* Пример с локальным SMS-шлюзом:
-    const response = await fetch('http://localhost:8080/send-sms', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        phone: phoneNumber,
-        text: `Код подтверждения AUTOBID.TJ: ${code}`
-      })
+
+    console.log(`[SMS] Отправка SMS на ${phoneNumber} через OsonSMS`);
+
+    const response = await fetch(`${smsServer}?${params}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      }
     });
-    
-    return response.ok ? { success: true } : { success: false };
-    */
-    
-    // Текущая заглушка для разработки
-    console.log(`[SMS DEMO] Отправка SMS на ${phoneNumber}: ${code}`);
-    return { success: true, message: "SMS отправлен (демо-режим)" };
+
+    const result = await response.text();
+    console.log(`[SMS] Ответ OsonSMS: ${result}`);
+
+    if (response.ok && result.includes('success')) {
+      return { success: true, message: "SMS отправлен через OsonSMS" };
+    } else {
+      return { success: false, message: `Ошибка OsonSMS: ${result}` };
+    }
     
   } catch (error) {
     console.error("SMS sending failed:", error);
