@@ -963,15 +963,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         maxYear: validatedData.maxYear
       });
       
-      const deletedAlertCheck = await db.execute(
-        sql`SELECT id FROM deleted_alerts WHERE user_id = ${validatedData.userId} AND alert_data = ${alertData}`
-      );
+      const deletedAlertCheck = await db.select({ id: deletedAlerts.id })
+        .from(deletedAlerts)
+        .where(and(
+          eq(deletedAlerts.userId, validatedData.userId),
+          eq(deletedAlerts.alertData, alertData)
+        ));
       
-      if (deletedAlertCheck.rows.length > 0) {
+      if (deletedAlertCheck.length > 0) {
         // Удаляем запись из deleted_alerts, чтобы разрешить повторное создание
-        await db.execute(
-          sql`DELETE FROM deleted_alerts WHERE user_id = ${validatedData.userId} AND alert_data = ${alertData}`
-        );
+        await db.delete(deletedAlerts)
+          .where(and(
+            eq(deletedAlerts.userId, validatedData.userId),
+            eq(deletedAlerts.alertData, alertData)
+          ));
         console.log(`Removed deleted alert restriction for user ${validatedData.userId}`);
       }
       
@@ -1012,11 +1017,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
       
       try {
-        await db.execute(
-          sql`INSERT INTO deleted_alerts (user_id, alert_data) 
-              VALUES (${alert.userId}, ${alertData})
-              ON CONFLICT (user_id, alert_data) DO NOTHING`
-        );
+        await db.insert(deletedAlerts).values({
+          userId: alert.userId,
+          alertData: alertData
+        }).onConflictDoNothing();
         console.log(`Marked alert ${alertId} as deleted for user ${alert.userId}`);
       } catch (deleteError) {
         console.log('Error marking alert as deleted:', deleteError);
