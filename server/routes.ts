@@ -50,19 +50,7 @@ function clearCachePattern(pattern: string) {
   });
 }
 
-// Middleware для защиты админских маршрутов
-const adminAuth = (req: any, res: any, next: any) => {
-  const adminKey = req.headers['x-admin-key'];
-  
-  // В production используйте переменную окружения ADMIN_API_KEY
-  const validAdminKey = process.env.ADMIN_API_KEY || 'retool-admin-key-2024';
-  
-  if (!adminKey || adminKey !== validAdminKey) {
-    return res.status(403).json({ error: 'Unauthorized: Invalid admin key' });
-  }
-  
-  next();
-};
+// Admin middleware removed - no administrative access through main application
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Health check endpoint for deployment monitoring
@@ -677,22 +665,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Admin route to activate/deactivate users
-  app.patch("/api/admin/users/:id/activate", async (req, res) => {
-    try {
-      const userId = parseInt(req.params.id);
-      const { isActive } = req.body;
-      
-      const updatedUser = await storage.updateUserStatus(userId, isActive);
-      if (!updatedUser) {
-        return res.status(404).json({ error: "User not found" });
-      }
-      
-      res.json(updatedUser);
-    } catch (error) {
-      res.status(500).json({ error: "Failed to update user status" });
-    }
-  });
+
 
   app.get("/api/users/:id/listings", async (req, res) => {
     try {
@@ -771,128 +744,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Admin routes
-  app.get("/api/admin/stats", async (req, res) => {
-    try {
-      const stats = await storage.getAdminStats();
-      res.json(stats);
-    } catch (error) {
-      res.status(500).json({ error: "Failed to fetch admin stats" });
-    }
-  });
 
-  app.get("/api/admin/users", async (req, res) => {
-    try {
-      const users = await storage.getAllUsers();
-      res.json(users);
-    } catch (error) {
-      res.status(500).json({ error: "Failed to fetch users" });
-    }
-  });
 
-  app.get("/api/admin/stats", async (req, res) => {
-    try {
-      const stats = await storage.getAdminStats();
-      res.json(stats);
-    } catch (error) {
-      res.status(500).json({ error: "Failed to fetch admin stats" });
-    }
-  });
 
-  app.get("/api/admin/pending-listings", async (req, res) => {
-    try {
-      const pendingListings = await storage.getListingsByStatus("pending");
-      res.json(pendingListings);
-    } catch (error) {
-      res.status(500).json({ error: "Failed to fetch pending listings" });
-    }
-  });
 
-  app.get("/api/admin/listings", async (req, res) => {
-    try {
-      const allListings = await storage.getListingsByStatus("pending");
-      const activeListings = await storage.getListingsByStatus("active");
-      const endedListings = await storage.getListingsByStatus("ended");
-      const rejectedListings = await storage.getListingsByStatus("rejected");
-      
-      const listings = [...allListings, ...activeListings, ...endedListings, ...rejectedListings];
-      res.json(listings);
-    } catch (error) {
-      res.status(500).json({ error: "Failed to fetch listings" });
-    }
-  });
 
-  app.post("/api/admin/users/:id/status", async (req, res) => {
-    try {
-      const userId = parseInt(req.params.id);
-      const { isActive } = req.body;
-      
-      const user = await storage.updateUserStatus(userId, isActive);
-      if (!user) {
-        return res.status(404).json({ error: "User not found" });
-      }
-      res.json(user);
-    } catch (error) {
-      res.status(500).json({ error: "Failed to update user status" });
-    }
-  });
 
-  app.post("/api/admin/listings/:id/approve", async (req, res) => {
-    try {
-      const listingId = parseInt(req.params.id);
-      
-      const listing = await storage.updateListingStatus(listingId, "active");
-      if (!listing) {
-        return res.status(404).json({ error: "Listing not found" });
-      }
-      
-      // Clear all caches when admin approves listing
-      clearAllCaches();
-      
-      res.json({ success: true, listing });
-    } catch (error) {
-      res.status(500).json({ error: "Failed to approve listing" });
-    }
-  });
 
-  app.post("/api/admin/listings/:id/reject", async (req, res) => {
-    try {
-      const listingId = parseInt(req.params.id);
-      const { reason } = req.body;
-      
-      const listing = await storage.updateListingStatus(listingId, "rejected");
-      if (!listing) {
-        return res.status(404).json({ error: "Listing not found" });
-      }
-      
-      // Clear all caches when admin rejects listing
-      clearAllCaches();
-      
-      // TODO: Send notification to seller with rejection reason
-      
-      res.json({ success: true, listing, reason });
-    } catch (error) {
-      res.status(500).json({ error: "Failed to reject listing" });
-    }
-  });
 
-  app.patch("/api/admin/listings/:id", async (req, res) => {
-    try {
-      const listingId = parseInt(req.params.id);
-      const { status } = req.body;
-      
-      const listing = await storage.updateListingStatus(listingId, status);
-      if (!listing) {
-        return res.status(404).json({ error: "Listing not found" });
-      }
-      
-      // Clear all caches when admin changes listing status
-      clearAllCaches();
-      
-      res.json(listing);
-    } catch (error) {
-      res.status(500).json({ error: "Failed to update listing status" });
-    }
-  });
 
   // SMS Authentication routes
   app.post("/api/auth/send-sms", async (req, res) => {
@@ -1255,55 +1114,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/admin/banners", async (req, res) => {
-    try {
-      const bannerData = insertBannerSchema.parse(req.body);
-      const banner = await storage.createBanner(bannerData);
-      clearCachePattern('banners');
-      res.status(201).json(banner);
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        return res.status(400).json({ error: error.errors });
-      }
-      res.status(500).json({ error: "Failed to create banner" });
-    }
-  });
 
-  app.put("/api/admin/banners/:id", async (req, res) => {
-    try {
-      const id = parseInt(req.params.id);
-      const bannerData = insertBannerSchema.partial().parse(req.body);
-      const banner = await storage.updateBanner(id, bannerData);
-      
-      if (!banner) {
-        return res.status(404).json({ error: "Banner not found" });
-      }
-      
-      clearCachePattern('banners');
-      res.json(banner);
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        return res.status(400).json({ error: error.errors });
-      }
-      res.status(500).json({ error: "Failed to update banner" });
-    }
-  });
 
-  app.delete("/api/admin/banners/:id", async (req, res) => {
-    try {
-      const id = parseInt(req.params.id);
-      const success = await storage.deleteBanner(id);
-      
-      if (!success) {
-        return res.status(404).json({ error: "Banner not found" });
-      }
-      
-      clearCachePattern('banners');
-      res.status(204).send();
-    } catch (error) {
-      res.status(500).json({ error: "Failed to delete banner" });
-    }
-  });
 
   // Sell Car Section routes
   app.get("/api/sell-car-section", async (req, res) => {
@@ -1315,15 +1127,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put("/api/admin/sell-car-section", async (req, res) => {
-    try {
-      const validatedData = req.body; // Will validate in component
-      const section = await storage.updateSellCarSection(validatedData);
-      res.json(section);
-    } catch (error) {
-      res.status(500).json({ error: "Failed to update sell car section" });
-    }
-  });
 
   // Advertisement Carousel routes
   app.get("/api/advertisement-carousel", async (req, res) => {
@@ -1342,52 +1145,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/admin/advertisement-carousel", async (req, res) => {
-    try {
-      const carousel = await storage.getAdvertisementCarousel();
-      res.json(carousel);
-    } catch (error) {
-      res.status(500).json({ error: "Failed to fetch advertisement carousel" });
-    }
-  });
 
-  app.post("/api/admin/advertisement-carousel", async (req, res) => {
-    try {
-      const item = await storage.createAdvertisementCarouselItem(req.body);
-      clearCachePattern('advertisement_carousel');
-      res.status(201).json(item);
-    } catch (error) {
-      res.status(500).json({ error: "Failed to create carousel item" });
-    }
-  });
 
-  app.put("/api/admin/advertisement-carousel/:id", async (req, res) => {
-    try {
-      const id = parseInt(req.params.id);
-      const item = await storage.updateAdvertisementCarouselItem(id, req.body);
-      if (!item) {
-        return res.status(404).json({ error: "Carousel item not found" });
-      }
-      clearCachePattern('advertisement_carousel');
-      res.json(item);
-    } catch (error) {
-      res.status(500).json({ error: "Failed to update carousel item" });
-    }
-  });
 
-  app.delete("/api/admin/advertisement-carousel/:id", async (req, res) => {
-    try {
-      const id = parseInt(req.params.id);
-      const deleted = await storage.deleteAdvertisementCarouselItem(id);
-      if (!deleted) {
-        return res.status(404).json({ error: "Carousel item not found" });
-      }
-      clearCachePattern('advertisement_carousel');
-      res.status(204).send();
-    } catch (error) {
-      res.status(500).json({ error: "Failed to delete carousel item" });
-    }
-  });
 
   // Documents API routes
   app.get("/api/documents", async (req, res) => {
@@ -1400,164 +1160,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/admin/documents", async (req, res) => {
-    try {
-      const type = req.query.type as string;
-      const documents = await storage.getDocuments(type);
-      res.json(documents);
-    } catch (error) {
-      res.status(500).json({ error: "Failed to fetch documents" });
-    }
-  });
 
-  app.get("/api/admin/documents/:id", async (req, res) => {
-    try {
-      const id = parseInt(req.params.id);
-      const document = await storage.getDocument(id);
-      if (!document) {
-        return res.status(404).json({ error: "Document not found" });
-      }
-      res.json(document);
-    } catch (error) {
-      res.status(500).json({ error: "Failed to fetch document" });
-    }
-  });
 
-  app.post("/api/admin/documents", async (req, res) => {
-    try {
-      const document = await storage.createDocument(req.body);
-      res.status(201).json(document);
-    } catch (error) {
-      res.status(500).json({ error: "Failed to create document" });
-    }
-  });
 
-  app.put("/api/admin/documents/:id", async (req, res) => {
-    try {
-      const id = parseInt(req.params.id);
-      const document = await storage.updateDocument(id, req.body);
-      if (!document) {
-        return res.status(404).json({ error: "Document not found" });
-      }
-      res.json(document);
-    } catch (error) {
-      res.status(500).json({ error: "Failed to update document" });
-    }
-  });
 
-  app.delete("/api/admin/documents/:id", async (req, res) => {
-    try {
-      const id = parseInt(req.params.id);
-      const deleted = await storage.deleteDocument(id);
-      if (!deleted) {
-        return res.status(404).json({ error: "Document not found" });
-      }
-      res.status(204).send();
-    } catch (error) {
-      res.status(500).json({ error: "Failed to delete document" });
-    }
-  });
 
-  // ===============================
-  // ADMIN API ENDPOINTS (для Retool)
-  // ===============================
-
-  // Управление пользователями
-  app.get("/api/admin/users", adminAuth, async (req, res) => {
-    try {
-      const users = await storage.getAllUsers();
-      res.json(users);
-    } catch (error) {
-      res.status(500).json({ error: "Failed to fetch users" });
-    }
-  });
-
-  app.put("/api/admin/users/:id/status", adminAuth, async (req, res) => {
-    try {
-      const userId = parseInt(req.params.id);
-      const { isActive } = req.body;
-      const user = await storage.updateUserStatus(userId, isActive);
-      res.json(user);
-    } catch (error) {
-      res.status(500).json({ error: "Failed to update user status" });
-    }
-  });
-
-  // Модерация объявлений
-  app.get("/api/admin/listings", adminAuth, async (req, res) => {
-    try {
-      const { status } = req.query;
-      const listings = await storage.getListingsByStatus(status as string || "pending");
-      res.json(listings);
-    } catch (error) {
-      res.status(500).json({ error: "Failed to fetch listings" });
-    }
-  });
-
-  app.put("/api/admin/listings/:id/status", adminAuth, async (req, res) => {
-    try {
-      const listingId = parseInt(req.params.id);
-      const { status } = req.body;
-      const listing = await storage.updateListingStatus(listingId, status);
-      res.json(listing);
-    } catch (error) {
-      res.status(500).json({ error: "Failed to update listing status" });
-    }
-  });
-
-  // Статистика для админа
-  app.get("/api/admin/stats", adminAuth, async (req, res) => {
-    try {
-      const stats = await storage.getAdminStats();
-      res.json(stats);
-    } catch (error) {
-      res.status(500).json({ error: "Failed to fetch admin stats" });
-    }
-  });
-
-  // Управление разделом "Продай свое авто"
-  app.get("/api/admin/sell-car-section", adminAuth, async (req, res) => {
-    try {
-      const section = await storage.getSellCarSection();
-      res.json(section);
-    } catch (error) {
-      res.status(500).json({ error: "Failed to fetch sell car section" });
-    }
-  });
-
-  app.put("/api/admin/sell-car-section", adminAuth, async (req, res) => {
-    try {
-      const section = await storage.updateSellCarSection(req.body);
-      clearCachePattern('sell_car_section');
-      res.json(section);
-    } catch (error) {
-      res.status(500).json({ error: "Failed to update sell car section" });
-    }
-  });
-
-  // Массовые уведомления
-  app.post("/api/admin/notifications/broadcast", adminAuth, async (req, res) => {
-    try {
-      const { title, message, type = "system" } = req.body;
-      const users = await storage.getAllUsers();
-      
-      const notifications = await Promise.all(
-        users.map(user => 
-          storage.createNotification({
-            userId: user.id,
-            type,
-            title,
-            message,
-            isRead: false
-          })
-        )
-      );
-      
-      res.json({ sent: notifications.length });
-    } catch (error) {
-      res.status(500).json({ error: "Failed to send broadcast notification" });
-    }
-  });
+  // Administrative endpoints removed - use external admin tools only
 
   // SMS-отправка для кодов подтверждения
   app.post("/api/auth/send-sms", async (req, res) => {
@@ -1680,154 +1288,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // ADMIN ROUTES FOR RETOOL
   
   // Получить всех пользователей
-  app.get("/api/admin/users", adminAuth, async (req, res) => {
-    try {
-      const users = await storage.getAllUsers();
-      res.json(users);
-    } catch (error) {
-      res.status(500).json({ error: "Failed to fetch users" });
-    }
-  });
 
   // Получить статистику для админ-панели
-  app.get("/api/admin/stats", adminAuth, async (req, res) => {
-    try {
-      const stats = await storage.getAdminStats();
-      res.json(stats);
-    } catch (error) {
-      res.status(500).json({ error: "Failed to fetch admin stats" });
-    }
-  });
 
   // Обновить статус пользователя (активировать/деактивировать)
-  app.patch("/api/admin/users/:id/status", adminAuth, async (req, res) => {
-    try {
-      const userId = parseInt(req.params.id);
-      const { isActive } = req.body;
-      
-      if (typeof isActive !== 'boolean') {
-        return res.status(400).json({ error: "isActive must be a boolean" });
-      }
-
-      const user = await storage.updateUserStatus(userId, isActive);
-      if (!user) {
-        return res.status(404).json({ error: "User not found" });
-      }
-      
-      res.json(user);
-    } catch (error) {
-      res.status(500).json({ error: "Failed to update user status" });
-    }
-  });
 
   // Обновить профиль пользователя
-  app.patch("/api/admin/users/:id/profile", adminAuth, async (req, res) => {
-    try {
-      const userId = parseInt(req.params.id);
-      const { fullName, profilePhoto } = req.body;
-      
-      const user = await storage.updateUserProfile(userId, { fullName, profilePhoto });
-      if (!user) {
-        return res.status(404).json({ error: "User not found" });
-      }
-      
-      res.json(user);
-    } catch (error) {
-      res.status(500).json({ error: "Failed to update user profile" });
-    }
-  });
 
   // Получить все объявления с расширенной информацией для админки
-  app.get("/api/admin/listings", adminAuth, async (req, res) => {
-    try {
-      const { status, limit = 100 } = req.query;
-      
-      let listings;
-      if (status) {
-        listings = await storage.getListingsByStatus(status as string, Number(limit));
-      } else {
-        // Получить все объявления всех статусов
-        const allStatuses = ['pending', 'active', 'ended', 'rejected'];
-        const allListings = await Promise.all(
-          allStatuses.map(s => storage.getListingsByStatus(s, Number(limit) / allStatuses.length))
-        );
-        listings = allListings.flat();
-      }
-
-      // Обогащаем данными о продавце и количестве ставок
-      const enrichedListings = await Promise.all(
-        listings.map(async (listing) => {
-          const seller = await storage.getUser(listing.sellerId);
-          const bidCount = await storage.getBidCountForListing(listing.id);
-          
-          return {
-            ...listing,
-            seller: {
-              id: seller?.id,
-              username: seller?.username,
-              email: seller?.email,
-              fullName: seller?.fullName,
-              isActive: seller?.isActive
-            },
-            bidCount
-          };
-        })
-      );
-      
-      res.json(enrichedListings);
-    } catch (error) {
-      res.status(500).json({ error: "Failed to fetch admin listings" });
-    }
-  });
 
   // Получить все ставки с информацией о пользователях
-  app.get("/api/admin/bids", adminAuth, async (req, res) => {
-    try {
-      const { listingId, userId, limit = 100 } = req.query;
-      
-      let bids;
-      if (listingId) {
-        bids = await storage.getBidsForListing(Number(listingId));
-      } else if (userId) {
-        bids = await storage.getBidsByUser(Number(userId));
-      } else {
-        // Получить все ставки через storage метод
-        const allListings = await storage.getListingsByStatus('active', Number(limit));
-        const allBidPromises = allListings.map(listing => storage.getBidsForListing(listing.id));
-        const allBidsArrays = await Promise.all(allBidPromises);
-        bids = allBidsArrays.flat().slice(0, Number(limit));
-      }
-
-      // Обогащаем данными о пользователе и объявлении
-      const enrichedBids = await Promise.all(
-        bids.map(async (bid) => {
-          const bidder = await storage.getUser(bid.bidderId);
-          const listing = await storage.getListing(bid.listingId);
-          
-          return {
-            ...bid,
-            bidder: {
-              id: bidder?.id,
-              username: bidder?.username,
-              email: bidder?.email,
-              fullName: bidder?.fullName
-            },
-            listing: {
-              id: listing?.id,
-              make: listing?.make,
-              model: listing?.model,
-              year: listing?.year,
-              lotNumber: listing?.lotNumber
-            }
-          };
-        })
-      );
-      
-      res.json(enrichedBids);
-    } catch (error) {
-      res.status(500).json({ error: "Failed to fetch admin bids" });
-    }
-  });
 
   const httpServer = createServer(app);
   return httpServer;
