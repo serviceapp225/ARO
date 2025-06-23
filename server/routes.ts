@@ -1113,16 +1113,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           maxYear: alert.maxYear
         });
         
-        const deletedCheck = await db.select({ id: deletedAlerts.id })
-          .from(deletedAlerts)
-          .where(and(
-            eq(deletedAlerts.userId, userId),
-            eq(deletedAlerts.alertData, alertData)
-          ));
-        
-        if (deletedCheck.length === 0) {
-          filteredAlerts.push(alert);
-        }
+        // Add alert to filtered list (deletedAlerts functionality removed for SQLite migration)
+        filteredAlerts.push(alert);
       }
       
       // Кэшируем отфильтрованный результат
@@ -1150,22 +1142,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         maxYear: validatedData.maxYear
       });
       
-      const deletedAlertCheck = await db.select({ id: deletedAlerts.id })
-        .from(deletedAlerts)
-        .where(and(
-          eq(deletedAlerts.userId, validatedData.userId),
-          eq(deletedAlerts.alertData, alertData)
-        ));
+      // deletedAlerts functionality removed for SQLite migration
+      const deletedAlertCheck: any[] = [];
       
-      if (deletedAlertCheck.length > 0) {
-        // Удаляем запись из deleted_alerts, чтобы разрешить повторное создание
-        await db.delete(deletedAlerts)
-          .where(and(
-            eq(deletedAlerts.userId, validatedData.userId),
-            eq(deletedAlerts.alertData, alertData)
-          ));
-        console.log(`Removed deleted alert restriction for user ${validatedData.userId}`);
-      }
+      // deletedAlerts functionality removed for SQLite migration
       
       const alert = await storage.createCarAlert(validatedData);
       
@@ -1203,15 +1183,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         maxYear: alert.maxYear
       });
       
-      try {
-        await db.insert(deletedAlerts).values({
-          userId: alert.userId,
-          alertData: alertData
-        }).onConflictDoNothing();
-        console.log(`Marked alert ${alertId} as deleted for user ${alert.userId}`);
-      } catch (deleteError) {
-        console.log('Error marking alert as deleted:', deleteError);
-      }
+      // deletedAlerts functionality removed for SQLite migration
+      console.log(`Alert ${alertId} deleted for user ${alert.userId}`);
       
       const success = await storage.deleteCarAlert(alertId);
       if (!success) {

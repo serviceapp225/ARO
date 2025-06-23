@@ -1,228 +1,62 @@
-import { db, pool } from "./db";
-import { users, carListings, bids, favorites } from "@shared/schema";
-import { eq } from "drizzle-orm";
-import { migrate } from "drizzle-orm/better-sqlite3/migrator";
+import { db } from './db';
+import { users, carListings, bids, favorites, notifications, carAlerts, banners, sellCarSection, advertisementCarousel, documents, alertViews, smsVerificationCodes } from '../shared/schema';
 
 export async function initializeDatabaseWithSampleData() {
-  console.log("Initializing database with sample data...");
-
-  // Create tables using raw SQL for SQLite
+  console.log('Initializing database with sample data...');
+  
   try {
-    pool.exec(`
-      CREATE TABLE IF NOT EXISTS users (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        username TEXT NOT NULL UNIQUE,
-        email TEXT NOT NULL UNIQUE,
-        phone_number TEXT,
-        full_name TEXT,
-        role TEXT NOT NULL DEFAULT 'user',
-        profile_photo TEXT,
-        is_active INTEGER DEFAULT 1,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-      );
-      
-      CREATE TABLE IF NOT EXISTS car_listings (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        seller_id INTEGER NOT NULL,
-        lot_number TEXT NOT NULL UNIQUE,
-        make TEXT NOT NULL,
-        model TEXT NOT NULL,
-        year INTEGER NOT NULL,
-        mileage INTEGER NOT NULL,
-        color TEXT,
-        engine TEXT,
-        transmission TEXT,
-        fuel_type TEXT,
-        drive_type TEXT,
-        body_type TEXT,
-        vin TEXT,
-        description TEXT,
-        starting_price TEXT NOT NULL,
-        current_bid TEXT,
-        bid_count INTEGER DEFAULT 0,
-        photos TEXT,
-        status TEXT DEFAULT 'pending',
-        end_time DATETIME,
-        customs_cleared INTEGER DEFAULT 0,
-        recycled INTEGER DEFAULT 0,
-        technical_inspection_valid INTEGER DEFAULT 0,
-        technical_inspection_date DATETIME,
-        tinted INTEGER DEFAULT 0,
-        tinting_date DATETIME,
-        location TEXT,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (seller_id) REFERENCES users(id)
-      );
-      
-      CREATE TABLE IF NOT EXISTS bids (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        listing_id INTEGER NOT NULL,
-        bidder_id INTEGER NOT NULL,
-        amount TEXT NOT NULL,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (listing_id) REFERENCES car_listings(id),
-        FOREIGN KEY (bidder_id) REFERENCES users(id)
-      );
-      
-      CREATE TABLE IF NOT EXISTS favorites (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        user_id INTEGER NOT NULL,
-        listing_id INTEGER NOT NULL,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (user_id) REFERENCES users(id),
-        FOREIGN KEY (listing_id) REFERENCES car_listings(id)
-      );
-      
-      CREATE TABLE IF NOT EXISTS notifications (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        user_id INTEGER NOT NULL,
-        title TEXT NOT NULL,
-        message TEXT NOT NULL,
-        is_read INTEGER DEFAULT 0,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (user_id) REFERENCES users(id)
-      );
-      
-      CREATE TABLE IF NOT EXISTS car_alerts (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        user_id INTEGER NOT NULL,
-        make TEXT,
-        model TEXT,
-        min_price INTEGER,
-        max_price INTEGER,
-        min_year INTEGER,
-        max_year INTEGER,
-        is_active INTEGER DEFAULT 1,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (user_id) REFERENCES users(id)
-      );
-      
-      CREATE TABLE IF NOT EXISTS banners (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        title TEXT NOT NULL,
-        description TEXT,
-        image_url TEXT,
-        button_text TEXT,
-        button_url TEXT,
-        position TEXT,
-        is_active INTEGER DEFAULT 1,
-        start_date DATETIME,
-        end_date DATETIME,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-      );
-      
-      CREATE TABLE IF NOT EXISTS sell_car_section (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        title TEXT NOT NULL,
-        subtitle TEXT,
-        description TEXT,
-        button_text TEXT,
-        button_url TEXT,
-        background_image_url TEXT,
-        is_active INTEGER DEFAULT 1,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-      );
-      
-      CREATE TABLE IF NOT EXISTS advertisement_carousel (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        title TEXT NOT NULL,
-        description TEXT,
-        image_url TEXT,
-        button_text TEXT,
-        button_url TEXT,
-        is_active INTEGER DEFAULT 1,
-        display_order INTEGER DEFAULT 0,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-      );
-      
-      CREATE TABLE IF NOT EXISTS documents (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        title TEXT NOT NULL,
-        content TEXT NOT NULL,
-        type TEXT NOT NULL,
-        isActive INTEGER DEFAULT 1,
-        createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
-      );
-      
-      CREATE TABLE IF NOT EXISTS alert_views (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        user_id INTEGER NOT NULL,
-        alert_id INTEGER NOT NULL,
-        listing_id INTEGER NOT NULL,
-        viewed_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (user_id) REFERENCES users(id),
-        FOREIGN KEY (alert_id) REFERENCES car_alerts(id),
-        FOREIGN KEY (listing_id) REFERENCES car_listings(id)
-      );
-      
-      CREATE TABLE IF NOT EXISTS sms_verification_codes (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        phone_number TEXT NOT NULL,
-        code TEXT NOT NULL,
-        is_used INTEGER DEFAULT 0,
-        expires_at DATETIME NOT NULL,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-      );
-    `);
-    console.log("Database tables created successfully");
-  } catch (error) {
-    console.log("Tables might already exist, continuing...");
-  }
+    // Check if data already exists
+    const existingUsers = await db.select().from(users).limit(1);
+    if (existingUsers.length > 0) {
+      console.log('Database already has sample data, skipping initialization');
+      return;
+    }
 
-  // Check if data already exists
-  const existingUsers = await db.select().from(users).limit(1);
-  if (existingUsers.length > 0) {
-    console.log("Database already has data, skipping initialization");
-    return;
-  }
+    const now = new Date();
+    const auction1EndTime = new Date('2025-06-24T14:30:00Z');
+    const auction2EndTime = new Date('2025-06-25T10:15:00Z');
+    const auction3EndTime = new Date('2025-06-26T16:45:00Z');
+    const auction4EndTime = new Date('2025-06-27T12:00:00Z');
 
-  const now = new Date();
+    // Create admin user
+    const adminUser = await db.insert(users).values({
+      email: "admin@autobid.tj",
+      username: "admin",
+      phoneNumber: "+992000000001",
+      fullName: "Администратор Системы",
+      role: "admin",
+      profilePhoto: null,
+      isActive: true,
+      createdAt: now,
+    }).returning();
 
-  // Create sample users
-  const [adminUser] = await db.insert(users).values({
-    username: "admin",
-    email: "admin@autoauction.tj",
-    role: "admin",
-    isActive: true,
-    profilePhoto: null,
-    phoneNumber: null,
-    fullName: "Administrator",
-  }).returning();
+    // Create seller user
+    const sellerUser = await db.insert(users).values({
+      email: "seller@autobid.tj",
+      username: "seller",
+      phoneNumber: "+992000000002",
+      fullName: "Продавец Автомобилей",
+      role: "seller",
+      profilePhoto: null,
+      isActive: true,
+      createdAt: now,
+    }).returning();
 
-  const [sellerUser] = await db.insert(users).values({
-    username: "seller123",
-    email: "seller@autoauction.tj", 
-    role: "seller",
-    isActive: true,
-    profilePhoto: null,
-  }).returning();
+    // Create buyer user
+    const buyerUser = await db.insert(users).values({
+      email: "buyer@autobid.tj",
+      username: "buyer",
+      phoneNumber: "+992000000003",
+      fullName: "Покупатель Автомобилей",
+      role: "buyer",
+      profilePhoto: null,
+      isActive: true,
+      createdAt: now,
+    }).returning();
 
-  const [buyerUser] = await db.insert(users).values({
-    username: "buyer456",
-    email: "buyer@autoauction.tj",
-    role: "buyer", 
-    isActive: true,
-    profilePhoto: null,
-  }).returning();
-
-  // Fixed auction end times to prevent timer reset on server restart
-  const auction1EndTime = new Date('2025-06-16T13:30:00Z'); // Завершенный аукцион для теста
-  const auction2EndTime = new Date('2025-06-17T18:45:00Z'); // Fixed future date
-  const auction3EndTime = new Date('2025-06-18T12:20:00Z'); // Fixed future date
-  const auction4EndTime = new Date('2025-06-19T10:15:00Z'); // Fixed future date
-  const auction5EndTime = new Date('2025-06-20T14:30:00Z'); // Fixed future date
-  const auction6EndTime = new Date('2025-06-21T16:45:00Z'); // Fixed future date
-  const auction7EndTime = new Date('2025-06-22T11:00:00Z'); // Fixed future date
-  const auction8EndTime = new Date('2025-06-23T13:15:00Z'); // Fixed future date
-  const auction9EndTime = new Date('2025-06-24T17:30:00Z'); // Fixed future date
-  const auction10EndTime = new Date('2025-06-25T09:45:00Z'); // Fixed future date
-  const auction11EndTime = new Date('2025-06-26T15:20:00Z'); // Fixed future date
-  const auction12EndTime = new Date('2025-06-27T19:10:00Z'); // Fixed future date
-
-  // Create sample car listings
-  const listings = await db.insert(carListings).values([
-    {
-      sellerId: sellerUser.id,
+    // Create sample car listings
+    const listing1 = await db.insert(carListings).values({
+      sellerId: sellerUser[0].id,
       lotNumber: "LOT724583",
       make: "Porsche",
       model: "911 Turbo S",
@@ -241,143 +75,264 @@ export async function initializeDatabaseWithSampleData() {
       ]),
       auctionDuration: 72,
       status: "active",
-      auctionStartTime: now.getTime(),
-      auctionEndTime: auction1EndTime.getTime(),
-      endTime: auction1EndTime.getTime(),
+      auctionStartTime: now,
+      auctionEndTime: auction1EndTime,
+      endTime: auction1EndTime,
       customsCleared: true,
       recycled: false,
       technicalInspectionValid: true,
-      technicalInspectionDate: new Date("2025-12-31").getTime(),
-      engine: "3.8L Twin-Turbo",
-      transmission: "8-Speed PDK",
-      fuelType: "Gasoline",
-      bodyType: "Coupe",
-      driveType: "AWD",
-      color: "Racing Yellow",
-      condition: "Excellent",
-      location: "Dushanbe",
-    },
-    {
-      sellerId: sellerUser.id,
-      lotNumber: "LOT892456",
+      technicalInspectionDate: new Date("2025-12-31"),
+      location: "Душанбе",
+      createdAt: now,
+    }).returning();
+
+    const listing2 = await db.insert(carListings).values({
+      sellerId: sellerUser[0].id,
+      lotNumber: "LOT425983",
       make: "BMW",
-      model: "M5 Competition",
+      model: "M3 Competition",
       year: 2021,
       mileage: 8500,
-      vin: "WBSJF0C59MCE12345",
-      description: "An exceptional 2021 BMW M5 Competition in pristine condition. This high-performance sedan combines luxury with incredible power, featuring a twin-turbo V8 engine producing 617 horsepower.",
-      startingPrice: "85000.00",
-      currentBid: null,
-      photos: [
+      vin: "WBS8M9C51M5K12345",
+      description: "Exceptional 2021 BMW M3 Competition with only 8,500 miles. This high-performance sedan combines luxury with track-ready capabilities. Features carbon fiber trim, M sport exhaust, and premium interior appointments.",
+      startingPrice: "75000.00",
+      currentBid: "78500.00",
+      photos: JSON.stringify([
         "https://images.unsplash.com/photo-1555215695-3004980ad54e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
-        "https://images.unsplash.com/photo-1617788138017-80ad40651399?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
-        "https://images.unsplash.com/photo-1619405399517-d7fce0f13302?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
-        "https://images.unsplash.com/photo-1616422285623-13ff0162193c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"
-      ],
-      auctionDuration: 72,
+        "https://images.unsplash.com/photo-1563720223185-11003d516935?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
+        "https://images.unsplash.com/photo-1544636331-e26879cd4d9b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
+        "https://images.unsplash.com/photo-1594736797933-d0d3c6db4497?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"
+      ]),
+      auctionDuration: 48,
       status: "active",
       auctionStartTime: now,
       auctionEndTime: auction2EndTime,
+      endTime: auction2EndTime,
       customsCleared: true,
       recycled: false,
       technicalInspectionValid: true,
-      technicalInspectionDate: "2025-11-30",
-    },
-    {
-      sellerId: sellerUser.id,
-      lotNumber: "567891",
-      make: "Ford",
-      model: "Mustang GT",
-      year: 2019,
-      mileage: 35000,
-      vin: "1FA6P8CF3K5123456",
-      description: "A powerful 2019 Ford Mustang GT with the iconic 5.0L V8 engine. This American muscle car delivers thrilling performance and classic styling that never goes out of fashion.",
-      startingPrice: "28000.00",
-      currentBid: "31000.00",
-      photos: [
-        "https://images.unsplash.com/photo-1584345604476-8ec5e12e42dd?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
-        "https://images.unsplash.com/photo-1603386329225-868f9b1ee6c9?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
-        "https://images.unsplash.com/photo-1607892035701-a80beab6b0c7?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
-        "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"
-      ],
-      auctionDuration: 72,
-      status: "active",
-      auctionStartTime: now,
-      auctionEndTime: auction9EndTime,
-      customsCleared: true,
-      recycled: false,
-      technicalInspectionValid: true,
-      technicalInspectionDate: "2025-10-15",
-    },
-    {
-      sellerId: sellerUser.id,
-      lotNumber: "234567",
-      make: "Audi",
-      model: "RS6 Avant",
+      technicalInspectionDate: new Date("2025-11-30"),
+      location: "Худжанд",
+      createdAt: now,
+    }).returning();
+
+    const listing3 = await db.insert(carListings).values({
+      sellerId: sellerUser[0].id,
+      lotNumber: "LOT893274",
+      make: "Mercedes-Benz",
+      model: "S-Class",
       year: 2022,
       mileage: 12000,
-      vin: "WAUZZZ4G2DN123456",
-      description: "A stunning 2022 Audi RS6 Avant - the ultimate performance wagon. With its twin-turbo V8 engine and Quattro all-wheel drive, this vehicle offers supercar performance with everyday practicality.",
+      vin: "WDDUX8GB1NA123456",
+      description: "Luxurious 2022 Mercedes-Benz S-Class with premium features and low mileage. This flagship sedan offers the ultimate in comfort and technology.",
+      startingPrice: "95000.00",
+      currentBid: "98000.00",
+      photos: JSON.stringify([
+        "https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
+        "https://images.unsplash.com/photo-1563720223185-11003d516935?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"
+      ]),
+      auctionDuration: 96,
+      status: "active",
+      auctionStartTime: now,
+      auctionEndTime: auction3EndTime,
+      endTime: auction3EndTime,
+      customsCleared: true,
+      recycled: false,
+      technicalInspectionValid: true,
+      technicalInspectionDate: new Date("2025-12-31"),
+      location: "Душанбе",
+      createdAt: now,
+    }).returning();
+
+    const listing4 = await db.insert(carListings).values({
+      sellerId: sellerUser[0].id,
+      lotNumber: "LOT567432",
+      make: "Audi",
+      model: "RS6 Avant",
+      year: 2021,
+      mileage: 18000,
+      vin: "WAUZZZ4G3LN123456",
+      description: "High-performance 2021 Audi RS6 Avant wagon with all-wheel drive. Perfect blend of practicality and performance with a twin-turbo V8 engine.",
       startingPrice: "110000.00",
-      currentBid: null,
-      photos: [
-        "https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
-        "https://images.unsplash.com/photo-1580273916550-e323be2ae537?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
-        "https://images.unsplash.com/photo-1563720223185-11003d516935?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
-        "https://images.unsplash.com/photo-1614162692292-7ac56d7f7f1e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"
-      ],
+      currentBid: "115000.00",
+      photos: JSON.stringify([
+        "https://images.unsplash.com/photo-1603584173870-7f23fdae1b7a?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
+        "https://images.unsplash.com/photo-1555215695-3004980ad54e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"
+      ]),
       auctionDuration: 72,
       status: "active",
       auctionStartTime: now,
       auctionEndTime: auction4EndTime,
+      endTime: auction4EndTime,
       customsCleared: true,
       recycled: false,
       technicalInspectionValid: true,
-      technicalInspectionDate: "2025-12-15",
-    }
-  ]).returning();
+      technicalInspectionDate: new Date("2025-12-15"),
+      location: "Курган-Тюбе",
+      createdAt: now,
+    }).returning();
 
-  // Create sample bids for the auctions
-  await db.insert(bids).values([
-    {
-      listingId: listings[0].id, // Porsche 911
-      bidderId: buyerUser.id,
+    // Create sample bids
+    await db.insert(bids).values({
+      listingId: listing1[0].id,
+      bidderId: buyerUser[0].id,
       amount: "145500.00",
-    },
-    {
-      listingId: listings[0].id, // Porsche 911  
-      bidderId: buyerUser.id,
-      amount: "145000.00",
-    },
-    {
-      listingId: listings[2].id, // Ford Mustang
-      bidderId: buyerUser.id,
-      amount: "31000.00",
-    },
-    {
-      listingId: listings[2].id, // Ford Mustang
-      bidderId: buyerUser.id,
-      amount: "30500.00", 
-    },
-    {
-      listingId: listings[2].id, // Ford Mustang
-      bidderId: buyerUser.id,
-      amount: "30000.00",
-    },
-    {
-      listingId: listings[2].id, // Ford Mustang
-      bidderId: buyerUser.id,
-      amount: "29500.00",
-    }
-  ]);
+      createdAt: now,
+    });
 
-  // Create sample favorites
-  await db.insert(favorites).values([
-    {
-      userId: buyerUser.id,
-      listingId: listings[2].id, // Ford Mustang
-    }
-  ]);
+    await db.insert(bids).values({
+      listingId: listing2[0].id,
+      bidderId: buyerUser[0].id,
+      amount: "78500.00",
+      createdAt: now,
+    });
 
-  console.log("Database initialized with sample data successfully!");
+    // Create sample favorites
+    await db.insert(favorites).values({
+      userId: buyerUser[0].id,
+      listingId: listing1[0].id,
+      createdAt: now,
+    });
+
+    await db.insert(favorites).values({
+      userId: buyerUser[0].id,
+      listingId: listing3[0].id,
+      createdAt: now,
+    });
+
+    // Create sample notifications
+    await db.insert(notifications).values({
+      userId: buyerUser[0].id,
+      title: "Новая ставка на ваш любимый автомобиль",
+      message: "На автомобиль Porsche 911 Turbo S была сделана новая ставка в размере $145,500",
+      type: "bid_update",
+      isRead: false,
+      createdAt: now,
+    });
+
+    await db.insert(notifications).values({
+      userId: sellerUser[0].id,
+      title: "Новая ставка на ваш автомобиль",
+      message: "На ваш BMW M3 Competition была сделана ставка в размере $78,500",
+      type: "new_bid",
+      isRead: false,
+      createdAt: now,
+    });
+
+    // Create sample car alerts
+    await db.insert(carAlerts).values({
+      userId: buyerUser[0].id,
+      make: "Porsche",
+      model: "911",
+      minYear: 2018,
+      maxYear: 2024,
+      minPrice: "100000",
+      maxPrice: "200000",
+      isActive: true,
+      createdAt: now,
+    });
+
+    await db.insert(carAlerts).values({
+      userId: buyerUser[0].id,
+      make: "BMW",
+      model: "M3",
+      minYear: 2020,
+      maxYear: 2024,
+      minPrice: "70000",
+      maxPrice: "120000",
+      isActive: true,
+      createdAt: now,
+    });
+
+    // Create sample banners
+    await db.insert(banners).values({
+      title: "Добро пожаловать в AutoBid!",
+      subtitle: "Лучшая платформа для автомобильных аукционов в Таджикистане",
+      description: "Найдите автомобиль своей мечты по лучшей цене",
+      buttonText: "Начать торги",
+      buttonUrl: "/listings",
+      backgroundImageUrl: "https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&h=600",
+      isActive: true,
+      displayOrder: 1,
+      createdAt: now,
+    });
+
+    await db.insert(banners).values({
+      title: "Премиум автомобили",
+      subtitle: "Эксклюзивная коллекция люксовых авто",
+      description: "Porsche, BMW, Mercedes-Benz и другие премиум бренды",
+      buttonText: "Смотреть каталог",
+      buttonUrl: "/premium",
+      backgroundImageUrl: "https://images.unsplash.com/photo-1544636331-e26879cd4d9b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&h=600",
+      isActive: true,
+      displayOrder: 2,
+      createdAt: now,
+    });
+
+    // Create sell car section
+    await db.insert(sellCarSection).values({
+      title: "Продайте свой автомобиль",
+      subtitle: "Получите лучшую цену на аукционе",
+      description: "Наша платформа поможет вам продать автомобиль быстро и выгодно",
+      buttonText: "Разместить объявление",
+      buttonUrl: "/sell",
+      backgroundImageUrl: "https://images.unsplash.com/photo-1560472354-b33ff0c44a43?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&h=600",
+      isActive: true,
+      createdAt: now,
+    });
+
+    // Create advertisement carousel
+    await db.insert(advertisementCarousel).values({
+      title: "Специальное предложение",
+      description: "Скидки до 10% на комиссию аукциона",
+      imageUrl: "https://images.unsplash.com/photo-1449824913935-59a10b8d2000?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=400",
+      linkUrl: "/promo",
+      isActive: true,
+      displayOrder: 1,
+      createdAt: now,
+    });
+
+    await db.insert(advertisementCarousel).values({
+      title: "Новые поступления",
+      description: "Свежие автомобили каждую неделю",
+      imageUrl: "https://images.unsplash.com/photo-1502877338535-766e1452684a?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=400",
+      linkUrl: "/new-arrivals",
+      isActive: true,
+      displayOrder: 2,
+      createdAt: now,
+    });
+
+    // Create sample documents
+    await db.insert(documents).values({
+      type: "terms",
+      title: "Условия использования",
+      content: "Настоящие условия использования регулируют доступ и использование платформы AutoBid...",
+      isActive: true,
+      createdAt: now,
+    });
+
+    await db.insert(documents).values({
+      type: "privacy",
+      title: "Политика конфиденциальности",
+      content: "AutoBid уважает вашу конфиденциальность и стремится защитить ваши персональные данные...",
+      isActive: true,
+      createdAt: now,
+    });
+
+    await db.insert(documents).values({
+      type: "faq",
+      title: "Часто задаваемые вопросы",
+      content: "Ответы на самые популярные вопросы о работе с платформой AutoBid...",
+      isActive: true,
+      createdAt: now,
+    });
+
+    console.log('Sample data initialization completed successfully!');
+    console.log('Created users:', adminUser[0].id, sellerUser[0].id, buyerUser[0].id);
+    console.log('Created listings:', listing1[0].id, listing2[0].id, listing3[0].id, listing4[0].id);
+
+  } catch (error) {
+    console.error('Error initializing database with sample data:', error);
+    throw error;
+  }
 }
