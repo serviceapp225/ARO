@@ -977,7 +977,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           id: user.id,
           email: user.email,
           phoneNumber: user.phoneNumber,
-          fullName: user.fullName,
+          fullName: user.fullName?.includes(user.phoneNumber || '') ? 'Пользователь' : user.fullName,
           isActive: user.isActive
         }
       });
