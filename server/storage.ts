@@ -834,4 +834,6 @@ export class DatabaseStorage implements IStorage {
   }
 }
 
-export const storage = new DatabaseStorage();
+import { FileStorage } from './fileStorage';
+
+export const storage = new FileStorage();
