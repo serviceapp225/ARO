@@ -75,64 +75,64 @@ export async function initializeDatabaseWithSampleData() {
       
       CREATE TABLE IF NOT EXISTS notifications (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        userId INTEGER NOT NULL,
+        user_id INTEGER NOT NULL,
         title TEXT NOT NULL,
         message TEXT NOT NULL,
-        isRead INTEGER DEFAULT 0,
-        createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (userId) REFERENCES users(id)
+        is_read INTEGER DEFAULT 0,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id)
       );
       
-      CREATE TABLE IF NOT EXISTS carAlerts (
+      CREATE TABLE IF NOT EXISTS car_alerts (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        userId INTEGER NOT NULL,
+        user_id INTEGER NOT NULL,
         make TEXT,
         model TEXT,
-        minPrice INTEGER,
-        maxPrice INTEGER,
-        minYear INTEGER,
-        maxYear INTEGER,
-        isActive INTEGER DEFAULT 1,
-        createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (userId) REFERENCES users(id)
+        min_price INTEGER,
+        max_price INTEGER,
+        min_year INTEGER,
+        max_year INTEGER,
+        is_active INTEGER DEFAULT 1,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id)
       );
       
       CREATE TABLE IF NOT EXISTS banners (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         title TEXT NOT NULL,
         description TEXT,
-        imageUrl TEXT,
-        buttonText TEXT,
-        buttonUrl TEXT,
+        image_url TEXT,
+        button_text TEXT,
+        button_url TEXT,
         position TEXT,
-        isActive INTEGER DEFAULT 1,
-        startDate DATETIME,
-        endDate DATETIME,
-        createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
+        is_active INTEGER DEFAULT 1,
+        start_date DATETIME,
+        end_date DATETIME,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
       );
       
-      CREATE TABLE IF NOT EXISTS sellCarSection (
+      CREATE TABLE IF NOT EXISTS sell_car_section (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         title TEXT NOT NULL,
         subtitle TEXT,
         description TEXT,
-        buttonText TEXT,
-        buttonUrl TEXT,
-        backgroundImageUrl TEXT,
-        isActive INTEGER DEFAULT 1,
-        createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
+        button_text TEXT,
+        button_url TEXT,
+        background_image_url TEXT,
+        is_active INTEGER DEFAULT 1,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
       );
       
-      CREATE TABLE IF NOT EXISTS advertisementCarousel (
+      CREATE TABLE IF NOT EXISTS advertisement_carousel (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         title TEXT NOT NULL,
         description TEXT,
-        imageUrl TEXT,
-        buttonText TEXT,
-        buttonUrl TEXT,
-        isActive INTEGER DEFAULT 1,
-        displayOrder INTEGER DEFAULT 0,
-        createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
+        image_url TEXT,
+        button_text TEXT,
+        button_url TEXT,
+        is_active INTEGER DEFAULT 1,
+        display_order INTEGER DEFAULT 0,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
       );
       
       CREATE TABLE IF NOT EXISTS documents (
@@ -144,24 +144,24 @@ export async function initializeDatabaseWithSampleData() {
         createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
       );
       
-      CREATE TABLE IF NOT EXISTS alertViews (
+      CREATE TABLE IF NOT EXISTS alert_views (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        userId INTEGER NOT NULL,
-        alertId INTEGER NOT NULL,
-        listingId INTEGER NOT NULL,
-        viewedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (userId) REFERENCES users(id),
-        FOREIGN KEY (alertId) REFERENCES carAlerts(id),
-        FOREIGN KEY (listingId) REFERENCES carListings(id)
+        user_id INTEGER NOT NULL,
+        alert_id INTEGER NOT NULL,
+        listing_id INTEGER NOT NULL,
+        viewed_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id),
+        FOREIGN KEY (alert_id) REFERENCES car_alerts(id),
+        FOREIGN KEY (listing_id) REFERENCES car_listings(id)
       );
       
-      CREATE TABLE IF NOT EXISTS smsVerificationCodes (
+      CREATE TABLE IF NOT EXISTS sms_verification_codes (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        phoneNumber TEXT NOT NULL,
+        phone_number TEXT NOT NULL,
         code TEXT NOT NULL,
-        isUsed INTEGER DEFAULT 0,
-        expiresAt DATETIME NOT NULL,
-        createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
+        is_used INTEGER DEFAULT 0,
+        expires_at DATETIME NOT NULL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
       );
     `);
     console.log("Database tables created successfully");
@@ -185,6 +185,8 @@ export async function initializeDatabaseWithSampleData() {
     role: "admin",
     isActive: true,
     profilePhoto: null,
+    phoneNumber: null,
+    fullName: "Administrator",
   }).returning();
 
   const [sellerUser] = await db.insert(users).values({

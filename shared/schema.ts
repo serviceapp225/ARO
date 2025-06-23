@@ -1,21 +1,21 @@
-import { pgTable, text, serial, integer, boolean, timestamp, numeric, jsonb, index } from "drizzle-orm/pg-core";
+import { sqliteTable, text, integer, blob } from "drizzle-orm/sqlite-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
-export const users = pgTable("users", {
-  id: serial("id").primaryKey(),
+export const users = sqliteTable("users", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
   email: text("email").notNull().unique(),
   username: text("username").notNull().unique(),
-  phoneNumber: text("phone_number").unique(), // For SMS authentication
+  phoneNumber: text("phone_number"), // For SMS authentication
   fullName: text("full_name"), // Real name from profile
   role: text("role").notNull(), // 'buyer', 'seller', 'admin'
   profilePhoto: text("profile_photo"),
-  isActive: boolean("is_active").default(false),
-  createdAt: timestamp("created_at").defaultNow(),
+  isActive: integer("is_active", { mode: "boolean" }).default(true),
+  createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
 });
 
-export const carListings = pgTable("car_listings", {
-  id: serial("id").primaryKey(),
+export const carListings = sqliteTable("car_listings", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
   sellerId: integer("seller_id").notNull(),
   lotNumber: text("lot_number").notNull(),
   make: text("make").notNull(),
@@ -23,19 +23,17 @@ export const carListings = pgTable("car_listings", {
   year: integer("year").notNull(),
   mileage: integer("mileage").notNull(),
   description: text("description").notNull(),
-  startingPrice: numeric("starting_price", { precision: 12, scale: 2 }).notNull(),
-  currentBid: numeric("current_bid", { precision: 12, scale: 2 }),
-  photos: jsonb("photos").notNull(), // array of photo URLs
-  auctionDuration: integer("auction_duration").notNull(), // hours
+  startingPrice: text("starting_price").notNull(),
+  currentBid: text("current_bid"),
+  photos: text("photos").notNull(), // JSON string of photo URLs
   status: text("status").notNull().default("pending"), // 'pending', 'active', 'ended', 'rejected'
-  auctionStartTime: timestamp("auction_start_time"),
-  auctionEndTime: timestamp("auction_end_time"),
-  customsCleared: boolean("customs_cleared").default(false),
-  recycled: boolean("recycled").default(false),
-  technicalInspectionValid: boolean("technical_inspection_valid").default(false),
-  technicalInspectionDate: text("technical_inspection_date"),
-  tinted: boolean("tinted").default(false),
-  tintingDate: text("tinting_date"),
+  endTime: integer("end_time", { mode: "timestamp" }),
+  customsCleared: integer("customs_cleared", { mode: "boolean" }).default(false),
+  recycled: integer("recycled", { mode: "boolean" }).default(false),
+  technicalInspectionValid: integer("technical_inspection_valid", { mode: "boolean" }).default(false),
+  technicalInspectionDate: integer("technical_inspection_date", { mode: "timestamp" }),
+  tinted: integer("tinted", { mode: "boolean" }).default(false),
+  tintingDate: integer("tinting_date", { mode: "timestamp" }),
   // Additional car specifications
   engine: text("engine"),
   transmission: text("transmission"),
@@ -43,60 +41,46 @@ export const carListings = pgTable("car_listings", {
   bodyType: text("body_type"),
   driveType: text("drive_type"),
   color: text("color"),
-  condition: text("condition"),
   vin: text("vin"),
   location: text("location"),
-  createdAt: timestamp("created_at").defaultNow(),
-}, (table) => ({
-  statusIdx: index("car_listings_status_idx").on(table.status),
-  sellerIdx: index("car_listings_seller_idx").on(table.sellerId),
-  createdAtIdx: index("car_listings_created_at_idx").on(table.createdAt),
-}));
-
-export const bids = pgTable("bids", {
-  id: serial("id").primaryKey(),
-  listingId: integer("listing_id").notNull(),
-  bidderId: integer("bidder_id").notNull(),
-  amount: numeric("amount", { precision: 12, scale: 2 }).notNull(),
-  createdAt: timestamp("created_at").defaultNow(),
-}, (table) => ({
-  listingIdx: index("bids_listing_idx").on(table.listingId),
-  bidderIdx: index("bids_bidder_idx").on(table.bidderId),
-}));
-
-export const favorites = pgTable("favorites", {
-  id: serial("id").primaryKey(),
-  userId: integer("user_id").notNull(),
-  listingId: integer("listing_id").notNull(),
-  createdAt: timestamp("created_at").defaultNow(),
+  createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
 });
 
-export const notifications = pgTable("notifications", {
-  id: serial("id").primaryKey(),
+export const bids = sqliteTable("bids", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  listingId: integer("listing_id").notNull(),
+  bidderId: integer("bidder_id").notNull(),
+  amount: text("amount").notNull(),
+  createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
+});
+
+export const favorites = sqliteTable("favorites", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
   userId: integer("user_id").notNull(),
-  type: text("type").notNull(), // 'new_car', 'bid_update', 'auction_ending'
+  listingId: integer("listing_id").notNull(),
+  createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
+});
+
+export const notifications = sqliteTable("notifications", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  userId: integer("user_id").notNull(),
   title: text("title").notNull(),
   message: text("message").notNull(),
-  isRead: boolean("is_read").default(false),
-  listingId: integer("listing_id"), // optional, for car-related notifications
-  alertId: integer("alert_id"), // optional, for notifications related to car alerts
-  createdAt: timestamp("created_at").defaultNow(),
-}, (table) => ({
-  userIdx: index("notifications_user_idx").on(table.userId),
-  isReadIdx: index("notifications_is_read_idx").on(table.isRead),
-}));
+  isRead: integer("is_read", { mode: "boolean" }).default(false),
+  createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
+});
 
-export const carAlerts = pgTable("car_alerts", {
-  id: serial("id").primaryKey(),
+export const carAlerts = sqliteTable("car_alerts", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
   userId: integer("user_id").notNull(),
-  make: text("make").notNull(),
-  model: text("model"), // optional, can be null for all models of a make
-  minPrice: numeric("min_price", { precision: 12, scale: 2 }),
-  maxPrice: numeric("max_price", { precision: 12, scale: 2 }),
+  make: text("make"),
+  model: text("model"),
+  minPrice: integer("min_price"),
+  maxPrice: integer("max_price"),
   maxYear: integer("max_year"),
   minYear: integer("min_year"),
-  isActive: boolean("is_active").default(true),
-  createdAt: timestamp("created_at").defaultNow(),
+  isActive: integer("is_active", { mode: "boolean" }).default(true),
+  createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
 });
 
 export const insertUserSchema = createInsertSchema(users).omit({
@@ -108,8 +92,6 @@ export const insertCarListingSchema = createInsertSchema(carListings).omit({
   id: true,
   currentBid: true,
   status: true,
-  auctionStartTime: true,
-  auctionEndTime: true,
   createdAt: true,
 });
 
@@ -146,16 +128,18 @@ export type Notification = typeof notifications.$inferSelect;
 export type InsertCarAlert = z.infer<typeof insertCarAlertSchema>;
 export type CarAlert = typeof carAlerts.$inferSelect;
 
-export const banners = pgTable("banners", {
-  id: serial("id").primaryKey(),
+export const banners = sqliteTable("banners", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
   title: text("title").notNull(),
   description: text("description"),
-  imageUrl: text("image_url").notNull(),
-  linkUrl: text("link_url"),
-  position: text("position").notNull().default("main"), // 'main', 'sidebar', 'footer'
-  isActive: boolean("is_active").default(true),
-  order: integer("order").default(0),
-  createdAt: timestamp("created_at").defaultNow(),
+  imageUrl: text("image_url"),
+  buttonText: text("button_text"),
+  buttonUrl: text("button_url"),
+  position: text("position"),
+  isActive: integer("is_active", { mode: "boolean" }).default(true),
+  startDate: integer("start_date", { mode: "timestamp" }),
+  endDate: integer("end_date", { mode: "timestamp" }),
+  createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
 });
 
 export const insertBannerSchema = createInsertSchema(banners).omit({
