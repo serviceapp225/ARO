@@ -6,7 +6,6 @@ import { registerRoutes } from "./routes";
 import { initializeDatabaseWithSampleData } from "./initDatabase";
 import { setupVite, serveStatic, log } from "./vite";
 
-
 const app = express();
 
 // Add caching headers for better performance
@@ -55,6 +54,9 @@ app.use((req, res, next) => {
 });
 
 (async () => {
+  // Initialize database with sample data
+  await initializeDatabaseWithSampleData();
+  
   const server = await registerRoutes(app);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {

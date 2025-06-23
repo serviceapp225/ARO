@@ -35,29 +35,58 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         try {
           const demoUser = JSON.parse(demoUserData);
           demoUser.role = demoUser.role || 'buyer';
-          demoUser.isActive = true;
-          demoUser.userId = 1;
+          
+          // Check for instant user data first (bypasses all network calls)
+          const instantData = getInstantUserData(demoUser.phoneNumber);
+          if (instantData) {
+            demoUser.isActive = instantData.isActive;
+            demoUser.userId = instantData.userId;
+            demoUser.fullName = instantData.fullName;
+            setUser(demoUser);
+            setLoading(false);
+            return;
+          }
+
+          // Check ultra-fast cache second
+          const cachedData = getCachedUserData(demoUser.phoneNumber);
+          if (cachedData) {
+            demoUser.isActive = cachedData.isActive;
+            demoUser.userId = cachedData.userId;
+            setUser(demoUser);
+            setLoading(false);
+            return;
+          }
+
+          // Only fallback to database for unknown users
+          try {
+            const emailFromPhone = demoUser.phoneNumber.replace(/\D/g, '') + '@autoauction.tj';
+            const response = await fetch(`/api/users/by-email/${encodeURIComponent(emailFromPhone)}`);
+            
+            if (response.ok) {
+              const dbUser = await response.json();
+              demoUser.isActive = dbUser.isActive;
+              demoUser.userId = dbUser.id;
+              
+              // Cache for future instant access
+              preCacheUserData(demoUser.phoneNumber, {
+                isActive: dbUser.isActive,
+                userId: dbUser.id
+              });
+            } else {
+              demoUser.isActive = false;
+              demoUser.userId = null;
+            }
+          } catch (error) {
+            console.error('Failed to fetch user activation status:', error);
+            demoUser.isActive = false;
+            demoUser.userId = null;
+          }
+          
           setUser(demoUser);
-          setLoading(false);
-          return;
         } catch (error) {
           localStorage.removeItem('demo-user');
         }
       }
-      
-      // Automatically create demo user if none exists
-      const autoDemoUser = {
-        email: 'demo@autoauction.tj',
-        phoneNumber: '+992000000000',
-        fullName: 'Демо Пользователь',
-        uid: 'auto-demo-user',
-        role: 'buyer',
-        isActive: true,
-        userId: 1
-      };
-      
-      localStorage.setItem('demo-user', JSON.stringify(autoDemoUser));
-      setUser(autoDemoUser);
       setLoading(false);
     };
 
