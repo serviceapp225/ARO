@@ -14,7 +14,7 @@ export class MemoryStorage implements IStorage {
   private documents: Document[] = [];
   private alertViews: AlertView[] = [];
   private smsVerificationCodes: SmsVerificationCode[] = [];
-  private nextId = 1;
+  private nextId = 50; // Start from 50 to avoid conflicts with fixed IDs
 
   constructor() {
     this.initializeWithSampleData();
@@ -66,7 +66,7 @@ export class MemoryStorage implements IStorage {
     const futureDate2 = new Date(Date.now() + 48 * 60 * 60 * 1000); // 2 days from now
 
     const listing1: CarListing = {
-      id: this.nextId++,
+      id: 41,
       sellerId: sellerUser.id,
       lotNumber: "382806",
       make: "Mazda",
@@ -100,7 +100,7 @@ export class MemoryStorage implements IStorage {
     };
 
     const listing2: CarListing = {
-      id: this.nextId++,
+      id: 42,
       sellerId: sellerUser.id,
       lotNumber: "482901",
       make: "Toyota",
@@ -173,7 +173,7 @@ export class MemoryStorage implements IStorage {
 
     // Create sample advertisement carousel
     const adCarousel: AdvertisementCarousel = {
-      id: this.nextId++,
+      id: 1,
       title: "Premium Cars Available",
       description: "Discover luxury vehicles at great prices",
       imageUrl: "/api/advertisement-carousel/1/image",
