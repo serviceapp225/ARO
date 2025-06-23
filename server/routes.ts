@@ -1824,7 +1824,7 @@ async function sendSMSCode(phoneNumber: string, code: string): Promise<{success:
 
     const txnId = Date.now().toString();
     const cleanPhone = phoneNumber.replace(/[\s\(\)\-\+]/g, '');
-    const message = `Код AUTOBID.TJ: ${code}`;
+    const message = `Код: ${code}`;
     
     console.log(`[SMS] Attempting to send SMS to ${phoneNumber} with code ${code}`);
     
