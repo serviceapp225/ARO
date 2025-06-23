@@ -101,6 +101,11 @@ export const insertCarListingSchema = createInsertSchema(carListings).omit({
   currentBid: true,
   status: true,
   createdAt: true,
+}).extend({
+  sellerId: z.number().optional(),
+  lotNumber: z.string().optional(),
+  auctionDuration: z.number().optional(),
+  photos: z.string().optional(),
 });
 
 export const insertBidSchema = createInsertSchema(bids).omit({

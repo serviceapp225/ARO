@@ -364,14 +364,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/listings", async (req, res) => {
     try {
-      // Generate missing required fields
+      // Ensure all required fields have values
+      const auctionDuration = req.body.auctionDuration || 72;
+      const sellerId = req.body.sellerId || 1;
+      const lotNumber = req.body.lotNumber || `LOT${Date.now().toString().slice(-6)}`;
+      const photos = req.body.photos || "[]";
+      
       const enrichedData = {
-        ...req.body,
-        sellerId: req.body.sellerId || 1, // Default to demo user
-        lotNumber: req.body.lotNumber || `LOT${Date.now().toString().slice(-6)}`,
-        auctionDuration: req.body.auctionDuration || 72, // Default 3 days
-        photos: req.body.photos || JSON.stringify([]), // Default empty photos array
-        endTime: req.body.endTime || new Date(Date.now() + (req.body.auctionDuration || 72) * 60 * 60 * 1000)
+        make: req.body.make,
+        model: req.body.model,
+        year: req.body.year,
+        mileage: req.body.mileage,
+        description: req.body.description,
+        startingPrice: req.body.startingPrice,
+        sellerId: sellerId,
+        lotNumber: lotNumber,
+        auctionDuration: auctionDuration,
+        photos: photos,
+        endTime: req.body.endTime || new Date(Date.now() + auctionDuration * 60 * 60 * 1000),
+        // Optional fields
+        engine: req.body.engine,
+        transmission: req.body.transmission,
+        fuelType: req.body.fuelType,
+        bodyType: req.body.bodyType,
+        driveType: req.body.driveType,
+        color: req.body.color,
+        condition: req.body.condition,
+        vin: req.body.vin,
+        location: req.body.location,
+        customsCleared: req.body.customsCleared || false,
+        recycled: req.body.recycled || false,
+        technicalInspectionValid: req.body.technicalInspectionValid || false,
+        technicalInspectionDate: req.body.technicalInspectionDate,
+        tinted: req.body.tinted || false,
+        tintingDate: req.body.tintingDate
       };
       
       const validatedData = insertCarListingSchema.parse(enrichedData);
@@ -450,8 +476,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(201).json(listing);
     } catch (error) {
       if (error instanceof z.ZodError) {
+        console.error('Validation error:', error.errors);
+        console.error('Received data:', req.body);
         return res.status(400).json({ error: "Invalid listing data", details: error.errors });
       }
+      console.error('Listing creation error:', error);
       res.status(500).json({ error: "Failed to create listing" });
     }
   });
