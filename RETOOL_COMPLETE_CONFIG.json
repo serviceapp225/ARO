@@ -1,0 +1,410 @@
+{
+  "version": "3.0.0",
+  "components": [
+    {
+      "id": "userTable",
+      "type": "table",
+      "data": "{{getUsersQuery.data}}",
+      "columns": [
+        {
+          "id": "id",
+          "label": "ID",
+          "type": "number",
+          "width": 60
+        },
+        {
+          "id": "fullName",
+          "label": "Имя",
+          "type": "string",
+          "width": 150
+        },
+        {
+          "id": "phoneNumber",
+          "label": "Телефон",
+          "type": "string",
+          "width": 120
+        },
+        {
+          "id": "email",
+          "label": "Email",
+          "type": "string",
+          "width": 200
+        },
+        {
+          "id": "isActive",
+          "label": "Статус",
+          "type": "badge",
+          "width": 100,
+          "colorMap": {
+            "true": "green",
+            "false": "red"
+          }
+        },
+        {
+          "id": "role",
+          "label": "Роль",
+          "type": "string",
+          "width": 80
+        },
+        {
+          "id": "createdAt",
+          "label": "Создан",
+          "type": "date",
+          "width": 100
+        }
+      ],
+      "selection": "single"
+    },
+    {
+      "id": "listingsTable",
+      "type": "table",
+      "data": "{{getListingsQuery.data}}",
+      "columns": [
+        {
+          "id": "id",
+          "label": "ID",
+          "type": "number",
+          "width": 60
+        },
+        {
+          "id": "lotNumber",
+          "label": "Лот",
+          "type": "string",
+          "width": 80
+        },
+        {
+          "id": "make",
+          "label": "Марка",
+          "type": "string",
+          "width": 100
+        },
+        {
+          "id": "model",
+          "label": "Модель",
+          "type": "string",
+          "width": 120
+        },
+        {
+          "id": "year",
+          "label": "Год",
+          "type": "number",
+          "width": 70
+        },
+        {
+          "id": "currentBid",
+          "label": "Ставка",
+          "type": "currency",
+          "width": 100
+        },
+        {
+          "id": "status",
+          "label": "Статус",
+          "type": "badge",
+          "width": 100,
+          "colorMap": {
+            "pending": "yellow",
+            "active": "green",
+            "ended": "gray",
+            "rejected": "red"
+          }
+        },
+        {
+          "id": "seller",
+          "label": "Продавец",
+          "type": "string",
+          "width": 120
+        },
+        {
+          "id": "bidCount",
+          "label": "Ставок",
+          "type": "number",
+          "width": 70
+        }
+      ],
+      "selection": "single"
+    },
+    {
+      "id": "bidsTable",
+      "type": "table",
+      "data": "{{getBidsQuery.data}}",
+      "columns": [
+        {
+          "id": "id",
+          "label": "ID",
+          "type": "number",
+          "width": 60
+        },
+        {
+          "id": "amount",
+          "label": "Сумма",
+          "type": "currency",
+          "width": 100
+        },
+        {
+          "id": "bidder",
+          "label": "Покупатель",
+          "type": "string",
+          "width": 150
+        },
+        {
+          "id": "listing",
+          "label": "Автомобиль",
+          "type": "string",
+          "width": 200
+        },
+        {
+          "id": "lotNumber",
+          "label": "Лот",
+          "type": "string",
+          "width": 80
+        },
+        {
+          "id": "createdAt",
+          "label": "Дата",
+          "type": "datetime",
+          "width": 120
+        }
+      ]
+    },
+    {
+      "id": "statsCards",
+      "type": "container",
+      "components": [
+        {
+          "id": "pendingCard",
+          "type": "statistic",
+          "title": "Ожидающие объявления",
+          "value": "{{getStatsQuery.data.pendingListings}}",
+          "color": "orange"
+        },
+        {
+          "id": "activeCard",
+          "type": "statistic",
+          "title": "Активные аукционы",
+          "value": "{{getStatsQuery.data.activeAuctions}}",
+          "color": "green"
+        },
+        {
+          "id": "usersCard",
+          "type": "statistic",
+          "title": "Всего пользователей",
+          "value": "{{getStatsQuery.data.totalUsers}}",
+          "color": "blue"
+        },
+        {
+          "id": "bannedCard",
+          "type": "statistic",
+          "title": "Заблокированные",
+          "value": "{{getStatsQuery.data.bannedUsers}}",
+          "color": "red"
+        }
+      ]
+    },
+    {
+      "id": "userActionButtons",
+      "type": "container",
+      "components": [
+        {
+          "id": "activateUserBtn",
+          "type": "button",
+          "text": "Активировать",
+          "color": "green",
+          "disabled": "{{!userTable.selectedRow || userTable.selectedRow.isActive}}",
+          "onClick": "{{updateUserStatusQuery.trigger({isActive: true})}}"
+        },
+        {
+          "id": "deactivateUserBtn",
+          "type": "button",
+          "text": "Деактивировать",
+          "color": "red",
+          "disabled": "{{!userTable.selectedRow || !userTable.selectedRow.isActive}}",
+          "onClick": "{{updateUserStatusQuery.trigger({isActive: false})}}"
+        }
+      ]
+    },
+    {
+      "id": "listingActionButtons",
+      "type": "container",
+      "components": [
+        {
+          "id": "approveListing",
+          "type": "button",
+          "text": "Одобрить",
+          "color": "green",
+          "disabled": "{{!listingsTable.selectedRow || listingsTable.selectedRow.status !== 'pending'}}",
+          "onClick": "{{updateListingStatusQuery.trigger({status: 'active'})}}"
+        },
+        {
+          "id": "rejectListing",
+          "type": "button",
+          "text": "Отклонить",
+          "color": "red",
+          "disabled": "{{!listingsTable.selectedRow || listingsTable.selectedRow.status !== 'pending'}}",
+          "onClick": "{{updateListingStatusQuery.trigger({status: 'rejected'})}}"
+        },
+        {
+          "id": "endListing",
+          "type": "button",
+          "text": "Завершить",
+          "color": "gray",
+          "disabled": "{{!listingsTable.selectedRow || listingsTable.selectedRow.status !== 'active'}}",
+          "onClick": "{{updateListingStatusQuery.trigger({status: 'ended'})}}"
+        }
+      ]
+    }
+  ],
+  "queries": [
+    {
+      "id": "getUsersQuery",
+      "type": "restapi",
+      "resource": "admin_api",
+      "querySettings": {
+        "url": "/api/admin/users",
+        "method": "GET",
+        "headers": {
+          "Authorization": "Bearer admin-secret-key"
+        }
+      },
+      "transformer": "return data.map(user => ({...user, isActive: user.isActive ? 'Активен' : 'Неактивен', createdAt: new Date(user.createdAt).toLocaleDateString('ru-RU')}))",
+      "runWhenPageLoads": true
+    },
+    {
+      "id": "getListingsQuery",
+      "type": "restapi",
+      "resource": "admin_api",
+      "querySettings": {
+        "url": "/api/admin/listings",
+        "method": "GET",
+        "headers": {
+          "Authorization": "Bearer admin-secret-key"
+        }
+      },
+      "transformer": "return data.map(listing => ({...listing, currentBid: `${listing.currentBid} сомони`, seller: listing.seller?.fullName || 'Неизвестно'}))",
+      "runWhenPageLoads": true
+    },
+    {
+      "id": "getBidsQuery",
+      "type": "restapi",
+      "resource": "admin_api",
+      "querySettings": {
+        "url": "/api/admin/bids",
+        "method": "GET",
+        "headers": {
+          "Authorization": "Bearer admin-secret-key"
+        }
+      },
+      "transformer": "return data.map(bid => ({...bid, amount: `${bid.amount} сомони`, bidder: bid.bidder?.fullName || 'Неизвестно', listing: `${bid.listing?.make} ${bid.listing?.model} ${bid.listing?.year}`, createdAt: new Date(bid.createdAt).toLocaleDateString('ru-RU')}))",
+      "runWhenPageLoads": true
+    },
+    {
+      "id": "getStatsQuery",
+      "type": "restapi",
+      "resource": "admin_api",
+      "querySettings": {
+        "url": "/api/admin/stats",
+        "method": "GET",
+        "headers": {
+          "Authorization": "Bearer admin-secret-key"
+        }
+      },
+      "runWhenPageLoads": true
+    },
+    {
+      "id": "updateUserStatusQuery",
+      "type": "restapi",
+      "resource": "admin_api",
+      "querySettings": {
+        "url": "/api/admin/users/{{userTable.selectedRow.id}}/status",
+        "method": "PATCH",
+        "headers": {
+          "Authorization": "Bearer admin-secret-key",
+          "Content-Type": "application/json"
+        },
+        "body": "{{arguments[0]}}"
+      },
+      "onSuccess": [
+        "getUsersQuery.trigger()",
+        "getStatsQuery.trigger()"
+      ],
+      "confirmationMessage": "Изменить статус пользователя?"
+    },
+    {
+      "id": "updateListingStatusQuery",
+      "type": "restapi",
+      "resource": "admin_api",
+      "querySettings": {
+        "url": "/api/listings/{{listingsTable.selectedRow.id}}/status",
+        "method": "PATCH",
+        "headers": {
+          "Authorization": "Bearer admin-secret-key",
+          "Content-Type": "application/json"
+        },
+        "body": "{{arguments[0]}}"
+      },
+      "onSuccess": [
+        "getListingsQuery.trigger()",
+        "getStatsQuery.trigger()"
+      ],
+      "confirmationMessage": "Изменить статус объявления?"
+    }
+  ],
+  "resources": [
+    {
+      "id": "admin_api",
+      "type": "restapi",
+      "name": "Admin API",
+      "baseUrl": "{{API_BASE_URL}}",
+      "headers": {
+        "Authorization": "Bearer {{ADMIN_SECRET}}"
+      }
+    }
+  ],
+  "layout": {
+    "pages": [
+      {
+        "name": "Панель управления",
+        "components": [
+          {
+            "component": "statsCards",
+            "position": {"x": 0, "y": 0, "w": 12, "h": 3}
+          }
+        ]
+      },
+      {
+        "name": "Пользователи",
+        "components": [
+          {
+            "component": "userTable",
+            "position": {"x": 0, "y": 0, "w": 12, "h": 8}
+          },
+          {
+            "component": "userActionButtons",
+            "position": {"x": 0, "y": 8, "w": 12, "h": 2}
+          }
+        ]
+      },
+      {
+        "name": "Объявления",
+        "components": [
+          {
+            "component": "listingsTable",
+            "position": {"x": 0, "y": 0, "w": 12, "h": 8}
+          },
+          {
+            "component": "listingActionButtons",
+            "position": {"x": 0, "y": 8, "w": 12, "h": 2}
+          }
+        ]
+      },
+      {
+        "name": "Ставки",
+        "components": [
+          {
+            "component": "bidsTable",
+            "position": {"x": 0, "y": 0, "w": 12, "h": 10}
+          }
+        ]
+      }
+    ]
+  }
+}
