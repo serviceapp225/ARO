@@ -1,0 +1,317 @@
+{
+  "version": "1.0.0",
+  "type": "retool_app",
+  "metadata": {
+    "name": "AutoBid Admin Panel",
+    "description": "Полная админ-панель для управления автоаукционом",
+    "apiBaseUrl": "https://task-tracker-serviceapp225.replit.app"
+  },
+  "resourceQueries": [
+    {
+      "name": "getStats",
+      "resourceType": "restapi",
+      "url": "https://task-tracker-serviceapp225.replit.app/api/admin/stats",
+      "method": "GET",
+      "headers": {
+        "x-admin-key": "retool-admin-key-2024"
+      },
+      "runWhenPageLoads": true
+    },
+    {
+      "name": "getUsers",
+      "resourceType": "restapi", 
+      "url": "https://task-tracker-serviceapp225.replit.app/api/admin/users",
+      "method": "GET",
+      "headers": {
+        "x-admin-key": "retool-admin-key-2024"
+      },
+      "runWhenPageLoads": true,
+      "transformer": "return data.map(user => ({...user, statusDisplay: user.isActive ? 'Активен' : 'Неактивен', statusColor: user.isActive ? 'green' : 'red', createdDisplay: new Date(user.createdAt).toLocaleDateString('ru-RU'), phoneDisplay: user.phoneNumber || 'Не указан'}));"
+    },
+    {
+      "name": "getListings",
+      "resourceType": "restapi",
+      "url": "https://task-tracker-serviceapp225.replit.app/api/admin/listings", 
+      "method": "GET",
+      "headers": {
+        "x-admin-key": "retool-admin-key-2024"
+      },
+      "runWhenPageLoads": true,
+      "transformer": "return data.map(listing => ({...listing, currentBidDisplay: `${listing.currentBid || listing.startingPrice} сомони`, sellerDisplay: listing.seller?.fullName || 'Неизвестно', carDisplay: `${listing.make} ${listing.model} ${listing.year}`, statusColor: {'pending': 'orange', 'active': 'green', 'ended': 'gray', 'rejected': 'red'}[listing.status] || 'gray'}));"
+    },
+    {
+      "name": "getBids",
+      "resourceType": "restapi",
+      "url": "https://task-tracker-serviceapp225.replit.app/api/admin/bids",
+      "method": "GET", 
+      "headers": {
+        "x-admin-key": "retool-admin-key-2024"
+      },
+      "runWhenPageLoads": true,
+      "transformer": "return data.map(bid => ({...bid, amountDisplay: `${bid.amount} сомони`, bidderDisplay: bid.bidder?.fullName || 'Неизвестно', carDisplay: `${bid.listing?.make} ${bid.listing?.model} ${bid.listing?.year}`, lotDisplay: bid.listing?.lotNumber, dateDisplay: new Date(bid.createdAt).toLocaleDateString('ru-RU'), timeDisplay: new Date(bid.createdAt).toLocaleTimeString('ru-RU'), bidderPhone: bid.bidder?.phoneNumber || 'Не указан'}));"
+    },
+    {
+      "name": "activateUser",
+      "resourceType": "restapi",
+      "url": "https://task-tracker-serviceapp225.replit.app/api/admin/users/{{usersTable.selectedRow.id}}/status",
+      "method": "PATCH",
+      "headers": {
+        "x-admin-key": "retool-admin-key-2024",
+        "Content-Type": "application/json"
+      },
+      "body": "{\"isActive\": true}",
+      "successHandlers": ["getUsers.trigger()", "getStats.trigger()"]
+    },
+    {
+      "name": "deactivateUser", 
+      "resourceType": "restapi",
+      "url": "https://task-tracker-serviceapp225.replit.app/api/admin/users/{{usersTable.selectedRow.id}}/status",
+      "method": "PATCH",
+      "headers": {
+        "x-admin-key": "retool-admin-key-2024",
+        "Content-Type": "application/json"
+      },
+      "body": "{\"isActive\": false}",
+      "successHandlers": ["getUsers.trigger()", "getStats.trigger()"]
+    },
+    {
+      "name": "approveListing",
+      "resourceType": "restapi",
+      "url": "https://task-tracker-serviceapp225.replit.app/api/listings/{{listingsTable.selectedRow.id}}/status",
+      "method": "PATCH",
+      "headers": {
+        "x-admin-key": "retool-admin-key-2024",
+        "Content-Type": "application/json"
+      },
+      "body": "{\"status\": \"active\"}",
+      "successHandlers": ["getListings.trigger()", "getStats.trigger()"]
+    },
+    {
+      "name": "rejectListing",
+      "resourceType": "restapi", 
+      "url": "https://task-tracker-serviceapp225.replit.app/api/listings/{{listingsTable.selectedRow.id}}/status",
+      "method": "PATCH",
+      "headers": {
+        "x-admin-key": "retool-admin-key-2024",
+        "Content-Type": "application/json"
+      },
+      "body": "{\"status\": \"rejected\"}",
+      "successHandlers": ["getListings.trigger()", "getStats.trigger()"]
+    }
+  ],
+  "pages": [
+    {
+      "name": "Dashboard",
+      "components": [
+        {
+          "type": "text",
+          "id": "statsTitle",
+          "value": "📊 Статистика платформы AutoBid",
+          "style": {"fontSize": "24px", "fontWeight": "bold", "marginBottom": "20px"}
+        },
+        {
+          "type": "text",
+          "id": "pendingStats",
+          "value": "🕐 Ожидающие объявления: {{getStats.data.pendingListings}}",
+          "style": {"fontSize": "18px", "color": "orange", "padding": "10px", "border": "2px solid orange", "borderRadius": "8px", "marginBottom": "10px"}
+        },
+        {
+          "type": "text", 
+          "id": "activeStats",
+          "value": "🔥 Активные аукционы: {{getStats.data.activeAuctions}}",
+          "style": {"fontSize": "18px", "color": "green", "padding": "10px", "border": "2px solid green", "borderRadius": "8px", "marginBottom": "10px"}
+        },
+        {
+          "type": "text",
+          "id": "usersStats", 
+          "value": "👥 Всего пользователей: {{getStats.data.totalUsers}}",
+          "style": {"fontSize": "18px", "color": "blue", "padding": "10px", "border": "2px solid blue", "borderRadius": "8px", "marginBottom": "10px"}
+        },
+        {
+          "type": "text",
+          "id": "bannedStats",
+          "value": "🚫 Заблокированные: {{getStats.data.bannedUsers}}",
+          "style": {"fontSize": "18px", "color": "red", "padding": "10px", "border": "2px solid red", "borderRadius": "8px", "marginBottom": "10px"}
+        },
+        {
+          "type": "button",
+          "id": "refreshStatsBtn",
+          "text": "🔄 Обновить статистику",
+          "color": "primary",
+          "eventHandlers": [{"event": "click", "action": "getStats.trigger()"}]
+        }
+      ]
+    },
+    {
+      "name": "Пользователи",
+      "components": [
+        {
+          "type": "text",
+          "id": "usersTitle",
+          "value": "👥 Управление пользователями",
+          "style": {"fontSize": "24px", "fontWeight": "bold", "marginBottom": "20px"}
+        },
+        {
+          "type": "textinput",
+          "id": "userSearch",
+          "placeholder": "🔍 Поиск по имени или телефону",
+          "width": "100%"
+        },
+        {
+          "type": "table",
+          "id": "usersTable",
+          "dataSource": "{{getUsers.data.filter(user => !userSearch.value || user.fullName?.toLowerCase().includes(userSearch.value.toLowerCase()) || user.phoneNumber?.includes(userSearch.value))}}",
+          "selection": "single",
+          "columns": [
+            {"key": "id", "title": "ID", "width": 60},
+            {"key": "fullName", "title": "👤 Имя", "width": 150},
+            {"key": "phoneDisplay", "title": "📞 Телефон", "width": 120},
+            {"key": "email", "title": "📧 Email", "width": 200},
+            {"key": "statusDisplay", "title": "🔘 Статус", "width": 100},
+            {"key": "role", "title": "🎭 Роль", "width": 80},
+            {"key": "createdDisplay", "title": "📅 Создан", "width": 100}
+          ]
+        },
+        {
+          "type": "button",
+          "id": "activateBtn",
+          "text": "✅ Активировать",
+          "color": "success",
+          "disabled": "{{!usersTable.selectedRow || usersTable.selectedRow.isActive}}",
+          "eventHandlers": [{"event": "click", "action": "activateUser.trigger()"}]
+        },
+        {
+          "type": "button",
+          "id": "deactivateBtn", 
+          "text": "❌ Деактивировать",
+          "color": "danger",
+          "disabled": "{{!usersTable.selectedRow || !usersTable.selectedRow.isActive}}",
+          "eventHandlers": [{"event": "click", "action": "deactivateUser.trigger()"}]
+        },
+        {
+          "type": "button",
+          "id": "refreshUsersBtn",
+          "text": "🔄 Обновить",
+          "color": "primary",
+          "eventHandlers": [{"event": "click", "action": "getUsers.trigger()"}]
+        }
+      ]
+    },
+    {
+      "name": "Объявления",
+      "components": [
+        {
+          "type": "text",
+          "id": "listingsTitle",
+          "value": "🚗 Модерация объявлений",
+          "style": {"fontSize": "24px", "fontWeight": "bold", "marginBottom": "20px"}
+        },
+        {
+          "type": "select",
+          "id": "statusFilter",
+          "options": [
+            {"value": "all", "label": "📋 Все объявления"},
+            {"value": "pending", "label": "🕐 Ожидающие"},
+            {"value": "active", "label": "✅ Активные"},
+            {"value": "ended", "label": "🏁 Завершенные"},
+            {"value": "rejected", "label": "❌ Отклоненные"}
+          ],
+          "defaultValue": "all"
+        },
+        {
+          "type": "table",
+          "id": "listingsTable",
+          "dataSource": "{{statusFilter.value === 'all' ? getListings.data : getListings.data.filter(item => item.status === statusFilter.value)}}",
+          "selection": "single",
+          "columns": [
+            {"key": "id", "title": "ID", "width": 60},
+            {"key": "lotNumber", "title": "🎫 Лот", "width": 80},
+            {"key": "carDisplay", "title": "🚗 Автомобиль", "width": 200},
+            {"key": "currentBidDisplay", "title": "💰 Цена", "width": 120},
+            {"key": "status", "title": "📊 Статус", "width": 100},
+            {"key": "sellerDisplay", "title": "👤 Продавец", "width": 150},
+            {"key": "bidCount", "title": "🔥 Ставок", "width": 70}
+          ]
+        },
+        {
+          "type": "button",
+          "id": "approveBtn",
+          "text": "✅ Одобрить",
+          "color": "success",
+          "disabled": "{{!listingsTable.selectedRow || listingsTable.selectedRow.status !== 'pending'}}",
+          "eventHandlers": [{"event": "click", "action": "approveListing.trigger()"}]
+        },
+        {
+          "type": "button",
+          "id": "rejectBtn",
+          "text": "❌ Отклонить", 
+          "color": "danger",
+          "disabled": "{{!listingsTable.selectedRow || listingsTable.selectedRow.status !== 'pending'}}",
+          "eventHandlers": [{"event": "click", "action": "rejectListing.trigger()"}]
+        },
+        {
+          "type": "text",
+          "id": "selectedListingInfo",
+          "value": "{{listingsTable.selectedRow ? `📋 Выбрано: ${listingsTable.selectedRow.carDisplay} | 🎫 Лот: ${listingsTable.selectedRow.lotNumber} | 👤 Продавец: ${listingsTable.selectedRow.sellerDisplay}` : '👆 Выберите объявление для просмотра деталей'}}"
+        }
+      ]
+    },
+    {
+      "name": "Ставки",
+      "components": [
+        {
+          "type": "text",
+          "id": "bidsTitle",
+          "value": "💰 Мониторинг ставок",
+          "style": {"fontSize": "24px", "fontWeight": "bold", "marginBottom": "20px"}
+        },
+        {
+          "type": "textinput",
+          "id": "userFilter",
+          "placeholder": "🔍 Поиск по имени покупателя",
+          "width": "48%"
+        },
+        {
+          "type": "textinput",
+          "id": "carFilter",
+          "placeholder": "🔍 Поиск по марке/модели",
+          "width": "48%"
+        },
+        {
+          "type": "text",
+          "id": "bidsStats",
+          "value": "📊 Всего ставок: {{getBids.data.length}} | 💰 Общая сумма: {{getBids.data.reduce((sum, bid) => sum + parseFloat(bid.amount), 0).toLocaleString()}} сомони | 👥 Уникальных покупателей: {{new Set(getBids.data.map(bid => bid.bidderId)).size}}",
+          "style": {"fontSize": "16px", "padding": "10px", "backgroundColor": "#f0f0f0", "borderRadius": "8px"}
+        },
+        {
+          "type": "table",
+          "id": "bidsTable",
+          "dataSource": "{{getBids.data.filter(bid => (!userFilter.value || bid.bidderDisplay.toLowerCase().includes(userFilter.value.toLowerCase())) && (!carFilter.value || bid.carDisplay.toLowerCase().includes(carFilter.value.toLowerCase())))}}",
+          "columns": [
+            {"key": "id", "title": "ID", "width": 60},
+            {"key": "amountDisplay", "title": "💰 Сумма", "width": 120},
+            {"key": "bidderDisplay", "title": "👤 Покупатель", "width": 150},
+            {"key": "bidderPhone", "title": "📞 Телефон", "width": 120},
+            {"key": "carDisplay", "title": "🚗 Автомобиль", "width": 200},
+            {"key": "lotDisplay", "title": "🎫 Лот", "width": 80},
+            {"key": "dateDisplay", "title": "📅 Дата", "width": 100},
+            {"key": "timeDisplay", "title": "🕐 Время", "width": 80}
+          ]
+        },
+        {
+          "type": "button",
+          "id": "refreshBidsBtn",
+          "text": "🔄 Обновить ставки",
+          "color": "primary",
+          "eventHandlers": [{"event": "click", "action": "getBids.trigger()"}]
+        }
+      ]
+    }
+  ],
+  "navigation": [
+    {"label": "📊 Dashboard", "page": "Dashboard"},
+    {"label": "👥 Пользователи", "page": "Пользователи"},
+    {"label": "🚗 Объявления", "page": "Объявления"},
+    {"label": "💰 Ставки", "page": "Ставки"}
+  ]
+}
