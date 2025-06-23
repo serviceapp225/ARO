@@ -495,6 +495,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/listings/:id/bids", async (req, res) => {
     try {
       const listingId = parseInt(req.params.id);
+      console.log(`Bid attempt: listingId=${listingId}, body=`, req.body);
       
       // Check if auction exists and is still active
       const listing = await storage.getListing(listingId);
@@ -578,10 +579,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       res.status(201).json(bid);
     } catch (error) {
+      console.error("Error placing bid:", error);
       if (error instanceof z.ZodError) {
+        console.error("Validation error details:", error.errors);
         return res.status(400).json({ error: "Invalid bid data", details: error.errors });
       }
-      res.status(500).json({ error: "Failed to place bid" });
+      console.error("Unexpected error in bid placement:", error);
+      res.status(500).json({ error: "Failed to place bid", details: error instanceof Error ? error.message : String(error) });
     }
   });
 
