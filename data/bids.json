@@ -1,0 +1,18 @@
+[
+  {
+    "id": 1,
+    "listingId": 1,
+    "bidderId": 3,
+    "amount": "51000.00",
+    "isAutomatic": false,
+    "createdAt": "2025-06-23T14:30:00.000Z"
+  },
+  {
+    "id": 2,
+    "listingId": 2,
+    "bidderId": 3,
+    "amount": "92000.00",
+    "isAutomatic": false,
+    "createdAt": "2025-06-23T15:15:00.000Z"
+  }
+]
