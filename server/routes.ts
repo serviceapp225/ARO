@@ -73,6 +73,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Create new listing
+  app.post("/api/listings", async (req, res) => {
+    try {
+      const listingData = req.body;
+      
+      // Set required fields for new listing
+      listingData.status = 'active';
+      listingData.currentBid = null;
+      listingData.auctionStartTime = new Date();
+      listingData.auctionEndTime = new Date(Date.now() + (listingData.auctionDuration * 60 * 60 * 1000));
+      
+      // Generate lot number if not provided
+      if (!listingData.lotNumber) {
+        listingData.lotNumber = Math.floor(100000 + Math.random() * 900000).toString();
+      }
+      
+      const listing = await storage.createListing(listingData);
+      
+      // Clear cache to show new listing immediately
+      clearCachePattern('listings');
+      
+      res.json(listing);
+    } catch (error) {
+      console.error("Error creating listing:", error);
+      res.status(500).json({ error: "Failed to create listing" });
+    }
+  });
+
   // Photo endpoint with SVG placeholder generation
   app.get("/api/listings/:id/photo/:index", async (req, res) => {
     try {

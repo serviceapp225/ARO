@@ -161,12 +161,35 @@ export class MemoryStorage implements IStorage {
   }
 
   async createListing(insertListing: InsertCarListing): Promise<CarListing> {
+    const now = new Date();
     const listing: CarListing = {
-      id: this.nextId++,
       ...insertListing,
-      createdAt: new Date(),
+      id: this.nextId++,
+      status: 'active',
+      currentBid: null,
+      auctionStartTime: now,
+      auctionEndTime: new Date(now.getTime() + (insertListing.auctionDuration * 60 * 60 * 1000)),
+      createdAt: now,
+      // Set default values for nullable boolean fields
+      customsCleared: insertListing.customsCleared ?? false,
+      recycled: insertListing.recycled ?? false,
+      technicalInspectionValid: insertListing.technicalInspectionValid ?? false,
+      tinted: insertListing.tinted ?? false,
+      // Ensure nullable string fields are properly set
+      technicalInspectionDate: insertListing.technicalInspectionDate ?? null,
+      tintingDate: insertListing.tintingDate ?? null,
+      engine: insertListing.engine ?? null,
+      transmission: insertListing.transmission ?? null,
+      fuelType: insertListing.fuelType ?? null,
+      bodyType: insertListing.bodyType ?? null,
+      driveType: insertListing.driveType ?? null,
+      color: insertListing.color ?? null,
+      condition: insertListing.condition ?? null,
+      vin: insertListing.vin ?? null,
+      location: insertListing.location ?? null
     };
     this.carListings.push(listing);
+    console.log(`Created listing with ID ${listing.id}. Total listings: ${this.carListings.length}`);
     return listing;
   }
 
