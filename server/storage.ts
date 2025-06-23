@@ -324,7 +324,8 @@ export class DatabaseStorage implements IStorage {
     
     const listingData = {
       ...insertListing,
-      auctionStartTime: now,
+      // Keep the status as provided (should be "pending" from routes.ts)
+      auctionStartTime: insertListing.status === "pending" ? null : now,
       auctionEndTime: auctionEndTime
     };
     
