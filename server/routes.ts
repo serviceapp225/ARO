@@ -1515,6 +1515,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Управление разделом "Продай свое авто"
+  app.get("/api/admin/sell-car-section", adminAuth, async (req, res) => {
+    try {
+      const section = await storage.getSellCarSection();
+      res.json(section);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch sell car section" });
+    }
+  });
+
+  app.put("/api/admin/sell-car-section", adminAuth, async (req, res) => {
+    try {
+      const section = await storage.updateSellCarSection(req.body);
+      clearCachePattern('sell_car_section');
+      res.json(section);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to update sell car section" });
+    }
+  });
+
   // Массовые уведомления
   app.post("/api/admin/notifications/broadcast", adminAuth, async (req, res) => {
     try {
