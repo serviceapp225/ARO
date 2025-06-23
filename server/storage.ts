@@ -1,6 +1,6 @@
 import { users, carListings, bids, favorites, notifications, carAlerts, banners, sellCarSection, advertisementCarousel, documents, alertViews, smsVerificationCodes, type User, type InsertUser, type CarListing, type InsertCarListing, type Bid, type InsertBid, type Favorite, type InsertFavorite, type Notification, type InsertNotification, type CarAlert, type InsertCarAlert, type Banner, type InsertBanner, type SellCarSection, type InsertSellCarSection, type AdvertisementCarousel, type InsertAdvertisementCarousel, type Document, type InsertDocument, type AlertView, type InsertAlertView, type SmsVerificationCode, type InsertSmsVerificationCode } from "@shared/schema";
 import { db, pool } from "./db";
-import { eq, and, desc, sql, or, ilike, inArray, isNull } from "drizzle-orm";
+import { eq, and, desc, sql, or, ilike, inArray, isNull, gte, lte, count, asc, like } from "drizzle-orm";
 
 export interface IStorage {
   // User operations
@@ -198,20 +198,7 @@ export class DatabaseStorage implements IStorage {
       const startTime = Date.now();
       
       // Use Drizzle ORM for SQLite compatibility
-      const result = await db.select({
-        id: carListings.id,
-        seller_id: carListings.sellerId,
-        lot_number: carListings.lotNumber,
-        make: carListings.make,
-        model: carListings.model,
-        year: carListings.year,
-        mileage: carListings.mileage,
-        starting_price: carListings.startingPrice,
-        current_bid: carListings.currentBid,
-        status: carListings.status,
-        auction_end_time: carListings.auctionEndTime,
-        condition: carListings.condition
-      })
+      const result = await db.select()
       .from(carListings)
       .where(eq(carListings.status, status))
       .orderBy(desc(carListings.createdAt))
@@ -222,40 +209,41 @@ export class DatabaseStorage implements IStorage {
       // Convert to expected format with minimal processing
       const listings = result.map((row: any) => ({
         id: row.id,
-        sellerId: row.seller_id,
-        lotNumber: row.lot_number,
+        sellerId: row.sellerId,
+        lotNumber: row.lotNumber,
         make: row.make,
         model: row.model,
         year: row.year,
         mileage: row.mileage,
-        description: '',
-        startingPrice: row.starting_price,
-        currentBid: row.current_bid,
+        description: row.description || '',
+        startingPrice: row.startingPrice,
+        currentBid: row.currentBid,
         status: row.status,
-        auctionEndTime: row.auction_end_time,
-        photos: [`/api/listings/${row.id}/photo/0`],
-        createdAt: new Date(),
+        auctionEndTime: row.auctionEndTime,
+        endTime: row.auctionEndTime,
+        photos: JSON.parse(row.photos || '["https://images.unsplash.com/photo-1493238792000-8113da705763?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"]'),
+        createdAt: row.createdAt,
         updatedAt: null,
-        customsCleared: true,
-        recycled: true,
-        technicalInspectionValid: false,
-        technicalInspectionDate: null,
-        tinted: false,
-        tintingDate: null,
+        customsCleared: row.customsCleared || true,
+        recycled: row.recycled || false,
+        technicalInspectionValid: row.technicalInspectionValid || true,
+        technicalInspectionDate: row.technicalInspectionDate,
+        tinted: row.tinted || false,
+        tintingDate: row.tintingDate,
         condition: row.condition || 'good',
-        auctionDuration: 7,
-        auctionStartTime: null,
-        engine: null,
-        transmission: null,
-        fuelType: null,
-        bodyType: null,
-        driveType: null,
-        color: null,
-        vin: null,
-        location: null
+        auctionDuration: row.auctionDuration || 48,
+        auctionStartTime: row.auctionStartTime,
+        engine: row.engine,
+        transmission: row.transmission,
+        fuelType: row.fuelType,
+        bodyType: row.bodyType,
+        driveType: row.driveType,
+        color: row.color,
+        vin: row.vin,
+        location: row.location
       }));
       
-      return listings as CarListing[];
+      return listings as unknown as CarListing[];
     } catch (error) {
       console.error('Error fetching listings:', error);
       return [];
