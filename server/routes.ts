@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { db } from "./db";
-import { carListings, notifications, alertViews, carAlerts, deletedAlerts } from "../shared/schema";
+import { carListings, notifications, alertViews, carAlerts } from "../shared/schema";
 import { eq, and } from "drizzle-orm";
 import sharp from "sharp";
 import { insertCarListingSchema, insertBidSchema, insertFavoriteSchema, insertNotificationSchema, insertCarAlertSchema, insertBannerSchema, type CarAlert } from "@shared/schema";

@@ -26,7 +26,10 @@ export const carListings = sqliteTable("car_listings", {
   startingPrice: text("starting_price").notNull(),
   currentBid: text("current_bid"),
   photos: text("photos").notNull(), // JSON string of photo URLs
+  auctionDuration: integer("auction_duration").notNull(),
   status: text("status").notNull().default("pending"), // 'pending', 'active', 'ended', 'rejected'
+  auctionStartTime: integer("auction_start_time", { mode: "timestamp" }),
+  auctionEndTime: integer("auction_end_time", { mode: "timestamp" }),
   endTime: integer("end_time", { mode: "timestamp" }),
   customsCleared: integer("customs_cleared", { mode: "boolean" }).default(false),
   recycled: integer("recycled", { mode: "boolean" }).default(false),
@@ -41,6 +44,7 @@ export const carListings = sqliteTable("car_listings", {
   bodyType: text("body_type"),
   driveType: text("drive_type"),
   color: text("color"),
+  condition: text("condition"),
   vin: text("vin"),
   location: text("location"),
   createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
@@ -64,9 +68,12 @@ export const favorites = sqliteTable("favorites", {
 export const notifications = sqliteTable("notifications", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   userId: integer("user_id").notNull(),
+  type: text("type").notNull(),
   title: text("title").notNull(),
   message: text("message").notNull(),
   isRead: integer("is_read", { mode: "boolean" }).default(false),
+  listingId: integer("listing_id"),
+  alertId: integer("alert_id"),
   createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
 });
 
@@ -150,86 +157,69 @@ export const insertBannerSchema = createInsertSchema(banners).omit({
 export type InsertBanner = z.infer<typeof insertBannerSchema>;
 export type Banner = typeof banners.$inferSelect;
 
-// Таблица для управления секцией "Продай свой авто"
-export const sellCarSection = pgTable("sell_car_section", {
-  id: serial("id").primaryKey(),
-  title: text("title").notNull().default("Продай свое авто"),
-  subtitle: text("subtitle").notNull().default("Получи максимальную цену за свой автомобиль на нашем аукционе"),
-  buttonText: text("button_text").notNull().default("Начать продажу"),
-  backgroundImageUrl: text("background_image_url").notNull().default("https://images.unsplash.com/photo-1503376780353-7e6692767b70?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"),
-  linkUrl: text("link_url").notNull().default("/sell"),
-  isActive: boolean("is_active").default(true),
-  overlayOpacity: integer("overlay_opacity").default(40), // 0-100
-  textColor: text("text_color").default("white"),
-  buttonColor: text("button_color").default("white"),
-  buttonTextColor: text("button_text_color").default("emerald-700"),
-  updatedAt: timestamp("updated_at").defaultNow(),
-  createdAt: timestamp("created_at").defaultNow(),
+export const sellCarSection = sqliteTable("sell_car_section", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  title: text("title").notNull(),
+  subtitle: text("subtitle"),
+  description: text("description"),
+  buttonText: text("button_text"),
+  buttonUrl: text("button_url"),
+  backgroundImageUrl: text("background_image_url"),
+  isActive: integer("is_active", { mode: "boolean" }).default(true),
+  createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
 });
 
 export const insertSellCarSectionSchema = createInsertSchema(sellCarSection).omit({
   id: true,
   createdAt: true,
-  updatedAt: true,
 });
 
 export type InsertSellCarSection = z.infer<typeof insertSellCarSectionSchema>;
 export type SellCarSection = typeof sellCarSection.$inferSelect;
 
-// Таблица для управления каруселью рекламы
-export const advertisementCarousel = pgTable("advertisement_carousel", {
-  id: serial("id").primaryKey(),
+export const advertisementCarousel = sqliteTable("advertisement_carousel", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
   title: text("title").notNull(),
   description: text("description"),
-  imageUrl: text("image_url").notNull(),
-  linkUrl: text("link_url"),
-  buttonText: text("button_text").default("Подробнее"),
-  isActive: boolean("is_active").default(true),
-  order: integer("order").default(0),
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
+  imageUrl: text("image_url"),
+  buttonText: text("button_text"),
+  buttonUrl: text("button_url"),
+  isActive: integer("is_active", { mode: "boolean" }).default(true),
+  displayOrder: integer("display_order").default(0),
+  createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
 });
 
 export const insertAdvertisementCarouselSchema = createInsertSchema(advertisementCarousel).omit({
   id: true,
   createdAt: true,
-  updatedAt: true,
 });
 
 export type InsertAdvertisementCarousel = z.infer<typeof insertAdvertisementCarouselSchema>;
 export type AdvertisementCarousel = typeof advertisementCarousel.$inferSelect;
 
-// Documents table for policies and rules
-export const documents = pgTable("documents", {
-  id: serial("id").primaryKey(),
+export const documents = sqliteTable("documents", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
   title: text("title").notNull(),
-  type: text("type").notNull(), // 'policy' or 'rules'
   content: text("content").notNull(),
-  fileUrl: text("file_url"),
-  fileName: text("file_name"),
-  fileSize: integer("file_size"),
-  isActive: boolean("is_active").default(true),
-  order: integer("order").default(0),
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
+  type: text("type").notNull(),
+  isActive: integer("is_active", { mode: "boolean" }).default(true),
+  createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
 });
 
 export const insertDocumentSchema = createInsertSchema(documents).omit({
   id: true,
   createdAt: true,
-  updatedAt: true,
 });
 
 export type InsertDocument = z.infer<typeof insertDocumentSchema>;
 export type Document = typeof documents.$inferSelect;
 
-// Alert Views table to track when users have seen alert notifications
-export const alertViews = pgTable("alert_views", {
-  id: serial("id").primaryKey(),
-  userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
-  alertId: integer("alert_id").notNull().references(() => carAlerts.id, { onDelete: "cascade" }),
-  listingId: integer("listing_id").notNull().references(() => carListings.id, { onDelete: "cascade" }),
-  viewedAt: timestamp("viewed_at").defaultNow().notNull(),
+export const alertViews = sqliteTable("alert_views", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  userId: integer("user_id").notNull(),
+  alertId: integer("alert_id").notNull(),
+  listingId: integer("listing_id").notNull(),
+  viewedAt: integer("viewed_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
 });
 
 export const insertAlertViewSchema = createInsertSchema(alertViews).omit({
@@ -240,36 +230,14 @@ export const insertAlertViewSchema = createInsertSchema(alertViews).omit({
 export type InsertAlertView = z.infer<typeof insertAlertViewSchema>;
 export type AlertView = typeof alertViews.$inferSelect;
 
-// Deleted Alerts table to track alerts that users have manually deleted
-export const deletedAlerts = pgTable("deleted_alerts", {
-  id: serial("id").primaryKey(),
-  userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
-  alertData: text("alert_data").notNull(), // JSON string of alert criteria
-  deletedAt: timestamp("deleted_at").defaultNow().notNull(),
-}, (table) => ({
-  userAlertDataUnique: index("user_alert_data_unique").on(table.userId, table.alertData),
-}));
-
-export const insertDeletedAlertSchema = createInsertSchema(deletedAlerts).omit({
-  id: true,
-  deletedAt: true,
-});
-
-export type InsertDeletedAlert = z.infer<typeof insertDeletedAlertSchema>;
-export type DeletedAlert = typeof deletedAlerts.$inferSelect;
-
-// SMS Verification Codes table
-export const smsVerificationCodes = pgTable("sms_verification_codes", {
-  id: serial("id").primaryKey(),
+export const smsVerificationCodes = sqliteTable("sms_verification_codes", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
   phoneNumber: text("phone_number").notNull(),
   code: text("code").notNull(),
-  isUsed: boolean("is_used").default(false),
-  expiresAt: timestamp("expires_at").notNull(),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-}, (table) => ({
-  phoneNumberIdx: index("sms_verification_codes_phone_idx").on(table.phoneNumber),
-  expiresAtIdx: index("sms_verification_codes_expires_idx").on(table.expiresAt),
-}));
+  isUsed: integer("is_used", { mode: "boolean" }).default(false),
+  expiresAt: integer("expires_at", { mode: "timestamp" }).notNull(),
+  createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
+});
 
 export const insertSmsVerificationCodeSchema = createInsertSchema(smsVerificationCodes).omit({
   id: true,
