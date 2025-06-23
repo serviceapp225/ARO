@@ -149,8 +149,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Invalid parameters" });
       }
       
-      // Get photos directly from database for this endpoint only
-      const [listing] = await db.select({ photos: carListings.photos }).from(carListings).where(eq(carListings.id, listingId));
+      // Get photos from storage
+      const listing = await storage.getListing(listingId);
       if (!listing) {
         return res.status(404).json({ error: "Listing not found" });
       }
