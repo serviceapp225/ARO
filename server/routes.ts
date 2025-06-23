@@ -959,7 +959,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           username: phoneNumber.replace('+', ''),
           phoneNumber,
           role: 'buyer',
-          fullName: `Пользователь ${phoneNumber}`,
+          fullName: `Пользователь`,
           isActive: true
         });
       } else {
