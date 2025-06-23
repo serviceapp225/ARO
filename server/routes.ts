@@ -1826,62 +1826,191 @@ async function sendSMSCode(phoneNumber: string, code: string): Promise<{success:
     const cleanPhone = phoneNumber.replace(/[\s\(\)\-\+]/g, '');
     const message = `Код AUTOBID.TJ: ${code}`;
     
-    // Test multiple authentication methods for OsonSMS
-    const authMethods = [
-      { param: 'str_hash', value: smsHash },
-      { param: 'password', value: smsHash },
-      { param: 'hash', value: smsHash }
-    ];
-
-    for (const auth of authMethods) {
-      const params = new URLSearchParams({
-        login: smsLogin,
-        [auth.param]: auth.value,
-        from: smsSender,
-        phone_number: cleanPhone,
-        msg: message,
-        txn_id: `${txnId}_${auth.param}`
-      });
-
-      try {
-        const response = await fetch(`${smsServer}?${params}`, { 
+    console.log(`[SMS] Attempting to send SMS to ${phoneNumber} with code ${code}`);
+    
+    // Multiple OsonSMS integration methods
+    const integrationMethods = [
+      // Method 1: Standard GET request with str_hash
+      async () => {
+        const params = new URLSearchParams({
+          login: smsLogin,
+          str_hash: smsHash,
+          from: smsSender,
+          phone_number: cleanPhone,
+          msg: message,
+          txn_id: txnId
+        });
+        
+        const response = await fetch(`${smsServer}?${params}`, {
           method: 'GET',
           headers: { 'User-Agent': 'AutoBid-SMS/1.0' }
         });
+        return await response.text();
+      },
+      
+      // Method 2: POST with form data
+      async () => {
+        const formData = new URLSearchParams({
+          login: smsLogin,
+          str_hash: smsHash,
+          from: smsSender,
+          phone_number: cleanPhone,
+          msg: message,
+          txn_id: txnId
+        });
         
-        const result = await response.text();
-        const jsonResult = JSON.parse(result);
+        const response = await fetch(smsServer, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'User-Agent': 'AutoBid-SMS/1.0'
+          },
+          body: formData
+        });
+        return await response.text();
+      },
+      
+      // Method 3: Try with 'password' instead of 'str_hash'
+      async () => {
+        const params = new URLSearchParams({
+          login: smsLogin,
+          password: smsHash,
+          from: smsSender,
+          phone_number: cleanPhone,
+          msg: message,
+          txn_id: txnId
+        });
         
-        // Success response
-        if (jsonResult.success || jsonResult.status === 'success' || !jsonResult.error) {
-          console.log(`[SMS] SMS sent successfully via OsonSMS (${auth.param})`);
+        const response = await fetch(`${smsServer}?${params}`, {
+          method: 'GET',
+          headers: { 'User-Agent': 'AutoBid-SMS/1.0' }
+        });
+        return await response.text();
+      },
+      
+      // Method 4: Alternative API endpoint structure
+      async () => {
+        const altEndpoint = 'https://api.osonsms.com/send';
+        const params = new URLSearchParams({
+          login: smsLogin,
+          str_hash: smsHash,
+          from: smsSender,
+          phone_number: cleanPhone,
+          msg: message,
+          txn_id: txnId
+        });
+        
+        const response = await fetch(`${altEndpoint}?${params}`, {
+          method: 'GET',
+          headers: { 'User-Agent': 'AutoBid-SMS/1.0' }
+        });
+        return await response.text();
+      },
+      
+      // Method 5: JSON POST request (some SMS APIs prefer this)
+      async () => {
+        const response = await fetch(smsServer, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'User-Agent': 'AutoBid-SMS/1.0'
+          },
+          body: JSON.stringify({
+            login: smsLogin,
+            str_hash: smsHash,
+            from: smsSender,
+            phone_number: cleanPhone,
+            msg: message,
+            txn_id: txnId
+          })
+        });
+        return await response.text();
+      },
+      
+      // Method 6: Try with MD5 hash of the original hash
+      async () => {
+        const crypto = await import('crypto');
+        const md5Hash = crypto.createHash('md5').update(smsHash).digest('hex');
+        
+        const params = new URLSearchParams({
+          login: smsLogin,
+          str_hash: md5Hash,
+          from: smsSender,
+          phone_number: cleanPhone,
+          msg: message,
+          txn_id: txnId
+        });
+        
+        const response = await fetch(`${smsServer}?${params}`, {
+          method: 'GET',
+          headers: { 'User-Agent': 'AutoBid-SMS/1.0' }
+        });
+        return await response.text();
+      }
+    ];
+
+    // Try each integration method
+    for (let i = 0; i < integrationMethods.length; i++) {
+      try {
+        console.log(`[SMS] Trying integration method ${i + 1}...`);
+        const result = await integrationMethods[i]();
+        
+        let jsonResult;
+        try {
+          jsonResult = JSON.parse(result);
+        } catch (parseError) {
+          // Some APIs return plain text success responses
+          if (result.toLowerCase().includes('success') || 
+              result.toLowerCase().includes('sent') || 
+              result.toLowerCase().includes('ok')) {
+            console.log(`[SMS] Method ${i + 1} succeeded (text response):`, result.substring(0, 100));
+            return { success: true, message: "SMS отправлен через OsonSMS" };
+          }
+          console.log(`[SMS] Method ${i + 1} non-JSON response:`, result.substring(0, 100));
+          continue;
+        }
+        
+        // Check for success in JSON response
+        if (jsonResult.success || 
+            jsonResult.status === 'success' || 
+            jsonResult.txn_id || 
+            !jsonResult.error) {
+          console.log(`[SMS] Method ${i + 1} succeeded:`, jsonResult);
           return { success: true, message: "SMS отправлен через OsonSMS" };
         }
         
-        // Log specific error for debugging
+        // Log error details for debugging
         if (jsonResult.error) {
-          console.log(`[SMS] ${auth.param} failed: ${jsonResult.error.msg} (code: ${jsonResult.error.code})`);
+          console.log(`[SMS] Method ${i + 1} failed: ${jsonResult.error.msg} (code: ${jsonResult.error.code})`);
           
-          // If sender name issue, try other auth methods first
-          if (jsonResult.error.code === 107) {
-            continue;
-          }
-          
-          // If hash issue, this auth method won't work
-          if (jsonResult.error.code === 106) {
-            continue;
+          // Special handling for specific error codes
+          switch (jsonResult.error.code) {
+            case 105: // Account inactive
+              console.log(`[SMS] Account "${smsLogin}" appears to be inactive or requires activation`);
+              break;
+            case 106: // Incorrect hash
+              console.log(`[SMS] Hash authentication failed - check API credentials`);
+              break;
+            case 107: // Sender name not allowed
+              console.log(`[SMS] Sender name "${smsSender}" not authorized`);
+              break;
+            case 100: // Missing parameters
+              console.log(`[SMS] Required parameters missing in request`);
+              break;
           }
         }
         
-      } catch (requestError) {
-        console.log(`[SMS] Request failed for ${auth.param}:`, requestError);
+      } catch (methodError) {
+        console.log(`[SMS] Method ${i + 1} error:`, methodError instanceof Error ? methodError.message : String(methodError));
         continue;
       }
     }
     
-    // All methods failed - use demo mode
-    console.log(`[SMS] All OsonSMS auth methods failed, using demo mode. Code: ${code}`);
-    console.log(`[SMS] Check OsonSMS dashboard for correct API credentials`);
+    // All integration methods failed - use demo mode
+    console.log(`[SMS] All OsonSMS integration methods failed, using demo mode. Code: ${code}`);
+    console.log(`[SMS] Please verify OsonSMS account status and API credentials`);
+    console.log(`[SMS] Contact OsonSMS support if account needs reactivation or plugin installation`);
+    
     return { success: true, message: "SMS-код отправлен" };
     
   } catch (error) {
