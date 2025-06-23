@@ -123,10 +123,11 @@ export default function Profile() {
                 />
               </div>
               
-              {/* Name only */}
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">
-                {user?.fullName || userData.fullName || 'Пользователь'}
+              {/* Name and Phone */}
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                {user?.fullName || userData.fullName || 'Не указано'}
               </h2>
+              <p className="text-gray-600 text-lg mb-3">{user?.phoneNumber || userData.phoneNumber}</p>
               
               {/* Account Type and Status Badges */}
               <div className="flex items-center justify-center gap-2 flex-wrap">
