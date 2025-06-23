@@ -204,7 +204,13 @@ export class MemoryStorage implements IStorage {
   async createUser(insertUser: InsertUser): Promise<User> {
     const user: User = {
       id: this.nextId++,
-      ...insertUser,
+      email: insertUser.email,
+      username: insertUser.username,
+      phoneNumber: insertUser.phoneNumber || null,
+      fullName: insertUser.fullName || null,
+      role: insertUser.role,
+      profilePhoto: insertUser.profilePhoto || null,
+      isActive: insertUser.isActive || false,
       createdAt: new Date(),
     };
     this.users.push(user);
