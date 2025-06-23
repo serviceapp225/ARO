@@ -364,7 +364,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/listings", async (req, res) => {
     try {
-      const validatedData = insertCarListingSchema.parse(req.body);
+      // Generate missing required fields
+      const enrichedData = {
+        ...req.body,
+        sellerId: req.body.sellerId || 1, // Default to demo user
+        lotNumber: req.body.lotNumber || `LOT${Date.now().toString().slice(-6)}`,
+        auctionDuration: req.body.auctionDuration || 72, // Default 3 days
+        photos: req.body.photos || JSON.stringify([]), // Default empty photos array
+        endTime: req.body.endTime || new Date(Date.now() + (req.body.auctionDuration || 72) * 60 * 60 * 1000)
+      };
+      
+      const validatedData = insertCarListingSchema.parse(enrichedData);
       
       // Force all new listings to pending status for moderation
       const listingWithPendingStatus = {
