@@ -1,0 +1,184 @@
+{
+  "version": "3.0.0",
+  "metadata": {
+    "name": "AutoBid Admin Panel",
+    "description": "Админ-панель для управления автоаукционом"
+  },
+  "queries": {
+    "getStats": {
+      "id": "getStats",
+      "type": "restapi",
+      "data": {
+        "url": "https://task-tracker-serviceapp225.replit.app/api/admin/stats",
+        "method": "GET",
+        "headers": {
+          "x-admin-key": "retool-admin-key-2024"
+        }
+      },
+      "settings": {
+        "runWhenPageLoads": true
+      }
+    },
+    "getUsers": {
+      "id": "getUsers", 
+      "type": "restapi",
+      "data": {
+        "url": "https://task-tracker-serviceapp225.replit.app/api/admin/users",
+        "method": "GET",
+        "headers": {
+          "x-admin-key": "retool-admin-key-2024"
+        }
+      },
+      "settings": {
+        "runWhenPageLoads": true
+      },
+      "transformer": "return data.map(user => ({...user, statusDisplay: user.isActive ? 'Активен' : 'Неактивен', statusColor: user.isActive ? 'green' : 'red', createdDisplay: new Date(user.createdAt).toLocaleDateString('ru-RU'), phoneDisplay: user.phoneNumber || 'Не указан'}));"
+    },
+    "getListings": {
+      "id": "getListings",
+      "type": "restapi", 
+      "data": {
+        "url": "https://task-tracker-serviceapp225.replit.app/api/admin/listings",
+        "method": "GET",
+        "headers": {
+          "x-admin-key": "retool-admin-key-2024"
+        }
+      },
+      "settings": {
+        "runWhenPageLoads": true
+      },
+      "transformer": "return data.map(listing => ({...listing, currentBidDisplay: `${listing.currentBid || listing.startingPrice} сомони`, sellerDisplay: listing.seller?.fullName || 'Неизвестно', carDisplay: `${listing.make} ${listing.model} ${listing.year}`, statusColor: {'pending': 'orange', 'active': 'green', 'ended': 'gray', 'rejected': 'red'}[listing.status] || 'gray'}));"
+    },
+    "getBids": {
+      "id": "getBids",
+      "type": "restapi",
+      "data": {
+        "url": "https://task-tracker-serviceapp225.replit.app/api/admin/bids",
+        "method": "GET", 
+        "headers": {
+          "x-admin-key": "retool-admin-key-2024"
+        }
+      },
+      "settings": {
+        "runWhenPageLoads": true
+      },
+      "transformer": "return data.map(bid => ({...bid, amountDisplay: `${bid.amount} сомони`, bidderDisplay: bid.bidder?.fullName || 'Неизвестно', carDisplay: `${bid.listing?.make} ${bid.listing?.model} ${bid.listing?.year}`, lotDisplay: bid.listing?.lotNumber, dateDisplay: new Date(bid.createdAt).toLocaleDateString('ru-RU'), timeDisplay: new Date(bid.createdAt).toLocaleTimeString('ru-RU'), bidderPhone: bid.bidder?.phoneNumber || 'Не указан'}));"
+    }
+  },
+  "components": {
+    "statsTitle": {
+      "id": "statsTitle",
+      "type": "text",
+      "data": {
+        "value": "📊 Статистика платформы AutoBid"
+      },
+      "position": {
+        "x": 0,
+        "y": 0,
+        "w": 24,
+        "h": 2
+      }
+    },
+    "pendingCard": {
+      "id": "pendingCard", 
+      "type": "text",
+      "data": {
+        "value": "🕐 Ожидающие объявления: {{getStats.data.pendingListings}}"
+      },
+      "position": {
+        "x": 0,
+        "y": 2,
+        "w": 6,
+        "h": 4
+      }
+    },
+    "activeCard": {
+      "id": "activeCard",
+      "type": "text", 
+      "data": {
+        "value": "🔥 Активные аукционы: {{getStats.data.activeAuctions}}"
+      },
+      "position": {
+        "x": 6,
+        "y": 2,
+        "w": 6,
+        "h": 4
+      }
+    },
+    "usersCard": {
+      "id": "usersCard",
+      "type": "text",
+      "data": {
+        "value": "👥 Всего пользователей: {{getStats.data.totalUsers}}"
+      },
+      "position": {
+        "x": 12,
+        "y": 2,
+        "w": 6,
+        "h": 4
+      }
+    },
+    "bannedCard": {
+      "id": "bannedCard",
+      "type": "text",
+      "data": {
+        "value": "🚫 Заблокированные: {{getStats.data.bannedUsers}}"
+      },
+      "position": {
+        "x": 18,
+        "y": 2,
+        "w": 6,
+        "h": 4
+      }
+    },
+    "usersTable": {
+      "id": "usersTable",
+      "type": "table",
+      "data": {
+        "dataSource": "{{getUsers.data}}",
+        "columns": [
+          {"key": "id", "title": "ID", "width": 60},
+          {"key": "fullName", "title": "Имя", "width": 150},
+          {"key": "phoneDisplay", "title": "Телефон", "width": 120},
+          {"key": "email", "title": "Email", "width": 200},
+          {"key": "statusDisplay", "title": "Статус", "width": 100},
+          {"key": "role", "title": "Роль", "width": 80},
+          {"key": "createdDisplay", "title": "Создан", "width": 100}
+        ]
+      }
+    },
+    "listingsTable": {
+      "id": "listingsTable",
+      "type": "table",
+      "data": {
+        "dataSource": "{{getListings.data}}",
+        "columns": [
+          {"key": "id", "title": "ID", "width": 60},
+          {"key": "lotNumber", "title": "Лот", "width": 80},
+          {"key": "carDisplay", "title": "Автомобиль", "width": 200},
+          {"key": "currentBidDisplay", "title": "Цена", "width": 120},
+          {"key": "status", "title": "Статус", "width": 100},
+          {"key": "sellerDisplay", "title": "Продавец", "width": 150},
+          {"key": "bidCount", "title": "Ставок", "width": 70}
+        ]
+      }
+    },
+    "bidsTable": {
+      "id": "bidsTable",
+      "type": "table",
+      "data": {
+        "dataSource": "{{getBids.data}}",
+        "columns": [
+          {"key": "id", "title": "ID", "width": 60},
+          {"key": "amountDisplay", "title": "Сумма", "width": 120},
+          {"key": "bidderDisplay", "title": "Покупатель", "width": 150},
+          {"key": "bidderPhone", "title": "Телефон", "width": 120},
+          {"key": "carDisplay", "title": "Автомобиль", "width": 200},
+          {"key": "lotDisplay", "title": "Лот", "width": 80},
+          {"key": "dateDisplay", "title": "Дата", "width": 100},
+          {"key": "timeDisplay", "title": "Время", "width": 80}
+        ]
+      }
+    }
+  }
+}
