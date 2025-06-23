@@ -14,16 +14,18 @@ export class MemoryStorage implements IStorage {
   private documents: Document[] = [];
   private alertViews: AlertView[] = [];
   private smsVerificationCodes: SmsVerificationCode[] = [];
-  private nextId = 50; // Start from 50 to avoid conflicts with fixed IDs
+  private nextId = 50;
 
   constructor() {
     this.initializeWithSampleData();
   }
 
   private initializeWithSampleData() {
-    // Create sample users
+    const now = new Date();
+
+    // Create minimal users
     const adminUser: User = {
-      id: this.nextId++,
+      id: 1,
       username: "admin",
       email: "admin@autoauction.tj",
       phoneNumber: null,
@@ -31,539 +33,24 @@ export class MemoryStorage implements IStorage {
       role: "admin",
       isActive: true,
       profilePhoto: null,
-      createdAt: new Date(),
-    };
-
-    const sellerUser: User = {
-      id: this.nextId++,
-      username: "seller123",
-      email: "seller@autoauction.tj",
-      phoneNumber: null,
-      fullName: null,
-      role: "seller",
-      isActive: true,
-      profilePhoto: null,
-      createdAt: new Date(),
+      createdAt: now,
     };
 
     const buyerUser: User = {
-      id: this.nextId++,
-      username: "buyer456",
-      email: "buyer@autoauction.tj",
-      phoneNumber: null,
-      fullName: null,
+      id: 2,
+      username: "demo",
+      email: "demo@autoauction.tj",
+      phoneNumber: "+992000000000",
+      fullName: "Демо Пользователь",
       role: "buyer",
       isActive: true,
       profilePhoto: null,
-      createdAt: new Date(),
-    };
-
-    this.users.push(adminUser, sellerUser, buyerUser);
-
-    // Create sample car listings
-    const now = new Date();
-    const futureDate1 = new Date(Date.now() + 24 * 60 * 60 * 1000); // 1 day from now
-    const futureDate2 = new Date(Date.now() + 48 * 60 * 60 * 1000); // 2 days from now
-
-    const listing1: CarListing = {
-      id: 41,
-      sellerId: sellerUser.id,
-      lotNumber: "382806",
-      make: "Mazda",
-      model: "Mazda2",
-      year: 2014,
-      mileage: 145000,
-      vin: "JM1BL1SF5E1234567",
-      description: "Reliable compact car in very good condition",
-      startingPrice: "45000.00",
-      currentBid: "51000.00",
-      photos: ["/api/listings/41/photo/0"],
-      auctionDuration: 72,
-      status: "active",
-      auctionStartTime: now,
-      auctionEndTime: futureDate1,
-      customsCleared: true,
-      recycled: true,
-      technicalInspectionValid: false,
-      technicalInspectionDate: null,
-      tinted: false,
-      tintingDate: null,
-      engine: "1.5L",
-      transmission: "Manual",
-      fuelType: "Gasoline",
-      bodyType: "Hatchback",
-      driveType: "FWD",
-      color: "Blue",
-      condition: "very_good",
-      location: "Dushanbe",
       createdAt: now,
     };
 
-    const listing2: CarListing = {
-      id: 42,
-      sellerId: sellerUser.id,
-      lotNumber: "482901",
-      make: "Toyota",
-      model: "Camry",
-      year: 2018,
-      mileage: 85000,
-      vin: "4T1BF1FK5JU123456",
-      description: "Executive sedan in excellent condition",
-      startingPrice: "85000.00",
-      currentBid: "92000.00",
-      photos: ["/api/listings/42/photo/0"],
-      auctionDuration: 72,
-      status: "active",
-      auctionStartTime: now,
-      auctionEndTime: futureDate2,
-      customsCleared: true,
-      recycled: false,
-      technicalInspectionValid: true,
-      technicalInspectionDate: "2025-12-31",
-      tinted: true,
-      tintingDate: "2024-06-15",
-      engine: "2.5L",
-      transmission: "Automatic",
-      fuelType: "Gasoline",
-      bodyType: "Sedan",
-      driveType: "FWD",
-      color: "Silver",
-      condition: "excellent",
-      location: "Khujand",
-      createdAt: now,
-    };
+    this.users.push(adminUser, buyerUser);
 
-    // Original car listings from storage_old.ts
-    const listing3: CarListing = {
-      id: this.nextId++,
-      sellerId: sellerUser.id,
-      lotNumber: "156789",
-      make: "Tesla",
-      model: "Model S",
-      year: 2021,
-      mileage: 8500,
-      vin: "5YJ3E1EA5LF123456",
-      description: "Nearly new Tesla Model S with Autopilot and premium interior. Exceptional electric performance with cutting-edge technology.",
-      startingPrice: "80000.00",
-      currentBid: "85000.00",
-      photos: ["https://images.unsplash.com/photo-1536700503339-1e4b06520771?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"],
-      auctionDuration: 72,
-      status: "active",
-      auctionStartTime: now,
-      auctionEndTime: futureDate1,
-      customsCleared: true,
-      recycled: false,
-      technicalInspectionValid: true,
-      technicalInspectionDate: "2025-12-15",
-      tinted: false,
-      tintingDate: null,
-      engine: null,
-      transmission: null,
-      fuelType: null,
-      bodyType: null,
-      driveType: null,
-      color: null,
-      condition: "excellent",
-      location: null,
-      createdAt: now,
-    };
-
-    const listing4: CarListing = {
-      id: this.nextId++,
-      sellerId: sellerUser.id,
-      lotNumber: "349821",
-      make: "Mercedes-Benz",
-      model: "C-Class",
-      year: 2020,
-      mileage: 25000,
-      vin: "WDDGF8AB5LR123456",
-      description: "Elegant Mercedes-Benz C-Class with premium interior and advanced safety features. Excellent condition with full service records.",
-      startingPrice: "45000.00",
-      currentBid: "48500.00",
-      photos: ["https://cdn.pixabay.com/photo/2016/04/01/09/11/car-1299173_960_720.jpg"],
-      auctionDuration: 120,
-      status: "active",
-      auctionStartTime: now,
-      auctionEndTime: futureDate2,
-      customsCleared: true,
-      recycled: false,
-      technicalInspectionValid: true,
-      technicalInspectionDate: new Date("2025-11-10"),
-      tinted: false,
-      tintingDate: null,
-      engine: null,
-      transmission: null,
-      fuelType: null,
-      bodyType: null,
-      driveType: null,
-      color: null,
-      condition: "excellent",
-      location: null,
-      createdAt: now,
-    };
-
-    const listing5: CarListing = {
-      id: this.nextId++,
-      sellerId: sellerUser.id,
-      lotNumber: "567890",
-      make: "Audi",
-      model: "A4",
-      year: 2019,
-      mileage: 32000,
-      vin: "WAUFNAF45KN123456",
-      description: "Sporty Audi A4 with quattro all-wheel drive. Premium Plus package with navigation and leather interior.",
-      startingPrice: "38000.00",
-      currentBid: "41200.00",
-      photos: ["https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"],
-      auctionDuration: 96,
-      status: "active",
-      auctionStartTime: now,
-      auctionEndTime: futureDate1,
-      customsCleared: true,
-      recycled: true,
-      technicalInspectionValid: false,
-      technicalInspectionDate: null,
-      tinted: false,
-      tintingDate: null,
-      engine: null,
-      transmission: null,
-      fuelType: null,
-      bodyType: null,
-      driveType: null,
-      color: null,
-      condition: "good",
-      location: null,
-      createdAt: now,
-    };
-
-    const listing6: CarListing = {
-      id: this.nextId++,
-      sellerId: sellerUser.id,
-      lotNumber: "234567",
-      make: "Toyota",
-      model: "Camry",
-      year: 2022,
-      mileage: 18000,
-      vin: "4T1C11AK5NU123456",
-      description: "Reliable Toyota Camry Hybrid with excellent fuel economy. Like-new condition with remaining factory warranty.",
-      startingPrice: "28000.00",
-      currentBid: "30500.00",
-      photos: ["https://images.unsplash.com/photo-1621007947382-bb3c3994e3fb?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"],
-      auctionDuration: 144,
-      status: "active",
-      auctionStartTime: now,
-      auctionEndTime: futureDate2,
-      customsCleared: false,
-      recycled: false,
-      technicalInspectionValid: true,
-      technicalInspectionDate: new Date("2025-09-30"),
-      tinted: false,
-      tintingDate: null,
-      engine: null,
-      transmission: null,
-      fuelType: null,
-      bodyType: null,
-      driveType: null,
-      color: null,
-      condition: "excellent",
-      location: null,
-      createdAt: now,
-    };
-
-    const listing7: CarListing = {
-      id: this.nextId++,
-      sellerId: sellerUser.id,
-      lotNumber: "345678",
-      make: "Honda",
-      model: "CR-V",
-      year: 2021,
-      mileage: 22000,
-      vin: "7FARW2H85ME123456",
-      description: "Versatile Honda CR-V SUV with all-wheel drive. Perfect for families with excellent safety ratings and cargo space.",
-      startingPrice: "32000.00",
-      currentBid: "34800.00",
-      photos: ["https://images.unsplash.com/photo-1609521263047-f8f205293f24?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"],
-      auctionDuration: 192,
-      status: "active",
-      auctionStartTime: now,
-      auctionEndTime: futureDate1,
-      customsCleared: true,
-      recycled: true,
-      technicalInspectionValid: true,
-      technicalInspectionDate: new Date("2026-01-25"),
-      tinted: false,
-      tintingDate: null,
-      engine: null,
-      transmission: null,
-      fuelType: null,
-      bodyType: null,
-      driveType: null,
-      color: null,
-      condition: "very_good",
-      location: null,
-      createdAt: now,
-    };
-
-    const listing8: CarListing = {
-      id: this.nextId++,
-      sellerId: sellerUser.id,
-      lotNumber: "456789",
-      make: "Lexus",
-      model: "RX",
-      year: 2020,
-      mileage: 28000,
-      vin: "2T2BZMCA5LC123456",
-      description: "Luxury Lexus RX 350 with premium amenities. Heated and ventilated seats, mark levinson sound system, and more.",
-      startingPrice: "52000.00",
-      currentBid: "55400.00",
-      photos: ["https://images.unsplash.com/photo-1606611013875-74d6b4ade6e8?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"],
-      auctionDuration: 216,
-      status: "active",
-      auctionStartTime: now,
-      auctionEndTime: futureDate2,
-      customsCleared: false,
-      recycled: true,
-      technicalInspectionValid: false,
-      technicalInspectionDate: null,
-      tinted: false,
-      tintingDate: null,
-      engine: null,
-      transmission: null,
-      fuelType: null,
-      bodyType: null,
-      driveType: null,
-      color: null,
-      condition: "excellent",
-      location: null,
-      createdAt: now,
-    };
-
-    const listing9: CarListing = {
-      id: this.nextId++,
-      sellerId: sellerUser.id,
-      lotNumber: "567891",
-      make: "Ford",
-      model: "Mustang",
-      year: 2021,
-      mileage: 15000,
-      vin: "1FA6P8TH5M5123456",
-      description: "Iconic Ford Mustang GT with V8 engine. Performance package with Brembo brakes and sport-tuned suspension.",
-      startingPrice: "42000.00",
-      currentBid: "45600.00",
-      photos: ["https://cdn.pixabay.com/photo/2016/11/29/09/16/ford-mustang-1868815_960_720.jpg"],
-      auctionDuration: 168,
-      status: "active",
-      auctionStartTime: now,
-      auctionEndTime: futureDate1,
-      customsCleared: true,
-      recycled: false,
-      technicalInspectionValid: true,
-      technicalInspectionDate: new Date("2024-01-15"),
-      tinted: false,
-      tintingDate: null,
-      engine: null,
-      transmission: null,
-      fuelType: null,
-      bodyType: null,
-      driveType: null,
-      color: null,
-      condition: "very_good",
-      location: null,
-      createdAt: now,
-    };
-
-    const listing10: CarListing = {
-      id: this.nextId++,
-      sellerId: sellerUser.id,
-      lotNumber: "678902",
-      make: "Volkswagen",
-      model: "Golf",
-      year: 2020,
-      mileage: 28500,
-      vin: "WVWZZZ1JZYW123456",
-      description: "Efficient Volkswagen Golf with TSI engine. European engineering with excellent build quality and fuel economy.",
-      startingPrice: "24000.00",
-      currentBid: "26800.00",
-      photos: ["https://cdn.pixabay.com/photo/2016/12/07/21/50/volkswagen-1890744_960_720.jpg"],
-      auctionDuration: 120,
-      status: "active",
-      auctionStartTime: now,
-      auctionEndTime: futureDate2,
-      customsCleared: true,
-      recycled: false,
-      technicalInspectionValid: true,
-      technicalInspectionDate: new Date("2024-02-20"),
-      tinted: false,
-      tintingDate: null,
-      engine: null,
-      transmission: null,
-      fuelType: null,
-      bodyType: null,
-      driveType: null,
-      color: null,
-      condition: "good",
-      location: null,
-      createdAt: now,
-    };
-
-    const listing11: CarListing = {
-      id: this.nextId++,
-      sellerId: sellerUser.id,
-      lotNumber: "789013",
-      make: "Hyundai",
-      model: "Tucson",
-      year: 2022,
-      mileage: 12000,
-      vin: "KM8J3CA46NU123456",
-      description: "Modern Hyundai Tucson with advanced safety features. Spacious interior with latest infotainment system and comprehensive warranty.",
-      startingPrice: "29000.00",
-      currentBid: "31500.00",
-      photos: ["https://cdn.pixabay.com/photo/2017/08/10/02/05/audi-2618189_960_720.jpg"],
-      auctionDuration: 144,
-      status: "active",
-      auctionStartTime: now,
-      auctionEndTime: futureDate1,
-      customsCleared: false,
-      recycled: true,
-      technicalInspectionValid: true,
-      technicalInspectionDate: new Date("2024-03-10"),
-      tinted: false,
-      tintingDate: null,
-      engine: null,
-      transmission: null,
-      fuelType: null,
-      bodyType: null,
-      driveType: null,
-      color: null,
-      condition: "excellent",
-      location: null,
-      createdAt: now,
-    };
-
-    const listing12: CarListing = {
-      id: this.nextId++,
-      sellerId: sellerUser.id,
-      lotNumber: "890124",
-      make: "Mazda",
-      model: "CX-5",
-      year: 2021,
-      mileage: 19000,
-      vin: "JM3KFBCM1L0123456",
-      description: "Stylish Mazda CX-5 with SKYACTIV technology. All-wheel drive with premium interior and advanced safety features.",
-      startingPrice: "31000.00",
-      currentBid: "33200.00",
-      photos: ["https://cdn.pixabay.com/photo/2016/11/29/08/41/auto-1868726_960_720.jpg"],
-      auctionDuration: 96,
-      status: "active",
-      auctionStartTime: now,
-      auctionEndTime: futureDate2,
-      customsCleared: true,
-      recycled: false,
-      technicalInspectionValid: false,
-      technicalInspectionDate: null,
-      tinted: false,
-      tintingDate: null,
-      engine: null,
-      transmission: null,
-      fuelType: null,
-      bodyType: null,
-      driveType: null,
-      color: null,
-      condition: "very_good",
-      location: null,
-      createdAt: now,
-    };
-
-    const listing13: CarListing = {
-      id: this.nextId++,
-      sellerId: sellerUser.id,
-      lotNumber: "901235",
-      make: "Subaru",
-      model: "Outback",
-      year: 2020,
-      mileage: 35000,
-      vin: "4S4BSANC8L3123456",
-      description: "Adventure-ready Subaru Outback with symmetrical all-wheel drive. Perfect for outdoor enthusiasts with excellent ground clearance.",
-      startingPrice: "26000.00",
-      currentBid: "28400.00",
-      photos: ["https://cdn.pixabay.com/photo/2017/07/16/10/43/subaru-2509611_960_720.jpg"],
-      auctionDuration: 168,
-      status: "active",
-      auctionStartTime: now,
-      auctionEndTime: futureDate1,
-      customsCleared: true,
-      recycled: false,
-      technicalInspectionValid: true,
-      technicalInspectionDate: new Date("2024-04-05"),
-      tinted: false,
-      tintingDate: null,
-      engine: null,
-      transmission: null,
-      fuelType: null,
-      bodyType: null,
-      driveType: null,
-      color: null,
-      condition: "good",
-      location: null,
-      createdAt: now,
-    };
-
-    const listing14: CarListing = {
-      id: this.nextId++,
-      sellerId: sellerUser.id,
-      lotNumber: "012346",
-      make: "Infiniti",
-      model: "Q50",
-      year: 2019,
-      mileage: 42000,
-      vin: "JN1EV7AR5KM123456",
-      description: "Luxury Infiniti Q50 with twin-turbo V6 engine. Premium leather interior with advanced driver assistance systems.",
-      startingPrice: "35000.00",
-      currentBid: "37800.00",
-      photos: ["https://cdn.pixabay.com/photo/2016/11/29/09/16/ford-mustang-1868815_960_720.jpg"],
-      auctionDuration: 120,
-      status: "active",
-      auctionStartTime: now,
-      auctionEndTime: futureDate2,
-      customsCleared: true,
-      recycled: false,
-      technicalInspectionValid: false,
-      technicalInspectionDate: null,
-      tinted: false,
-      tintingDate: null,
-      engine: null,
-      transmission: null,
-      fuelType: null,
-      bodyType: null,
-      driveType: null,
-      color: null,
-      condition: "very_good",
-      location: null,
-      createdAt: now,
-    };
-
-    this.carListings.push(listing1, listing2, listing3, listing4, listing5, listing6, listing7, listing8, listing9, listing10, listing11, listing12, listing13, listing14);
-
-    // Create sample bids
-    const bid1: Bid = {
-      id: this.nextId++,
-      listingId: listing1.id,
-      bidderId: buyerUser.id,
-      amount: "51000.00",
-      createdAt: now,
-    };
-
-    const bid2: Bid = {
-      id: this.nextId++,
-      listingId: listing2.id,
-      bidderId: buyerUser.id,
-      amount: "92000.00",
-      createdAt: now,
-    };
-
-    this.bids.push(bid1, bid2);
-
-    // Create sample sell car section
+    // Create sell car section
     this.sellCarSection = {
       id: 1,
       title: "Sell Your Car",
@@ -580,21 +67,36 @@ export class MemoryStorage implements IStorage {
       updatedAt: null,
     };
 
-    // Create sample advertisement carousel
+    // Create advertisement carousel
     const adCarousel: AdvertisementCarousel = {
       id: 1,
       title: "Premium Cars Available",
-      description: "Discover luxury vehicles at great prices",
-      imageUrl: "/api/advertisement-carousel/1/image",
+      imageUrl: "https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&h=400",
       linkUrl: "/listings",
-      isActive: true,
+      description: "Discover our collection of premium vehicles",
+      buttonText: "View Collection",
       order: 1,
-      buttonText: null,
+      isActive: true,
       createdAt: now,
       updatedAt: null,
     };
 
     this.advertisementCarousel.push(adCarousel);
+
+    // Create banners
+    const banner1: Banner = {
+      id: 1,
+      title: "Welcome to AutoAuction",
+      description: "Find your perfect car today",
+      imageUrl: "https://images.unsplash.com/photo-1503376780353-7e6692767b70?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&h=300",
+      linkUrl: "/listings",
+      position: "header",
+      order: 1,
+      isActive: true,
+      createdAt: now,
+    };
+
+    this.banners.push(banner1);
   }
 
   // User operations
@@ -613,13 +115,7 @@ export class MemoryStorage implements IStorage {
   async createUser(insertUser: InsertUser): Promise<User> {
     const user: User = {
       id: this.nextId++,
-      email: insertUser.email,
-      username: insertUser.username,
-      phoneNumber: insertUser.phoneNumber || null,
-      fullName: insertUser.fullName || null,
-      role: insertUser.role,
-      profilePhoto: insertUser.profilePhoto || null,
-      isActive: insertUser.isActive || false,
+      ...insertUser,
       createdAt: new Date(),
     };
     this.users.push(user);
@@ -644,7 +140,7 @@ export class MemoryStorage implements IStorage {
   }
 
   async getAllUsers(): Promise<User[]> {
-    return [...this.users];
+    return this.users;
   }
 
   // Car listing operations
@@ -702,6 +198,8 @@ export class MemoryStorage implements IStorage {
       }
       if (filters.make && listing.make !== filters.make) return false;
       if (filters.model && listing.model !== filters.model) return false;
+      if (filters.minPrice && parseFloat(listing.startingPrice) < filters.minPrice) return false;
+      if (filters.maxPrice && parseFloat(listing.startingPrice) > filters.maxPrice) return false;
       if (filters.year && listing.year !== filters.year) return false;
       return true;
     });
@@ -831,16 +329,22 @@ export class MemoryStorage implements IStorage {
 
   async checkAlertsForNewListing(listing: CarListing): Promise<CarAlert[]> {
     return this.carAlerts.filter(alert => {
-      if (alert.make && alert.make !== listing.make) return false;
+      if (!alert.isActive) return false;
+      if (alert.make !== listing.make) return false;
       if (alert.model && alert.model !== listing.model) return false;
+      if (alert.minPrice && parseFloat(listing.startingPrice) < parseFloat(alert.minPrice)) return false;
       if (alert.maxPrice && parseFloat(listing.startingPrice) > parseFloat(alert.maxPrice)) return false;
+      if (alert.minYear && listing.year < alert.minYear) return false;
+      if (alert.maxYear && listing.year > alert.maxYear) return false;
       return true;
     });
   }
 
   // Banner operations
   async getBanners(position?: string): Promise<Banner[]> {
-    return this.banners.filter(banner => !position || banner.position === position);
+    return position ? 
+      this.banners.filter(banner => banner.position === position) : 
+      this.banners;
   }
 
   async createBanner(insertBanner: InsertBanner): Promise<Banner> {
@@ -870,36 +374,22 @@ export class MemoryStorage implements IStorage {
     return false;
   }
 
-  // Admin operations
-  async getAdminStats(): Promise<{
-    pendingListings: number;
-    activeAuctions: number;
-    totalUsers: number;
-    bannedUsers: number;
-  }> {
-    return {
-      pendingListings: this.carListings.filter(l => l.status === 'pending').length,
-      activeAuctions: this.carListings.filter(l => l.status === 'active').length,
-      totalUsers: this.users.length,
-      bannedUsers: this.users.filter(u => !u.isActive).length,
-    };
-  }
-
   // Sell Car Section operations
   async getSellCarSection(): Promise<SellCarSection | undefined> {
-    return this.sellCarSection || undefined;
+    return this.sellCarSection;
   }
 
   async updateSellCarSection(data: Partial<InsertSellCarSection>): Promise<SellCarSection | undefined> {
     if (this.sellCarSection) {
       Object.assign(this.sellCarSection, data);
+      this.sellCarSection.updatedAt = new Date();
     }
-    return this.sellCarSection || undefined;
+    return this.sellCarSection;
   }
 
   // Advertisement Carousel operations
   async getAdvertisementCarousel(): Promise<AdvertisementCarousel[]> {
-    return [...this.advertisementCarousel];
+    return this.advertisementCarousel;
   }
 
   async getAdvertisementCarouselItem(id: number): Promise<AdvertisementCarousel | undefined> {
@@ -911,21 +401,23 @@ export class MemoryStorage implements IStorage {
       id: this.nextId++,
       ...item,
       createdAt: new Date(),
+      updatedAt: null,
     };
     this.advertisementCarousel.push(carouselItem);
     return carouselItem;
   }
 
   async updateAdvertisementCarouselItem(id: number, item: Partial<InsertAdvertisementCarousel>): Promise<AdvertisementCarousel | undefined> {
-    const carouselItem = this.advertisementCarousel.find(ci => ci.id === id);
+    const carouselItem = this.advertisementCarousel.find(i => i.id === id);
     if (carouselItem) {
       Object.assign(carouselItem, item);
+      carouselItem.updatedAt = new Date();
     }
     return carouselItem;
   }
 
   async deleteAdvertisementCarouselItem(id: number): Promise<boolean> {
-    const index = this.advertisementCarousel.findIndex(item => item.id === id);
+    const index = this.advertisementCarousel.findIndex(i => i.id === id);
     if (index !== -1) {
       this.advertisementCarousel.splice(index, 1);
       return true;
@@ -935,7 +427,9 @@ export class MemoryStorage implements IStorage {
 
   // Documents operations
   async getDocuments(type?: string): Promise<Document[]> {
-    return this.documents.filter(doc => !type || doc.type === type);
+    return type ? 
+      this.documents.filter(doc => doc.type === type) : 
+      this.documents;
   }
 
   async getDocument(id: number): Promise<Document | undefined> {
@@ -947,6 +441,7 @@ export class MemoryStorage implements IStorage {
       id: this.nextId++,
       ...insertDocument,
       createdAt: new Date(),
+      updatedAt: null,
     };
     this.documents.push(document);
     return document;
@@ -956,6 +451,7 @@ export class MemoryStorage implements IStorage {
     const document = this.documents.find(d => d.id === id);
     if (document) {
       Object.assign(document, documentData);
+      document.updatedAt = new Date();
     }
     return document;
   }
@@ -974,7 +470,7 @@ export class MemoryStorage implements IStorage {
     const view: AlertView = {
       id: this.nextId++,
       ...insertView,
-      createdAt: new Date(),
+      viewedAt: new Date(),
     };
     this.alertViews.push(view);
     return view;
@@ -982,7 +478,9 @@ export class MemoryStorage implements IStorage {
 
   async hasUserViewedAlert(userId: number, alertId: number, listingId: number): Promise<boolean> {
     return this.alertViews.some(view => 
-      view.userId === userId && view.alertId === alertId && view.listingId === listingId
+      view.userId === userId && 
+      view.alertId === alertId && 
+      view.listingId === listingId
     );
   }
 
@@ -999,11 +497,11 @@ export class MemoryStorage implements IStorage {
 
   async getValidSmsCode(phoneNumber: string, code: string): Promise<SmsVerificationCode | undefined> {
     const now = new Date();
-    return this.smsVerificationCodes.find(smsCode => 
-      smsCode.phoneNumber === phoneNumber && 
-      smsCode.code === code && 
-      !smsCode.isUsed && 
-      smsCode.expiresAt > now
+    return this.smsVerificationCodes.find(sms => 
+      sms.phoneNumber === phoneNumber && 
+      sms.code === code && 
+      !sms.isUsed && 
+      sms.expiresAt > now
     );
   }
 
@@ -1018,6 +516,23 @@ export class MemoryStorage implements IStorage {
 
   async cleanupExpiredSmsCodes(): Promise<void> {
     const now = new Date();
-    this.smsVerificationCodes = this.smsVerificationCodes.filter(code => code.expiresAt > now);
+    this.smsVerificationCodes = this.smsVerificationCodes.filter(code => 
+      code.expiresAt > now && !code.isUsed
+    );
+  }
+
+  // Admin operations
+  async getAdminStats(): Promise<{
+    pendingListings: number;
+    activeAuctions: number;
+    totalUsers: number;
+    bannedUsers: number;
+  }> {
+    return {
+      pendingListings: this.carListings.filter(l => l.status === 'pending').length,
+      activeAuctions: this.carListings.filter(l => l.status === 'active').length,
+      totalUsers: this.users.length,
+      bannedUsers: this.users.filter(u => !u.isActive).length,
+    };
   }
 }
