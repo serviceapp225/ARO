@@ -1,0 +1,35 @@
+[
+  {
+    "id": 1,
+    "username": "admin",
+    "email": "admin@autoauction.tj",
+    "phoneNumber": null,
+    "fullName": "Admin User",
+    "role": "admin",
+    "profilePhoto": null,
+    "isActive": true,
+    "createdAt": "2025-06-23T12:00:00.000Z"
+  },
+  {
+    "id": 2,
+    "username": "seller123",
+    "email": "seller@autoauction.tj",
+    "phoneNumber": "+992901234567",
+    "fullName": "Seller User",
+    "role": "seller",
+    "profilePhoto": null,
+    "isActive": true,
+    "createdAt": "2025-06-23T12:00:00.000Z"
+  },
+  {
+    "id": 3,
+    "username": "buyer456",
+    "email": "buyer@autoauction.tj",  
+    "phoneNumber": "+992907654321",
+    "fullName": "Buyer User",
+    "role": "buyer",
+    "profilePhoto": null,
+    "isActive": true,
+    "createdAt": "2025-06-23T12:00:00.000Z"
+  }
+]
