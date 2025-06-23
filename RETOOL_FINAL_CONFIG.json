@@ -1,0 +1,92 @@
+{
+  "version": "3.0.0",
+  "queries": [
+    {
+      "id": "getUsersQuery",
+      "type": "restapi",
+      "querySettings": {
+        "url": "{{API_BASE_URL}}/api/admin/users",
+        "method": "GET",
+        "headers": {
+          "x-admin-key": "{{ADMIN_SECRET}}"
+        }
+      },
+      "transformer": "return data.map(user => ({...user, isActive: user.isActive ? 'Активен' : 'Неактивен', createdAt: new Date(user.createdAt).toLocaleDateString('ru-RU')}))",
+      "runWhenPageLoads": true
+    },
+    {
+      "id": "getListingsQuery",
+      "type": "restapi",
+      "querySettings": {
+        "url": "{{API_BASE_URL}}/api/admin/listings",
+        "method": "GET",
+        "headers": {
+          "x-admin-key": "{{ADMIN_SECRET}}"
+        }
+      },
+      "transformer": "return data.map(listing => ({...listing, currentBid: `${listing.currentBid} сомони`, seller: listing.seller?.fullName || 'Неизвестно'}))",
+      "runWhenPageLoads": true
+    },
+    {
+      "id": "getBidsQuery",
+      "type": "restapi",
+      "querySettings": {
+        "url": "{{API_BASE_URL}}/api/admin/bids",
+        "method": "GET",
+        "headers": {
+          "x-admin-key": "{{ADMIN_SECRET}}"
+        }
+      },
+      "transformer": "return data.map(bid => ({...bid, amount: `${bid.amount} сомони`, bidder: bid.bidder?.fullName || 'Неизвестно', listing: `${bid.listing?.make} ${bid.listing?.model} ${bid.listing?.year}`, createdAt: new Date(bid.createdAt).toLocaleDateString('ru-RU')}))",
+      "runWhenPageLoads": true
+    },
+    {
+      "id": "getStatsQuery",
+      "type": "restapi",
+      "querySettings": {
+        "url": "{{API_BASE_URL}}/api/admin/stats",
+        "method": "GET",
+        "headers": {
+          "x-admin-key": "{{ADMIN_SECRET}}"
+        }
+      },
+      "runWhenPageLoads": true
+    },
+    {
+      "id": "updateUserStatusQuery",
+      "type": "restapi",
+      "querySettings": {
+        "url": "{{API_BASE_URL}}/api/admin/users/{{userTable.selectedRow.id}}/status",
+        "method": "PATCH",
+        "headers": {
+          "x-admin-key": "{{ADMIN_SECRET}}",
+          "Content-Type": "application/json"
+        },
+        "body": "{{arguments[0]}}"
+      },
+      "onSuccess": [
+        "getUsersQuery.trigger()",
+        "getStatsQuery.trigger()"
+      ],
+      "confirmationMessage": "Изменить статус пользователя?"
+    },
+    {
+      "id": "updateListingStatusQuery",
+      "type": "restapi",
+      "querySettings": {
+        "url": "{{API_BASE_URL}}/api/listings/{{listingsTable.selectedRow.id}}/status",
+        "method": "PATCH",
+        "headers": {
+          "x-admin-key": "{{ADMIN_SECRET}}",
+          "Content-Type": "application/json"
+        },
+        "body": "{{arguments[0]}}"
+      },
+      "onSuccess": [
+        "getListingsQuery.trigger()",
+        "getStatsQuery.trigger()"
+      ],
+      "confirmationMessage": "Изменить статус объявления?"
+    }
+  ]
+}

@@ -19,7 +19,7 @@ https://ваш-домен.replit.app/api/admin
 ### Аутентификация
 Все админские API требуют заголовка:
 ```
-Authorization: Bearer admin-secret-key
+x-admin-key: retool-admin-key-2024
 ```
 
 ## Основные компоненты Retool

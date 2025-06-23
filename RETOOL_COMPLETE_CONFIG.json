@@ -262,7 +262,7 @@
         "url": "/api/admin/users",
         "method": "GET",
         "headers": {
-          "Authorization": "Bearer admin-secret-key"
+          "x-admin-key": "retool-admin-key-2024"
         }
       },
       "transformer": "return data.map(user => ({...user, isActive: user.isActive ? 'Активен' : 'Неактивен', createdAt: new Date(user.createdAt).toLocaleDateString('ru-RU')}))",
