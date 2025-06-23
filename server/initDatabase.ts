@@ -1,9 +1,173 @@
-import { db } from "./db";
+import { db, pool } from "./db";
 import { users, carListings, bids, favorites } from "@shared/schema";
 import { eq } from "drizzle-orm";
+import { migrate } from "drizzle-orm/better-sqlite3/migrator";
 
 export async function initializeDatabaseWithSampleData() {
   console.log("Initializing database with sample data...");
+
+  // Create tables using raw SQL for SQLite
+  try {
+    pool.exec(`
+      CREATE TABLE IF NOT EXISTS users (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        username TEXT NOT NULL UNIQUE,
+        email TEXT NOT NULL UNIQUE,
+        phone_number TEXT,
+        full_name TEXT,
+        role TEXT NOT NULL DEFAULT 'user',
+        profile_photo TEXT,
+        is_active INTEGER DEFAULT 1,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      );
+      
+      CREATE TABLE IF NOT EXISTS car_listings (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        seller_id INTEGER NOT NULL,
+        lot_number TEXT NOT NULL UNIQUE,
+        make TEXT NOT NULL,
+        model TEXT NOT NULL,
+        year INTEGER NOT NULL,
+        mileage INTEGER NOT NULL,
+        color TEXT,
+        engine TEXT,
+        transmission TEXT,
+        fuel_type TEXT,
+        drive_type TEXT,
+        body_type TEXT,
+        vin TEXT,
+        description TEXT,
+        starting_price TEXT NOT NULL,
+        current_bid TEXT,
+        bid_count INTEGER DEFAULT 0,
+        photos TEXT,
+        status TEXT DEFAULT 'pending',
+        end_time DATETIME,
+        customs_cleared INTEGER DEFAULT 0,
+        recycled INTEGER DEFAULT 0,
+        technical_inspection_valid INTEGER DEFAULT 0,
+        technical_inspection_date DATETIME,
+        tinted INTEGER DEFAULT 0,
+        tinting_date DATETIME,
+        location TEXT,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (seller_id) REFERENCES users(id)
+      );
+      
+      CREATE TABLE IF NOT EXISTS bids (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        listing_id INTEGER NOT NULL,
+        bidder_id INTEGER NOT NULL,
+        amount TEXT NOT NULL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (listing_id) REFERENCES car_listings(id),
+        FOREIGN KEY (bidder_id) REFERENCES users(id)
+      );
+      
+      CREATE TABLE IF NOT EXISTS favorites (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        listing_id INTEGER NOT NULL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id),
+        FOREIGN KEY (listing_id) REFERENCES car_listings(id)
+      );
+      
+      CREATE TABLE IF NOT EXISTS notifications (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        userId INTEGER NOT NULL,
+        title TEXT NOT NULL,
+        message TEXT NOT NULL,
+        isRead INTEGER DEFAULT 0,
+        createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (userId) REFERENCES users(id)
+      );
+      
+      CREATE TABLE IF NOT EXISTS carAlerts (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        userId INTEGER NOT NULL,
+        make TEXT,
+        model TEXT,
+        minPrice INTEGER,
+        maxPrice INTEGER,
+        minYear INTEGER,
+        maxYear INTEGER,
+        isActive INTEGER DEFAULT 1,
+        createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (userId) REFERENCES users(id)
+      );
+      
+      CREATE TABLE IF NOT EXISTS banners (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        title TEXT NOT NULL,
+        description TEXT,
+        imageUrl TEXT,
+        buttonText TEXT,
+        buttonUrl TEXT,
+        position TEXT,
+        isActive INTEGER DEFAULT 1,
+        startDate DATETIME,
+        endDate DATETIME,
+        createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
+      );
+      
+      CREATE TABLE IF NOT EXISTS sellCarSection (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        title TEXT NOT NULL,
+        subtitle TEXT,
+        description TEXT,
+        buttonText TEXT,
+        buttonUrl TEXT,
+        backgroundImageUrl TEXT,
+        isActive INTEGER DEFAULT 1,
+        createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
+      );
+      
+      CREATE TABLE IF NOT EXISTS advertisementCarousel (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        title TEXT NOT NULL,
+        description TEXT,
+        imageUrl TEXT,
+        buttonText TEXT,
+        buttonUrl TEXT,
+        isActive INTEGER DEFAULT 1,
+        displayOrder INTEGER DEFAULT 0,
+        createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
+      );
+      
+      CREATE TABLE IF NOT EXISTS documents (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        title TEXT NOT NULL,
+        content TEXT NOT NULL,
+        type TEXT NOT NULL,
+        isActive INTEGER DEFAULT 1,
+        createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
+      );
+      
+      CREATE TABLE IF NOT EXISTS alertViews (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        userId INTEGER NOT NULL,
+        alertId INTEGER NOT NULL,
+        listingId INTEGER NOT NULL,
+        viewedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (userId) REFERENCES users(id),
+        FOREIGN KEY (alertId) REFERENCES carAlerts(id),
+        FOREIGN KEY (listingId) REFERENCES carListings(id)
+      );
+      
+      CREATE TABLE IF NOT EXISTS smsVerificationCodes (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        phoneNumber TEXT NOT NULL,
+        code TEXT NOT NULL,
+        isUsed INTEGER DEFAULT 0,
+        expiresAt DATETIME NOT NULL,
+        createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+    console.log("Database tables created successfully");
+  } catch (error) {
+    console.log("Tables might already exist, continuing...");
+  }
 
   // Check if data already exists
   const existingUsers = await db.select().from(users).limit(1);
