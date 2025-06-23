@@ -834,4 +834,7 @@ export class DatabaseStorage implements IStorage {
   }
 }
 
-export const storage = new DatabaseStorage();
+import { MemoryStorage } from "./memoryStorage";
+
+// Используем временное хранилище пока проблемы с базой данных не решены
+export const storage = new MemoryStorage();
