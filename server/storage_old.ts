@@ -76,6 +76,12 @@ export interface IStorage {
     totalUsers: number;
     bannedUsers: number;
   }>;
+
+  // Sell car section operations
+  getSellCarSection(): Promise<any>;
+  
+  // Advertisement carousel operations
+  getAdvertisementCarousel(): Promise<any[]>;
 }
 
 export class MemStorage implements IStorage {
@@ -708,6 +714,169 @@ export class MemStorage implements IStorage {
     };
     this.carListings.set(listing18.id, listing18);
 
+    // Add remaining cars to complete the original 18 car catalog
+    const listing19: CarListing = {
+      id: this.currentListingId++,
+      sellerId: sellerUser.id,
+      lotNumber: "567890",
+      make: "Lexus",
+      model: "RX 350",
+      year: 2020,
+      mileage: 32000,
+      vin: "2T2HZMAA6LC123456",
+      description: "Luxury SUV with hybrid technology and premium interior. Perfect blend of comfort and efficiency.",
+      startingPrice: "46000.00",
+      currentBid: "48700.00",
+      photos: [
+        "https://cdn.pixabay.com/photo/2016/11/19/12/54/car-1839764_960_720.jpg"
+      ],
+      auctionDuration: 96,
+      status: "active",
+      auctionStartTime: now,
+      auctionEndTime: auction8EndTime,
+      customsCleared: true,
+      recycled: false,
+      technicalInspectionValid: true,
+      technicalInspectionDate: "2024-03-10",
+      createdAt: now
+    };
+    this.carListings.set(listing19.id, listing19);
+
+    const listing20: CarListing = {
+      id: this.currentListingId++,
+      sellerId: sellerUser.id,
+      lotNumber: "678901",
+      make: "Acura",
+      model: "MDX",
+      year: 2019,
+      mileage: 41000,
+      vin: "5J8YD3H30KL123456",
+      description: "Three-row luxury SUV with all-wheel drive and advanced safety features.",
+      startingPrice: "38000.00",
+      currentBid: "40300.00",
+      photos: [
+        "https://cdn.pixabay.com/photo/2017/08/06/15/13/mercedes-2593571_960_720.jpg"
+      ],
+      auctionDuration: 120,
+      status: "active",
+      auctionStartTime: now,
+      auctionEndTime: auction7EndTime,
+      customsCleared: false,
+      recycled: true,
+      technicalInspectionValid: true,
+      technicalInspectionDate: "2024-04-22",
+      createdAt: now
+    };
+    this.carListings.set(listing20.id, listing20);
+
+    const listing21: CarListing = {
+      id: this.currentListingId++,
+      sellerId: sellerUser.id,
+      lotNumber: "789012",
+      make: "Volvo",
+      model: "XC90",
+      year: 2021,
+      mileage: 25000,
+      vin: "YV4A22PK5M1123456",
+      description: "Scandinavian luxury SUV with exceptional safety ratings and refined interior.",
+      startingPrice: "52000.00",
+      currentBid: "54800.00",
+      photos: [
+        "https://cdn.pixabay.com/photo/2018/01/15/22/25/bmw-3085396_960_720.jpg"
+      ],
+      auctionDuration: 144,
+      status: "active",
+      auctionStartTime: now,
+      auctionEndTime: auction6EndTime,
+      customsCleared: true,
+      recycled: false,
+      technicalInspectionValid: false,
+      technicalInspectionDate: null,
+      createdAt: now
+    };
+    this.carListings.set(listing21.id, listing21);
+
+    const listing22: CarListing = {
+      id: this.currentListingId++,
+      sellerId: sellerUser.id,
+      lotNumber: "890123",
+      make: "Genesis",
+      model: "G90",
+      year: 2020,
+      mileage: 28000,
+      vin: "KMHGN4JA8LA123456",
+      description: "Full-size luxury sedan with premium amenities and smooth ride quality.",
+      startingPrice: "44000.00",
+      currentBid: "46200.00",
+      photos: [
+        "https://cdn.pixabay.com/photo/2016/04/01/09/11/car-1299173_960_720.jpg"
+      ],
+      auctionDuration: 168,
+      status: "active",
+      auctionStartTime: now,
+      auctionEndTime: auction5EndTime,
+      customsCleared: true,
+      recycled: true,
+      technicalInspectionValid: true,
+      technicalInspectionDate: "2024-08-15",
+      createdAt: now
+    };
+    this.carListings.set(listing22.id, listing22);
+
+    const listing23: CarListing = {
+      id: this.currentListingId++,
+      sellerId: sellerUser.id,
+      lotNumber: "901234",
+      make: "Lincoln",
+      model: "Navigator",
+      year: 2019,
+      mileage: 48000,
+      vin: "5LMJJ2LT0KEL123456",
+      description: "Full-size luxury SUV with spacious interior and powerful V6 twin-turbo engine.",
+      startingPrice: "49000.00",
+      currentBid: "51700.00",
+      photos: [
+        "https://cdn.pixabay.com/photo/2017/03/27/14/56/auto-2179220_960_720.jpg"
+      ],
+      auctionDuration: 120,
+      status: "active",
+      auctionStartTime: now,
+      auctionEndTime: auction4EndTime,
+      customsCleared: false,
+      recycled: false,
+      technicalInspectionValid: true,
+      technicalInspectionDate: "2024-09-30",
+      createdAt: now
+    };
+    this.carListings.set(listing23.id, listing23);
+
+    const listing24: CarListing = {
+      id: this.currentListingId++,
+      sellerId: sellerUser.id,
+      lotNumber: "012345",
+      make: "Jaguar",
+      model: "F-PACE",
+      year: 2020,
+      mileage: 35000,
+      vin: "SADCK2FX7LA123456",
+      description: "Luxury compact SUV with sporty handling and elegant British design.",
+      startingPrice: "43000.00",
+      currentBid: "45400.00",
+      photos: [
+        "https://cdn.pixabay.com/photo/2016/11/29/08/41/auto-1868726_960_720.jpg"
+      ],
+      auctionDuration: 96,
+      status: "active",
+      auctionStartTime: now,
+      auctionEndTime: auction3EndTime,
+      customsCleared: true,
+      recycled: true,
+      technicalInspectionValid: false,
+      technicalInspectionDate: null,
+      createdAt: now
+    };
+    this.carListings.set(listing24.id, listing24);
+
     // Test auction that ends in 15 seconds for testing completed auction handling
     const testEndTime = new Date(now.getTime() + 15 * 1000); // 15 seconds from now
     const testListing: CarListing = {
@@ -1148,6 +1317,39 @@ export class MemStorage implements IStorage {
       totalUsers: allUsers.length,
       bannedUsers: allUsers.filter(u => !u.isActive).length
     };
+  }
+
+  async getSellCarSection(): Promise<any> {
+    return {
+      id: 1,
+      title: "Sell Your Car",
+      subtitle: "Get the best price for your vehicle",
+      linkUrl: "/sell",
+      backgroundImageUrl: "/api/sell-car-section/image",
+      buttonText: "Start Selling",
+      isActive: true,
+      createdAt: new Date(),
+      overlayOpacity: null,
+      textColor: null,
+      buttonColor: null,
+      buttonTextColor: null,
+      updatedAt: null,
+    };
+  }
+
+  async getAdvertisementCarousel(): Promise<any[]> {
+    return [{
+      id: 1,
+      title: "Premium Cars Available",
+      description: "Discover luxury vehicles at great prices",
+      imageUrl: "/api/advertisement-carousel/1/image",
+      linkUrl: "/listings",
+      buttonText: "View Cars",
+      isActive: true,
+      order: 1,
+      createdAt: new Date(),
+      updatedAt: null,
+    }];
   }
 }
 
