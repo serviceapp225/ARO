@@ -74,7 +74,7 @@ export function ImageCarousel({ images, alt, className = "" }: ImageCarouselProp
             {images.map((_, index) => (
               <button
                 key={index}
-                className={`w-3 h-3 rounded-full ${
+                className={`w-2 h-2 rounded-full ${
                   index === currentIndex ? 'bg-white' : 'bg-white/50'
                 }`}
                 onClick={() => setCurrentIndex(index)}
