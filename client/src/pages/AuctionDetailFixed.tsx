@@ -453,12 +453,19 @@ export default function AuctionDetail() {
     try {
       // Get current user ID from auth context
       const userId = (currentUser as any)?.userId;
+      console.log("Bid attempt - currentUser:", currentUser);
+      console.log("Bid attempt - userId extracted:", userId);
+      
       if (!userId) {
+        console.error("No userId found in currentUser:", currentUser);
         toast({
-          title: "Ошибка",
-          description: "Не удается определить пользователя",
+          title: "Требуется повторный вход",
+          description: "Пожалуйста, войдите в систему заново через SMS-код для совершения ставок.",
           variant: "destructive",
         });
+        // Clear localStorage and redirect to login
+        localStorage.removeItem('demo-user');
+        setLocation('/');
         return;
       }
 
