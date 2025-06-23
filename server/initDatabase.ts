@@ -21,6 +21,7 @@ export async function initializeDatabaseWithSampleData() {
     // Create admin user
     const adminUser = await db.insert(users).values({
       email: "admin@autobid.tj",
+      passwordHash: "$2b$10$abcdefghijklmnopqrstuvwxyz123456",
       username: "admin",
       phoneNumber: "+992000000001",
       fullName: "Администратор Системы",
@@ -33,6 +34,7 @@ export async function initializeDatabaseWithSampleData() {
     // Create seller user
     const sellerUser = await db.insert(users).values({
       email: "seller@autobid.tj",
+      passwordHash: "$2b$10$abcdefghijklmnopqrstuvwxyz123456",
       username: "seller",
       phoneNumber: "+992000000002",
       fullName: "Продавец Автомобилей",
@@ -45,6 +47,7 @@ export async function initializeDatabaseWithSampleData() {
     // Create buyer user
     const buyerUser = await db.insert(users).values({
       email: "buyer@autobid.tj",
+      passwordHash: "$2b$10$abcdefghijklmnopqrstuvwxyz123456",
       username: "buyer",
       phoneNumber: "+992000000003",
       fullName: "Покупатель Автомобилей",

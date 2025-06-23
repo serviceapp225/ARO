@@ -3,7 +3,7 @@ dotenv.config();
 
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
-import { initializeDatabaseWithSampleData } from "./initDatabase";
+import { initializeSqliteWithSampleData } from "./initSqlite";
 import { setupVite, serveStatic, log } from "./vite";
 
 const app = express();
@@ -55,7 +55,7 @@ app.use((req, res, next) => {
 
 (async () => {
   // Initialize database with sample data
-  await initializeDatabaseWithSampleData();
+  await initializeSqliteWithSampleData();
   
   const server = await registerRoutes(app);
 

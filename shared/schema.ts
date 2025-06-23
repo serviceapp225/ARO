@@ -5,10 +5,11 @@ import { z } from "zod";
 export const users = sqliteTable("users", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   email: text("email").notNull().unique(),
+  passwordHash: text("password_hash").notNull(),
   username: text("username").notNull().unique(),
-  phoneNumber: text("phone_number"), // For SMS authentication
-  fullName: text("full_name"), // Real name from profile
-  role: text("role").notNull(), // 'buyer', 'seller', 'admin'
+  phoneNumber: text("phone_number"),
+  fullName: text("full_name"),
+  role: text("role").notNull().default("buyer"),
   profilePhoto: text("profile_photo"),
   isActive: integer("is_active", { mode: "boolean" }).default(true),
   createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
