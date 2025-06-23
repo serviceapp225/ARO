@@ -370,42 +370,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const lotNumber = req.body.lotNumber || `LOT${Date.now().toString().slice(-6)}`;
       const photos = req.body.photos || "[]";
       
-      const enrichedData = {
-        make: req.body.make,
-        model: req.body.model,
-        year: req.body.year,
-        mileage: req.body.mileage,
-        description: req.body.description,
-        startingPrice: req.body.startingPrice,
+
+      
+      // Validate only the core required fields, then add our defaults
+      const coreValidation = z.object({
+        make: z.string(),
+        model: z.string(),
+        year: z.number(),
+        mileage: z.number(),
+        description: z.string(),
+        startingPrice: z.string()
+      });
+      
+      const validatedCore = coreValidation.parse(req.body);
+      
+      // Create complete listing data with defaults
+      const listingWithPendingStatus = {
+        ...validatedCore,
         sellerId: sellerId,
         lotNumber: lotNumber,
         auctionDuration: auctionDuration,
         photos: photos,
-        endTime: req.body.endTime || new Date(Date.now() + auctionDuration * 60 * 60 * 1000),
-        // Optional fields
-        engine: req.body.engine,
-        transmission: req.body.transmission,
-        fuelType: req.body.fuelType,
-        bodyType: req.body.bodyType,
-        driveType: req.body.driveType,
-        color: req.body.color,
-        condition: req.body.condition,
-        vin: req.body.vin,
-        location: req.body.location,
+        endTime: new Date(Date.now() + auctionDuration * 60 * 60 * 1000),
+        status: 'pending',
+        // Optional fields from request
+        engine: req.body.engine || null,
+        transmission: req.body.transmission || null,
+        fuelType: req.body.fuelType || null,
+        bodyType: req.body.bodyType || null,
+        driveType: req.body.driveType || null,
+        color: req.body.color || null,
+        condition: req.body.condition || null,
+        vin: req.body.vin || null,
+        location: req.body.location || null,
         customsCleared: req.body.customsCleared || false,
         recycled: req.body.recycled || false,
         technicalInspectionValid: req.body.technicalInspectionValid || false,
-        technicalInspectionDate: req.body.technicalInspectionDate,
+        technicalInspectionDate: req.body.technicalInspectionDate || null,
         tinted: req.body.tinted || false,
-        tintingDate: req.body.tintingDate
-      };
-      
-      const validatedData = insertCarListingSchema.parse(enrichedData);
-      
-      // Force all new listings to pending status for moderation
-      const listingWithPendingStatus = {
-        ...validatedData,
-        status: 'pending'
+        tintingDate: req.body.tintingDate || null
       };
       
       const listing = await storage.createListing(listingWithPendingStatus);
