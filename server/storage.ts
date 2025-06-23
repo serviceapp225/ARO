@@ -621,7 +621,7 @@ export class DatabaseStorage implements IStorage {
       .select()
       .from(banners)
       .where(and(...conditions))
-      .orderBy(banners.order, banners.createdAt);
+      .orderBy(banners.createdAt);
   }
 
   async createBanner(insertBanner: InsertBanner): Promise<Banner> {
@@ -688,7 +688,7 @@ export class DatabaseStorage implements IStorage {
     if (existingSection) {
       const [updated] = await db
         .update(sellCarSection)
-        .set({ ...data, updatedAt: new Date() })
+        .set(data)
         .where(eq(sellCarSection.id, existingSection.id))
         .returning();
       return updated || undefined;
@@ -703,7 +703,7 @@ export class DatabaseStorage implements IStorage {
       .select()
       .from(advertisementCarousel)
       .where(eq(advertisementCarousel.isActive, true))
-      .orderBy(advertisementCarousel.order);
+      .orderBy(advertisementCarousel.displayOrder);
   }
 
   async getAdvertisementCarouselItem(id: number): Promise<AdvertisementCarousel | undefined> {
