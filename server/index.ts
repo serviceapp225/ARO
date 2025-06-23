@@ -59,7 +59,7 @@ app.use((req, res, next) => {
   try {
     await initializeDatabaseWithSampleData();
   } catch (error) {
-    console.warn("Database initialization failed, continuing without sample data:", error.message);
+    console.warn("Database initialization failed, continuing without sample data:", error instanceof Error ? error.message : String(error));
   }
   
   const server = await registerRoutes(app);
