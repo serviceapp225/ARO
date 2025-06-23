@@ -187,13 +187,8 @@ export class DatabaseStorage implements IStorage {
     // Add photo URLs for detail page
     return {
       ...listing,
-      photos: [
-        `/api/listings/${id}/photo/0`,
-        `/api/listings/${id}/photo/1`,
-        `/api/listings/${id}/photo/2`,
-        `/api/listings/${id}/photo/3`,
-        `/api/listings/${id}/photo/4`
-      ]
+      photos: JSON.parse(listing.photos || '[]'),
+      endTime: listing.auctionEndTime
     };
   }
 
@@ -202,20 +197,30 @@ export class DatabaseStorage implements IStorage {
       console.log(`Starting ultra-fast main listings query for status: ${status}`);
       const startTime = Date.now();
       
-      // Ultra-fast raw SQL query with only essential fields
-      const result = await pool.query(`
-        SELECT id, seller_id, lot_number, make, model, year, mileage,
-               starting_price, current_bid, status, auction_end_time, condition
-        FROM car_listings 
-        WHERE status = $1 
-        ORDER BY created_at DESC 
-        LIMIT $2
-      `, [status, limit || 20]);
+      // Use Drizzle ORM for SQLite compatibility
+      const result = await db.select({
+        id: carListings.id,
+        seller_id: carListings.sellerId,
+        lot_number: carListings.lotNumber,
+        make: carListings.make,
+        model: carListings.model,
+        year: carListings.year,
+        mileage: carListings.mileage,
+        starting_price: carListings.startingPrice,
+        current_bid: carListings.currentBid,
+        status: carListings.status,
+        auction_end_time: carListings.auctionEndTime,
+        condition: carListings.condition
+      })
+      .from(carListings)
+      .where(eq(carListings.status, status))
+      .orderBy(desc(carListings.createdAt))
+      .limit(limit || 20);
       
-      console.log(`Ultra-fast main listings query completed in ${Date.now() - startTime}ms, found ${result.rows.length} listings`);
+      console.log(`Ultra-fast main listings query completed in ${Date.now() - startTime}ms, found ${result.length} listings`);
       
       // Convert to expected format with minimal processing
-      const listings = result.rows.map((row: any) => ({
+      const listings = result.map((row: any) => ({
         id: row.id,
         sellerId: row.seller_id,
         lotNumber: row.lot_number,
