@@ -311,18 +311,18 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createListing(insertListing: InsertCarListing): Promise<CarListing> {
-    // Use raw SQL to bypass timestamp issues
+    // Use simplified approach with only essential fields
     const now = Date.now();
     const auctionDuration = insertListing.auctionDuration || 72;
     const endTime = now + (auctionDuration * 60 * 60 * 1000);
     const lotNumber = insertListing.lotNumber || `LOT${Math.floor(Math.random() * 999999)}`;
     
+    // Insert with minimal required fields
     const sql = `
       INSERT INTO car_listings (
         make, model, year, mileage, description, startingPrice, 
-        sellerId, lotNumber, auctionDuration, photos, status,
-        auctionStartTime, auctionEndTime, endTime, createdAt
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        sellerId, lotNumber, auctionDuration, photos, status, createdAt
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
     
     const result = pool.prepare(sql).run(
@@ -336,10 +336,7 @@ export class DatabaseStorage implements IStorage {
       lotNumber,
       auctionDuration,
       insertListing.photos || "[]",
-      insertListing.status || 'pending',
-      now,
-      endTime,
-      endTime,
+      'pending',
       now
     );
     
