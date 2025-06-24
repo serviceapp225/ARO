@@ -16,6 +16,8 @@ Comprehensive auto auction platform for the Tajikistan market with web applicati
 - ✅ Resolved timestamp field handling for SQLite
 - ✅ Enhanced data enrichment with default values
 - ✅ All new listings set to "pending" status for moderation
+- ✅ Created activation script for pending listings
+- ✅ Fixed "продать авто" form submission errors
 
 ## User Preferences
 - **Language**: Russian interface preferred
