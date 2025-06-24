@@ -311,38 +311,35 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createListing(insertListing: InsertCarListing): Promise<CarListing> {
-    // Use simplified approach with only essential fields
-    const now = Date.now();
-    const auctionDuration = insertListing.auctionDuration || 72;
-    const endTime = now + (auctionDuration * 60 * 60 * 1000);
-    const lotNumber = insertListing.lotNumber || `LOT${Math.floor(Math.random() * 999999)}`;
-    
-    // Insert with minimal required fields
-    const sql = `
-      INSERT INTO car_listings (
-        make, model, year, mileage, description, startingPrice, 
-        sellerId, lotNumber, auctionDuration, photos, status, createdAt
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `;
-    
-    const result = pool.prepare(sql).run(
-      insertListing.make,
-      insertListing.model,
-      insertListing.year,
-      insertListing.mileage,
-      insertListing.description,
-      insertListing.startingPrice,
-      insertListing.sellerId || 1,
-      lotNumber,
-      auctionDuration,
-      insertListing.photos || "[]",
-      'pending',
-      now
-    );
-    
-    // Get the created listing
-    const createdListing = pool.prepare("SELECT * FROM car_listings WHERE id = ?").get(result.lastInsertRowid);
-    return createdListing as CarListing;
+    try {
+      const now = Date.now();
+      const auctionDuration = insertListing.auctionDuration || 72;
+      const lotNumber = insertListing.lotNumber || `LOT${Math.floor(Math.random() * 999999)}`;
+      
+      console.log('Creating listing with photos:', insertListing.photos);
+      
+      // Insert new listing directly using Drizzle with safe values
+      const listingData = {
+        make: insertListing.make,
+        model: insertListing.model,
+        year: insertListing.year,
+        mileage: insertListing.mileage,
+        description: insertListing.description,
+        startingPrice: insertListing.startingPrice,
+        sellerId: insertListing.sellerId || 1,
+        lotNumber: lotNumber,
+        auctionDuration: auctionDuration,
+        photos: insertListing.photos || "[]",
+        status: 'pending' as const
+      };
+      
+      const [listing] = await db.insert(carListings).values(listingData).returning();
+      console.log('Listing created successfully:', listing.id);
+      return listing;
+    } catch (error) {
+      console.error('Error in createListing:', error);
+      throw error;
+    }
   }
 
   async updateListingStatus(id: number, status: string): Promise<CarListing | undefined> {
