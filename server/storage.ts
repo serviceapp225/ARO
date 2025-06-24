@@ -311,30 +311,41 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createListing(insertListing: InsertCarListing): Promise<CarListing> {
-    // All new listings must be pending for admin approval - preserve status from routes
+    // Use raw SQL to bypass timestamp issues
     const now = Date.now();
     const auctionDuration = insertListing.auctionDuration || 72;
+    const endTime = now + (auctionDuration * 60 * 60 * 1000);
+    const lotNumber = insertListing.lotNumber || `LOT${Math.floor(Math.random() * 999999)}`;
     
-    // Create minimal data structure with only required fields
-    const listingData = {
-      make: insertListing.make,
-      model: insertListing.model,
-      year: insertListing.year,
-      mileage: insertListing.mileage,
-      description: insertListing.description,
-      startingPrice: insertListing.startingPrice,
-      sellerId: insertListing.sellerId || 1,
-      lotNumber: insertListing.lotNumber,
-      auctionDuration: auctionDuration,
-      photos: insertListing.photos || "[]",
-      status: insertListing.status || 'pending',
-      auctionStartTime: now,
-      auctionEndTime: now + (auctionDuration * 60 * 60 * 1000),
-      endTime: now + (auctionDuration * 60 * 60 * 1000)
-    };
+    const sql = `
+      INSERT INTO car_listings (
+        make, model, year, mileage, description, startingPrice, 
+        sellerId, lotNumber, auctionDuration, photos, status,
+        auctionStartTime, auctionEndTime, endTime, createdAt
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `;
     
-    const [listing] = await db.insert(carListings).values(listingData).returning();
-    return listing;
+    const result = pool.prepare(sql).run(
+      insertListing.make,
+      insertListing.model,
+      insertListing.year,
+      insertListing.mileage,
+      insertListing.description,
+      insertListing.startingPrice,
+      insertListing.sellerId || 1,
+      lotNumber,
+      auctionDuration,
+      insertListing.photos || "[]",
+      insertListing.status || 'pending',
+      now,
+      endTime,
+      endTime,
+      now
+    );
+    
+    // Get the created listing
+    const createdListing = pool.prepare("SELECT * FROM car_listings WHERE id = ?").get(result.lastInsertRowid);
+    return createdListing as CarListing;
   }
 
   async updateListingStatus(id: number, status: string): Promise<CarListing | undefined> {
