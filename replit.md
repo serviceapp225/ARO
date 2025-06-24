@@ -11,19 +11,22 @@ Comprehensive auto auction platform for the Tajikistan market with web applicati
 - **Mobile Apps**: Capacitor framework ready for deployment
 
 ## Recent Changes (December 2024)
-- ✅ Fixed car listing creation validation errors
+- ✅ Fixed car listing creation validation errors and SQL parameter issues
 - ✅ Implemented automatic lot number generation (LOT######)
-- ✅ Resolved timestamp field handling for SQLite
+- ✅ Resolved timestamp field handling for SQLite database
 - ✅ Enhanced data enrichment with default values
 - ✅ All new listings set to "pending" status for moderation
-- ✅ Successfully activated BMW X5 and Toyota Camry listings
-- ✅ Completed car listing workflow: create → save → activate → display
+- ✅ Successfully created and activated multiple car listings
+- ✅ Fixed Drizzle ORM timestamp issues by reverting to direct ORM usage
+- ✅ Car listing creation now stable with photo support capability
+- ✅ Currently 7 active listings in database (BMW, Toyota, Mercedes, Audi, Lexus)
 
 ## User Preferences
 - **Language**: Russian interface preferred
 - **Communication Style**: Direct, technical explanations
 - **Error Handling**: Detailed logging and validation
 - **Development Approach**: Focus on stability and user experience
+- **Listing Creation**: User expects all new listings with photos to appear immediately in auction list
 
 ## Technical Architecture
 

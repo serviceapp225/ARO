@@ -312,30 +312,34 @@ export class DatabaseStorage implements IStorage {
 
   async createListing(insertListing: InsertCarListing): Promise<CarListing> {
     try {
-      const now = Date.now();
-      const auctionDuration = insertListing.auctionDuration || 72;
       const lotNumber = insertListing.lotNumber || `LOT${Math.floor(Math.random() * 999999)}`;
-      
       console.log('Creating listing with photos:', insertListing.photos);
       
-      // Insert new listing directly using Drizzle with safe values
-      const listingData = {
-        make: insertListing.make,
-        model: insertListing.model,
-        year: insertListing.year,
-        mileage: insertListing.mileage,
-        description: insertListing.description,
-        startingPrice: insertListing.startingPrice,
-        sellerId: insertListing.sellerId || 1,
-        lotNumber: lotNumber,
-        auctionDuration: auctionDuration,
-        photos: insertListing.photos || "[]",
-        status: 'pending' as const
-      };
+      // Use raw SQL to avoid timestamp issues completely
+      const sql = `
+        INSERT INTO car_listings (
+          make, model, year, mileage, description, startingPrice, 
+          sellerId, lotNumber, auctionDuration, photos, status
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `;
       
-      const [listing] = await db.insert(carListings).values(listingData).returning();
+      const result = pool.prepare(sql).run(
+        insertListing.make,
+        insertListing.model,
+        insertListing.year,
+        insertListing.mileage,
+        insertListing.description,
+        insertListing.startingPrice,
+        insertListing.sellerId || 1,
+        lotNumber,
+        insertListing.auctionDuration || 72,
+        insertListing.photos || "[]",
+        'pending'
+      );
+      
+      const listing = pool.prepare("SELECT * FROM car_listings WHERE id = ?").get(result.lastInsertRowid);
       console.log('Listing created successfully:', listing.id);
-      return listing;
+      return listing as CarListing;
     } catch (error) {
       console.error('Error in createListing:', error);
       throw error;
