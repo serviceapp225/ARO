@@ -337,8 +337,11 @@ export class DatabaseStorage implements IStorage {
         'active'
       );
       
+      // Force update status to active after creation
+      pool.prepare("UPDATE car_listings SET status = ? WHERE id = ?").run('active', result.lastInsertRowid);
+      
       const listing = pool.prepare("SELECT * FROM car_listings WHERE id = ?").get(result.lastInsertRowid);
-      console.log('Listing created successfully:', listing.id);
+      console.log('Listing created successfully as ACTIVE:', listing.id);
       return listing as CarListing;
     } catch (error) {
       console.error('Error in createListing:', error);

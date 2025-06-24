@@ -19,14 +19,17 @@ Comprehensive auto auction platform for the Tajikistan market with web applicati
 - ✅ Successfully created and activated multiple car listings
 - ✅ Fixed Drizzle ORM timestamp issues by reverting to direct ORM usage
 - ✅ Car listing creation now stable with photo support capability
-- ✅ Currently 7 active listings in database (BMW, Toyota, Mercedes, Audi, Lexus)
+- ✅ Currently 11 active listings including luxury supercars (BMW, Toyota, Mercedes, Audi, Lexus, Ferrari, Lamborghini, McLaren, Bugatti)
+- ✅ Removed pending status - all new listings are immediately active and visible
+- ✅ Car creation workflow simplified: create → instantly visible in auction list
 
 ## User Preferences
 - **Language**: Russian interface preferred
 - **Communication Style**: Direct, technical explanations
 - **Error Handling**: Detailed logging and validation
 - **Development Approach**: Focus on stability and user experience
-- **Listing Creation**: User expects all new listings with photos to appear immediately in auction list
+- **Listing Creation**: User requires all new listings to appear immediately in auction list without pending status
+- **No Moderation**: Skip pending/approval workflow for faster listing visibility
 
 ## Technical Architecture
 
