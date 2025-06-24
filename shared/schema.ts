@@ -152,7 +152,7 @@ export const banners = sqliteTable("banners", {
   isActive: integer("is_active", { mode: "boolean" }).default(true),
   startDate: integer("start_date", { mode: "timestamp" }),
   endDate: integer("end_date", { mode: "timestamp" }),
-  createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
+  createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => Date.now()),
 });
 
 export const insertBannerSchema = createInsertSchema(banners).omit({
@@ -172,7 +172,7 @@ export const sellCarSection = sqliteTable("sell_car_section", {
   buttonUrl: text("button_url"),
   backgroundImageUrl: text("background_image_url"),
   isActive: integer("is_active", { mode: "boolean" }).default(true),
-  createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
+  createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => Date.now()),
 });
 
 export const insertSellCarSectionSchema = createInsertSchema(sellCarSection).omit({
@@ -192,7 +192,7 @@ export const advertisementCarousel = sqliteTable("advertisement_carousel", {
   buttonUrl: text("button_url"),
   isActive: integer("is_active", { mode: "boolean" }).default(true),
   displayOrder: integer("display_order").default(0),
-  createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
+  createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => Date.now()),
 });
 
 export const insertAdvertisementCarouselSchema = createInsertSchema(advertisementCarousel).omit({
@@ -209,7 +209,7 @@ export const documents = sqliteTable("documents", {
   content: text("content").notNull(),
   type: text("type").notNull(),
   isActive: integer("is_active", { mode: "boolean" }).default(true),
-  createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
+  createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => Date.now()),
 });
 
 export const insertDocumentSchema = createInsertSchema(documents).omit({
@@ -225,7 +225,7 @@ export const alertViews = sqliteTable("alert_views", {
   userId: integer("user_id").notNull(),
   alertId: integer("alert_id").notNull(),
   listingId: integer("listing_id").notNull(),
-  viewedAt: integer("viewed_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
+  viewedAt: integer("viewed_at", { mode: "timestamp" }).$defaultFn(() => Date.now()),
 });
 
 export const insertAlertViewSchema = createInsertSchema(alertViews).omit({
@@ -242,7 +242,7 @@ export const smsVerificationCodes = sqliteTable("sms_verification_codes", {
   code: text("code").notNull(),
   isUsed: integer("is_used", { mode: "boolean" }).default(false),
   expiresAt: integer("expires_at", { mode: "timestamp" }).notNull(),
-  createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
+  createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => Date.now()),
 });
 
 export const insertSmsVerificationCodeSchema = createInsertSchema(smsVerificationCodes).omit({
