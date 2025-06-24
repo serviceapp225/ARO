@@ -19,7 +19,7 @@ Comprehensive auto auction platform for the Tajikistan market with web applicati
 - ✅ Successfully created and activated multiple car listings
 - ✅ Fixed Drizzle ORM timestamp issues by reverting to direct ORM usage
 - ✅ Car listing creation now stable with photo support capability
-- ✅ Currently 11 active listings including luxury supercars (BMW, Toyota, Mercedes, Audi, Lexus, Ferrari, Lamborghini, McLaren, Bugatti)
+- ✅ Database cleared - all car listings removed per user request
 - ✅ Removed pending status - all new listings are immediately active and visible
 - ✅ Car creation workflow simplified: create → instantly visible in auction list
 
