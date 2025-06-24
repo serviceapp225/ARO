@@ -391,7 +391,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         lotNumber: lotNumber,
         auctionDuration: auctionDuration,
         photos: photos,
-        endTime: new Date(Date.now() + auctionDuration * 60 * 60 * 1000),
+        endTime: Date.now() + auctionDuration * 60 * 60 * 1000,
         status: 'pending',
         // Optional fields from request
         engine: req.body.engine || null,
@@ -406,9 +406,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         customsCleared: req.body.customsCleared || false,
         recycled: req.body.recycled || false,
         technicalInspectionValid: req.body.technicalInspectionValid || false,
-        technicalInspectionDate: req.body.technicalInspectionDate || null,
+        technicalInspectionDate: req.body.technicalInspectionDate ? new Date(req.body.technicalInspectionDate).getTime() : null,
         tinted: req.body.tinted || false,
-        tintingDate: req.body.tintingDate || null
+        tintingDate: req.body.tintingDate ? new Date(req.body.tintingDate).getTime() : null
       };
       
       const listing = await storage.createListing(listingWithPendingStatus);
