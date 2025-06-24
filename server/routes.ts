@@ -374,12 +374,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Validate only the core required fields, then add our defaults
       const coreValidation = z.object({
-        make: z.string(),
-        model: z.string(),
-        year: z.number(),
-        mileage: z.number(),
-        description: z.string(),
-        startingPrice: z.string()
+        make: z.string().min(1, "Марка обязательна"),
+        model: z.string().min(1, "Модель обязательна"),
+        year: z.number().min(1990, "Год должен быть от 1990").max(2025, "Год не может быть больше 2025"),
+        mileage: z.number().min(0, "Пробег не может быть отрицательным"),
+        description: z.string().min(10, "Описание должно содержать минимум 10 символов"),
+        startingPrice: z.string().min(1, "Стартовая цена обязательна")
       });
       
       const validatedCore = coreValidation.parse(req.body);
@@ -469,10 +469,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (error instanceof z.ZodError) {
         console.error('Validation error:', error.errors);
         console.error('Received data:', req.body);
-        return res.status(400).json({ error: "Invalid listing data", details: error.errors });
+        return res.status(400).json({ 
+          error: "Некорректные данные объявления", 
+          details: error.errors.map(e => `${e.path.join('.')}: ${e.message}`).join(', ')
+        });
       }
       console.error('Listing creation error:', error);
-      res.status(500).json({ error: "Failed to create listing" });
+      res.status(500).json({ 
+        error: "Ошибка создания объявления", 
+        message: "Проверьте корректность заполнения всех полей" 
+      });
     }
   });
 
