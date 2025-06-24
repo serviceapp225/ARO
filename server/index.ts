@@ -51,8 +51,17 @@ app.use((req, res, next) => {
 });
 
 (async () => {
-  // Initialize database with sample data
-  await initializeDatabaseWithSampleData();
+  // Skip database initialization when using mock storage
+  if (!process.env.DATABASE_URL?.includes('ep-broad-shadow-adb94hwu')) {
+    try {
+      await initializeDatabaseWithSampleData();
+    } catch (error) {
+      console.log("Database initialization failed, using mock data");
+      console.log("Error:", error.message);
+    }
+  } else {
+    console.log("Using mock storage due to database connection issues");
+  }
   
   const server = await registerRoutes(app);
 

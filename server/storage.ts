@@ -794,4 +794,9 @@ export class DatabaseStorage implements IStorage {
   }
 }
 
-export const storage = new DatabaseStorage();
+import { MockStorage } from "./mockStorage";
+
+// Use mock storage when database is unavailable
+export const storage = process.env.DATABASE_URL?.includes('ep-broad-shadow-adb94hwu') 
+  ? new MockStorage() 
+  : new DatabaseStorage();
