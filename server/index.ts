@@ -51,8 +51,13 @@ app.use((req, res, next) => {
 });
 
 (async () => {
-  // Initialize database with sample data
-  await initializeDatabaseWithSampleData();
+  // Initialize database with safe error handling
+  try {
+    await initializeDatabaseWithSampleData();
+  } catch (error) {
+    console.log("Database initialization failed, continuing without sample data");
+    console.log("Error:", error.message);
+  }
   
   const server = await registerRoutes(app);
 
