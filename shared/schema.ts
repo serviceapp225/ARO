@@ -12,7 +12,7 @@ export const users = sqliteTable("users", {
   role: text("role").notNull().default("buyer"),
   profilePhoto: text("profile_photo"),
   isActive: integer("is_active", { mode: "boolean" }).default(true),
-  createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
+  createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => Date.now()),
 });
 
 export const carListings = sqliteTable("car_listings", {
@@ -48,7 +48,7 @@ export const carListings = sqliteTable("car_listings", {
   condition: text("condition"),
   vin: text("vin"),
   location: text("location"),
-  createdAt: integer("createdAt", { mode: "timestamp" }).$defaultFn(() => new Date()),
+  createdAt: integer("createdAt", { mode: "timestamp" }).$defaultFn(() => Date.now()),
 });
 
 export const bids = sqliteTable("bids", {
@@ -56,14 +56,14 @@ export const bids = sqliteTable("bids", {
   listingId: integer("listing_id").notNull(),
   bidderId: integer("bidder_id").notNull(),
   amount: text("amount").notNull(),
-  createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
+  createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => Date.now()),
 });
 
 export const favorites = sqliteTable("favorites", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   userId: integer("user_id").notNull(),
   listingId: integer("listing_id").notNull(),
-  createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
+  createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => Date.now()),
 });
 
 export const notifications = sqliteTable("notifications", {
@@ -75,7 +75,7 @@ export const notifications = sqliteTable("notifications", {
   isRead: integer("is_read", { mode: "boolean" }).default(false),
   listingId: integer("listing_id"),
   alertId: integer("alert_id"),
-  createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
+  createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => Date.now()),
 });
 
 export const carAlerts = sqliteTable("car_alerts", {
@@ -88,7 +88,7 @@ export const carAlerts = sqliteTable("car_alerts", {
   maxYear: integer("max_year"),
   minYear: integer("min_year"),
   isActive: integer("is_active", { mode: "boolean" }).default(true),
-  createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
+  createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => Date.now()),
 });
 
 export const insertUserSchema = createInsertSchema(users).omit({

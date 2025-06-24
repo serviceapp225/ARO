@@ -472,7 +472,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Invalid listing data", details: error.errors });
       }
       console.error('Listing creation error:', error);
-      console.error('Complete listing data being sent to storage:', JSON.stringify(listingWithPendingStatus, null, 2));
       res.status(500).json({ error: "Failed to create listing" });
     }
   });
