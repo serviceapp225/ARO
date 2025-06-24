@@ -384,31 +384,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const validatedCore = coreValidation.parse(req.body);
       
-      // Create complete listing data with defaults
+      // Create complete listing data with defaults - minimal approach
       const listingWithPendingStatus = {
-        ...validatedCore,
+        make: validatedCore.make,
+        model: validatedCore.model,
+        year: validatedCore.year,
+        mileage: validatedCore.mileage,
+        description: validatedCore.description,
+        startingPrice: validatedCore.startingPrice,
         sellerId: sellerId,
         lotNumber: lotNumber,
         auctionDuration: auctionDuration,
         photos: photos,
-        endTime: Date.now() + auctionDuration * 60 * 60 * 1000,
-        status: 'pending',
-        // Optional fields from request
-        engine: req.body.engine || null,
-        transmission: req.body.transmission || null,
-        fuelType: req.body.fuelType || null,
-        bodyType: req.body.bodyType || null,
-        driveType: req.body.driveType || null,
-        color: req.body.color || null,
-        condition: req.body.condition || null,
-        vin: req.body.vin || null,
-        location: req.body.location || null,
-        customsCleared: req.body.customsCleared || false,
-        recycled: req.body.recycled || false,
-        technicalInspectionValid: req.body.technicalInspectionValid || false,
-        technicalInspectionDate: req.body.technicalInspectionDate ? new Date(req.body.technicalInspectionDate).getTime() : null,
-        tinted: req.body.tinted || false,
-        tintingDate: req.body.tintingDate ? new Date(req.body.tintingDate).getTime() : null
+        status: 'pending'
       };
       
       const listing = await storage.createListing(listingWithPendingStatus);
@@ -484,6 +472,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Invalid listing data", details: error.errors });
       }
       console.error('Listing creation error:', error);
+      console.error('Complete listing data being sent to storage:', JSON.stringify(listingWithPendingStatus, null, 2));
       res.status(500).json({ error: "Failed to create listing" });
     }
   });

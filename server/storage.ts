@@ -314,12 +314,23 @@ export class DatabaseStorage implements IStorage {
     // All new listings must be pending for admin approval - preserve status from routes
     const now = Date.now();
     const auctionDuration = insertListing.auctionDuration || 72;
-    const auctionEndTime = now + (auctionDuration * 60 * 60 * 1000);
     
+    // Create minimal data structure with only required fields
     const listingData = {
-      ...insertListing,
+      make: insertListing.make,
+      model: insertListing.model,
+      year: insertListing.year,
+      mileage: insertListing.mileage,
+      description: insertListing.description,
+      startingPrice: insertListing.startingPrice,
+      sellerId: insertListing.sellerId || 1,
+      lotNumber: insertListing.lotNumber,
+      auctionDuration: auctionDuration,
+      photos: insertListing.photos || "[]",
+      status: insertListing.status || 'pending',
       auctionStartTime: now,
-      auctionEndTime: auctionEndTime
+      auctionEndTime: now + (auctionDuration * 60 * 60 * 1000),
+      endTime: now + (auctionDuration * 60 * 60 * 1000)
     };
     
     const [listing] = await db.insert(carListings).values(listingData).returning();
