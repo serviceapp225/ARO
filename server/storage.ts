@@ -334,7 +334,7 @@ export class DatabaseStorage implements IStorage {
         lotNumber,
         insertListing.auctionDuration || 72,
         insertListing.photos || "[]",
-        'pending'
+        'active'
       );
       
       const listing = pool.prepare("SELECT * FROM car_listings WHERE id = ?").get(result.lastInsertRowid);

@@ -396,7 +396,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         lotNumber: lotNumber,
         auctionDuration: auctionDuration,
         photos: photos,
-        status: 'pending'
+        status: 'active'
       };
       
       const listing = await storage.createListing(listingWithPendingStatus);
