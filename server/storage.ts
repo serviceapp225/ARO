@@ -312,8 +312,9 @@ export class DatabaseStorage implements IStorage {
 
   async createListing(insertListing: InsertCarListing): Promise<CarListing> {
     // All new listings must be pending for admin approval - preserve status from routes
-    const now = new Date();
-    const auctionEndTime = new Date(now.getTime() + (insertListing.auctionDuration * 60 * 60 * 1000));
+    const now = Date.now();
+    const auctionDuration = insertListing.auctionDuration || 72;
+    const auctionEndTime = now + (auctionDuration * 60 * 60 * 1000);
     
     const listingData = {
       ...insertListing,
@@ -330,7 +331,7 @@ export class DatabaseStorage implements IStorage {
     
     // When activating a listing, set auction start time
     if (status === "active") {
-      updateData.auctionStartTime = new Date();
+      updateData.auctionStartTime = Date.now();
     }
     
     const [listing] = await db
