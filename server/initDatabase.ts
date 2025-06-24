@@ -5,13 +5,12 @@ import { eq } from "drizzle-orm";
 export async function initializeDatabaseWithSampleData() {
   console.log("Initializing database with sample data...");
 
-  try {
-    // Check if data already exists
-    const existingUsers = await db.select().from(users).limit(1);
-    if (existingUsers.length > 0) {
-      console.log("Database already has data, skipping initialization");
-      return;
-    }
+  // Check if data already exists
+  const existingUsers = await db.select().from(users).limit(1);
+  if (existingUsers.length > 0) {
+    console.log("Database already has data, skipping initialization");
+    return;
+  }
 
   const now = new Date();
 
@@ -206,8 +205,4 @@ export async function initializeDatabaseWithSampleData() {
   ]);
 
   console.log("Database initialized with sample data successfully!");
-  } catch (error) {
-    console.error("Failed to initialize database:", error.message);
-    throw error;
-  }
 }
