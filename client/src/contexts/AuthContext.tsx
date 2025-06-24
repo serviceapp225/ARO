@@ -1,5 +1,7 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { useToast } from '@/hooks/use-toast';
+import { fastCache, preCacheUserData, getCachedUserData } from '@/lib/fastCache';
+import { getInstantUserData, isInstantUser } from '@/lib/instantAuth';
 import { preloadCriticalData } from '@/lib/preloadData';
 
 interface DemoUser {
@@ -27,42 +29,77 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const loadUser = async () => {
-      // Auto-login with demo user (bypass SMS verification)
-      const defaultUser: DemoUser = {
-        email: "demo@autobid.tj",
-        phoneNumber: "+992000000000",
-        fullName: "Демонстрационный пользователь",
-        uid: "demo-user-001",
-        role: "buyer",
-        isActive: true,
-        userId: 1
-      };
+      // Check for demo user in localStorage
+      const demoUserData = localStorage.getItem('demo-user');
+      if (demoUserData) {
+        try {
+          const demoUser = JSON.parse(demoUserData);
+          demoUser.role = demoUser.role || 'buyer';
+          
+          // Check for instant user data first (bypasses all network calls)
+          const instantData = getInstantUserData(demoUser.phoneNumber);
+          if (instantData) {
+            demoUser.isActive = instantData.isActive;
+            demoUser.userId = instantData.userId;
+            demoUser.fullName = instantData.fullName;
+            setUser(demoUser);
+            setLoading(false);
+            return;
+          }
 
-      // Set demo user in localStorage for persistence
-      localStorage.setItem('demo-user', JSON.stringify(defaultUser));
-      
-      setUser(defaultUser);
-      setLoading(false);
-      
-      // Preload data in background
-      try {
-        await preloadCriticalData();
-      } catch (error) {
-        console.log('Background data preload failed:', error);
+          // Check ultra-fast cache second
+          const cachedData = getCachedUserData(demoUser.phoneNumber);
+          if (cachedData) {
+            demoUser.isActive = cachedData.isActive;
+            demoUser.userId = cachedData.userId;
+            setUser(demoUser);
+            setLoading(false);
+            return;
+          }
+
+          // Only fallback to database for unknown users
+          try {
+            const emailFromPhone = demoUser.phoneNumber.replace(/\D/g, '') + '@autoauction.tj';
+            const response = await fetch(`/api/users/by-email/${encodeURIComponent(emailFromPhone)}`);
+            
+            if (response.ok) {
+              const dbUser = await response.json();
+              demoUser.isActive = dbUser.isActive;
+              demoUser.userId = dbUser.id;
+              
+              // Cache for future instant access
+              preCacheUserData(demoUser.phoneNumber, {
+                isActive: dbUser.isActive,
+                userId: dbUser.id
+              });
+            } else {
+              demoUser.isActive = false;
+              demoUser.userId = null;
+            }
+          } catch (error) {
+            console.error('Failed to fetch user activation status:', error);
+            demoUser.isActive = false;
+            demoUser.userId = null;
+          }
+          
+          setUser(demoUser);
+        } catch (error) {
+          localStorage.removeItem('demo-user');
+        }
       }
+      setLoading(false);
     };
-    
+
     loadUser();
   }, []);
 
   const logout = async () => {
-    localStorage.removeItem('demo-user');
-    setUser(null);
-    
-    toast({
-      title: "Выход выполнен",
-      description: "Вы успешно вышли из системы",
-    });
+    try {
+      localStorage.removeItem('demo-user');
+      setUser(null);
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
   };
 
   return (

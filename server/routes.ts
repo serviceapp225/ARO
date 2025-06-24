@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { db } from "./db";
-import { carListings, notifications, alertViews, carAlerts } from "../shared/schema";
+import { carListings, notifications, alertViews, carAlerts, deletedAlerts } from "../shared/schema";
 import { eq, and } from "drizzle-orm";
 import sharp from "sharp";
 import { insertCarListingSchema, insertBidSchema, insertFavoriteSchema, insertNotificationSchema, insertCarAlertSchema, insertBannerSchema, type CarAlert } from "@shared/schema";
@@ -37,8 +37,8 @@ function getCached(key: string) {
   return null;
 }
 
-function setCache(key: string, data: any, ttl: number = 300000) {
-  cache.set(key, { data, timestamp: Date.now(), ttl });
+function setCache(key: string, data: any) {
+  cache.set(key, { data, timestamp: Date.now() });
 }
 
 function clearCachePattern(pattern: string) {
@@ -65,24 +65,6 @@ const adminAuth = (req: any, res: any, next: any) => {
 };
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Health check endpoint for deployment monitoring
-  app.get("/health", (req, res) => {
-    res.status(200).json({ 
-      status: "ok", 
-      timestamp: new Date().toISOString(),
-      uptime: process.uptime(),
-      environment: process.env.NODE_ENV || 'development'
-    });
-  });
-
-  app.get("/api/health", (req, res) => {
-    res.status(200).json({ 
-      status: "healthy", 
-      database: "connected",
-      timestamp: new Date().toISOString()
-    });
-  });
-
   // Fast cache for main listings
   const mainListingsCache = new Map();
   let mainListingsCacheTime = 0;
@@ -364,39 +346,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/listings", async (req, res) => {
     try {
-      // Ensure all required fields have values
-      const auctionDuration = req.body.auctionDuration || 72;
-      const sellerId = req.body.sellerId || 1;
-      const lotNumber = req.body.lotNumber || `LOT${Date.now().toString().slice(-6)}`;
-      const photos = req.body.photos || "[]";
+      const validatedData = insertCarListingSchema.parse(req.body);
       
-
-      
-      // Validate only the core required fields, then add our defaults
-      const coreValidation = z.object({
-        make: z.string().min(1, "Марка обязательна"),
-        model: z.string().min(1, "Модель обязательна"),
-        year: z.number().min(1990, "Год должен быть от 1990").max(2025, "Год не может быть больше 2025"),
-        mileage: z.number().min(0, "Пробег не может быть отрицательным"),
-        description: z.string().min(10, "Описание должно содержать минимум 10 символов"),
-        startingPrice: z.string().min(1, "Стартовая цена обязательна")
-      });
-      
-      const validatedCore = coreValidation.parse(req.body);
-      
-      // Create complete listing data with defaults - minimal approach
+      // Force all new listings to pending status for moderation
       const listingWithPendingStatus = {
-        make: validatedCore.make,
-        model: validatedCore.model,
-        year: validatedCore.year,
-        mileage: validatedCore.mileage,
-        description: validatedCore.description,
-        startingPrice: validatedCore.startingPrice,
-        sellerId: sellerId,
-        lotNumber: lotNumber,
-        auctionDuration: auctionDuration,
-        photos: photos,
-        status: 'active'
+        ...validatedData,
+        status: 'pending'
       };
       
       const listing = await storage.createListing(listingWithPendingStatus);
@@ -426,7 +381,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           // Check if user has already viewed this alert for this listing
           const hasViewed = await storage.hasUserViewedAlert(alert.userId, alert.id, listing.id);
           
-          // Check if notification for this listing and alert already exists or was dismissed
+          // Check if notification for this listing and alert already exists
           const existingNotifications = await storage.getNotificationsByUser(alert.userId);
           const duplicateExists = existingNotifications.some(n => 
             n.type === "car_found" && 
@@ -434,17 +389,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             n.alertId === alert.id
           );
           
-          // Also check if this exact alert+listing combination was previously viewed/dismissed
-          const wasViewedBefore = await storage.hasUserViewedAlert(alert.userId, alert.id, listing.id);
-          
-          if (!hasViewed && !duplicateExists && !wasViewedBefore) {
-            // Final check - prevent duplicates by marking as viewed immediately
-            await storage.createAlertView({
-              userId: alert.userId,
-              alertId: alert.id,
-              listingId: listing.id
-            });
-            
+          if (!hasViewed && !duplicateExists) {
             await storage.createNotification({
               userId: alert.userId,
               title: "Найден автомобиль по вашему запросу",
@@ -454,9 +399,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
               alertId: alert.id,
               isRead: false
             });
-            console.log(`Created notification for user ${alert.userId}, alert ${alert.id}, listing ${listing.id}`);
           } else {
-            console.log('Skipping notification - already viewed/exists for listing:', listing.id, 'alert:', alert.id);
+            console.log('User has already viewed this alert or notification exists for listing:', listing.id, 'alert:', alert.id);
           }
         }
       } catch (alertError) {
@@ -467,18 +411,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(201).json(listing);
     } catch (error) {
       if (error instanceof z.ZodError) {
-        console.error('Validation error:', error.errors);
-        console.error('Received data:', req.body);
-        return res.status(400).json({ 
-          error: "Некорректные данные объявления", 
-          details: error.errors.map(e => `${e.path.join('.')}: ${e.message}`).join(', ')
-        });
+        return res.status(400).json({ error: "Invalid listing data", details: error.errors });
       }
-      console.error('Listing creation error:', error);
-      res.status(500).json({ 
-        error: "Ошибка создания объявления", 
-        message: "Проверьте корректность заполнения всех полей" 
-      });
+      res.status(500).json({ error: "Failed to create listing" });
     }
   });
 
@@ -531,7 +466,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/listings/:id/bids", async (req, res) => {
     try {
       const listingId = parseInt(req.params.id);
-      console.log(`Bid attempt: listingId=${listingId}, body=`, req.body);
       
       // Check if auction exists and is still active
       const listing = await storage.getListing(listingId);
@@ -615,13 +549,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       res.status(201).json(bid);
     } catch (error) {
-      console.error("Error placing bid:", error);
       if (error instanceof z.ZodError) {
-        console.error("Validation error details:", error.errors);
         return res.status(400).json({ error: "Invalid bid data", details: error.errors });
       }
-      console.error("Unexpected error in bid placement:", error);
-      res.status(500).json({ error: "Failed to place bid", details: error instanceof Error ? error.message : String(error) });
+      res.status(500).json({ error: "Failed to place bid" });
     }
   });
 
@@ -825,24 +756,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/admin/stats", async (req, res) => {
-    try {
-      const stats = await storage.getAdminStats();
-      res.json(stats);
-    } catch (error) {
-      res.status(500).json({ error: "Failed to fetch admin stats" });
-    }
-  });
-
-  app.get("/api/admin/pending-listings", async (req, res) => {
-    try {
-      const pendingListings = await storage.getListingsByStatus("pending");
-      res.json(pendingListings);
-    } catch (error) {
-      res.status(500).json({ error: "Failed to fetch pending listings" });
-    }
-  });
-
   app.get("/api/admin/listings", async (req, res) => {
     try {
       const allListings = await storage.getListingsByStatus("pending");
@@ -857,7 +770,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/admin/users/:id/status", async (req, res) => {
+  app.patch("/api/admin/users/:id", async (req, res) => {
     try {
       const userId = parseInt(req.params.id);
       const { isActive } = req.body;
@@ -869,45 +782,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(user);
     } catch (error) {
       res.status(500).json({ error: "Failed to update user status" });
-    }
-  });
-
-  app.post("/api/admin/listings/:id/approve", async (req, res) => {
-    try {
-      const listingId = parseInt(req.params.id);
-      
-      const listing = await storage.updateListingStatus(listingId, "active");
-      if (!listing) {
-        return res.status(404).json({ error: "Listing not found" });
-      }
-      
-      // Clear all caches when admin approves listing
-      clearAllCaches();
-      
-      res.json({ success: true, listing });
-    } catch (error) {
-      res.status(500).json({ error: "Failed to approve listing" });
-    }
-  });
-
-  app.post("/api/admin/listings/:id/reject", async (req, res) => {
-    try {
-      const listingId = parseInt(req.params.id);
-      const { reason } = req.body;
-      
-      const listing = await storage.updateListingStatus(listingId, "rejected");
-      if (!listing) {
-        return res.status(404).json({ error: "Listing not found" });
-      }
-      
-      // Clear all caches when admin rejects listing
-      clearAllCaches();
-      
-      // TODO: Send notification to seller with rejection reason
-      
-      res.json({ success: true, listing, reason });
-    } catch (error) {
-      res.status(500).json({ error: "Failed to reject listing" });
     }
   });
 
@@ -927,103 +801,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(listing);
     } catch (error) {
       res.status(500).json({ error: "Failed to update listing status" });
-    }
-  });
-
-  // SMS Authentication routes
-  app.post("/api/auth/send-sms", async (req, res) => {
-    try {
-      const { phoneNumber } = req.body;
-      
-      if (!phoneNumber || !phoneNumber.startsWith('+992')) {
-        return res.status(400).json({ error: "Неверный формат номера телефона" });
-      }
-
-      // Очищаем истекшие коды
-      await storage.cleanupExpiredSmsCodes();
-
-      // Генерируем 4-значный код
-      const code = Math.floor(1000 + Math.random() * 9000).toString();
-      
-      // Время истечения - 5 минут
-      const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
-      
-      // Сохраняем код в базе данных
-      await storage.createSmsVerificationCode({
-        phoneNumber,
-        code,
-        expiresAt,
-        isUsed: false
-      });
-      
-      // Отправляем SMS
-      const smsResult = await sendSMSCode(phoneNumber, code);
-      
-      if (smsResult.success) {
-        res.json({ success: true, message: "SMS-код отправлен" });
-      } else {
-        res.status(500).json({ error: smsResult.message || "Не удалось отправить SMS" });
-      }
-    } catch (error) {
-      console.error("Error sending SMS:", error);
-      res.status(500).json({ error: "Ошибка при отправке SMS" });
-    }
-  });
-
-  app.post("/api/auth/verify-sms", async (req, res) => {
-    try {
-      const { phoneNumber, code } = req.body;
-      
-      if (!phoneNumber || !code) {
-        return res.status(400).json({ error: "Номер телефона и код обязательны" });
-      }
-
-      // Проверяем код в базе данных
-      const smsCode = await storage.getValidSmsCode(phoneNumber, code);
-      
-      if (!smsCode) {
-        return res.status(400).json({ error: "Код истек или не найден" });
-      }
-
-      // Помечаем код как использованный
-      await storage.markSmsCodeAsUsed(smsCode.id);
-      
-      // Создаем или обновляем пользователя
-      const email = phoneNumber + "@autoauction.tj";
-      let user = await storage.getUserByEmail(email);
-      
-      if (!user) {
-        // Создаем нового пользователя
-        user = await storage.createUser({
-          email,
-          username: phoneNumber.replace('+', ''),
-          phoneNumber,
-          role: 'buyer',
-          fullName: `Пользователь`,
-          isActive: true
-        });
-      } else {
-        // Активируем существующего пользователя
-        user = await storage.updateUserStatus(user.id, true);
-      }
-
-      if (!user) {
-        return res.status(500).json({ error: "Не удалось создать пользователя" });
-      }
-
-      res.json({ 
-        success: true, 
-        user: {
-          id: user.id,
-          email: user.email,
-          phoneNumber: user.phoneNumber,
-          fullName: user.fullName?.includes(user.phoneNumber || '') ? 'Пользователь' : user.fullName,
-          isActive: user.isActive
-        }
-      });
-    } catch (error) {
-      console.error("Error verifying SMS:", error);
-      res.status(500).json({ error: "Ошибка при проверке кода" });
     }
   });
 
@@ -1149,8 +926,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
           maxYear: alert.maxYear
         });
         
-        // Add alert to filtered list (deletedAlerts functionality removed for SQLite migration)
-        filteredAlerts.push(alert);
+        const deletedCheck = await db.select({ id: deletedAlerts.id })
+          .from(deletedAlerts)
+          .where(and(
+            eq(deletedAlerts.userId, userId),
+            eq(deletedAlerts.alertData, alertData)
+          ));
+        
+        if (deletedCheck.length === 0) {
+          filteredAlerts.push(alert);
+        }
       }
       
       // Кэшируем отфильтрованный результат
@@ -1178,10 +963,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
         maxYear: validatedData.maxYear
       });
       
-      // deletedAlerts functionality removed for SQLite migration
-      const deletedAlertCheck: any[] = [];
+      const deletedAlertCheck = await db.select({ id: deletedAlerts.id })
+        .from(deletedAlerts)
+        .where(and(
+          eq(deletedAlerts.userId, validatedData.userId),
+          eq(deletedAlerts.alertData, alertData)
+        ));
       
-      // deletedAlerts functionality removed for SQLite migration
+      if (deletedAlertCheck.length > 0) {
+        // Удаляем запись из deleted_alerts, чтобы разрешить повторное создание
+        await db.delete(deletedAlerts)
+          .where(and(
+            eq(deletedAlerts.userId, validatedData.userId),
+            eq(deletedAlerts.alertData, alertData)
+          ));
+        console.log(`Removed deleted alert restriction for user ${validatedData.userId}`);
+      }
       
       const alert = await storage.createCarAlert(validatedData);
       
@@ -1219,8 +1016,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         maxYear: alert.maxYear
       });
       
-      // deletedAlerts functionality removed for SQLite migration
-      console.log(`Alert ${alertId} deleted for user ${alert.userId}`);
+      try {
+        await db.insert(deletedAlerts).values({
+          userId: alert.userId,
+          alertData: alertData
+        }).onConflictDoNothing();
+        console.log(`Marked alert ${alertId} as deleted for user ${alert.userId}`);
+      } catch (deleteError) {
+        console.log('Error marking alert as deleted:', deleteError);
+      }
       
       const success = await storage.deleteCarAlert(alertId);
       if (!success) {
@@ -1243,21 +1047,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { position } = req.query;
       const cacheKey = `banners_${position || 'all'}`;
       
-      // Set cache headers for faster loading
-      res.set({
-        'Cache-Control': 'public, max-age=300', // 5 minutes
-        'ETag': `banners-${position || 'all'}-${Date.now()}`
-      });
-      
       const cached = getCached(cacheKey);
       if (cached) {
         return res.json(cached);
       }
       
       const banners = await storage.getBanners(position as string);
-      
-      // Cache for 10 minutes
-      setCache(cacheKey, banners, 600000);
+      setCache(cacheKey, banners);
       res.json(banners);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch banners" });
@@ -1824,113 +1620,53 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
 // Функция для отправки SMS (заменить на реальную интеграцию)
 async function sendSMSCode(phoneNumber: string, code: string): Promise<{success: boolean, message?: string}> {
+  // В production здесь будет реальная интеграция с SMS-провайдером
+  // Примеры популярных провайдеров в Таджикистане:
+  
+  // 1. Tcell SMS API
+  // 2. Beeline SMS Gateway  
+  // 3. Megafon SMS API
+  // 4. Twilio (международный)
+  
   try {
-    const smsLogin = process.env.SMS_LOGIN;
-    const passSaltHash = process.env.SMS_HASH; // This is actually pass_salt_hash
-    const smsSender = process.env.SMS_SENDER;
-    const smsServer = process.env.SMS_SERVER;
+    // Имитация задержки отправки SMS
+    await new Promise(resolve => setTimeout(resolve, 1000));
     
-    if (!smsLogin || !passSaltHash || !smsSender || !smsServer) {
-      console.error("[SMS] Configuration missing - using demo mode");
-      return { success: true, message: "SMS-код отправлен" };
-    }
-
-    const txnId = Date.now().toString();
-    const cleanPhone = phoneNumber.replace(/[\s\(\)\-\+]/g, '');
-    const message = `Код: ${code}`;
+    // В production раскомментируйте нужную интеграцию:
     
-    console.log(`[SMS] Attempting to send SMS to ${phoneNumber} with code ${code}`);
+    /* Пример интеграции с Twilio:
+    const accountSid = process.env.TWILIO_ACCOUNT_SID;
+    const authToken = process.env.TWILIO_AUTH_TOKEN;
+    const client = require('twilio')(accountSid, authToken);
     
-    // Generate str_hash using OsonSMS formula: SHA256(txn_id + ";" + login + ";" + from + ";" + phone_number + ";" + pass_salt_hash)
-    const crypto = await import('crypto');
-    const hashString = `${txnId};${smsLogin};${smsSender};${cleanPhone};${passSaltHash}`;
-    const strHash = crypto.createHash('sha256').update(hashString).digest('hex');
-    
-    console.log(`[SMS] Generated str_hash using formula: txn_id;login;from;phone_number;pass_salt_hash`);
-    console.log(`[SMS] Hash string: ${txnId};${smsLogin};${smsSender};${cleanPhone};[PROTECTED]`);
-    
-    // Try OsonSMS API with generated str_hash
-    const params = new URLSearchParams({
-      login: smsLogin,
-      str_hash: strHash,
-      from: smsSender,
-      phone_number: cleanPhone,
-      msg: message,
-      txn_id: txnId
+    const message = await client.messages.create({
+      body: `Ваш код подтверждения AUTOBID.TJ: ${code}`,
+      from: process.env.TWILIO_PHONE_NUMBER,
+      to: phoneNumber
     });
     
-    try {
-      console.log(`[SMS] Sending request to OsonSMS API...`);
-      const response = await fetch(`${smsServer}?${params}`, {
-        method: 'GET',
-        headers: { 'User-Agent': 'AutoBid-SMS/1.0' }
-      });
-      
-      const result = await response.text();
-      console.log(`[SMS] OsonSMS API response:`, result);
-      
-      let jsonResult;
-      try {
-        jsonResult = JSON.parse(result);
-      } catch (parseError) {
-        // Some APIs return plain text success responses
-        if (result.toLowerCase().includes('success') || 
-            result.toLowerCase().includes('sent') || 
-            result.toLowerCase().includes('ok')) {
-          console.log(`[SMS] SMS sent successfully via OsonSMS (text response)`);
-          return { success: true, message: "SMS отправлен через OsonSMS" };
-        }
-        console.log(`[SMS] Non-JSON response from OsonSMS:`, result.substring(0, 200));
-        throw new Error('Invalid response format');
-      }
-      
-      // Check for success in JSON response
-      if (jsonResult.success || 
-          jsonResult.status === 'success' || 
-          jsonResult.txn_id || 
-          !jsonResult.error) {
-        console.log(`[SMS] SMS sent successfully via OsonSMS:`, jsonResult);
-        return { success: true, message: "SMS отправлен через OsonSMS" };
-      }
-      
-      // Handle API errors
-      if (jsonResult.error) {
-        console.log(`[SMS] OsonSMS API error: ${jsonResult.error.msg} (code: ${jsonResult.error.code})`);
-        
-        switch (jsonResult.error.code) {
-          case 105: // Account inactive
-            console.log(`[SMS] Account "${smsLogin}" is inactive or requires activation`);
-            break;
-          case 106: // Incorrect hash
-            console.log(`[SMS] Hash generation failed - check pass_salt_hash credential`);
-            break;
-          case 107: // Sender name not allowed
-            console.log(`[SMS] Sender name "${smsSender}" not authorized for this account`);
-            break;
-          case 100: // Missing parameters
-            console.log(`[SMS] Required parameters missing in API request`);
-            break;
-          case 102: // Insufficient balance
-            console.log(`[SMS] Account has insufficient balance for SMS sending`);
-            break;
-        }
-        
-        // Log the error but continue to demo mode
-        console.log(`[SMS] Falling back to demo mode due to API error`);
-      }
-      
-    } catch (apiError) {
-      console.log(`[SMS] OsonSMS API request failed:`, apiError instanceof Error ? apiError.message : String(apiError));
-    }
+    return { success: true, message: message.sid };
+    */
     
-    // Fallback to demo mode
-    console.log(`[SMS] Using demo mode - SMS code: ${code}`);
-    console.log(`[SMS] Please verify OsonSMS account status and pass_salt_hash credential`);
+    /* Пример с локальным SMS-шлюзом:
+    const response = await fetch('http://localhost:8080/send-sms', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        phone: phoneNumber,
+        text: `Код подтверждения AUTOBID.TJ: ${code}`
+      })
+    });
     
-    return { success: true, message: "SMS-код отправлен" };
+    return response.ok ? { success: true } : { success: false };
+    */
+    
+    // Текущая заглушка для разработки
+    console.log(`[SMS DEMO] Отправка SMS на ${phoneNumber}: ${code}`);
+    return { success: true, message: "SMS отправлен (демо-режим)" };
     
   } catch (error) {
-    console.error("[SMS] System error:", error);
-    return { success: true, message: "SMS-код отправлен" };
+    console.error("SMS sending failed:", error);
+    return { success: false, message: error instanceof Error ? error.message : "Unknown error" };
   }
 }

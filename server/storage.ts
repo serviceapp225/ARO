@@ -1,6 +1,6 @@
-import { users, carListings, bids, favorites, notifications, carAlerts, banners, sellCarSection, advertisementCarousel, documents, alertViews, smsVerificationCodes, type User, type InsertUser, type CarListing, type InsertCarListing, type Bid, type InsertBid, type Favorite, type InsertFavorite, type Notification, type InsertNotification, type CarAlert, type InsertCarAlert, type Banner, type InsertBanner, type SellCarSection, type InsertSellCarSection, type AdvertisementCarousel, type InsertAdvertisementCarousel, type Document, type InsertDocument, type AlertView, type InsertAlertView, type SmsVerificationCode, type InsertSmsVerificationCode } from "@shared/schema";
+import { users, carListings, bids, favorites, notifications, carAlerts, banners, sellCarSection, advertisementCarousel, documents, alertViews, type User, type InsertUser, type CarListing, type InsertCarListing, type Bid, type InsertBid, type Favorite, type InsertFavorite, type Notification, type InsertNotification, type CarAlert, type InsertCarAlert, type Banner, type InsertBanner, type SellCarSection, type InsertSellCarSection, type AdvertisementCarousel, type InsertAdvertisementCarousel, type Document, type InsertDocument, type AlertView, type InsertAlertView } from "@shared/schema";
 import { db, pool } from "./db";
-import { eq, and, desc, sql, or, ilike, inArray, isNull, gte, lte, count, asc, like } from "drizzle-orm";
+import { eq, and, desc, sql, or, ilike, inArray, isNull } from "drizzle-orm";
 
 export interface IStorage {
   // User operations
@@ -81,12 +81,6 @@ export interface IStorage {
   // Alert Views operations
   createAlertView(view: InsertAlertView): Promise<AlertView>;
   hasUserViewedAlert(userId: number, alertId: number, listingId: number): Promise<boolean>;
-
-  // SMS Verification operations
-  createSmsVerificationCode(code: InsertSmsVerificationCode): Promise<SmsVerificationCode>;
-  getValidSmsCode(phoneNumber: string, code: string): Promise<SmsVerificationCode | undefined>;
-  markSmsCodeAsUsed(id: number): Promise<boolean>;
-  cleanupExpiredSmsCodes(): Promise<void>;
 
   // Admin operations
   getAdminStats(): Promise<{
@@ -187,8 +181,13 @@ export class DatabaseStorage implements IStorage {
     // Add photo URLs for detail page
     return {
       ...listing,
-      photos: JSON.parse(listing.photos || '[]'),
-      endTime: listing.auctionEndTime
+      photos: [
+        `/api/listings/${id}/photo/0`,
+        `/api/listings/${id}/photo/1`,
+        `/api/listings/${id}/photo/2`,
+        `/api/listings/${id}/photo/3`,
+        `/api/listings/${id}/photo/4`
+      ]
     };
   }
 
@@ -197,53 +196,55 @@ export class DatabaseStorage implements IStorage {
       console.log(`Starting ultra-fast main listings query for status: ${status}`);
       const startTime = Date.now();
       
-      // Use Drizzle ORM for SQLite compatibility
-      const result = await db.select()
-      .from(carListings)
-      .where(eq(carListings.status, status))
-      .orderBy(desc(carListings.createdAt))
-      .limit(limit || 20);
+      // Ultra-fast raw SQL query with only essential fields
+      const result = await pool.query(`
+        SELECT id, seller_id, lot_number, make, model, year, mileage,
+               starting_price, current_bid, status, auction_end_time, condition
+        FROM car_listings 
+        WHERE status = $1 
+        ORDER BY created_at DESC 
+        LIMIT $2
+      `, [status, limit || 20]);
       
-      console.log(`Ultra-fast main listings query completed in ${Date.now() - startTime}ms, found ${result.length} listings`);
+      console.log(`Ultra-fast main listings query completed in ${Date.now() - startTime}ms, found ${result.rows.length} listings`);
       
       // Convert to expected format with minimal processing
-      const listings = result.map((row: any) => ({
+      const listings = result.rows.map((row: any) => ({
         id: row.id,
-        sellerId: row.sellerId,
-        lotNumber: row.lotNumber,
+        sellerId: row.seller_id,
+        lotNumber: row.lot_number,
         make: row.make,
         model: row.model,
         year: row.year,
         mileage: row.mileage,
-        description: row.description || '',
-        startingPrice: row.startingPrice,
-        currentBid: row.currentBid,
+        description: '',
+        startingPrice: row.starting_price,
+        currentBid: row.current_bid,
         status: row.status,
-        auctionEndTime: row.auctionEndTime,
-        endTime: row.auctionEndTime,
-        photos: JSON.parse(row.photos || '["https://images.unsplash.com/photo-1493238792000-8113da705763?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"]'),
-        createdAt: row.createdAt,
+        auctionEndTime: row.auction_end_time,
+        photos: [`/api/listings/${row.id}/photo/0`],
+        createdAt: new Date(),
         updatedAt: null,
-        customsCleared: row.customsCleared || true,
-        recycled: row.recycled || false,
-        technicalInspectionValid: row.technicalInspectionValid || true,
-        technicalInspectionDate: row.technicalInspectionDate,
-        tinted: row.tinted || false,
-        tintingDate: row.tintingDate,
+        customsCleared: true,
+        recycled: true,
+        technicalInspectionValid: false,
+        technicalInspectionDate: null,
+        tinted: false,
+        tintingDate: null,
         condition: row.condition || 'good',
-        auctionDuration: row.auctionDuration || 48,
-        auctionStartTime: row.auctionStartTime,
-        engine: row.engine,
-        transmission: row.transmission,
-        fuelType: row.fuelType,
-        bodyType: row.bodyType,
-        driveType: row.driveType,
-        color: row.color,
-        vin: row.vin,
-        location: row.location
+        auctionDuration: 7,
+        auctionStartTime: null,
+        engine: null,
+        transmission: null,
+        fuelType: null,
+        bodyType: null,
+        driveType: null,
+        color: null,
+        vin: null,
+        location: null
       }));
       
-      return listings as unknown as CarListing[];
+      return listings as CarListing[];
     } catch (error) {
       console.error('Error fetching listings:', error);
       return [];
@@ -311,42 +312,19 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createListing(insertListing: InsertCarListing): Promise<CarListing> {
-    try {
-      const lotNumber = insertListing.lotNumber || `LOT${Math.floor(Math.random() * 999999)}`;
-      console.log('Creating listing with photos:', insertListing.photos);
-      
-      // Use raw SQL to avoid timestamp issues completely
-      const sql = `
-        INSERT INTO car_listings (
-          make, model, year, mileage, description, startingPrice, 
-          sellerId, lotNumber, auctionDuration, photos, status
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-      `;
-      
-      const result = pool.prepare(sql).run(
-        insertListing.make,
-        insertListing.model,
-        insertListing.year,
-        insertListing.mileage,
-        insertListing.description,
-        insertListing.startingPrice,
-        insertListing.sellerId || 1,
-        lotNumber,
-        insertListing.auctionDuration || 72,
-        insertListing.photos || "[]",
-        'active'
-      );
-      
-      // Force update status to active after creation
-      pool.prepare("UPDATE car_listings SET status = ? WHERE id = ?").run('active', result.lastInsertRowid);
-      
-      const listing = pool.prepare("SELECT * FROM car_listings WHERE id = ?").get(result.lastInsertRowid);
-      console.log('Listing created successfully as ACTIVE:', listing.id);
-      return listing as CarListing;
-    } catch (error) {
-      console.error('Error in createListing:', error);
-      throw error;
-    }
+    // All new listings must be pending for admin approval - preserve status from routes
+    const now = new Date();
+    const auctionEndTime = new Date(now.getTime() + (insertListing.auctionDuration * 60 * 60 * 1000));
+    
+    const listingData = {
+      ...insertListing,
+      // Keep the status as provided (should be "pending" from routes.ts)
+      auctionStartTime: insertListing.status === "pending" ? null : now,
+      auctionEndTime: auctionEndTime
+    };
+    
+    const [listing] = await db.insert(carListings).values(listingData).returning();
+    return listing;
   }
 
   async updateListingStatus(id: number, status: string): Promise<CarListing | undefined> {
@@ -354,7 +332,7 @@ export class DatabaseStorage implements IStorage {
     
     // When activating a listing, set auction start time
     if (status === "active") {
-      updateData.auctionStartTime = Date.now();
+      updateData.auctionStartTime = new Date();
     }
     
     const [listing] = await db
@@ -645,7 +623,7 @@ export class DatabaseStorage implements IStorage {
       .select()
       .from(banners)
       .where(and(...conditions))
-      .orderBy(banners.createdAt);
+      .orderBy(banners.order, banners.createdAt);
   }
 
   async createBanner(insertBanner: InsertBanner): Promise<Banner> {
@@ -712,7 +690,7 @@ export class DatabaseStorage implements IStorage {
     if (existingSection) {
       const [updated] = await db
         .update(sellCarSection)
-        .set(data)
+        .set({ ...data, updatedAt: new Date() })
         .where(eq(sellCarSection.id, existingSection.id))
         .returning();
       return updated || undefined;
@@ -727,7 +705,7 @@ export class DatabaseStorage implements IStorage {
       .select()
       .from(advertisementCarousel)
       .where(eq(advertisementCarousel.isActive, true))
-      .orderBy(advertisementCarousel.displayOrder);
+      .orderBy(advertisementCarousel.order);
   }
 
   async getAdvertisementCarouselItem(id: number): Promise<AdvertisementCarousel | undefined> {
@@ -813,41 +791,6 @@ export class DatabaseStorage implements IStorage {
       console.error('Error checking alert view:', error);
       return false;
     }
-  }
-
-  // SMS Verification Code operations
-  async createSmsVerificationCode(insertCode: InsertSmsVerificationCode): Promise<SmsVerificationCode> {
-    const [code] = await db.insert(smsVerificationCodes).values(insertCode).returning();
-    return code;
-  }
-
-  async getValidSmsCode(phoneNumber: string, code: string): Promise<SmsVerificationCode | undefined> {
-    const [smsCode] = await db
-      .select()
-      .from(smsVerificationCodes)
-      .where(
-        and(
-          eq(smsVerificationCodes.phoneNumber, phoneNumber),
-          eq(smsVerificationCodes.code, code),
-          eq(smsVerificationCodes.isUsed, false),
-          sql`expires_at > NOW()`
-        )
-      );
-    return smsCode || undefined;
-  }
-
-  async markSmsCodeAsUsed(id: number): Promise<boolean> {
-    const result = await db
-      .update(smsVerificationCodes)
-      .set({ isUsed: true })
-      .where(eq(smsVerificationCodes.id, id));
-    return result.rowCount !== null && result.rowCount > 0;
-  }
-
-  async cleanupExpiredSmsCodes(): Promise<void> {
-    await db
-      .delete(smsVerificationCodes)
-      .where(sql`expires_at < NOW() OR is_used = true`);
   }
 }
 
