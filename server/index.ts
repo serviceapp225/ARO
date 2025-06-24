@@ -1,7 +1,11 @@
+import dotenv from "dotenv";
+dotenv.config();
+
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { initializeDatabaseWithSampleData } from "./initDatabase";
 import { setupVite, serveStatic, log } from "./vite";
+
 
 const app = express();
 
@@ -52,7 +56,11 @@ app.use((req, res, next) => {
 
 (async () => {
   // Initialize database with sample data
-  await initializeDatabaseWithSampleData();
+  try {
+    await initializeDatabaseWithSampleData();
+  } catch (error) {
+    console.log("Database initialization failed, continuing without data...");
+  }
   
   const server = await registerRoutes(app);
 
@@ -73,15 +81,24 @@ app.use((req, res, next) => {
     serveStatic(app);
   }
 
-  // ALWAYS serve the app on port 5000
-  // this serves both the API and the client.
-  // It is the only port that is not firewalled.
+  // Production deployment with fallback port handling
   const port = process.env.PORT || 5000;
-  server.listen({
-    port: Number(port),
-    host: "0.0.0.0",
-    reusePort: true,
-  }, () => {
-    log(`serving on port ${port}`);
-  });
+  const host = process.env.HOST || "0.0.0.0";
+  
+  try {
+    server.listen(Number(port), host, () => {
+      log(`🚀 Auto Auction App serving on ${host}:${port}`);
+      log(`Environment: ${process.env.NODE_ENV || 'development'}`);
+    });
+  } catch (err: any) {
+    if (err.code === 'EADDRINUSE') {
+      const fallbackPort = Number(port) + Math.floor(Math.random() * 1000);
+      log(`Port ${port} busy, using fallback port ${fallbackPort}`);
+      server.listen(fallbackPort, host, () => {
+        log(`🚀 Auto Auction App serving on ${host}:${fallbackPort}`);
+      });
+    } else {
+      throw err;
+    }
+  }
 })();

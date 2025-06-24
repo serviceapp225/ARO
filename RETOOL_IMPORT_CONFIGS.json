@@ -1,0 +1,540 @@
+{
+  "app_config": {
+    "name": "AutoBid Admin Panel",
+    "description": "Админ-панель для управления аукционом автомобилей AutoBid.tj",
+    "theme": "default"
+  },
+  "queries": [
+    {
+      "name": "getStats",
+      "type": "postgresql",
+      "query": "SELECT (SELECT COUNT(*) FROM car_listings WHERE status = 'pending') as pending_listings, (SELECT COUNT(*) FROM car_listings WHERE status = 'active') as active_auctions, (SELECT COUNT(*) FROM users) as total_users, (SELECT COUNT(*) FROM users WHERE is_active = false) as banned_users, (SELECT COUNT(*) FROM bids WHERE created_at >= CURRENT_DATE) as todays_bids, (SELECT COALESCE(SUM(CAST(current_bid as decimal)), 0) FROM car_listings WHERE status = 'ended' AND current_bid IS NOT NULL) as total_sales",
+      "runOnPageLoad": true,
+      "autoRefresh": 30000
+    },
+    {
+      "name": "getUsers",
+      "type": "postgresql", 
+      "query": "SELECT id, username, email, full_name, role, is_active, created_at, (SELECT COUNT(*) FROM car_listings WHERE seller_id = users.id) as listings_count, (SELECT COUNT(*) FROM bids WHERE bidder_id = users.id) as bids_count FROM users ORDER BY created_at DESC",
+      "runOnPageLoad": true
+    },
+    {
+      "name": "getPendingListings",
+      "type": "postgresql",
+      "query": "SELECT cl.id, cl.lot_number, cl.make, cl.model, cl.year, cl.mileage, cl.starting_price, cl.description, cl.status, cl.created_at, u.username as seller_name, u.email as seller_email FROM car_listings cl JOIN users u ON cl.seller_id = u.id WHERE cl.status = 'pending' ORDER BY cl.created_at ASC",
+      "runOnPageLoad": true
+    },
+    {
+      "name": "getAllListings", 
+      "type": "postgresql",
+      "query": "SELECT cl.id, cl.lot_number, cl.make, cl.model, cl.year, cl.starting_price, cl.current_bid, cl.status, cl.created_at, cl.auction_end_time, u.username as seller_name, (SELECT COUNT(*) FROM bids WHERE listing_id = cl.id) as bids_count FROM car_listings cl JOIN users u ON cl.seller_id = u.id ORDER BY cl.created_at DESC LIMIT 100",
+      "runOnPageLoad": true
+    },
+    {
+      "name": "updateUserStatus",
+      "type": "postgresql",
+      "query": "UPDATE users SET is_active = {{ !usersTable.selectedRow.is_active }} WHERE id = {{ usersTable.selectedRow.id }}",
+      "onSuccess": ["getUsers", "getStats"]
+    },
+    {
+      "name": "approveListing",
+      "type": "postgresql", 
+      "query": "UPDATE car_listings SET status = 'active', auction_start_time = NOW(), auction_end_time = NOW() + INTERVAL '72 hours' WHERE id = {{ pendingListingsTable.selectedRow.id }}",
+      "onSuccess": ["getPendingListings", "getAllListings", "getStats"]
+    },
+    {
+      "name": "rejectListing",
+      "type": "postgresql",
+      "query": "UPDATE car_listings SET status = 'rejected' WHERE id = {{ pendingListingsTable.selectedRow.id }}",
+      "onSuccess": ["getPendingListings", "getAllListings", "getStats"]
+    },
+    {
+      "name": "getRegistrationChart",
+      "type": "postgresql",
+      "query": "SELECT DATE(created_at) as date, COUNT(*) as registrations FROM users WHERE created_at >= CURRENT_DATE - INTERVAL '30 days' GROUP BY DATE(created_at) ORDER BY date"
+    },
+    {
+      "name": "getSalesChart", 
+      "type": "postgresql",
+      "query": "SELECT DATE(auction_end_time) as date, COUNT(*) as sales, COALESCE(SUM(CAST(current_bid as decimal)), 0) as revenue FROM car_listings WHERE status = 'ended' AND current_bid IS NOT NULL AND auction_end_time >= CURRENT_DATE - INTERVAL '30 days' GROUP BY DATE(auction_end_time) ORDER BY date"
+    },
+    {
+      "name": "getTopBrands",
+      "type": "postgresql",
+      "query": "SELECT make, COUNT(*) as count, COALESCE(AVG(CAST(current_bid as decimal)), 0) as avg_price FROM car_listings WHERE status IN ('active', 'ended') GROUP BY make ORDER BY count DESC LIMIT 10"
+    }
+  ],
+  "components": [
+    {
+      "type": "tabs",
+      "name": "mainTabs",
+      "tabs": [
+        {
+          "label": "Dashboard",
+          "key": "dashboard"
+        },
+        {
+          "label": "Users", 
+          "key": "users"
+        },
+        {
+          "label": "Listings",
+          "key": "listings"
+        },
+        {
+          "label": "Analytics",
+          "key": "analytics"
+        }
+      ]
+    },
+    {
+      "type": "container",
+      "name": "dashboardTab",
+      "showIf": "{{ mainTabs.value === 'dashboard' }}",
+      "components": [
+        {
+          "type": "text",
+          "text": "# AutoBid.tj Admin Dashboard",
+          "style": {
+            "fontSize": "24px",
+            "fontWeight": "bold",
+            "marginBottom": "20px"
+          }
+        },
+        {
+          "type": "container",
+          "style": {
+            "display": "grid",
+            "gridTemplateColumns": "repeat(3, 1fr)",
+            "gap": "20px",
+            "marginBottom": "30px"
+          },
+          "components": [
+            {
+              "type": "statistic",
+              "name": "pendingStat",
+              "label": "Ожидают модерации",
+              "value": "{{ getStats.data?.[0]?.pending_listings || 0 }}",
+              "color": "orange",
+              "icon": "clock"
+            },
+            {
+              "type": "statistic", 
+              "name": "activeStat",
+              "label": "Активные аукционы",
+              "value": "{{ getStats.data?.[0]?.active_auctions || 0 }}",
+              "color": "green",
+              "icon": "trending-up"
+            },
+            {
+              "type": "statistic",
+              "name": "usersStat", 
+              "label": "Всего пользователей",
+              "value": "{{ getStats.data?.[0]?.total_users || 0 }}",
+              "color": "blue",
+              "icon": "users"
+            },
+            {
+              "type": "statistic",
+              "name": "bannedStat",
+              "label": "Заблокированные",
+              "value": "{{ getStats.data?.[0]?.banned_users || 0 }}",
+              "color": "red", 
+              "icon": "user-x"
+            },
+            {
+              "type": "statistic",
+              "name": "bidsStat",
+              "label": "Ставки сегодня",
+              "value": "{{ getStats.data?.[0]?.todays_bids || 0 }}",
+              "color": "purple",
+              "icon": "zap"
+            },
+            {
+              "type": "statistic",
+              "name": "salesStat",
+              "label": "Общий объем продаж",
+              "value": "${{ (getStats.data?.[0]?.total_sales || 0).toLocaleString() }}",
+              "color": "green",
+              "icon": "dollar-sign"
+            }
+          ]
+        },
+        {
+          "type": "container",
+          "style": {
+            "display": "flex",
+            "gap": "10px",
+            "marginBottom": "20px"
+          },
+          "components": [
+            {
+              "type": "button",
+              "text": "Обновить статистику",
+              "color": "blue",
+              "onClick": [
+                {
+                  "action": "trigger",
+                  "query": "getStats"
+                }
+              ]
+            },
+            {
+              "type": "button", 
+              "text": "Модерация ({{ getStats.data?.[0]?.pending_listings || 0 }})",
+              "color": "orange",
+              "onClick": [
+                {
+                  "action": "setTab",
+                  "tab": "listings"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "container",
+      "name": "usersTab",
+      "showIf": "{{ mainTabs.value === 'users' }}",
+      "components": [
+        {
+          "type": "text",
+          "text": "# Управление пользователями",
+          "style": {
+            "fontSize": "20px",
+            "fontWeight": "bold",
+            "marginBottom": "20px"
+          }
+        },
+        {
+          "type": "container",
+          "style": {
+            "display": "flex",
+            "gap": "10px",
+            "marginBottom": "20px"
+          },
+          "components": [
+            {
+              "type": "button",
+              "name": "toggleUserBtn",
+              "text": "{{ usersTable.selectedRow ? (usersTable.selectedRow.is_active ? 'Заблокировать' : 'Разблокировать') : 'Выберите пользователя' }}",
+              "color": "{{ usersTable.selectedRow?.is_active ? 'red' : 'green' }}",
+              "disabled": "{{ !usersTable.selectedRow }}",
+              "onClick": [
+                {
+                  "action": "trigger",
+                  "query": "updateUserStatus"
+                }
+              ]
+            },
+            {
+              "type": "button",
+              "text": "Обновить список",
+              "color": "blue",
+              "onClick": [
+                {
+                  "action": "trigger", 
+                  "query": "getUsers"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "table",
+          "name": "usersTable",
+          "data": "{{ getUsers.data }}",
+          "columns": [
+            {
+              "key": "id",
+              "label": "ID",
+              "width": "60px"
+            },
+            {
+              "key": "username", 
+              "label": "Username"
+            },
+            {
+              "key": "email",
+              "label": "Email" 
+            },
+            {
+              "key": "full_name",
+              "label": "Имя"
+            },
+            {
+              "key": "is_active",
+              "label": "Статус",
+              "render": "{{ value ? '🟢 Активен' : '🔴 Заблокирован' }}"
+            },
+            {
+              "key": "role", 
+              "label": "Роль"
+            },
+            {
+              "key": "listings_count",
+              "label": "Объявлений",
+              "width": "100px"
+            },
+            {
+              "key": "bids_count",
+              "label": "Ставок",
+              "width": "80px"
+            },
+            {
+              "key": "created_at",
+              "label": "Регистрация",
+              "type": "datetime",
+              "format": "DD.MM.YYYY HH:mm"
+            }
+          ],
+          "searchable": true,
+          "sortable": true,
+          "pagination": true,
+          "pageSize": 20
+        }
+      ]
+    },
+    {
+      "type": "container",
+      "name": "listingsTab", 
+      "showIf": "{{ mainTabs.value === 'listings' }}",
+      "components": [
+        {
+          "type": "text",
+          "text": "# Модерация объявлений",
+          "style": {
+            "fontSize": "20px",
+            "fontWeight": "bold",
+            "marginBottom": "20px"
+          }
+        },
+        {
+          "type": "text",
+          "text": "## Ожидают модерации ({{ getPendingListings.data?.length || 0 }})",
+          "style": {
+            "fontSize": "16px",
+            "fontWeight": "bold",
+            "marginBottom": "10px",
+            "color": "orange"
+          }
+        },
+        {
+          "type": "container",
+          "style": {
+            "display": "flex",
+            "gap": "10px", 
+            "marginBottom": "20px"
+          },
+          "components": [
+            {
+              "type": "button",
+              "name": "approveBtn",
+              "text": "✅ Одобрить",
+              "color": "green",
+              "disabled": "{{ !pendingListingsTable.selectedRow }}",
+              "onClick": [
+                {
+                  "action": "trigger",
+                  "query": "approveListing"
+                }
+              ]
+            },
+            {
+              "type": "button",
+              "name": "rejectBtn", 
+              "text": "❌ Отклонить",
+              "color": "red",
+              "disabled": "{{ !pendingListingsTable.selectedRow }}",
+              "onClick": [
+                {
+                  "action": "trigger",
+                  "query": "rejectListing"
+                }
+              ]
+            },
+            {
+              "type": "button",
+              "text": "Обновить",
+              "color": "blue",
+              "onClick": [
+                {
+                  "action": "trigger",
+                  "query": "getPendingListings"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "table",
+          "name": "pendingListingsTable",
+          "data": "{{ getPendingListings.data }}",
+          "columns": [
+            {
+              "key": "lot_number",
+              "label": "Лот",
+              "width": "100px"
+            },
+            {
+              "key": "make",
+              "label": "Марка"
+            },
+            {
+              "key": "model",
+              "label": "Модель"
+            },
+            {
+              "key": "year",
+              "label": "Год",
+              "width": "70px"
+            },
+            {
+              "key": "mileage",
+              "label": "Пробег",
+              "render": "{{ value?.toLocaleString() }} км"
+            },
+            {
+              "key": "starting_price",
+              "label": "Цена",
+              "render": "${{ value }}"
+            },
+            {
+              "key": "seller_name",
+              "label": "Продавец"
+            },
+            {
+              "key": "created_at",
+              "label": "Создано",
+              "type": "datetime",
+              "format": "DD.MM HH:mm"
+            }
+          ],
+          "searchable": true,
+          "sortable": true
+        },
+        {
+          "type": "text",
+          "text": "## Все объявления",
+          "style": {
+            "fontSize": "16px",
+            "fontWeight": "bold",
+            "marginTop": "40px",
+            "marginBottom": "10px"
+          }
+        },
+        {
+          "type": "table",
+          "name": "allListingsTable", 
+          "data": "{{ getAllListings.data }}",
+          "columns": [
+            {
+              "key": "lot_number",
+              "label": "Лот",
+              "width": "100px"
+            },
+            {
+              "key": "make",
+              "label": "Марка"
+            },
+            {
+              "key": "model", 
+              "label": "Модель"
+            },
+            {
+              "key": "status",
+              "label": "Статус",
+              "render": "{{ value === 'pending' ? '🟡 Модерация' : value === 'active' ? '🟢 Активен' : value === 'ended' ? '⚫ Завершен' : '🔴 Отклонен' }}"
+            },
+            {
+              "key": "current_bid",
+              "label": "Текущая ставка",
+              "render": "{{ value ? `$${value}` : 'Нет ставок' }}"
+            },
+            {
+              "key": "bids_count",
+              "label": "Ставок",
+              "width": "80px"
+            },
+            {
+              "key": "seller_name",
+              "label": "Продавец"
+            }
+          ],
+          "searchable": true,
+          "sortable": true,
+          "pagination": true,
+          "pageSize": 20
+        }
+      ]
+    },
+    {
+      "type": "container",
+      "name": "analyticsTab",
+      "showIf": "{{ mainTabs.value === 'analytics' }}",
+      "components": [
+        {
+          "type": "text",
+          "text": "# Аналитика и статистика",
+          "style": {
+            "fontSize": "20px",
+            "fontWeight": "bold",
+            "marginBottom": "20px"
+          }
+        },
+        {
+          "type": "container",
+          "style": {
+            "display": "grid",
+            "gridTemplateColumns": "1fr 1fr",
+            "gap": "20px",
+            "marginBottom": "30px"
+          },
+          "components": [
+            {
+              "type": "chart",
+              "name": "registrationChart",
+              "title": "Регистрации за месяц",
+              "data": "{{ getRegistrationChart.data }}",
+              "chartType": "line",
+              "xAxis": "date",
+              "yAxis": "registrations"
+            },
+            {
+              "type": "chart",
+              "name": "salesChart", 
+              "title": "Продажи за месяц",
+              "data": "{{ getSalesChart.data }}",
+              "chartType": "bar",
+              "xAxis": "date",
+              "yAxis": "revenue"
+            }
+          ]
+        },
+        {
+          "type": "table",
+          "name": "topBrandsTable",
+          "title": "Топ марок автомобилей",
+          "data": "{{ getTopBrands.data }}",
+          "columns": [
+            {
+              "key": "make",
+              "label": "Марка"
+            },
+            {
+              "key": "count",
+              "label": "Количество"
+            },
+            {
+              "key": "avg_price",
+              "label": "Средняя цена",
+              "render": "${{ Math.round(value) }}"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

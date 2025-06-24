@@ -43,10 +43,10 @@ export default function HomePage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20">
+    <div className="min-h-screen bg-gray-50 pb-20 mobile-vh-fix">
       <TopHeader />
       
-      <main className="container mx-auto px-4 py-6 space-y-6">
+      <main className="container mx-auto px-4 py-6 space-y-6 mobile-content">
         {/* Search Section */}
         <div className="bg-white rounded-2xl p-4 shadow-sm">
           <form onSubmit={handleSearch} className="relative">

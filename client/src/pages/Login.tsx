@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Phone, ArrowRight } from "lucide-react";
+import { Phone, ArrowRight, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -7,33 +7,120 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
 
 export default function Login() {
   const [phoneNumber, setPhoneNumber] = useState("+992 ");
+  const [smsCode, setSmsCode] = useState("");
   const [agreeToTerms, setAgreeToTerms] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [step, setStep] = useState<"phone" | "code">("phone");
   const [, navigate] = useLocation();
+  const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!agreeToTerms) {
-      alert("Необходимо согласиться с условиями использования");
-      return;
-    }
+    
+    if (step === "phone") {
+      if (!agreeToTerms) {
+        toast({
+          title: "Ошибка",
+          description: "Необходимо согласиться с условиями использования",
+          variant: "destructive"
+        });
+        return;
+      }
 
-    console.log("Authenticating with phone:", phoneNumber);
-    
-    // Create demo user in localStorage immediately with inactive status
-    const demoUser = {
-      email: phoneNumber + "@autoauction.tj",
-      phoneNumber: phoneNumber,
-      uid: "demo-user-" + Date.now(),
-      isActive: false // All new users are inactive by default
-    };
-    localStorage.setItem('demo-user', JSON.stringify(demoUser));
-    
-    // Redirect immediately
-    window.location.href = '/home';
+      setIsLoading(true);
+      try {
+        // Отправляем запрос на получение SMS-кода
+        const response = await fetch("/api/auth/send-sms", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ phoneNumber })
+        });
+
+        const data = await response.json();
+        
+        if (response.ok) {
+          toast({
+            title: "SMS отправлен",
+            description: "Код подтверждения отправлен на ваш номер"
+          });
+          setStep("code");
+        } else {
+          toast({
+            title: "Ошибка",
+            description: data.error || "Не удалось отправить SMS",
+            variant: "destructive"
+          });
+        }
+      } catch (error) {
+        toast({
+          title: "Ошибка",
+          description: "Проблема с подключением к серверу",
+          variant: "destructive"
+        });
+      }
+      setIsLoading(false);
+    } else {
+      // Проверяем SMS-код
+      if (!smsCode || smsCode.length !== 4) {
+        toast({
+          title: "Ошибка",
+          description: "Введите 4-значный код из SMS",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      setIsLoading(true);
+      try {
+        const response = await fetch("/api/auth/verify-sms", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ phoneNumber, code: smsCode })
+        });
+
+        const data = await response.json();
+        
+        if (response.ok) {
+          // Используем данные пользователя из ответа сервера
+          const user = {
+            id: data.user.id,
+            email: data.user.email,
+            phoneNumber: data.user.phoneNumber,
+            fullName: data.user.fullName,
+            uid: "user-" + data.user.id,
+            isActive: data.user.isActive,
+            verified: true
+          };
+          localStorage.setItem('demo-user', JSON.stringify(user));
+          
+          toast({
+            title: "Успешно!",
+            description: "Вы успешно вошли в систему"
+          });
+          
+          setTimeout(() => {
+            window.location.href = '/home';
+          }, 1000);
+        } else {
+          toast({
+            title: "Неверный код",
+            description: data.error || "Проверьте правильность введенного кода",
+            variant: "destructive"
+          });
+        }
+      } catch (error) {
+        toast({
+          title: "Ошибка",
+          description: "Проблема с подключением к серверу",
+          variant: "destructive"
+        });
+      }
+      setIsLoading(false);
+    }
   };
 
   const formatPhoneNumber = (value: string) => {
@@ -66,67 +153,133 @@ export default function Login() {
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <div className="mx-auto w-16 h-16 bg-primary rounded-full flex items-center justify-center mb-4">
-            <Phone className="w-8 h-8 text-white" />
+            {step === "phone" ? (
+              <Phone className="w-8 h-8 text-white" />
+            ) : (
+              <Shield className="w-8 h-8 text-white" />
+            )}
           </div>
-          <CardTitle className="text-2xl font-bold">Вход в AUTOBID.TJ</CardTitle>
+          <CardTitle className="text-2xl font-bold">
+            {step === "phone" ? "Вход в AUTOBID.TJ" : "Подтверждение номера"}
+          </CardTitle>
           <p className="text-sm text-gray-600 mt-2">
-            Для просмотра аукционов необходимо войти в систему
+            {step === "phone" 
+              ? "Для просмотра аукционов необходимо войти в систему"
+              : `Введите код из SMS, отправленного на ${phoneNumber}`
+            }
           </p>
         </CardHeader>
         
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-1">
-              <Label htmlFor="phone">Номер телефона</Label>
-              <Input
-                id="phone"
-                type="tel"
-                placeholder="+992 (__) ___-__-__"
-                value={phoneNumber}
-                onChange={handlePhoneChange}
-                className="text-base"
-                required
-              />
-              <p className="text-xs text-neutral-500">
-                Мы отправим код подтверждения на этот номер
-              </p>
-            </div>
+            {step === "phone" ? (
+              <>
+                <div className="space-y-1">
+                  <Label htmlFor="phone">Номер телефона</Label>
+                  <Input
+                    id="phone"
+                    type="tel"
+                    placeholder="+992 (__) ___-__-__"
+                    value={phoneNumber}
+                    onChange={handlePhoneChange}
+                    className="text-base"
+                    required
+                  />
+                  <p className="text-xs text-neutral-500">
+                    Мы отправим код подтверждения на этот номер
+                  </p>
+                </div>
 
-            <div className="flex items-start space-x-2">
-              <Checkbox
-                id="terms"
-                checked={agreeToTerms}
-                onCheckedChange={(checked) => setAgreeToTerms(checked as boolean)}
-                className="mt-0.5"
-              />
-              <div className="text-xs">
-                <Label htmlFor="terms" className="cursor-pointer leading-tight">
-                  Я согласен с{" "}
-                  <Link href="/terms" className="text-primary hover:underline">
-                    условиями использования
-                  </Link>
-                  {" "}и{" "}
-                  <Link href="/privacy" className="text-primary hover:underline">
-                    политикой конфиденциальности
-                  </Link>
-                </Label>
-              </div>
-            </div>
+                <div className="flex items-start space-x-2">
+                  <Checkbox
+                    id="terms"
+                    checked={agreeToTerms}
+                    onCheckedChange={(checked) => setAgreeToTerms(checked as boolean)}
+                    className="mt-0.5"
+                  />
+                  <div className="text-xs">
+                    <Label htmlFor="terms" className="cursor-pointer leading-tight">
+                      Я согласен с{" "}
+                      <Link href="/terms" className="text-primary hover:underline">
+                        условиями использования
+                      </Link>
+                      {" "}и{" "}
+                      <Link href="/privacy" className="text-primary hover:underline">
+                        политикой конфиденциальности
+                      </Link>
+                    </Label>
+                  </div>
+                </div>
 
-            <Button
-              type="submit"
-              className="w-full"
-              disabled={phoneNumber.length < 8 || !agreeToTerms || isLoading}
-            >
-              {isLoading ? (
-                "Отправляем код..."
-              ) : (
-                <>
-                  Получить код
-                  <ArrowRight className="w-4 h-4 ml-2" />
-                </>
-              )}
-            </Button>
+                <Button
+                  type="submit"
+                  className="w-full"
+                  disabled={phoneNumber.length < 8 || !agreeToTerms || isLoading}
+                >
+                  {isLoading ? (
+                    "Отправляем код..."
+                  ) : (
+                    <>
+                      Получить код
+                      <ArrowRight className="w-4 h-4 ml-2" />
+                    </>
+                  )}
+                </Button>
+              </>
+            ) : (
+              <>
+                <div className="space-y-1">
+                  <Label htmlFor="sms-code">Код из SMS</Label>
+                  <Input
+                    id="sms-code"
+                    type="text"
+                    placeholder="1234"
+                    value={smsCode}
+                    onChange={(e) => setSmsCode(e.target.value.replace(/\D/g, '').slice(0, 4))}
+                    className="text-center text-2xl tracking-widest"
+                    maxLength={4}
+                    required
+                  />
+                  <p className="text-xs text-neutral-500">
+                    Введите 4-значный код из SMS
+                  </p>
+                </div>
+
+                <div className="flex space-x-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="flex-1"
+                    onClick={() => {
+                      setStep("phone");
+                      setSmsCode("");
+                    }}
+                  >
+                    Назад
+                  </Button>
+                  <Button
+                    type="submit"
+                    className="flex-1"
+                    disabled={smsCode.length !== 4 || isLoading}
+                  >
+                    {isLoading ? "Проверяем..." : "Войти"}
+                  </Button>
+                </div>
+
+                <Button
+                  type="button"
+                  variant="ghost"
+                  className="w-full text-sm"
+                  onClick={() => {
+                    setStep("phone");
+                    setSmsCode("");
+                  }}
+                  disabled={isLoading}
+                >
+                  Отправить код повторно
+                </Button>
+              </>
+            )}
           </form>
 
 

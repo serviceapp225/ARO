@@ -1,0 +1,205 @@
+{
+  "resources": {
+    "AutoAuction_API": {
+      "name": "AutoAuction API",
+      "type": "restapi",
+      "baseUrl": "https://d8a15fc1-aa9c-422e-afb1-9506fa80f861-00-2j9oxj0dke5fk.sisko.replit.dev",
+      "headers": {
+        "Content-Type": "application/json",
+        "x-admin-key": "retool-admin-key-2024"
+      }
+    }
+  },
+  "queries": {
+    "getUsers": {
+      "resource": "AutoAuction_API",
+      "method": "GET",
+      "path": "/api/admin/users",
+      "runWhenPageLoads": true,
+      "description": "Получить список всех пользователей"
+    },
+    "getStats": {
+      "resource": "AutoAuction_API", 
+      "method": "GET",
+      "path": "/api/admin/stats",
+      "runWhenPageLoads": true,
+      "description": "Получить статистику системы"
+    },
+    "getPendingListings": {
+      "resource": "AutoAuction_API",
+      "method": "GET", 
+      "path": "/api/admin/listings/pending",
+      "runWhenPageLoads": true,
+      "description": "Получить объявления ожидающие модерации"
+    },
+    "updateUserStatus": {
+      "resource": "AutoAuction_API",
+      "method": "PUT",
+      "path": "/api/admin/users/{{ table1.selectedRow.data.id }}/status",
+      "body": {
+        "isActive": "{{ !table1.selectedRow.data.isActive }}"
+      },
+      "runWhenPageLoads": false,
+      "description": "Изменить статус пользователя (активен/заблокирован)"
+    },
+    "approveListing": {
+      "resource": "AutoAuction_API",
+      "method": "PUT", 
+      "path": "/api/admin/listings/{{ table2.selectedRow.data.id }}/approve",
+      "runWhenPageLoads": false,
+      "description": "Одобрить объявление"
+    },
+    "rejectListing": {
+      "resource": "AutoAuction_API",
+      "method": "PUT",
+      "path": "/api/admin/listings/{{ table2.selectedRow.data.id }}/reject", 
+      "body": {
+        "reason": "{{ rejectReasonInput.value }}"
+      },
+      "runWhenPageLoads": false,
+      "description": "Отклонить объявление с указанием причины"
+    }
+  },
+  "components": {
+    "statsContainer": {
+      "type": "container",
+      "children": [
+        {
+          "type": "statistic",
+          "label": "Всего пользователей",
+          "value": "{{ getStats.data.totalUsers }}",
+          "color": "blue"
+        },
+        {
+          "type": "statistic", 
+          "label": "Активные аукционы",
+          "value": "{{ getStats.data.activeAuctions }}",
+          "color": "green"
+        },
+        {
+          "type": "statistic",
+          "label": "Ожидают модерации", 
+          "value": "{{ getStats.data.pendingListings }}",
+          "color": "orange"
+        },
+        {
+          "type": "statistic",
+          "label": "Заблокированные",
+          "value": "{{ getStats.data.bannedUsers }}",
+          "color": "red"
+        }
+      ]
+    },
+    "usersTable": {
+      "type": "table",
+      "data": "{{ getUsers.data }}",
+      "columns": [
+        {
+          "key": "id",
+          "label": "ID",
+          "type": "number"
+        },
+        {
+          "key": "username", 
+          "label": "Логин",
+          "type": "string"
+        },
+        {
+          "key": "email",
+          "label": "Email", 
+          "type": "string"
+        },
+        {
+          "key": "fullName",
+          "label": "Полное имя",
+          "type": "string"
+        },
+        {
+          "key": "phoneNumber",
+          "label": "Телефон",
+          "type": "string"
+        },
+        {
+          "key": "isActive",
+          "label": "Активен",
+          "type": "boolean"
+        },
+        {
+          "key": "createdAt",
+          "label": "Дата регистрации",
+          "type": "datetime"
+        },
+        {
+          "key": "actions",
+          "label": "Действия",
+          "type": "action",
+          "buttons": [
+            {
+              "text": "{{ usersTable.selectedRow.data.isActive ? 'Заблокировать' : 'Разблокировать' }}",
+              "color": "{{ usersTable.selectedRow.data.isActive ? 'red' : 'green' }}",
+              "onClick": "updateUserStatus.trigger()"
+            }
+          ]
+        }
+      ]
+    },
+    "pendingListingsTable": {
+      "type": "table",
+      "data": "{{ getPendingListings.data }}",
+      "columns": [
+        {
+          "key": "id",
+          "label": "ID",
+          "type": "number"
+        },
+        {
+          "key": "lotNumber",
+          "label": "Номер лота",
+          "type": "string"
+        },
+        {
+          "key": "make",
+          "label": "Марка",
+          "type": "string"
+        },
+        {
+          "key": "model", 
+          "label": "Модель",
+          "type": "string"
+        },
+        {
+          "key": "year",
+          "label": "Год",
+          "type": "number"
+        },
+        {
+          "key": "sellerName",
+          "label": "Продавец",
+          "type": "string"
+        },
+        {
+          "key": "status",
+          "label": "Статус",
+          "type": "string"
+        },
+        {
+          "key": "actions",
+          "label": "Действия",
+          "type": "action",
+          "buttons": [
+            {
+              "text": "Одобрить",
+              "color": "green",
+              "onClick": "approveListing.trigger()"
+            },
+            {
+              "text": "Отклонить",
+              "color": "red", 
+              "onClick": "rejectListing.trigger()"
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

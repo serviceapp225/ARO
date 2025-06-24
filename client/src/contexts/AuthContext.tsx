@@ -72,6 +72,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 isActive: dbUser.isActive,
                 userId: dbUser.id
               });
+            } else if (response.status === 404) {
+              // User not found in database - clear localStorage to force re-authentication
+              console.log('User not found in database, clearing localStorage');
+              localStorage.removeItem('demo-user');
+              demoUser.isActive = false;
+              demoUser.userId = null;
             } else {
               demoUser.isActive = false;
               demoUser.userId = null;

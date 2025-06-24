@@ -23,8 +23,8 @@ export function BottomNavigation() {
   };
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-neutral-200 z-50">
-      <div className="flex justify-around items-center py-2">
+    <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-neutral-200 z-50 safe-area-bottom">
+      <div className="flex justify-around items-center py-2 pb-safe">
         {navItems.map((item) => {
           const isActive = location === item.path || (item.path === "/home" && location === "/");
           const Icon = item.icon;

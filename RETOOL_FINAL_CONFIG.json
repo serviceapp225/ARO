@@ -1,0 +1,335 @@
+{
+  "version": "3.0",
+  "metadata": {
+    "name": "AutoBid Admin Panel",
+    "description": "Полная админ-панель для управления платформой AutoBid",
+    "created": "2025-06-23"
+  },
+  "pages": [
+    {
+      "name": "Dashboard",
+      "id": "dashboard",
+      "queries": [
+        {
+          "name": "getStats",
+          "type": "restapi",
+          "url": "{{API_BASE_URL}}/api/admin/stats",
+          "method": "GET",
+          "headers": {
+            "x-admin-key": "{{ADMIN_SECRET}}"
+          },
+          "runWhenPageLoads": true
+        }
+      ],
+      "components": [
+        {
+          "type": "statistic",
+          "id": "pendingListings",
+          "title": "Ожидающие объявления",
+          "value": "{{getStats.data.pendingListings}}",
+          "color": "orange",
+          "icon": "clock",
+          "position": {"x": 0, "y": 0, "w": 6, "h": 4}
+        },
+        {
+          "type": "statistic", 
+          "id": "activeAuctions",
+          "title": "Активные аукционы",
+          "value": "{{getStats.data.activeAuctions}}",
+          "color": "green",
+          "icon": "trending-up",
+          "position": {"x": 6, "y": 0, "w": 6, "h": 4}
+        },
+        {
+          "type": "statistic",
+          "id": "totalUsers", 
+          "title": "Всего пользователей",
+          "value": "{{getStats.data.totalUsers}}",
+          "color": "blue",
+          "icon": "users",
+          "position": {"x": 0, "y": 4, "w": 6, "h": 4}
+        },
+        {
+          "type": "statistic",
+          "id": "bannedUsers",
+          "title": "Заблокированные",
+          "value": "{{getStats.data.bannedUsers}}",
+          "color": "red", 
+          "icon": "user-x",
+          "position": {"x": 6, "y": 4, "w": 6, "h": 4}
+        },
+        {
+          "type": "button",
+          "id": "refreshStats",
+          "text": "Обновить статистику",
+          "color": "primary",
+          "eventHandlers": [{"event": "click", "action": "getStats.trigger()"}],
+          "position": {"x": 2, "y": 8, "w": 8, "h": 2}
+        }
+      ]
+    },
+    {
+      "name": "Пользователи",
+      "id": "users", 
+      "queries": [
+        {
+          "name": "getUsers",
+          "type": "restapi",
+          "url": "{{API_BASE_URL}}/api/admin/users",
+          "method": "GET",
+          "headers": {
+            "x-admin-key": "{{ADMIN_SECRET}}"
+          },
+          "runWhenPageLoads": true,
+          "transformer": "return data.map(user => ({...user, statusDisplay: user.isActive ? 'Активен' : 'Неактивен', statusColor: user.isActive ? 'green' : 'red', createdDisplay: new Date(user.createdAt).toLocaleDateString('ru-RU'), phoneDisplay: user.phoneNumber || 'Не указан'}));"
+        },
+        {
+          "name": "activateUser",
+          "type": "restapi", 
+          "url": "{{API_BASE_URL}}/api/admin/users/{{usersTable.selectedRow.id}}/status",
+          "method": "PATCH",
+          "headers": {
+            "x-admin-key": "{{ADMIN_SECRET}}",
+            "Content-Type": "application/json"
+          },
+          "body": "{\"isActive\": true}",
+          "successHandlers": ["getUsers.trigger()", "getStats.trigger()"]
+        },
+        {
+          "name": "deactivateUser",
+          "type": "restapi",
+          "url": "{{API_BASE_URL}}/api/admin/users/{{usersTable.selectedRow.id}}/status", 
+          "method": "PATCH",
+          "headers": {
+            "x-admin-key": "{{ADMIN_SECRET}}",
+            "Content-Type": "application/json"
+          },
+          "body": "{\"isActive\": false}",
+          "successHandlers": ["getUsers.trigger()", "getStats.trigger()"]
+        }
+      ],
+      "components": [
+        {
+          "type": "textinput",
+          "id": "userSearch",
+          "placeholder": "Поиск по имени или телефону",
+          "position": {"x": 0, "y": 0, "w": 12, "h": 2}
+        },
+        {
+          "type": "table",
+          "id": "usersTable",
+          "dataSource": "{{getUsers.data.filter(user => !userSearch.value || user.fullName?.toLowerCase().includes(userSearch.value.toLowerCase()) || user.phoneNumber?.includes(userSearch.value))}}",
+          "selection": "single",
+          "columns": [
+            {"key": "id", "title": "ID", "type": "number", "width": 60},
+            {"key": "fullName", "title": "Имя", "type": "text", "width": 150},
+            {"key": "phoneDisplay", "title": "Телефон", "type": "text", "width": 120},
+            {"key": "email", "title": "Email", "type": "text", "width": 200},
+            {"key": "statusDisplay", "title": "Статус", "type": "badge", "width": 100, "colorMap": {"Активен": "green", "Неактивен": "red"}},
+            {"key": "role", "title": "Роль", "type": "text", "width": 80},
+            {"key": "createdDisplay", "title": "Создан", "type": "text", "width": 100}
+          ],
+          "position": {"x": 0, "y": 2, "w": 12, "h": 16}
+        },
+        {
+          "type": "button",
+          "id": "activateBtn",
+          "text": "Активировать",
+          "color": "success",
+          "disabled": "{{!usersTable.selectedRow || usersTable.selectedRow.isActive}}",
+          "eventHandlers": [{"event": "click", "action": "activateUser.trigger()"}],
+          "position": {"x": 0, "y": 18, "w": 3, "h": 2}
+        },
+        {
+          "type": "button", 
+          "id": "deactivateBtn",
+          "text": "Деактивировать",
+          "color": "danger",
+          "disabled": "{{!usersTable.selectedRow || !usersTable.selectedRow.isActive}}",
+          "eventHandlers": [{"event": "click", "action": "deactivateUser.trigger()"}],
+          "position": {"x": 3, "y": 18, "w": 3, "h": 2}
+        },
+        {
+          "type": "button",
+          "id": "refreshUsers",
+          "text": "Обновить",
+          "color": "primary",
+          "eventHandlers": [{"event": "click", "action": "getUsers.trigger()"}],
+          "position": {"x": 9, "y": 18, "w": 3, "h": 2}
+        }
+      ]
+    },
+    {
+      "name": "Объявления",
+      "id": "listings",
+      "queries": [
+        {
+          "name": "getListings",
+          "type": "restapi",
+          "url": "{{API_BASE_URL}}/api/admin/listings",
+          "method": "GET", 
+          "headers": {
+            "x-admin-key": "{{ADMIN_SECRET}}"
+          },
+          "runWhenPageLoads": true,
+          "transformer": "return data.map(listing => ({...listing, currentBidDisplay: `${listing.currentBid || listing.startingPrice} сомони`, sellerDisplay: listing.seller?.fullName || 'Неизвестно', carDisplay: `${listing.make} ${listing.model} ${listing.year}`, statusColor: {'pending': 'orange', 'active': 'green', 'ended': 'gray', 'rejected': 'red'}[listing.status] || 'gray'}));"
+        },
+        {
+          "name": "approveListing",
+          "type": "restapi",
+          "url": "{{API_BASE_URL}}/api/listings/{{listingsTable.selectedRow.id}}/status",
+          "method": "PATCH",
+          "headers": {
+            "x-admin-key": "{{ADMIN_SECRET}}",
+            "Content-Type": "application/json"
+          },
+          "body": "{\"status\": \"active\"}",
+          "successHandlers": ["getListings.trigger()", "getStats.trigger()"]
+        },
+        {
+          "name": "rejectListing",
+          "type": "restapi",
+          "url": "{{API_BASE_URL}}/api/listings/{{listingsTable.selectedRow.id}}/status",
+          "method": "PATCH",
+          "headers": {
+            "x-admin-key": "{{ADMIN_SECRET}}",
+            "Content-Type": "application/json"
+          },
+          "body": "{\"status\": \"rejected\"}",
+          "successHandlers": ["getListings.trigger()", "getStats.trigger()"]
+        }
+      ],
+      "components": [
+        {
+          "type": "select",
+          "id": "statusFilter",
+          "options": [
+            {"value": "all", "label": "Все объявления"},
+            {"value": "pending", "label": "Ожидающие"},
+            {"value": "active", "label": "Активные"},
+            {"value": "ended", "label": "Завершенные"},
+            {"value": "rejected", "label": "Отклоненные"}
+          ],
+          "defaultValue": "all",
+          "position": {"x": 0, "y": 0, "w": 6, "h": 2}
+        },
+        {
+          "type": "table",
+          "id": "listingsTable",
+          "dataSource": "{{statusFilter.value === 'all' ? getListings.data : getListings.data.filter(item => item.status === statusFilter.value)}}",
+          "selection": "single",
+          "columns": [
+            {"key": "id", "title": "ID", "type": "number", "width": 60},
+            {"key": "lotNumber", "title": "Лот", "type": "text", "width": 80},
+            {"key": "carDisplay", "title": "Автомобиль", "type": "text", "width": 200},
+            {"key": "currentBidDisplay", "title": "Цена", "type": "text", "width": 120},
+            {"key": "status", "title": "Статус", "type": "badge", "width": 100, "colorMap": {"pending": "orange", "active": "green", "ended": "gray", "rejected": "red"}},
+            {"key": "sellerDisplay", "title": "Продавец", "type": "text", "width": 150},
+            {"key": "bidCount", "title": "Ставок", "type": "number", "width": 70}
+          ],
+          "position": {"x": 0, "y": 2, "w": 12, "h": 14}
+        },
+        {
+          "type": "button",
+          "id": "approveBtn",
+          "text": "Одобрить",
+          "color": "success",
+          "disabled": "{{!listingsTable.selectedRow || listingsTable.selectedRow.status !== 'pending'}}",
+          "eventHandlers": [{"event": "click", "action": "approveListing.trigger()"}],
+          "position": {"x": 0, "y": 16, "w": 3, "h": 2}
+        },
+        {
+          "type": "button",
+          "id": "rejectBtn", 
+          "text": "Отклонить",
+          "color": "danger",
+          "disabled": "{{!listingsTable.selectedRow || listingsTable.selectedRow.status !== 'pending'}}",
+          "eventHandlers": [{"event": "click", "action": "rejectListing.trigger()"}],
+          "position": {"x": 3, "y": 16, "w": 3, "h": 2}
+        }
+      ]
+    },
+    {
+      "name": "Ставки",
+      "id": "bids",
+      "queries": [
+        {
+          "name": "getBids", 
+          "type": "restapi",
+          "url": "{{API_BASE_URL}}/api/admin/bids",
+          "method": "GET",
+          "headers": {
+            "x-admin-key": "{{ADMIN_SECRET}}"
+          },
+          "runWhenPageLoads": true,
+          "transformer": "return data.map(bid => ({...bid, amountDisplay: `${bid.amount} сомони`, bidderDisplay: bid.bidder?.fullName || 'Неизвестно', carDisplay: `${bid.listing?.make} ${bid.listing?.model} ${bid.listing?.year}`, lotDisplay: bid.listing?.lotNumber, dateDisplay: new Date(bid.createdAt).toLocaleDateString('ru-RU'), timeDisplay: new Date(bid.createdAt).toLocaleTimeString('ru-RU'), bidderPhone: bid.bidder?.phoneNumber || 'Не указан'}));"
+        }
+      ],
+      "components": [
+        {
+          "type": "textinput",
+          "id": "userFilter",
+          "placeholder": "Поиск по имени покупателя",
+          "position": {"x": 0, "y": 0, "w": 6, "h": 2}
+        },
+        {
+          "type": "textinput",
+          "id": "carFilter", 
+          "placeholder": "Поиск по марке/модели",
+          "position": {"x": 6, "y": 0, "w": 6, "h": 2}
+        },
+        {
+          "type": "text",
+          "id": "bidsStats",
+          "value": "Всего ставок: {{getBids.data.length}} | Общая сумма: {{getBids.data.reduce((sum, bid) => sum + parseFloat(bid.amount), 0).toLocaleString()}} сомони | Уникальных покупателей: {{new Set(getBids.data.map(bid => bid.bidderId)).size}}",
+          "position": {"x": 0, "y": 2, "w": 12, "h": 1}
+        },
+        {
+          "type": "table",
+          "id": "bidsTable",
+          "dataSource": "{{getBids.data.filter(bid => (!userFilter.value || bid.bidderDisplay.toLowerCase().includes(userFilter.value.toLowerCase())) && (!carFilter.value || bid.carDisplay.toLowerCase().includes(carFilter.value.toLowerCase())))}}",
+          "columns": [
+            {"key": "id", "title": "ID", "type": "number", "width": 60},
+            {"key": "amountDisplay", "title": "Сумма", "type": "text", "width": 120},
+            {"key": "bidderDisplay", "title": "Покупатель", "type": "text", "width": 150},
+            {"key": "bidderPhone", "title": "Телефон", "type": "text", "width": 120},
+            {"key": "carDisplay", "title": "Автомобиль", "type": "text", "width": 200},
+            {"key": "lotDisplay", "title": "Лот", "type": "text", "width": 80},
+            {"key": "dateDisplay", "title": "Дата", "type": "text", "width": 100},
+            {"key": "timeDisplay", "title": "Время", "type": "text", "width": 80}
+          ],
+          "position": {"x": 0, "y": 3, "w": 12, "h": 15}
+        },
+        {
+          "type": "button",
+          "id": "refreshBids",
+          "text": "Обновить",
+          "color": "primary", 
+          "eventHandlers": [{"event": "click", "action": "getBids.trigger()"}],
+          "position": {"x": 9, "y": 18, "w": 3, "h": 2}
+        }
+      ]
+    }
+  ],
+  "environmentVariables": [
+    {
+      "name": "API_BASE_URL",
+      "value": "http://localhost:5000",
+      "description": "Базовый URL API для разработки"
+    },
+    {
+      "name": "ADMIN_SECRET", 
+      "value": "retool-admin-key-2024",
+      "description": "Секретный ключ для админ API"
+    }
+  ],
+  "navigation": {
+    "type": "tabs",
+    "items": [
+      {"label": "Dashboard", "page": "dashboard"},
+      {"label": "Пользователи", "page": "users"},
+      {"label": "Объявления", "page": "listings"},
+      {"label": "Ставки", "page": "bids"}
+    ]
+  }
+}

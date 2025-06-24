@@ -1,0 +1,16 @@
+{
+  "name": "autobid-website",
+  "version": "1.0.0",
+  "description": "AutoBid Corporate Website",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.0"
+  },
+  "keywords": ["autobid", "website", "corporate", "car", "auction"],
+  "author": "AutoBid Team",
+  "license": "MIT"
+}
