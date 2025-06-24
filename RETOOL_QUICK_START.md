@@ -1,82 +1,68 @@
-# AutoBid.tj - Быстрый запуск Retool админ-панели
+# Быстрый старт - Retool админка за 5 минут
 
-## Шаг 1: Получение данных подключения к БД
+## Шаг 1: Создание ресурса
+1. Войдите в [retool.com](https://retool.com)
+2. Resources → Create new → REST API
+3. Заполните:
+   - Name: `AutoAuction API`
+   - Base URL: `https://d8a15fc1-aa9c-422e-afb1-9506fa80f861-00-2j9oxj0dke5fk.sisko.replit.dev`
+   - Headers:
+     - `Content-Type`: `application/json`
+     - `x-admin-key`: `retool-admin-key-2024`
+4. Test connection → Create resource
 
-Для подключения Retool к вашей базе данных PostgreSQL нужны следующие данные:
+## Шаг 2: Создание приложения
+1. Create new → App → Start from scratch
+2. Название: `Админка Автоаукциона`
 
-```
-Host: [ваш_хост_replit]
-Port: 5432
-Database: [имя_базы_данных]
-Username: postgres
-Password: [ваш_пароль]
-SSL Mode: prefer
-```
+## Шаг 3: Добавление запросов
+Создайте 3 запроса:
 
-Эти данные можно найти в настройках Replit в разделе Database.
+**getUsers:**
+- Resource: AutoAuction API
+- Method: GET
+- URL: `/api/admin/users`
+- Run automatically: ✓
 
-## Шаг 2: Регистрация и настройка Retool
+**getStats:**
+- Resource: AutoAuction API  
+- Method: GET
+- URL: `/api/admin/stats`
+- Run automatically: ✓
 
-1. **Регистрация:**
-   - Перейдите на https://retool.com
-   - Нажмите "Get started for free"
-   - Выберите "Build internal tools"
+**getPendingListings:**
+- Resource: AutoAuction API
+- Method: GET
+- URL: `/api/admin/listings/pending`
+- Run automatically: ✓
 
-2. **Подключение БД:**
-   - Resources → Create new → PostgreSQL
-   - Введите данные подключения из Шага 1
-   - Test connection → Create resource
+## Шаг 4: Добавление компонентов
 
-## Шаг 3: Создание приложения
+### Статистика (4 блока):
+Insert → Statistic (4 раза)
+- Блок 1: Value: `{{ getStats.data.totalUsers }}`, Label: "Всего пользователей"
+- Блок 2: Value: `{{ getStats.data.activeAuctions }}`, Label: "Активные аукционы"
+- Блок 3: Value: `{{ getStats.data.pendingListings }}`, Label: "На модерации"  
+- Блок 4: Value: `{{ getStats.data.bannedUsers }}`, Label: "Заблокированные"
 
-1. **Новое приложение:**
-   - Create → App → Blank app
-   - Название: "AutoBid Admin Panel"
+### Таблица пользователей:
+Insert → Table
+- Data source: `{{ getUsers.data }}`
+- Настройте колонки: ID, Логин, Email, Имя, Телефон, Активен, Дата регистрации
 
-2. **Импорт готовой конфигурации:**
-   - Скопируйте содержимое файла `RETOOL_IMPORT_CONFIGS.json`
-   - В Retool: Settings → Import/Export → Import JSON
-   - Вставьте конфигурацию
+### Таблица модерации:
+Insert → Table
+- Data source: `{{ getPendingListings.data }}`
+- Колонки: ID, Лот, Марка, Модель, Год, Продавец, Статус
 
-## Шаг 4: Проверка работы
+## Шаг 5: Тестирование
+1. Preview → проверьте загрузку данных
+2. Publish → опубликуйте админку
 
-После импорта у вас будет:
+**Готово!** Базовая админка работает.
 
-- **Dashboard** - статистика в реальном времени
-- **Users** - управление пользователями
-- **Listings** - модерация объявлений
-- **Analytics** - графики и аналитика
-
-## Основные функции
-
-### Модерация объявлений:
-- Просмотр новых объявлений
-- Кнопки "Одобрить" / "Отклонить"
-- Автообновление списка
-
-### Управление пользователями:
-- Блокировка/разблокировка одним кликом
-- Поиск по email и имени
-- История активности
-
-### Статистика:
-- Объявления на модерации
-- Активные аукционы
-- Количество пользователей
-- Общий объем продаж
-
-## Безопасность
-
-Доступ к админ-панели имеют только пользователи с правами администратора в Retool. База данных защищена SSL соединением.
-
-## Мобильная версия
-
-Retool автоматически адаптирует интерфейс для мобильных устройств. Админ может работать с телефона или планшета.
-
-## Время настройки
-
-15-20 минут для полной настройки админ-панели с импортом готовых конфигураций.
-
----
-
-**Результат:** Полноценная админ-панель, полностью независимая от основного приложения, с прямым доступом к базе данных и всеми необходимыми функциями управления аукционом.
+## Данные для проверки:
+- Пользователей: 4
+- Активных аукционов: 15  
+- На модерации: 1
+- Заблокированных: 0

@@ -1,7 +1,0 @@
-<?xml version='1.0' encoding='utf-8'?>
-<resources>
-    <string name="app_name">AutoBid</string>
-    <string name="title_activity_main">AutoBid</string>
-    <string name="package_name">com.autoauction.autobid</string>
-    <string name="custom_url_scheme">com.autoauction.autobid</string>
-</resources>

@@ -37,8 +37,8 @@ function getCached(key: string) {
   return null;
 }
 
-function setCache(key: string, data: any, ttl: number = 300000) {
-  cache.set(key, { data, timestamp: Date.now(), ttl });
+function setCache(key: string, data: any) {
+  cache.set(key, { data, timestamp: Date.now() });
 }
 
 function clearCachePattern(pattern: string) {
@@ -50,7 +50,19 @@ function clearCachePattern(pattern: string) {
   });
 }
 
-// Admin middleware removed - no administrative access through main application
+// Middleware для защиты админских маршрутов
+const adminAuth = (req: any, res: any, next: any) => {
+  const adminKey = req.headers['x-admin-key'];
+  
+  // В production используйте переменную окружения ADMIN_API_KEY
+  const validAdminKey = process.env.ADMIN_API_KEY || 'retool-admin-key-2024';
+  
+  if (!adminKey || adminKey !== validAdminKey) {
+    return res.status(403).json({ error: 'Unauthorized: Invalid admin key' });
+  }
+  
+  next();
+};
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Health check endpoint for deployment monitoring
@@ -149,8 +161,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Invalid parameters" });
       }
       
-      // Get photos from storage
-      const listing = await storage.getListing(listingId);
+      // Get photos directly from database for this endpoint only
+      const [listing] = await db.select({ photos: carListings.photos }).from(carListings).where(eq(carListings.id, listingId));
       if (!listing) {
         return res.status(404).json({ error: "Listing not found" });
       }
@@ -387,7 +399,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           // Check if user has already viewed this alert for this listing
           const hasViewed = await storage.hasUserViewedAlert(alert.userId, alert.id, listing.id);
           
-          // Check if notification for this listing and alert already exists or was dismissed
+          // Check if notification for this listing and alert already exists
           const existingNotifications = await storage.getNotificationsByUser(alert.userId);
           const duplicateExists = existingNotifications.some(n => 
             n.type === "car_found" && 
@@ -395,17 +407,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             n.alertId === alert.id
           );
           
-          // Also check if this exact alert+listing combination was previously viewed/dismissed
-          const wasViewedBefore = await storage.hasUserViewedAlert(alert.userId, alert.id, listing.id);
-          
-          if (!hasViewed && !duplicateExists && !wasViewedBefore) {
-            // Final check - prevent duplicates by marking as viewed immediately
-            await storage.createAlertView({
-              userId: alert.userId,
-              alertId: alert.id,
-              listingId: listing.id
-            });
-            
+          if (!hasViewed && !duplicateExists) {
             await storage.createNotification({
               userId: alert.userId,
               title: "Найден автомобиль по вашему запросу",
@@ -415,9 +417,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
               alertId: alert.id,
               isRead: false
             });
-            console.log(`Created notification for user ${alert.userId}, alert ${alert.id}, listing ${listing.id}`);
           } else {
-            console.log('Skipping notification - already viewed/exists for listing:', listing.id, 'alert:', alert.id);
+            console.log('User has already viewed this alert or notification exists for listing:', listing.id, 'alert:', alert.id);
           }
         }
       } catch (alertError) {
@@ -483,7 +484,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/listings/:id/bids", async (req, res) => {
     try {
       const listingId = parseInt(req.params.id);
-      console.log(`Bid attempt: listingId=${listingId}, body=`, req.body);
       
       // Check if auction exists and is still active
       const listing = await storage.getListing(listingId);
@@ -567,13 +567,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       res.status(201).json(bid);
     } catch (error) {
-      console.error("Error placing bid:", error);
       if (error instanceof z.ZodError) {
-        console.error("Validation error details:", error.errors);
         return res.status(400).json({ error: "Invalid bid data", details: error.errors });
       }
-      console.error("Unexpected error in bid placement:", error);
-      res.status(500).json({ error: "Failed to place bid", details: error instanceof Error ? error.message : String(error) });
+      res.status(500).json({ error: "Failed to place bid" });
     }
   });
 
@@ -665,7 +662,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-
+  // Admin route to activate/deactivate users
+  app.patch("/api/admin/users/:id/activate", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.id);
+      const { isActive } = req.body;
+      
+      const updatedUser = await storage.updateUserStatus(userId, isActive);
+      if (!updatedUser) {
+        return res.status(404).json({ error: "User not found" });
+      }
+      
+      res.json(updatedUser);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to update user status" });
+    }
+  });
 
   app.get("/api/users/:id/listings", async (req, res) => {
     try {
@@ -744,109 +756,69 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Admin routes
-
-
-
-
-
-
-
-
-
-  // SMS Authentication routes
-  app.post("/api/auth/send-sms", async (req, res) => {
+  app.get("/api/admin/stats", async (req, res) => {
     try {
-      const { phoneNumber } = req.body;
-      
-      if (!phoneNumber || !phoneNumber.startsWith('+992')) {
-        return res.status(400).json({ error: "Неверный формат номера телефона" });
-      }
-
-      // Очищаем истекшие коды
-      await storage.cleanupExpiredSmsCodes();
-
-      // Генерируем 4-значный код
-      const code = Math.floor(1000 + Math.random() * 9000).toString();
-      
-      // Время истечения - 5 минут
-      const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
-      
-      // Сохраняем код в базе данных
-      await storage.createSmsVerificationCode({
-        phoneNumber,
-        code,
-        expiresAt,
-        isUsed: false
-      });
-      
-      // Отправляем SMS
-      const smsResult = await sendSMSCode(phoneNumber, code);
-      
-      if (smsResult.success) {
-        res.json({ success: true, message: "SMS-код отправлен" });
-      } else {
-        res.status(500).json({ error: smsResult.message || "Не удалось отправить SMS" });
-      }
+      const stats = await storage.getAdminStats();
+      res.json(stats);
     } catch (error) {
-      console.error("Error sending SMS:", error);
-      res.status(500).json({ error: "Ошибка при отправке SMS" });
+      res.status(500).json({ error: "Failed to fetch admin stats" });
     }
   });
 
-  app.post("/api/auth/verify-sms", async (req, res) => {
+  app.get("/api/admin/users", async (req, res) => {
     try {
-      const { phoneNumber, code } = req.body;
-      
-      if (!phoneNumber || !code) {
-        return res.status(400).json({ error: "Номер телефона и код обязательны" });
-      }
-
-      // Проверяем код в базе данных
-      const smsCode = await storage.getValidSmsCode(phoneNumber, code);
-      
-      if (!smsCode) {
-        return res.status(400).json({ error: "Код истек или не найден" });
-      }
-
-      // Помечаем код как использованный
-      await storage.markSmsCodeAsUsed(smsCode.id);
-      
-      // Создаем или обновляем пользователя
-      const email = phoneNumber + "@autoauction.tj";
-      let user = await storage.getUserByEmail(email);
-      
-      if (!user) {
-        // Создаем нового пользователя
-        user = await storage.createUser({
-          email,
-          username: phoneNumber.replace('+', ''),
-          phoneNumber,
-          role: 'buyer',
-          fullName: `Пользователь`,
-          isActive: true
-        });
-      } else {
-        // Активируем существующего пользователя
-        user = await storage.updateUserStatus(user.id, true);
-      }
-
-      if (!user) {
-        return res.status(500).json({ error: "Не удалось создать пользователя" });
-      }
-
-      res.json({ 
-        success: true, 
-        user: {
-          id: user.id,
-          email: user.email,
-          phoneNumber: user.phoneNumber,
-          fullName: user.fullName?.includes(user.phoneNumber || '') ? 'Пользователь' : user.fullName,
-          isActive: user.isActive
-        }
-      });
+      const users = await storage.getAllUsers();
+      res.json(users);
     } catch (error) {
-      console.error("Error verifying SMS:", error);
-      res.status(500).json({ error: "Ошибка при проверке кода" });
+      res.status(500).json({ error: "Failed to fetch users" });
+    }
+  });
+
+  app.get("/api/admin/listings", async (req, res) => {
+    try {
+      const allListings = await storage.getListingsByStatus("pending");
+      const activeListings = await storage.getListingsByStatus("active");
+      const endedListings = await storage.getListingsByStatus("ended");
+      const rejectedListings = await storage.getListingsByStatus("rejected");
+      
+      const listings = [...allListings, ...activeListings, ...endedListings, ...rejectedListings];
+      res.json(listings);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch listings" });
+    }
+  });
+
+  app.patch("/api/admin/users/:id", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.id);
+      const { isActive } = req.body;
+      
+      const user = await storage.updateUserStatus(userId, isActive);
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+      res.json(user);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to update user status" });
+    }
+  });
+
+  app.patch("/api/admin/listings/:id", async (req, res) => {
+    try {
+      const listingId = parseInt(req.params.id);
+      const { status } = req.body;
+      
+      const listing = await storage.updateListingStatus(listingId, status);
+      if (!listing) {
+        return res.status(404).json({ error: "Listing not found" });
+      }
+      
+      // Clear all caches when admin changes listing status
+      clearAllCaches();
+      
+      res.json(listing);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to update listing status" });
     }
   });
 
@@ -1093,29 +1065,68 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { position } = req.query;
       const cacheKey = `banners_${position || 'all'}`;
       
-      // Set cache headers for faster loading
-      res.set({
-        'Cache-Control': 'public, max-age=300', // 5 minutes
-        'ETag': `banners-${position || 'all'}-${Date.now()}`
-      });
-      
       const cached = getCached(cacheKey);
       if (cached) {
         return res.json(cached);
       }
       
       const banners = await storage.getBanners(position as string);
-      
-      // Cache for 10 minutes
-      setCache(cacheKey, banners, 600000);
+      setCache(cacheKey, banners);
       res.json(banners);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch banners" });
     }
   });
 
+  app.post("/api/admin/banners", async (req, res) => {
+    try {
+      const bannerData = insertBannerSchema.parse(req.body);
+      const banner = await storage.createBanner(bannerData);
+      clearCachePattern('banners');
+      res.status(201).json(banner);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: error.errors });
+      }
+      res.status(500).json({ error: "Failed to create banner" });
+    }
+  });
 
+  app.put("/api/admin/banners/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const bannerData = insertBannerSchema.partial().parse(req.body);
+      const banner = await storage.updateBanner(id, bannerData);
+      
+      if (!banner) {
+        return res.status(404).json({ error: "Banner not found" });
+      }
+      
+      clearCachePattern('banners');
+      res.json(banner);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: error.errors });
+      }
+      res.status(500).json({ error: "Failed to update banner" });
+    }
+  });
 
+  app.delete("/api/admin/banners/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const success = await storage.deleteBanner(id);
+      
+      if (!success) {
+        return res.status(404).json({ error: "Banner not found" });
+      }
+      
+      clearCachePattern('banners');
+      res.status(204).send();
+    } catch (error) {
+      res.status(500).json({ error: "Failed to delete banner" });
+    }
+  });
 
   // Sell Car Section routes
   app.get("/api/sell-car-section", async (req, res) => {
@@ -1127,6 +1138,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.put("/api/admin/sell-car-section", async (req, res) => {
+    try {
+      const validatedData = req.body; // Will validate in component
+      const section = await storage.updateSellCarSection(validatedData);
+      res.json(section);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to update sell car section" });
+    }
+  });
 
   // Advertisement Carousel routes
   app.get("/api/advertisement-carousel", async (req, res) => {
@@ -1145,9 +1165,52 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/admin/advertisement-carousel", async (req, res) => {
+    try {
+      const carousel = await storage.getAdvertisementCarousel();
+      res.json(carousel);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch advertisement carousel" });
+    }
+  });
 
+  app.post("/api/admin/advertisement-carousel", async (req, res) => {
+    try {
+      const item = await storage.createAdvertisementCarouselItem(req.body);
+      clearCachePattern('advertisement_carousel');
+      res.status(201).json(item);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to create carousel item" });
+    }
+  });
 
+  app.put("/api/admin/advertisement-carousel/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const item = await storage.updateAdvertisementCarouselItem(id, req.body);
+      if (!item) {
+        return res.status(404).json({ error: "Carousel item not found" });
+      }
+      clearCachePattern('advertisement_carousel');
+      res.json(item);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to update carousel item" });
+    }
+  });
 
+  app.delete("/api/admin/advertisement-carousel/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const deleted = await storage.deleteAdvertisementCarouselItem(id);
+      if (!deleted) {
+        return res.status(404).json({ error: "Carousel item not found" });
+      }
+      clearCachePattern('advertisement_carousel');
+      res.status(204).send();
+    } catch (error) {
+      res.status(500).json({ error: "Failed to delete carousel item" });
+    }
+  });
 
   // Documents API routes
   app.get("/api/documents", async (req, res) => {
@@ -1160,12 +1223,144 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/admin/documents", async (req, res) => {
+    try {
+      const type = req.query.type as string;
+      const documents = await storage.getDocuments(type);
+      res.json(documents);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch documents" });
+    }
+  });
 
+  app.get("/api/admin/documents/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const document = await storage.getDocument(id);
+      if (!document) {
+        return res.status(404).json({ error: "Document not found" });
+      }
+      res.json(document);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch document" });
+    }
+  });
 
+  app.post("/api/admin/documents", async (req, res) => {
+    try {
+      const document = await storage.createDocument(req.body);
+      res.status(201).json(document);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to create document" });
+    }
+  });
 
+  app.put("/api/admin/documents/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const document = await storage.updateDocument(id, req.body);
+      if (!document) {
+        return res.status(404).json({ error: "Document not found" });
+      }
+      res.json(document);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to update document" });
+    }
+  });
 
+  app.delete("/api/admin/documents/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const deleted = await storage.deleteDocument(id);
+      if (!deleted) {
+        return res.status(404).json({ error: "Document not found" });
+      }
+      res.status(204).send();
+    } catch (error) {
+      res.status(500).json({ error: "Failed to delete document" });
+    }
+  });
 
-  // Administrative endpoints removed - use external admin tools only
+  // ===============================
+  // ADMIN API ENDPOINTS (для Retool)
+  // ===============================
+
+  // Управление пользователями
+  app.get("/api/admin/users", adminAuth, async (req, res) => {
+    try {
+      const users = await storage.getAllUsers();
+      res.json(users);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch users" });
+    }
+  });
+
+  app.put("/api/admin/users/:id/status", adminAuth, async (req, res) => {
+    try {
+      const userId = parseInt(req.params.id);
+      const { isActive } = req.body;
+      const user = await storage.updateUserStatus(userId, isActive);
+      res.json(user);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to update user status" });
+    }
+  });
+
+  // Модерация объявлений
+  app.get("/api/admin/listings", adminAuth, async (req, res) => {
+    try {
+      const { status } = req.query;
+      const listings = await storage.getListingsByStatus(status as string || "pending");
+      res.json(listings);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch listings" });
+    }
+  });
+
+  app.put("/api/admin/listings/:id/status", adminAuth, async (req, res) => {
+    try {
+      const listingId = parseInt(req.params.id);
+      const { status } = req.body;
+      const listing = await storage.updateListingStatus(listingId, status);
+      res.json(listing);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to update listing status" });
+    }
+  });
+
+  // Статистика для админа
+  app.get("/api/admin/stats", adminAuth, async (req, res) => {
+    try {
+      const stats = await storage.getAdminStats();
+      res.json(stats);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch admin stats" });
+    }
+  });
+
+  // Массовые уведомления
+  app.post("/api/admin/notifications/broadcast", adminAuth, async (req, res) => {
+    try {
+      const { title, message, type = "system" } = req.body;
+      const users = await storage.getAllUsers();
+      
+      const notifications = await Promise.all(
+        users.map(user => 
+          storage.createNotification({
+            userId: user.id,
+            type,
+            title,
+            message,
+            isRead: false
+          })
+        )
+      );
+      
+      res.json({ sent: notifications.length });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to send broadcast notification" });
+    }
+  });
 
   // SMS-отправка для кодов подтверждения
   app.post("/api/auth/send-sms", async (req, res) => {
@@ -1285,7 +1480,157 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ADMIN ROUTES FOR RETOOL
+  
+  // Получить всех пользователей
+  app.get("/api/admin/users", adminAuth, async (req, res) => {
+    try {
+      const users = await storage.getAllUsers();
+      res.json(users);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch users" });
+    }
+  });
 
+  // Получить статистику для админ-панели
+  app.get("/api/admin/stats", adminAuth, async (req, res) => {
+    try {
+      const stats = await storage.getAdminStats();
+      res.json(stats);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch admin stats" });
+    }
+  });
+
+  // Обновить статус пользователя (активировать/деактивировать)
+  app.patch("/api/admin/users/:id/status", adminAuth, async (req, res) => {
+    try {
+      const userId = parseInt(req.params.id);
+      const { isActive } = req.body;
+      
+      if (typeof isActive !== 'boolean') {
+        return res.status(400).json({ error: "isActive must be a boolean" });
+      }
+
+      const user = await storage.updateUserStatus(userId, isActive);
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+      
+      res.json(user);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to update user status" });
+    }
+  });
+
+  // Обновить профиль пользователя
+  app.patch("/api/admin/users/:id/profile", adminAuth, async (req, res) => {
+    try {
+      const userId = parseInt(req.params.id);
+      const { fullName, profilePhoto } = req.body;
+      
+      const user = await storage.updateUserProfile(userId, { fullName, profilePhoto });
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+      
+      res.json(user);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to update user profile" });
+    }
+  });
+
+  // Получить все объявления с расширенной информацией для админки
+  app.get("/api/admin/listings", adminAuth, async (req, res) => {
+    try {
+      const { status, limit = 100 } = req.query;
+      
+      let listings;
+      if (status) {
+        listings = await storage.getListingsByStatus(status as string, Number(limit));
+      } else {
+        // Получить все объявления всех статусов
+        const allStatuses = ['pending', 'active', 'ended', 'rejected'];
+        const allListings = await Promise.all(
+          allStatuses.map(s => storage.getListingsByStatus(s, Number(limit) / allStatuses.length))
+        );
+        listings = allListings.flat();
+      }
+
+      // Обогащаем данными о продавце и количестве ставок
+      const enrichedListings = await Promise.all(
+        listings.map(async (listing) => {
+          const seller = await storage.getUser(listing.sellerId);
+          const bidCount = await storage.getBidCountForListing(listing.id);
+          
+          return {
+            ...listing,
+            seller: {
+              id: seller?.id,
+              username: seller?.username,
+              email: seller?.email,
+              fullName: seller?.fullName,
+              isActive: seller?.isActive
+            },
+            bidCount
+          };
+        })
+      );
+      
+      res.json(enrichedListings);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch admin listings" });
+    }
+  });
+
+  // Получить все ставки с информацией о пользователях
+  app.get("/api/admin/bids", adminAuth, async (req, res) => {
+    try {
+      const { listingId, userId, limit = 100 } = req.query;
+      
+      let bids;
+      if (listingId) {
+        bids = await storage.getBidsForListing(Number(listingId));
+      } else if (userId) {
+        bids = await storage.getBidsByUser(Number(userId));
+      } else {
+        // Получить все ставки через storage метод
+        const allListings = await storage.getListingsByStatus('active', Number(limit));
+        const allBidPromises = allListings.map(listing => storage.getBidsForListing(listing.id));
+        const allBidsArrays = await Promise.all(allBidPromises);
+        bids = allBidsArrays.flat().slice(0, Number(limit));
+      }
+
+      // Обогащаем данными о пользователе и объявлении
+      const enrichedBids = await Promise.all(
+        bids.map(async (bid) => {
+          const bidder = await storage.getUser(bid.bidderId);
+          const listing = await storage.getListing(bid.listingId);
+          
+          return {
+            ...bid,
+            bidder: {
+              id: bidder?.id,
+              username: bidder?.username,
+              email: bidder?.email,
+              fullName: bidder?.fullName
+            },
+            listing: {
+              id: listing?.id,
+              make: listing?.make,
+              model: listing?.model,
+              year: listing?.year,
+              lotNumber: listing?.lotNumber
+            }
+          };
+        })
+      );
+      
+      res.json(enrichedBids);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch admin bids" });
+    }
+  });
 
   const httpServer = createServer(app);
   return httpServer;
@@ -1293,113 +1638,53 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
 // Функция для отправки SMS (заменить на реальную интеграцию)
 async function sendSMSCode(phoneNumber: string, code: string): Promise<{success: boolean, message?: string}> {
+  // В production здесь будет реальная интеграция с SMS-провайдером
+  // Примеры популярных провайдеров в Таджикистане:
+  
+  // 1. Tcell SMS API
+  // 2. Beeline SMS Gateway  
+  // 3. Megafon SMS API
+  // 4. Twilio (международный)
+  
   try {
-    const smsLogin = process.env.SMS_LOGIN;
-    const passSaltHash = process.env.SMS_HASH; // This is actually pass_salt_hash
-    const smsSender = process.env.SMS_SENDER;
-    const smsServer = process.env.SMS_SERVER;
+    // Имитация задержки отправки SMS
+    await new Promise(resolve => setTimeout(resolve, 1000));
     
-    if (!smsLogin || !passSaltHash || !smsSender || !smsServer) {
-      console.error("[SMS] Configuration missing - using demo mode");
-      return { success: true, message: "SMS-код отправлен" };
-    }
-
-    const txnId = Date.now().toString();
-    const cleanPhone = phoneNumber.replace(/[\s\(\)\-\+]/g, '');
-    const message = `Код: ${code}`;
+    // В production раскомментируйте нужную интеграцию:
     
-    console.log(`[SMS] Attempting to send SMS to ${phoneNumber} with code ${code}`);
+    /* Пример интеграции с Twilio:
+    const accountSid = process.env.TWILIO_ACCOUNT_SID;
+    const authToken = process.env.TWILIO_AUTH_TOKEN;
+    const client = require('twilio')(accountSid, authToken);
     
-    // Generate str_hash using OsonSMS formula: SHA256(txn_id + ";" + login + ";" + from + ";" + phone_number + ";" + pass_salt_hash)
-    const crypto = await import('crypto');
-    const hashString = `${txnId};${smsLogin};${smsSender};${cleanPhone};${passSaltHash}`;
-    const strHash = crypto.createHash('sha256').update(hashString).digest('hex');
-    
-    console.log(`[SMS] Generated str_hash using formula: txn_id;login;from;phone_number;pass_salt_hash`);
-    console.log(`[SMS] Hash string: ${txnId};${smsLogin};${smsSender};${cleanPhone};[PROTECTED]`);
-    
-    // Try OsonSMS API with generated str_hash
-    const params = new URLSearchParams({
-      login: smsLogin,
-      str_hash: strHash,
-      from: smsSender,
-      phone_number: cleanPhone,
-      msg: message,
-      txn_id: txnId
+    const message = await client.messages.create({
+      body: `Ваш код подтверждения AUTOBID.TJ: ${code}`,
+      from: process.env.TWILIO_PHONE_NUMBER,
+      to: phoneNumber
     });
     
-    try {
-      console.log(`[SMS] Sending request to OsonSMS API...`);
-      const response = await fetch(`${smsServer}?${params}`, {
-        method: 'GET',
-        headers: { 'User-Agent': 'AutoBid-SMS/1.0' }
-      });
-      
-      const result = await response.text();
-      console.log(`[SMS] OsonSMS API response:`, result);
-      
-      let jsonResult;
-      try {
-        jsonResult = JSON.parse(result);
-      } catch (parseError) {
-        // Some APIs return plain text success responses
-        if (result.toLowerCase().includes('success') || 
-            result.toLowerCase().includes('sent') || 
-            result.toLowerCase().includes('ok')) {
-          console.log(`[SMS] SMS sent successfully via OsonSMS (text response)`);
-          return { success: true, message: "SMS отправлен через OsonSMS" };
-        }
-        console.log(`[SMS] Non-JSON response from OsonSMS:`, result.substring(0, 200));
-        throw new Error('Invalid response format');
-      }
-      
-      // Check for success in JSON response
-      if (jsonResult.success || 
-          jsonResult.status === 'success' || 
-          jsonResult.txn_id || 
-          !jsonResult.error) {
-        console.log(`[SMS] SMS sent successfully via OsonSMS:`, jsonResult);
-        return { success: true, message: "SMS отправлен через OsonSMS" };
-      }
-      
-      // Handle API errors
-      if (jsonResult.error) {
-        console.log(`[SMS] OsonSMS API error: ${jsonResult.error.msg} (code: ${jsonResult.error.code})`);
-        
-        switch (jsonResult.error.code) {
-          case 105: // Account inactive
-            console.log(`[SMS] Account "${smsLogin}" is inactive or requires activation`);
-            break;
-          case 106: // Incorrect hash
-            console.log(`[SMS] Hash generation failed - check pass_salt_hash credential`);
-            break;
-          case 107: // Sender name not allowed
-            console.log(`[SMS] Sender name "${smsSender}" not authorized for this account`);
-            break;
-          case 100: // Missing parameters
-            console.log(`[SMS] Required parameters missing in API request`);
-            break;
-          case 102: // Insufficient balance
-            console.log(`[SMS] Account has insufficient balance for SMS sending`);
-            break;
-        }
-        
-        // Log the error but continue to demo mode
-        console.log(`[SMS] Falling back to demo mode due to API error`);
-      }
-      
-    } catch (apiError) {
-      console.log(`[SMS] OsonSMS API request failed:`, apiError instanceof Error ? apiError.message : String(apiError));
-    }
+    return { success: true, message: message.sid };
+    */
     
-    // Fallback to demo mode
-    console.log(`[SMS] Using demo mode - SMS code: ${code}`);
-    console.log(`[SMS] Please verify OsonSMS account status and pass_salt_hash credential`);
+    /* Пример с локальным SMS-шлюзом:
+    const response = await fetch('http://localhost:8080/send-sms', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        phone: phoneNumber,
+        text: `Код подтверждения AUTOBID.TJ: ${code}`
+      })
+    });
     
-    return { success: true, message: "SMS-код отправлен" };
+    return response.ok ? { success: true } : { success: false };
+    */
+    
+    // Текущая заглушка для разработки
+    console.log(`[SMS DEMO] Отправка SMS на ${phoneNumber}: ${code}`);
+    return { success: true, message: "SMS отправлен (демо-режим)" };
     
   } catch (error) {
-    console.error("[SMS] System error:", error);
-    return { success: true, message: "SMS-код отправлен" };
+    console.error("SMS sending failed:", error);
+    return { success: false, message: error instanceof Error ? error.message : "Unknown error" };
   }
 }

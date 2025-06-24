@@ -1,49 +1,180 @@
-# SMS Интеграция с OsonSMS API
+# SMS Integration Guide for AUTOBID.TJ
 
-## Текущий статус
-✅ SMS аутентификация активна и работает  
-✅ База данных настроена для хранения SMS кодов  
-✅ Гибридный режим: реальный API + демо fallback  
-✅ Веб-интерфейс для входа по SMS готов  
-✅ Автоматическая регистрация пользователей функционирует
-✅ Полный цикл аутентификации протестирован и работает
+## Overview
+Инфраструктура для отправки SMS-кодов подтверждения готова. Система включает API endpoints для отправки и проверки SMS-кодов с защитой от злоупотреблений.
 
-## Проблема с hash
-Текущий hash `a6d5d8b47551199899862d6d768a4cb1` возвращает ошибку "Incorrect hash" от OsonSMS API.
+## Current Status
+- ✅ SMS API endpoints созданы (`/api/auth/send-sms`, `/api/auth/verify-sms`)
+- ✅ Система генерации и хранения 6-значных кодов
+- ✅ Защита от спама (ограничение попыток, TTL кодов)
+- ✅ Кэширование кодов в памяти сервера
+- ⏳ Готово к интеграции с реальными SMS-провайдерами
 
-### Возможные решения:
-1. **Проверить hash в панели OsonSMS** - возможно нужно сгенерировать новый
-2. **Связаться с поддержкой OsonSMS** для проверки формата hash
-3. **Проверить алгоритм генерации hash** (MD5, SHA1, etc.)
+## API Endpoints
 
-## Как активировать реальную SMS отправку
+### POST /api/auth/send-sms
+Отправляет SMS-код на указанный номер телефона.
 
-### Когда hash будет исправлен:
-1. Убрать демо-режим из `server/routes.ts` в функции `sendSMSCode`
-2. Заменить строку:
-```javascript
-console.log(`[SMS] Неверный hash, используем демо-режим. Код: ${code}`);
-return { success: true, message: "SMS отправлен (демо-режим - проверьте hash)" };
+**Request:**
+```json
+{
+  "phoneNumber": "+992 (22) 222-22-22"
+}
 ```
 
-На:
-```javascript
-return { success: false, message: `Ошибка OsonSMS: ${result}` };
+**Response (success):**
+```json
+{
+  "success": true,
+  "message": "SMS код отправлен",
+  "code": "123456" // Только в development режиме
+}
 ```
 
-## Текущие credentials
-```
-SMS_LOGIN=zarex
-SMS_HASH=a6d5d8b47551199899862d6d768a4cb1  // НУЖНО ИСПРАВИТЬ
-SMS_SENDER=OsonSMS
-SMS_SERVER=https://api.osonsms.com/sendsms_v1.php
+### POST /api/auth/verify-sms
+Проверяет введенный SMS-код.
+
+**Request:**
+```json
+{
+  "phoneNumber": "+992 (22) 222-22-22",
+  "code": "123456"
+}
 ```
 
-## Тестирование
-- **Отправка SMS**: `POST /api/auth/send-sms` с `{"phoneNumber": "+992XXXXXXXXX"}`
-- **Проверка кода**: `POST /api/auth/verify-sms` с `{"phoneNumber": "+992XXXXXXXXX", "code": "XXXX"}`
+**Response (success):**
+```json
+{
+  "success": true,
+  "message": "Код подтвержден",
+  "phoneNumber": "+992 (22) 222-22-22"
+}
+```
 
-## Что работает сейчас
-1. Пользователи получают SMS коды (в демо-режиме коды в логах сервера)
-2. Коды проверяются и пользователи автоматически регистрируются
-3. Веб-интерфейс корректно обрабатывает весь процесс аутентификации
+## Security Features
+- **TTL кодов**: 5 минут с момента генерации
+- **Ограничение попыток**: максимум 3 попытки ввода кода
+- **Кэширование**: коды хранятся в памяти сервера
+- **Защита от спама**: можно добавить rate limiting
+
+## SMS Providers for Tajikistan
+
+### Recommended Providers:
+
+1. **Tcell SMS API**
+   - Основной мобильный оператор Таджикистана
+   - Высокая скорость доставки
+   - Требует контракт с оператором
+
+2. **Beeline SMS Gateway**
+   - Второй по величине оператор
+   - Хорошее покрытие
+   - API-интеграция доступна
+
+3. **Megafon SMS API**
+   - Третий оператор на рынке
+   - Стандартная интеграция
+
+4. **Twilio (International)**
+   - Международный провайдер
+   - Простая интеграция
+   - Может быть дороже
+
+## Integration Steps
+
+### 1. Получение API ключей
+```bash
+# Добавить в переменные окружения:
+TWILIO_ACCOUNT_SID=your_account_sid
+TWILIO_AUTH_TOKEN=your_auth_token
+TWILIO_PHONE_NUMBER=your_twilio_number
+
+# Или для локального провайдера:
+SMS_GATEWAY_URL=http://localhost:8080
+SMS_GATEWAY_API_KEY=your_api_key
+```
+
+### 2. Установка зависимостей
+```bash
+# Для Twilio:
+npm install twilio
+
+# Для других провайдеров обычно достаточно fetch
+```
+
+### 3. Обновление sendSMSCode функции
+В файле `server/routes.ts` раскомментируйте и настройте нужную интеграцию:
+
+```typescript
+// Пример для Twilio:
+const accountSid = process.env.TWILIO_ACCOUNT_SID;
+const authToken = process.env.TWILIO_AUTH_TOKEN;
+const client = require('twilio')(accountSid, authToken);
+
+const message = await client.messages.create({
+  body: `Ваш код подтверждения AUTOBID.TJ: ${code}`,
+  from: process.env.TWILIO_PHONE_NUMBER,
+  to: phoneNumber
+});
+```
+
+### 4. Обновление Frontend
+В `client/src/pages/Login.tsx` обновите handleSubmit для использования SMS API:
+
+```typescript
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  setIsLoading(true);
+
+  try {
+    const response = await fetch('/api/auth/send-sms', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ phoneNumber })
+    });
+
+    const data = await response.json();
+    
+    if (data.success) {
+      // Перейти на страницу ввода кода
+      navigate('/verify-code', { state: { phoneNumber } });
+    } else {
+      alert(data.error || 'Ошибка отправки SMS');
+    }
+  } catch (error) {
+    alert('Ошибка сети');
+  } finally {
+    setIsLoading(false);
+  }
+};
+```
+
+## Testing
+
+### Development Mode
+В режиме разработки коды выводятся в консоль сервера:
+```
+[SMS DEMO] Отправка SMS на +992 (22) 222-22-22: 123456
+```
+
+### Production Testing
+1. Проверьте работу с тестовым номером
+2. Убедитесь в корректности форматирования номеров
+3. Проверьте TTL и ограничения попыток
+4. Мониторьте логи отправки
+
+## Cost Considerations
+- **Tcell/Beeline**: ~0.01-0.05 сомони за SMS
+- **Twilio**: ~$0.05-0.10 за SMS
+- **Объем**: при 1000 регистраций в месяц = ~10-50 сомони
+
+## Next Steps
+1. Выбрать SMS-провайдера
+2. Получить API ключи
+3. Обновить функцию sendSMSCode
+4. Создать страницу ввода кода
+5. Протестировать интеграцию
+6. Добавить мониторинг и логирование
+
+## Support
+При возникновении вопросов по интеграции SMS обращайтесь к документации выбранного провайдера или к разработчикам системы.

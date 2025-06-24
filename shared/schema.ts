@@ -6,7 +6,6 @@ export const users = pgTable("users", {
   id: serial("id").primaryKey(),
   email: text("email").notNull().unique(),
   username: text("username").notNull().unique(),
-  phoneNumber: text("phone_number").unique(), // For SMS authentication
   fullName: text("full_name"), // Real name from profile
   role: text("role").notNull(), // 'buyer', 'seller', 'admin'
   profilePhoto: text("profile_photo"),
@@ -273,24 +272,3 @@ export const insertDeletedAlertSchema = createInsertSchema(deletedAlerts).omit({
 
 export type InsertDeletedAlert = z.infer<typeof insertDeletedAlertSchema>;
 export type DeletedAlert = typeof deletedAlerts.$inferSelect;
-
-// SMS Verification Codes table
-export const smsVerificationCodes = pgTable("sms_verification_codes", {
-  id: serial("id").primaryKey(),
-  phoneNumber: text("phone_number").notNull(),
-  code: text("code").notNull(),
-  isUsed: boolean("is_used").default(false),
-  expiresAt: timestamp("expires_at").notNull(),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-}, (table) => ({
-  phoneNumberIdx: index("sms_verification_codes_phone_idx").on(table.phoneNumber),
-  expiresAtIdx: index("sms_verification_codes_expires_idx").on(table.expiresAt),
-}));
-
-export const insertSmsVerificationCodeSchema = createInsertSchema(smsVerificationCodes).omit({
-  id: true,
-  createdAt: true,
-});
-
-export type InsertSmsVerificationCode = z.infer<typeof insertSmsVerificationCodeSchema>;
-export type SmsVerificationCode = typeof smsVerificationCodes.$inferSelect;
