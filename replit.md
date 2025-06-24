@@ -12,7 +12,8 @@ Auto auction application with React frontend, Express backend, and PostgreSQL da
 ## Recent Changes
 - **2025-06-24**: Fixed repeated deployment failures by creating production.cjs and main.js entry points
 - **2025-06-24**: Added safe database error handling to prevent crashes after rollback
-- **2025-06-24**: Identified rollback issue - DATABASE_URL remains pointing to old database credentials
+- **2025-06-24**: Identified rollback issue - DATABASE_URL stuck on old database (ep-broad-shadow-adb94hwu)
+- **2025-06-24**: Created recovery scripts and documentation for post-rollback database restoration
 
 ## Known Issues After Rollback
 When Replit rollback is performed:
@@ -22,10 +23,15 @@ When Replit rollback is performed:
 4. Application starts but database functions fail with authentication errors
 
 ## Rollback Recovery Process
-1. Application will start with safe error handling (no crash)
-2. Database connection needs to be recreated
-3. Schema needs to be pushed to new database
-4. Sample data needs to be reinitialized
+**Current Issue**: DATABASE_URL stuck on ep-broad-shadow-adb94hwu with invalid credentials
+
+**Recovery Steps**:
+1. Application starts with safe error handling (✓ Working)
+2. Database connection shows authentication failures (✓ Identified)  
+3. Manual database recreation required due to Replit environment limitation
+4. Alternative: Use static frontend mode until database issue resolved
+
+**Status**: App runs but database functions unavailable until environment reset
 
 ## User Preferences
 - Language: Russian
