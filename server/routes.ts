@@ -2,8 +2,8 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { db } from "./db";
-import { carListings, notifications, alertViews, carAlerts, deletedAlerts } from "../shared/schema";
-import { eq, and } from "drizzle-orm";
+import { carListings, notifications, alertViews, carAlerts } from "../shared/schema";
+import { eq, sql } from "drizzle-orm";
 import sharp from "sharp";
 import { insertCarListingSchema, insertBidSchema, insertFavoriteSchema, insertNotificationSchema, insertCarAlertSchema, insertBannerSchema, type CarAlert } from "@shared/schema";
 import { z } from "zod";
@@ -65,24 +65,6 @@ const adminAuth = (req: any, res: any, next: any) => {
 };
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Health check endpoint for deployment monitoring
-  app.get("/health", (req, res) => {
-    res.status(200).json({ 
-      status: "ok", 
-      timestamp: new Date().toISOString(),
-      uptime: process.uptime(),
-      environment: process.env.NODE_ENV || 'development'
-    });
-  });
-
-  app.get("/api/health", (req, res) => {
-    res.status(200).json({ 
-      status: "healthy", 
-      database: "connected",
-      timestamp: new Date().toISOString()
-    });
-  });
-
   // Fast cache for main listings
   const mainListingsCache = new Map();
   let mainListingsCacheTime = 0;
@@ -871,23 +853,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // First, get notification details to mark as viewed
       try {
-        const result = await db.select({
-          user_id: notifications.userId,
-          alert_id: notifications.alertId,
-          listing_id: notifications.listingId,
-          type: notifications.type
-        }).from(notifications).where(eq(notifications.id, notificationId));
+        const result = await db.execute(
+          sql`SELECT user_id, alert_id, listing_id, type FROM notifications WHERE id = ${notificationId}`
+        );
         
-        if (result.length > 0) {
-          const notification = result[0];
+        if (result.rows.length > 0) {
+          const notification = result.rows[0] as any;
           
           if (notification.type === "car_found" && notification.listing_id && notification.alert_id) {
             // Mark this alert as viewed so it won't appear again
-            await db.insert(alertViews).values({
-              userId: notification.user_id,
-              alertId: notification.alert_id,
-              listingId: notification.listing_id
-            }).onConflictDoNothing();
+            await db.execute(
+              sql`INSERT INTO alert_views (user_id, alert_id, listing_id) 
+                  VALUES (${notification.user_id}, ${notification.alert_id}, ${notification.listing_id})
+                  ON CONFLICT (user_id, alert_id, listing_id) DO NOTHING`
+            );
             console.log(`Marked alert ${notification.alert_id} for listing ${notification.listing_id} as viewed`);
           }
         }
@@ -944,14 +923,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
           maxYear: alert.maxYear
         });
         
-        const deletedCheck = await db.select({ id: deletedAlerts.id })
-          .from(deletedAlerts)
-          .where(and(
-            eq(deletedAlerts.userId, userId),
-            eq(deletedAlerts.alertData, alertData)
-          ));
+        const deletedCheck = await db.execute(
+          sql`SELECT id FROM deleted_alerts WHERE user_id = ${userId} AND alert_data = ${alertData}`
+        );
         
-        if (deletedCheck.length === 0) {
+        if (deletedCheck.rows.length === 0) {
           filteredAlerts.push(alert);
         }
       }
@@ -981,20 +957,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         maxYear: validatedData.maxYear
       });
       
-      const deletedAlertCheck = await db.select({ id: deletedAlerts.id })
-        .from(deletedAlerts)
-        .where(and(
-          eq(deletedAlerts.userId, validatedData.userId),
-          eq(deletedAlerts.alertData, alertData)
-        ));
+      const deletedAlertCheck = await db.execute(
+        sql`SELECT id FROM deleted_alerts WHERE user_id = ${validatedData.userId} AND alert_data = ${alertData}`
+      );
       
-      if (deletedAlertCheck.length > 0) {
+      if (deletedAlertCheck.rows.length > 0) {
         // Удаляем запись из deleted_alerts, чтобы разрешить повторное создание
-        await db.delete(deletedAlerts)
-          .where(and(
-            eq(deletedAlerts.userId, validatedData.userId),
-            eq(deletedAlerts.alertData, alertData)
-          ));
+        await db.execute(
+          sql`DELETE FROM deleted_alerts WHERE user_id = ${validatedData.userId} AND alert_data = ${alertData}`
+        );
         console.log(`Removed deleted alert restriction for user ${validatedData.userId}`);
       }
       
@@ -1035,10 +1006,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
       
       try {
-        await db.insert(deletedAlerts).values({
-          userId: alert.userId,
-          alertData: alertData
-        }).onConflictDoNothing();
+        await db.execute(
+          sql`INSERT INTO deleted_alerts (user_id, alert_data) 
+              VALUES (${alert.userId}, ${alertData})
+              ON CONFLICT (user_id, alert_data) DO NOTHING`
+        );
         console.log(`Marked alert ${alertId} as deleted for user ${alert.userId}`);
       } catch (deleteError) {
         console.log('Error marking alert as deleted:', deleteError);
@@ -1477,158 +1449,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("SMS verification error:", error);
       res.status(500).json({ error: "Ошибка сервера при проверке кода" });
-    }
-  });
-
-  // ADMIN ROUTES FOR RETOOL
-  
-  // Получить всех пользователей
-  app.get("/api/admin/users", adminAuth, async (req, res) => {
-    try {
-      const users = await storage.getAllUsers();
-      res.json(users);
-    } catch (error) {
-      res.status(500).json({ error: "Failed to fetch users" });
-    }
-  });
-
-  // Получить статистику для админ-панели
-  app.get("/api/admin/stats", adminAuth, async (req, res) => {
-    try {
-      const stats = await storage.getAdminStats();
-      res.json(stats);
-    } catch (error) {
-      res.status(500).json({ error: "Failed to fetch admin stats" });
-    }
-  });
-
-  // Обновить статус пользователя (активировать/деактивировать)
-  app.patch("/api/admin/users/:id/status", adminAuth, async (req, res) => {
-    try {
-      const userId = parseInt(req.params.id);
-      const { isActive } = req.body;
-      
-      if (typeof isActive !== 'boolean') {
-        return res.status(400).json({ error: "isActive must be a boolean" });
-      }
-
-      const user = await storage.updateUserStatus(userId, isActive);
-      if (!user) {
-        return res.status(404).json({ error: "User not found" });
-      }
-      
-      res.json(user);
-    } catch (error) {
-      res.status(500).json({ error: "Failed to update user status" });
-    }
-  });
-
-  // Обновить профиль пользователя
-  app.patch("/api/admin/users/:id/profile", adminAuth, async (req, res) => {
-    try {
-      const userId = parseInt(req.params.id);
-      const { fullName, profilePhoto } = req.body;
-      
-      const user = await storage.updateUserProfile(userId, { fullName, profilePhoto });
-      if (!user) {
-        return res.status(404).json({ error: "User not found" });
-      }
-      
-      res.json(user);
-    } catch (error) {
-      res.status(500).json({ error: "Failed to update user profile" });
-    }
-  });
-
-  // Получить все объявления с расширенной информацией для админки
-  app.get("/api/admin/listings", adminAuth, async (req, res) => {
-    try {
-      const { status, limit = 100 } = req.query;
-      
-      let listings;
-      if (status) {
-        listings = await storage.getListingsByStatus(status as string, Number(limit));
-      } else {
-        // Получить все объявления всех статусов
-        const allStatuses = ['pending', 'active', 'ended', 'rejected'];
-        const allListings = await Promise.all(
-          allStatuses.map(s => storage.getListingsByStatus(s, Number(limit) / allStatuses.length))
-        );
-        listings = allListings.flat();
-      }
-
-      // Обогащаем данными о продавце и количестве ставок
-      const enrichedListings = await Promise.all(
-        listings.map(async (listing) => {
-          const seller = await storage.getUser(listing.sellerId);
-          const bidCount = await storage.getBidCountForListing(listing.id);
-          
-          return {
-            ...listing,
-            seller: {
-              id: seller?.id,
-              username: seller?.username,
-              email: seller?.email,
-              fullName: seller?.fullName,
-              isActive: seller?.isActive
-            },
-            bidCount
-          };
-        })
-      );
-      
-      res.json(enrichedListings);
-    } catch (error) {
-      res.status(500).json({ error: "Failed to fetch admin listings" });
-    }
-  });
-
-  // Получить все ставки с информацией о пользователях
-  app.get("/api/admin/bids", adminAuth, async (req, res) => {
-    try {
-      const { listingId, userId, limit = 100 } = req.query;
-      
-      let bids;
-      if (listingId) {
-        bids = await storage.getBidsForListing(Number(listingId));
-      } else if (userId) {
-        bids = await storage.getBidsByUser(Number(userId));
-      } else {
-        // Получить все ставки через storage метод
-        const allListings = await storage.getListingsByStatus('active', Number(limit));
-        const allBidPromises = allListings.map(listing => storage.getBidsForListing(listing.id));
-        const allBidsArrays = await Promise.all(allBidPromises);
-        bids = allBidsArrays.flat().slice(0, Number(limit));
-      }
-
-      // Обогащаем данными о пользователе и объявлении
-      const enrichedBids = await Promise.all(
-        bids.map(async (bid) => {
-          const bidder = await storage.getUser(bid.bidderId);
-          const listing = await storage.getListing(bid.listingId);
-          
-          return {
-            ...bid,
-            bidder: {
-              id: bidder?.id,
-              username: bidder?.username,
-              email: bidder?.email,
-              fullName: bidder?.fullName
-            },
-            listing: {
-              id: listing?.id,
-              make: listing?.make,
-              model: listing?.model,
-              year: listing?.year,
-              lotNumber: listing?.lotNumber
-            }
-          };
-        })
-      );
-      
-      res.json(enrichedBids);
-    } catch (error) {
-      res.status(500).json({ error: "Failed to fetch admin bids" });
     }
   });
 

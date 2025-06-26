@@ -73,24 +73,15 @@ app.use((req, res, next) => {
     serveStatic(app);
   }
 
-  // Production deployment with fallback port handling
+  // ALWAYS serve the app on port 5000
+  // this serves both the API and the client.
+  // It is the only port that is not firewalled.
   const port = process.env.PORT || 5000;
-  const host = process.env.HOST || "0.0.0.0";
-  
-  try {
-    server.listen(Number(port), host, () => {
-      log(`🚀 Auto Auction App serving on ${host}:${port}`);
-      log(`Environment: ${process.env.NODE_ENV || 'development'}`);
-    });
-  } catch (err: any) {
-    if (err.code === 'EADDRINUSE') {
-      const fallbackPort = Number(port) + Math.floor(Math.random() * 1000);
-      log(`Port ${port} busy, using fallback port ${fallbackPort}`);
-      server.listen(fallbackPort, host, () => {
-        log(`🚀 Auto Auction App serving on ${host}:${fallbackPort}`);
-      });
-    } else {
-      throw err;
-    }
-  }
+  server.listen({
+    port: Number(port),
+    host: "0.0.0.0",
+    reusePort: true,
+  }, () => {
+    log(`serving on port ${port}`);
+  });
 })();

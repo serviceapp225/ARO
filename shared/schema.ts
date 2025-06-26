@@ -254,21 +254,3 @@ export const insertAlertViewSchema = createInsertSchema(alertViews).omit({
 
 export type InsertAlertView = z.infer<typeof insertAlertViewSchema>;
 export type AlertView = typeof alertViews.$inferSelect;
-
-// Deleted Alerts table to track alerts that users have manually deleted
-export const deletedAlerts = pgTable("deleted_alerts", {
-  id: serial("id").primaryKey(),
-  userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
-  alertData: text("alert_data").notNull(), // JSON string of alert criteria
-  deletedAt: timestamp("deleted_at").defaultNow().notNull(),
-}, (table) => ({
-  userAlertDataUnique: index("user_alert_data_unique").on(table.userId, table.alertData),
-}));
-
-export const insertDeletedAlertSchema = createInsertSchema(deletedAlerts).omit({
-  id: true,
-  deletedAt: true,
-});
-
-export type InsertDeletedAlert = z.infer<typeof insertDeletedAlertSchema>;
-export type DeletedAlert = typeof deletedAlerts.$inferSelect;
