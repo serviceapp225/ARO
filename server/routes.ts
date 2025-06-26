@@ -1452,6 +1452,81 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ===============================
+  // NOCODB ADMIN PANEL INTEGRATION
+  // ===============================
+  
+  let nocodbProcess: any = null;
+  
+  // Маршрут для запуска NocoDB
+  app.get("/admin/nocodb", async (req, res) => {
+    try {
+      if (!nocodbProcess) {
+        console.log("Starting NocoDB admin panel...");
+        
+        const { spawn } = await import('child_process');
+        nocodbProcess = spawn('npx', ['nocodb', '--port', '8080'], {
+          env: {
+            ...process.env,
+            NC_DB: process.env.DATABASE_URL,
+            NC_AUTH_JWT_SECRET: 'autobid-nocodb-secret-2024',
+            NC_ADMIN_EMAIL: 'admin@autobid.tj',
+            NC_ADMIN_PASSWORD: 'admin123456',
+            NC_DISABLE_TELE: 'true',
+            NC_PUBLIC_URL: `${req.protocol}://${req.get('host')}/admin/nocodb`
+          },
+          stdio: 'pipe'
+        });
+
+        nocodbProcess.stdout?.on('data', (data: Buffer) => {
+          console.log('NocoDB:', data.toString());
+        });
+
+        nocodbProcess.stderr?.on('data', (data: Buffer) => {
+          console.error('NocoDB Error:', data.toString());
+        });
+
+        nocodbProcess.on('error', (error: Error) => {
+          console.error('NocoDB process error:', error);
+          nocodbProcess = null;
+        });
+
+        // Ждем запуска NocoDB
+        await new Promise(resolve => setTimeout(resolve, 5000));
+      }
+      
+      // Проксируем запросы к NocoDB
+      const url = `http://localhost:8080${req.url.replace('/admin/nocodb', '')}`;
+      
+      res.redirect(url);
+    } catch (error) {
+      console.error('NocoDB startup error:', error);
+      res.status(500).json({ error: "Failed to start NocoDB admin panel" });
+    }
+  });
+
+  // Проксирование всех запросов к NocoDB
+  app.use("/admin/nocodb", async (req, res, next) => {
+    try {
+      const targetUrl = `http://localhost:8080${req.url}`;
+      
+      // Простое проксирование через fetch
+      const response = await fetch(targetUrl, {
+        method: req.method,
+        headers: {
+          ...req.headers,
+          host: 'localhost:8080'
+        } as any,
+        body: req.method !== 'GET' && req.method !== 'HEAD' ? JSON.stringify(req.body) : undefined
+      });
+      
+      const data = await response.text();
+      res.status(response.status).send(data);
+    } catch (error) {
+      next();
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
