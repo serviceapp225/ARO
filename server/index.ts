@@ -51,13 +51,8 @@ app.use((req, res, next) => {
 });
 
 (async () => {
-  // Initialize database with sample data - with error handling for deployment issues
-  try {
-    await initializeDatabaseWithSampleData();
-    console.log("Database initialized successfully");
-  } catch (error) {
-    console.warn("Database initialization failed, continuing with fallback mode:", error instanceof Error ? error.message : String(error));
-  }
+  // Initialize database with sample data
+  await initializeDatabaseWithSampleData();
   
   const server = await registerRoutes(app);
 
