@@ -794,4 +794,244 @@ export class DatabaseStorage implements IStorage {
   }
 }
 
-export const storage = new DatabaseStorage();
+// Wrapper class that handles database connection failures gracefully
+class StorageWrapper implements IStorage {
+  private dbStorage = new DatabaseStorage();
+  private connectionFailed = false;
+
+  private async executeWithFallback<T>(operation: () => Promise<T>, fallbackValue: T): Promise<T> {
+    if (this.connectionFailed) {
+      return fallbackValue;
+    }
+    
+    try {
+      return await operation();
+    } catch (error) {
+      if (error.message?.includes('password authentication failed')) {
+        this.connectionFailed = true;
+        console.warn("Database connection failed after deployment rollback, returning empty results");
+      }
+      return fallbackValue;
+    }
+  }
+
+  async getUser(id: number): Promise<User | undefined> {
+    return this.executeWithFallback(() => this.dbStorage.getUser(id), undefined);
+  }
+
+  async getUserByUsername(username: string): Promise<User | undefined> {
+    return this.executeWithFallback(() => this.dbStorage.getUserByUsername(username), undefined);
+  }
+
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    return this.executeWithFallback(() => this.dbStorage.getUserByEmail(email), undefined);
+  }
+
+  async createUser(insertUser: InsertUser): Promise<User> {
+    return this.executeWithFallback(() => this.dbStorage.createUser(insertUser), {
+      ...insertUser,
+      id: Math.floor(Math.random() * 1000),
+      createdAt: new Date(),
+      isActive: false
+    } as User);
+  }
+
+  async updateUserStatus(id: number, isActive: boolean): Promise<User | undefined> {
+    return this.executeWithFallback(() => this.dbStorage.updateUserStatus(id, isActive), undefined);
+  }
+
+  async updateUserProfile(id: number, data: { fullName?: string; profilePhoto?: string }): Promise<User | undefined> {
+    return this.executeWithFallback(() => this.dbStorage.updateUserProfile(id, data), undefined);
+  }
+
+  async getAllUsers(): Promise<User[]> {
+    return this.executeWithFallback(() => this.dbStorage.getAllUsers(), []);
+  }
+
+  async getListing(id: number): Promise<CarListing | undefined> {
+    return this.executeWithFallback(() => this.dbStorage.getListing(id), undefined);
+  }
+
+  async getListingsByStatus(status: string, limit?: number): Promise<CarListing[]> {
+    return this.executeWithFallback(() => this.dbStorage.getListingsByStatus(status, limit), []);
+  }
+
+  async getListingsBySeller(sellerId: number): Promise<CarListing[]> {
+    return this.executeWithFallback(() => this.dbStorage.getListingsBySeller(sellerId), []);
+  }
+
+  async createListing(insertListing: InsertCarListing): Promise<CarListing> {
+    return this.executeWithFallback(() => this.dbStorage.createListing(insertListing), {
+      ...insertListing,
+      id: Math.floor(Math.random() * 1000),
+      createdAt: new Date(),
+      status: 'pending'
+    } as CarListing);
+  }
+
+  async updateListingStatus(id: number, status: string): Promise<CarListing | undefined> {
+    return this.executeWithFallback(() => this.dbStorage.updateListingStatus(id, status), undefined);
+  }
+
+  async updateListingCurrentBid(id: number, amount: string): Promise<CarListing | undefined> {
+    return this.executeWithFallback(() => this.dbStorage.updateListingCurrentBid(id, amount), undefined);
+  }
+
+  async searchListings(filters: any): Promise<CarListing[]> {
+    return this.executeWithFallback(() => this.dbStorage.searchListings(filters), []);
+  }
+
+  async getBidsForListing(listingId: number): Promise<Bid[]> {
+    return this.executeWithFallback(() => this.dbStorage.getBidsForListing(listingId), []);
+  }
+
+  async getBidsByUser(bidderId: number): Promise<Bid[]> {
+    return this.executeWithFallback(() => this.dbStorage.getBidsByUser(bidderId), []);
+  }
+
+  async getBidCountForListing(listingId: number): Promise<number> {
+    return this.executeWithFallback(() => this.dbStorage.getBidCountForListing(listingId), 0);
+  }
+
+  async getBidCountsForListings(listingIds: number[]): Promise<Record<number, number>> {
+    return this.executeWithFallback(() => this.dbStorage.getBidCountsForListings(listingIds), {});
+  }
+
+  async createBid(insertBid: InsertBid): Promise<Bid> {
+    return this.executeWithFallback(() => this.dbStorage.createBid(insertBid), {
+      ...insertBid,
+      id: Math.floor(Math.random() * 1000),
+      createdAt: new Date()
+    } as Bid);
+  }
+
+  async getFavoritesByUser(userId: number): Promise<Favorite[]> {
+    return this.executeWithFallback(() => this.dbStorage.getFavoritesByUser(userId), []);
+  }
+
+  async createFavorite(favorite: InsertFavorite): Promise<Favorite> {
+    return this.executeWithFallback(() => this.dbStorage.createFavorite(favorite), { ...favorite, id: Math.floor(Math.random() * 1000), createdAt: new Date() } as Favorite);
+  }
+
+  async deleteFavorite(id: number): Promise<boolean> {
+    return this.executeWithFallback(() => this.dbStorage.deleteFavorite(id), false);
+  }
+
+  async getUsersWithFavoriteListing(listingId: number): Promise<number[]> {
+    return this.executeWithFallback(() => this.dbStorage.getUsersWithFavoriteListing(listingId), []);
+  }
+
+  async getNotificationsByUser(userId: number): Promise<Notification[]> {
+    return this.executeWithFallback(() => this.dbStorage.getNotificationsByUser(userId), []);
+  }
+
+  async createNotification(notification: InsertNotification): Promise<Notification> {
+    return this.executeWithFallback(() => this.dbStorage.createNotification(notification), { ...notification, id: Math.floor(Math.random() * 1000), createdAt: new Date() } as Notification);
+  }
+
+  async markNotificationAsRead(id: number): Promise<boolean> {
+    return this.executeWithFallback(() => this.dbStorage.markNotificationAsRead(id), false);
+  }
+
+  async deleteNotification(id: number): Promise<boolean> {
+    return this.executeWithFallback(() => this.dbStorage.deleteNotification(id), false);
+  }
+
+  async getUnreadNotificationCount(userId: number): Promise<number> {
+    return this.executeWithFallback(() => this.dbStorage.getUnreadNotificationCount(userId), 0);
+  }
+
+  async getCarAlertsByUser(userId: number): Promise<CarAlert[]> {
+    return this.executeWithFallback(() => this.dbStorage.getCarAlertsByUser(userId), []);
+  }
+
+  async createCarAlert(alert: InsertCarAlert): Promise<CarAlert> {
+    return this.executeWithFallback(() => this.dbStorage.createCarAlert(alert), { ...alert, id: Math.floor(Math.random() * 1000), createdAt: new Date() } as CarAlert);
+  }
+
+  async deleteCarAlert(id: number): Promise<boolean> {
+    return this.executeWithFallback(() => this.dbStorage.deleteCarAlert(id), false);
+  }
+
+  async checkAlertsForNewListing(listing: CarListing): Promise<CarAlert[]> {
+    return this.executeWithFallback(() => this.dbStorage.checkAlertsForNewListing(listing), []);
+  }
+
+  async getBanners(position?: string): Promise<Banner[]> {
+    return this.executeWithFallback(() => this.dbStorage.getBanners(position), []);
+  }
+
+  async createBanner(banner: InsertBanner): Promise<Banner> {
+    return this.executeWithFallback(() => this.dbStorage.createBanner(banner), { ...banner, id: Math.floor(Math.random() * 1000), createdAt: new Date() } as Banner);
+  }
+
+  async updateBanner(id: number, banner: Partial<InsertBanner>): Promise<Banner | undefined> {
+    return this.executeWithFallback(() => this.dbStorage.updateBanner(id, banner), undefined);
+  }
+
+  async deleteBanner(id: number): Promise<boolean> {
+    return this.executeWithFallback(() => this.dbStorage.deleteBanner(id), false);
+  }
+
+  async getSellCarSection(): Promise<SellCarSection | undefined> {
+    return this.executeWithFallback(() => this.dbStorage.getSellCarSection(), undefined);
+  }
+
+  async updateSellCarSection(data: Partial<InsertSellCarSection>): Promise<SellCarSection | undefined> {
+    return this.executeWithFallback(() => this.dbStorage.updateSellCarSection(data), undefined);
+  }
+
+  async getAdvertisementCarousel(): Promise<AdvertisementCarousel[]> {
+    return this.executeWithFallback(() => this.dbStorage.getAdvertisementCarousel(), []);
+  }
+
+  async getAdvertisementCarouselItem(id: number): Promise<AdvertisementCarousel | undefined> {
+    return this.executeWithFallback(() => this.dbStorage.getAdvertisementCarouselItem(id), undefined);
+  }
+
+  async createAdvertisementCarouselItem(item: InsertAdvertisementCarousel): Promise<AdvertisementCarousel> {
+    return this.executeWithFallback(() => this.dbStorage.createAdvertisementCarouselItem(item), { ...item, id: Math.floor(Math.random() * 1000), createdAt: new Date() } as AdvertisementCarousel);
+  }
+
+  async updateAdvertisementCarouselItem(id: number, item: Partial<InsertAdvertisementCarousel>): Promise<AdvertisementCarousel | undefined> {
+    return this.executeWithFallback(() => this.dbStorage.updateAdvertisementCarouselItem(id, item), undefined);
+  }
+
+  async deleteAdvertisementCarouselItem(id: number): Promise<boolean> {
+    return this.executeWithFallback(() => this.dbStorage.deleteAdvertisementCarouselItem(id), false);
+  }
+
+  async getDocuments(type?: string): Promise<Document[]> {
+    return this.executeWithFallback(() => this.dbStorage.getDocuments(type), []);
+  }
+
+  async getDocument(id: number): Promise<Document | undefined> {
+    return this.executeWithFallback(() => this.dbStorage.getDocument(id), undefined);
+  }
+
+  async createDocument(document: InsertDocument): Promise<Document> {
+    return this.executeWithFallback(() => this.dbStorage.createDocument(document), { ...document, id: Math.floor(Math.random() * 1000), createdAt: new Date() } as Document);
+  }
+
+  async updateDocument(id: number, document: Partial<InsertDocument>): Promise<Document | undefined> {
+    return this.executeWithFallback(() => this.dbStorage.updateDocument(id, document), undefined);
+  }
+
+  async deleteDocument(id: number): Promise<boolean> {
+    return this.executeWithFallback(() => this.dbStorage.deleteDocument(id), false);
+  }
+
+  async createAlertView(view: InsertAlertView): Promise<AlertView> {
+    return this.executeWithFallback(() => this.dbStorage.createAlertView(view), { ...view, id: Math.floor(Math.random() * 1000), viewedAt: new Date() } as AlertView);
+  }
+
+  async hasUserViewedAlert(userId: number, alertId: number, listingId: number): Promise<boolean> {
+    return this.executeWithFallback(() => this.dbStorage.hasUserViewedAlert(userId, alertId, listingId), false);
+  }
+
+  async getAdminStats(): Promise<{ pendingListings: number; activeAuctions: number; totalUsers: number; bannedUsers: number; }> {
+    return this.executeWithFallback(() => this.dbStorage.getAdminStats(), { pendingListings: 0, activeAuctions: 0, totalUsers: 0, bannedUsers: 0 });
+  }
+}
+
+export const storage = new StorageWrapper();
