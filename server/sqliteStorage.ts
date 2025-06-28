@@ -579,9 +579,64 @@ export class SQLiteStorage implements IStorage {
   async markNotificationAsRead(id: number): Promise<boolean> { return false; }
   async deleteNotification(id: number): Promise<boolean> { return false; }
   async getUnreadNotificationCount(userId: number): Promise<number> { return 0; }
-  async getCarAlertsByUser(userId: number): Promise<CarAlert[]> { return []; }
-  async createCarAlert(insertAlert: InsertCarAlert): Promise<CarAlert> { throw new Error('Not implemented'); }
-  async deleteCarAlert(id: number): Promise<boolean> { return false; }
+  // Car alerts operations
+  async getCarAlertsByUser(userId: number): Promise<CarAlert[]> {
+    const stmt = this.db.prepare('SELECT * FROM car_alerts WHERE user_id = ? ORDER BY created_at DESC');
+    const rows: any[] = stmt.all(userId);
+    return rows.map((row: any) => ({
+      id: row.id,
+      userId: row.user_id,
+      make: row.make,
+      model: row.model,
+      minPrice: row.min_price ? row.min_price.toString() : null,
+      maxPrice: row.max_price ? row.max_price.toString() : null,
+      maxYear: row.max_year,
+      minYear: row.min_year,
+      isActive: Boolean(row.is_active),
+      createdAt: new Date(row.created_at)
+    }));
+  }
+
+  async createCarAlert(insertAlert: InsertCarAlert): Promise<CarAlert> {
+    const stmt = this.db.prepare(`
+      INSERT INTO car_alerts (user_id, make, model, min_price, max_price, max_year, min_year, is_active) 
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    `);
+    
+    const result = stmt.run(
+      insertAlert.userId,
+      insertAlert.make,
+      insertAlert.model || null,
+      insertAlert.minPrice ? parseFloat(insertAlert.minPrice) : null,
+      insertAlert.maxPrice ? parseFloat(insertAlert.maxPrice) : null,
+      insertAlert.maxYear || null,
+      insertAlert.minYear || null,
+      insertAlert.isActive !== false ? 1 : 0
+    );
+    
+    // Get the created alert
+    const getAlertStmt = this.db.prepare('SELECT * FROM car_alerts WHERE id = ?');
+    const row: any = getAlertStmt.get(result.lastInsertRowid);
+    
+    return {
+      id: row.id,
+      userId: row.user_id,
+      make: row.make,
+      model: row.model,
+      minPrice: row.min_price ? row.min_price.toString() : null,
+      maxPrice: row.max_price ? row.max_price.toString() : null,
+      maxYear: row.max_year,
+      minYear: row.min_year,
+      isActive: Boolean(row.is_active),
+      createdAt: new Date(row.created_at)
+    };
+  }
+
+  async deleteCarAlert(id: number): Promise<boolean> {
+    const stmt = this.db.prepare('DELETE FROM car_alerts WHERE id = ?');
+    const result = stmt.run(id);
+    return result.changes > 0;
+  }
   async checkAlertsForNewListing(listing: CarListing): Promise<CarAlert[]> { return []; }
   async getBanners(position?: string): Promise<Banner[]> { return []; }
   async createBanner(insertBanner: InsertBanner): Promise<Banner> { throw new Error('Not implemented'); }
