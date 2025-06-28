@@ -962,37 +962,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/car-alerts", async (req, res) => {
     try {
+      console.log('Creating car alert with data:', req.body);
       const validatedData = insertCarAlertSchema.parse(req.body);
       
-      // Проверяем, не был ли такой алерт удален ранее
-      const alertData = JSON.stringify({
-        make: validatedData.make,
-        model: validatedData.model,
-        minPrice: validatedData.minPrice,
-        maxPrice: validatedData.maxPrice,
-        minYear: validatedData.minYear,
-        maxYear: validatedData.maxYear
-      });
-      
-      const deletedAlertCheck = await db.execute(
-        sql`SELECT id FROM deleted_alerts WHERE user_id = ${validatedData.userId} AND alert_data = ${alertData}`
-      );
-      
-      if (deletedAlertCheck.rows.length > 0) {
-        // Удаляем запись из deleted_alerts, чтобы разрешить повторное создание
-        await db.execute(
-          sql`DELETE FROM deleted_alerts WHERE user_id = ${validatedData.userId} AND alert_data = ${alertData}`
-        );
-        console.log(`Removed deleted alert restriction for user ${validatedData.userId}`);
-      }
-      
+      // Создаем уведомление напрямую через storage
       const alert = await storage.createCarAlert(validatedData);
       
       // Очищаем кэш для этого пользователя
       clearCachePattern(`car-alerts-${validatedData.userId}`);
       
+      console.log('Car alert created successfully:', alert);
       res.status(201).json(alert);
     } catch (error) {
+      console.error('Error creating car alert:', error);
       if (error instanceof z.ZodError) {
         return res.status(400).json({ error: "Invalid alert data", details: error.errors });
       }
