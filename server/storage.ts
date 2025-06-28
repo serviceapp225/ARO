@@ -794,8 +794,32 @@ export class DatabaseStorage implements IStorage {
   }
 }
 
-import { SimpleMemoryStorage } from './simpleMemoryStorage';
+// Try to use database storage, fall back to memory storage if needed
+let storage: IStorage;
 
-// Use simple memory storage for now
-console.log('Using SimpleMemoryStorage with sample car auction data');
-export const storage = new SimpleMemoryStorage();
+async function initializeStorage(): Promise<IStorage> {
+  try {
+    const dbStorage = new DatabaseStorage();
+    // Test the database connection
+    await dbStorage.getListingsByStatus('active', 1);
+    console.log('Подключение к базе данных успешно, используем DatabaseStorage');
+    return dbStorage;
+  } catch (error) {
+    console.warn('Не удалось подключиться к базе данных, используем временные данные:', error instanceof Error ? error.message : String(error));
+    const { SimpleMemoryStorage } = await import('./simpleMemoryStorage');
+    return new SimpleMemoryStorage();
+  }
+}
+
+// Initialize storage with real database
+const dbStorage = new DatabaseStorage();
+storage = dbStorage;
+
+// Test connection and fall back if needed
+initializeStorage().then(initializedStorage => {
+  storage = initializedStorage;
+}).catch(error => {
+  console.error('Ошибка инициализации хранилища:', error);
+});
+
+export { storage };

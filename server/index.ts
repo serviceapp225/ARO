@@ -52,8 +52,19 @@ app.use((req, res, next) => {
 });
 
 (async () => {
-  // Skip database initialization for now - using memory storage
-  console.log("Using memory storage - database will be configured later");
+  // Create database tables and initialize with sample data
+  try {
+    const tablesCreated = await createTables();
+    
+    if (tablesCreated) {
+      console.log("Таблицы базы данных созданы успешно");
+      // Initialize with sample data
+      await initializeDatabaseWithSampleData();
+    }
+  } catch (error) {
+    console.error("Ошибка настройки базы данных:", error instanceof Error ? error.message : String(error));
+    console.log("Продолжаем с временными данными");
+  }
   
   const server = await registerRoutes(app);
 

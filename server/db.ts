@@ -5,12 +5,15 @@ import * as schema from "@shared/schema";
 
 neonConfig.webSocketConstructor = ws;
 
-// Build DATABASE_URL from individual environment variables if not available
-let connectionString = process.env.DATABASE_URL;
+// Always build DATABASE_URL from individual environment variables for fresh connection
+let connectionString: string;
 
-if (!connectionString && process.env.PGUSER && process.env.PGPASSWORD && process.env.PGHOST && process.env.PGPORT && process.env.PGDATABASE) {
+if (process.env.PGUSER && process.env.PGPASSWORD && process.env.PGHOST && process.env.PGPORT && process.env.PGDATABASE) {
   connectionString = `postgresql://${process.env.PGUSER}:${process.env.PGPASSWORD}@${process.env.PGHOST}:${process.env.PGPORT}/${process.env.PGDATABASE}?sslmode=require`;
-  console.log("Built DATABASE_URL from individual environment variables");
+  console.log("Использую новые учетные данные базы данных");
+} else {
+  connectionString = process.env.DATABASE_URL || '';
+  console.log("Использую DATABASE_URL из переменной окружения");
 }
 
 if (!connectionString) {
