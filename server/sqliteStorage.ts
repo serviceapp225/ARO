@@ -12,15 +12,16 @@ export class SQLiteStorage implements IStorage {
   private db: Database.Database;
 
   constructor() {
-    this.db = new Database(':memory:');
+    // Используем файловую базу данных для сохранения данных
+    this.db = new Database('autoauction.db');
     this.createTables();
     this.initializeSampleData();
   }
 
   private createTables() {
-    // Create users table
+    // Create users table (только если не существует)
     this.db.exec(`
-      CREATE TABLE users (
+      CREATE TABLE IF NOT EXISTS users (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         email TEXT NOT NULL UNIQUE,
         username TEXT NOT NULL UNIQUE,
@@ -32,9 +33,9 @@ export class SQLiteStorage implements IStorage {
       )
     `);
 
-    // Create car_listings table
+    // Create car_listings table (только если не существует)
     this.db.exec(`
-      CREATE TABLE car_listings (
+      CREATE TABLE IF NOT EXISTS car_listings (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         seller_id INTEGER NOT NULL,
         lot_number TEXT NOT NULL,
@@ -69,9 +70,9 @@ export class SQLiteStorage implements IStorage {
       )
     `);
 
-    // Create other tables
+    // Create other tables (только если не существуют)
     this.db.exec(`
-      CREATE TABLE bids (
+      CREATE TABLE IF NOT EXISTS bids (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         listing_id INTEGER NOT NULL,
         bidder_id INTEGER NOT NULL,
@@ -81,7 +82,7 @@ export class SQLiteStorage implements IStorage {
     `);
 
     this.db.exec(`
-      CREATE TABLE favorites (
+      CREATE TABLE IF NOT EXISTS favorites (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         user_id INTEGER NOT NULL,
         listing_id INTEGER NOT NULL,
@@ -90,7 +91,7 @@ export class SQLiteStorage implements IStorage {
     `);
 
     this.db.exec(`
-      CREATE TABLE notifications (
+      CREATE TABLE IF NOT EXISTS notifications (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         user_id INTEGER NOT NULL,
         type TEXT NOT NULL,
@@ -104,7 +105,7 @@ export class SQLiteStorage implements IStorage {
     `);
 
     this.db.exec(`
-      CREATE TABLE car_alerts (
+      CREATE TABLE IF NOT EXISTS car_alerts (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         user_id INTEGER NOT NULL,
         make TEXT NOT NULL,
@@ -119,7 +120,7 @@ export class SQLiteStorage implements IStorage {
     `);
 
     this.db.exec(`
-      CREATE TABLE banners (
+      CREATE TABLE IF NOT EXISTS banners (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         title TEXT NOT NULL,
         description TEXT,
@@ -133,7 +134,7 @@ export class SQLiteStorage implements IStorage {
     `);
 
     this.db.exec(`
-      CREATE TABLE sell_car_section (
+      CREATE TABLE IF NOT EXISTS sell_car_section (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         title TEXT NOT NULL,
         description TEXT NOT NULL,
@@ -144,7 +145,7 @@ export class SQLiteStorage implements IStorage {
     `);
 
     this.db.exec(`
-      CREATE TABLE advertisement_carousel (
+      CREATE TABLE IF NOT EXISTS advertisement_carousel (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         title TEXT NOT NULL,
         description TEXT,
@@ -157,7 +158,7 @@ export class SQLiteStorage implements IStorage {
     `);
 
     this.db.exec(`
-      CREATE TABLE documents (
+      CREATE TABLE IF NOT EXISTS documents (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         title TEXT NOT NULL,
         content TEXT NOT NULL,
@@ -168,7 +169,7 @@ export class SQLiteStorage implements IStorage {
     `);
 
     this.db.exec(`
-      CREATE TABLE alert_views (
+      CREATE TABLE IF NOT EXISTS alert_views (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         user_id INTEGER NOT NULL,
         alert_id INTEGER NOT NULL,
@@ -179,6 +180,15 @@ export class SQLiteStorage implements IStorage {
   }
 
   private initializeSampleData() {
+    // Проверяем, есть ли уже данные
+    const userCount = this.db.prepare('SELECT COUNT(*) as count FROM users').get() as { count: number };
+    if (userCount.count > 0) {
+      console.log('База данных уже содержит данные, пропускаем инициализацию');
+      return;
+    }
+    
+    console.log('Инициализация базы данных с демонстрационными данными...');
+    
     // Insert sample users
     const insertUser = this.db.prepare(`
       INSERT INTO users (username, email, role, is_active, full_name) 
