@@ -574,27 +574,84 @@ export class SQLiteStorage implements IStorage {
     return result.changes > 0;
   }
   async getUsersWithFavoriteListing(listingId: number): Promise<number[]> { return []; }
-  async getNotificationsByUser(userId: number): Promise<Notification[]> { return []; }
-  async createNotification(insertNotification: InsertNotification): Promise<Notification> { throw new Error('Not implemented'); }
+  async getNotificationsByUser(userId: number): Promise<Notification[]> {
+    try {
+      const stmt = this.db.prepare('SELECT * FROM notifications WHERE user_id = ? ORDER BY created_at DESC');
+      const rows: any[] = stmt.all(userId);
+      return rows.map((row: any) => ({
+        id: row.id,
+        userId: row.user_id,
+        type: row.type,
+        title: row.title,
+        message: row.message,
+        listingId: row.listing_id,
+        isRead: Boolean(row.is_read),
+        createdAt: new Date(row.created_at)
+      }));
+    } catch (error) {
+      console.error('Error fetching notifications for user:', userId, error);
+      return [];
+    }
+  }
+  async createNotification(insertNotification: InsertNotification): Promise<Notification> {
+    try {
+      const stmt = this.db.prepare(`
+        INSERT INTO notifications (user_id, type, title, message, listing_id, is_read) 
+        VALUES (?, ?, ?, ?, ?, ?)
+      `);
+      
+      const result = stmt.run(
+        insertNotification.userId,
+        insertNotification.type,
+        insertNotification.title,
+        insertNotification.message,
+        insertNotification.listingId || null,
+        insertNotification.isRead !== true ? 0 : 1
+      );
+      
+      // Get the created notification
+      const getNotificationStmt = this.db.prepare('SELECT * FROM notifications WHERE id = ?');
+      const row: any = getNotificationStmt.get(result.lastInsertRowid);
+      
+      return {
+        id: row.id,
+        userId: row.user_id,
+        type: row.type,
+        title: row.title,
+        message: row.message,
+        listingId: row.listing_id,
+        isRead: Boolean(row.is_read),
+        createdAt: new Date(row.created_at)
+      };
+    } catch (error) {
+      console.error('Error creating notification:', error);
+      throw new Error('Failed to create notification');
+    }
+  }
   async markNotificationAsRead(id: number): Promise<boolean> { return false; }
   async deleteNotification(id: number): Promise<boolean> { return false; }
   async getUnreadNotificationCount(userId: number): Promise<number> { return 0; }
   // Car alerts operations
   async getCarAlertsByUser(userId: number): Promise<CarAlert[]> {
-    const stmt = this.db.prepare('SELECT * FROM car_alerts WHERE user_id = ? ORDER BY created_at DESC');
-    const rows: any[] = stmt.all(userId);
-    return rows.map((row: any) => ({
-      id: row.id,
-      userId: row.user_id,
-      make: row.make,
-      model: row.model,
-      minPrice: row.min_price ? row.min_price.toString() : null,
-      maxPrice: row.max_price ? row.max_price.toString() : null,
-      maxYear: row.max_year,
-      minYear: row.min_year,
-      isActive: Boolean(row.is_active),
-      createdAt: new Date(row.created_at)
-    }));
+    try {
+      const stmt = this.db.prepare('SELECT * FROM car_alerts WHERE user_id = ? ORDER BY created_at DESC');
+      const rows: any[] = stmt.all(userId);
+      return rows.map((row: any) => ({
+        id: row.id,
+        userId: row.user_id,
+        make: row.make,
+        model: row.model,
+        minPrice: row.min_price ? row.min_price.toString() : null,
+        maxPrice: row.max_price ? row.max_price.toString() : null,
+        maxYear: row.max_year,
+        minYear: row.min_year,
+        isActive: Boolean(row.is_active),
+        createdAt: new Date(row.created_at)
+      }));
+    } catch (error) {
+      console.error('Error fetching car alerts for user:', userId, error);
+      return [];
+    }
   }
 
   async createCarAlert(insertAlert: InsertCarAlert): Promise<CarAlert> {
