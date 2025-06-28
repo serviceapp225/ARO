@@ -349,7 +349,7 @@ export class SQLiteStorage implements IStorage {
       insertListing.sellerId, insertListing.lotNumber, insertListing.make, insertListing.model,
       insertListing.year, insertListing.mileage, insertListing.description, 
       parseFloat(insertListing.startingPrice), JSON.stringify(insertListing.photos), 
-      insertListing.auctionDuration, 'pending',
+      insertListing.auctionDuration, insertListing.status || 'pending',
       null, null, // auctionStartTime and auctionEndTime will be set when approved
       insertListing.customsCleared ? 1 : 0, insertListing.recycled ? 1 : 0,
       insertListing.technicalInspectionValid ? 1 : 0, insertListing.technicalInspectionDate || null,

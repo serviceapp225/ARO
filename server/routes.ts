@@ -348,13 +348,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const validatedData = insertCarListingSchema.parse(req.body);
       
-      // Force all new listings to pending status for moderation
-      const listingWithPendingStatus = {
+      // Set new listings to active status so they appear immediately
+      const listingWithActiveStatus = {
         ...validatedData,
-        status: 'pending'
+        status: 'active'
       };
       
-      const listing = await storage.createListing(listingWithPendingStatus);
+      const listing = await storage.createListing(listingWithActiveStatus);
       
       // Clear all caches to force refresh
       clearAllCaches();
