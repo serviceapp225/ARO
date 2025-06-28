@@ -802,7 +802,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.put("/api/admin/users/:id/status", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.id);
+      const { isActive } = req.body;
+      
+      const user = await storage.updateUserStatus(userId, isActive);
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+      res.json(user);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to update user status" });
+    }
+  });
+
   app.patch("/api/admin/listings/:id", async (req, res) => {
+    try {
+      const listingId = parseInt(req.params.id);
+      const { status } = req.body;
+      
+      const listing = await storage.updateListingStatus(listingId, status);
+      if (!listing) {
+        return res.status(404).json({ error: "Listing not found" });
+      }
+      
+      // Clear all caches when admin changes listing status
+      clearAllCaches();
+      
+      res.json(listing);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to update listing status" });
+    }
+  });
+
+  app.put("/api/admin/listings/:id/status", async (req, res) => {
     try {
       const listingId = parseInt(req.params.id);
       const { status } = req.body;
