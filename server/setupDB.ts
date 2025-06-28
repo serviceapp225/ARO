@@ -1,4 +1,7 @@
-import { Pool } from 'pg';
+import { Pool, neonConfig } from '@neondatabase/serverless';
+import ws from "ws";
+
+neonConfig.webSocketConstructor = ws;
 
 // Build DATABASE_URL from individual environment variables
 const dbUrl = `postgresql://${process.env.PGUSER}:${process.env.PGPASSWORD}@${process.env.PGHOST}:${process.env.PGPORT}/${process.env.PGDATABASE}?sslmode=require`;
@@ -6,8 +9,7 @@ const dbUrl = `postgresql://${process.env.PGUSER}:${process.env.PGPASSWORD}@${pr
 console.log("Setting up database with proper credentials...");
 
 const pool = new Pool({ 
-  connectionString: dbUrl,
-  ssl: { rejectUnauthorized: false }
+  connectionString: dbUrl
 });
 
 async function setupDatabase() {

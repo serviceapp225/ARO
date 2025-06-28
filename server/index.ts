@@ -1,6 +1,7 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { initializeDatabaseWithSampleData } from "./initDatabase";
+import { createTables } from "./createTables";
 import { setupVite, serveStatic, log } from "./vite";
 
 const app = express();
@@ -51,12 +52,19 @@ app.use((req, res, next) => {
 });
 
 (async () => {
-  // Initialize database with sample data
-  try {
-    await initializeDatabaseWithSampleData();
-  } catch (error) {
-    console.error("Database initialization failed:", error.message);
-    console.log("Continuing without sample data - database may need to be set up manually");
+  // Create database tables first
+  const tablesCreated = await createTables();
+  
+  if (tablesCreated) {
+    // Initialize database with sample data
+    try {
+      await initializeDatabaseWithSampleData();
+    } catch (error) {
+      console.error("Database initialization failed:", error instanceof Error ? error.message : String(error));
+      console.log("Continuing without sample data - database may need to be set up manually");
+    }
+  } else {
+    console.log("Skipping sample data initialization due to table creation failure");
   }
   
   const server = await registerRoutes(app);
