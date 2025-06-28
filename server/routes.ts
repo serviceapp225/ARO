@@ -348,9 +348,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const validatedData = insertCarListingSchema.parse(req.body);
       
+      // Generate lot number if not provided
+      let lotNumber = validatedData.lotNumber;
+      if (!lotNumber) {
+        const { generateUniqueLotNumber } = await import('./utils/lotNumberGenerator');
+        const existingListings = await storage.getListingsByStatus('', 1000); // Get all to check lot numbers
+        const existingLotNumbers = existingListings.map(l => l.lotNumber);
+        lotNumber = generateUniqueLotNumber(existingLotNumbers);
+      }
+      
       // Set new listings to active status so they appear immediately
       const listingWithActiveStatus = {
         ...validatedData,
+        lotNumber,
         status: 'active'
       };
       
