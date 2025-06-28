@@ -88,8 +88,8 @@ export function AuctionProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     fetchListings(true); // Первая загрузка с индикатором
-    // Фоновые обновления каждые 60 секунд без индикатора загрузки
-    const interval = setInterval(() => fetchListings(false), 60000);
+    // Фоновые обновления каждые 2 минуты без индикатора загрузки
+    const interval = setInterval(() => fetchListings(false), 120000);
     return () => clearInterval(interval);
   }, [fetchListings]);
 

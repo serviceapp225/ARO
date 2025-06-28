@@ -83,8 +83,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { status = "active", limit } = req.query;
       const cacheKey = `listings_${status}_${limit || 20}`;
       
-      // Check fast cache
-      if (mainListingsCache.has(cacheKey) && Date.now() - mainListingsCacheTime < MAIN_CACHE_TTL) {
+      // Check fast cache - увеличиваем время кэша до 2 минут
+      if (mainListingsCache.has(cacheKey) && Date.now() - mainListingsCacheTime < 120000) {
         return res.json(mainListingsCache.get(cacheKey));
       }
       
@@ -108,6 +108,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Cache result
       mainListingsCache.set(cacheKey, fastListings);
       mainListingsCacheTime = Date.now();
+      
+      // Агрессивные HTTP заголовки кэширования
+      res.set({
+        'Cache-Control': 'public, max-age=120, s-maxage=60', // 2 минуты кэш в браузере, 1 минута в CDN
+        'ETag': `"listings-${Date.now()}"`,
+        'Last-Modified': new Date().toUTCString()
+      });
       
       res.json(fastListings);
     } catch (error) {
