@@ -693,9 +693,27 @@ export class SQLiteStorage implements IStorage {
   }
 
   async deleteCarAlert(id: number): Promise<boolean> {
-    const stmt = this.db.prepare('DELETE FROM car_alerts WHERE id = ?');
-    const result = stmt.run(id);
-    return result.changes > 0;
+    try {
+      console.log('Attempting to delete car alert with id:', id);
+      
+      // Проверим, существует ли алерт
+      const checkStmt = this.db.prepare('SELECT * FROM car_alerts WHERE id = ?');
+      const existing = checkStmt.get(id);
+      console.log('Found existing alert:', existing);
+      
+      if (!existing) {
+        console.log('Alert not found, returning false');
+        return false;
+      }
+      
+      const stmt = this.db.prepare('DELETE FROM car_alerts WHERE id = ?');
+      const result = stmt.run(id);
+      console.log('Delete result:', result);
+      return result.changes > 0;
+    } catch (error) {
+      console.error('Error deleting car alert:', id, error);
+      return false;
+    }
   }
   async checkAlertsForNewListing(listing: CarListing): Promise<CarAlert[]> { return []; }
   async getBanners(position?: string): Promise<Banner[]> { return []; }

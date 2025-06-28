@@ -999,47 +999,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.delete("/api/car-alerts/:id", async (req, res) => {
     try {
       const alertId = parseInt(req.params.id);
-      
-      // Получаем данные алерта перед удалением
-      const alertResult = await db.select().from(carAlerts).where(eq(carAlerts.id, alertId));
-      const alert = alertResult[0];
-      
-      if (!alert) {
-        return res.status(404).json({ error: "Alert not found" });
-      }
-      
-      // Сохраняем информацию об удаленном алерте
-      const alertData = JSON.stringify({
-        make: alert.make,
-        model: alert.model,
-        minPrice: alert.minPrice,
-        maxPrice: alert.maxPrice,
-        minYear: alert.minYear,
-        maxYear: alert.maxYear
-      });
-      
-      try {
-        await db.execute(
-          sql`INSERT INTO deleted_alerts (user_id, alert_data) 
-              VALUES (${alert.userId}, ${alertData})
-              ON CONFLICT (user_id, alert_data) DO NOTHING`
-        );
-        console.log(`Marked alert ${alertId} as deleted for user ${alert.userId}`);
-      } catch (deleteError) {
-        console.log('Error marking alert as deleted:', deleteError);
-      }
+      console.log('DELETE car-alerts route called with id:', alertId);
       
       const success = await storage.deleteCarAlert(alertId);
+      console.log('Delete car alert result:', success);
+      
       if (!success) {
         return res.status(404).json({ error: "Alert not found" });
       }
       
-      // Очищаем кэш для конкретного пользователя
-      clearCachePattern(`car-alerts-${alert.userId}`);
+      // Очищаем кэш
+      clearCachePattern(`car-alerts-`);
       
       res.status(204).send();
     } catch (error) {
-      console.error('Error deleting car alert:', error);
+      console.error('Error in DELETE car-alerts route:', error);
       res.status(500).json({ error: "Failed to delete alert" });
     }
   });
