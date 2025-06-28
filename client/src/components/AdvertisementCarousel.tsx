@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { useDelayedLoading } from "@/hooks/useDelayedLoading";
 
 interface AdvertisementCarouselData {
   id: number;
@@ -17,10 +18,12 @@ interface AdvertisementCarouselData {
 
 export function AdvertisementCarousel() {
   const [currentSlide, setCurrentSlide] = useState(0);
+  const shouldLoad = useDelayedLoading({ delay: 500 }); // Задержка 500мс
 
   // Use cached query with stale-while-revalidate for instant loading
   const { data: carouselItems = [], isLoading } = useQuery<AdvertisementCarouselData[]>({
     queryKey: ['/api/advertisement-carousel'],
+    enabled: shouldLoad, // Загружаем только после задержки
     queryFn: async () => {
       const response = await fetch('/api/advertisement-carousel');
       if (!response.ok) throw new Error('Failed to fetch advertisement carousel');

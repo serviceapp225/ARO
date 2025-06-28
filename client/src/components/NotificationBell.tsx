@@ -28,6 +28,7 @@ export function NotificationBell({ userId }: NotificationBellProps) {
 
   const { data: allNotifications = [], isLoading } = useQuery<Notification[]>({
     queryKey: [`/api/notifications/${userId}`],
+    enabled: false, // Полностью отключаем автозагрузку
     refetchInterval: false, // Completely disable auto-refresh
     staleTime: Infinity, // Never consider data stale
     refetchOnWindowFocus: false, // Don't refetch when window gains focus
