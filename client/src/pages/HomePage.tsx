@@ -63,7 +63,8 @@ export default function HomePage() {
           </form>
         </div>
 
-
+        {/* Sell Car Banner */}
+        <SellCarBanner />
 
         {/* Advertisement Carousel - Lazy loaded */}
         {showSecondaryContent && (
@@ -74,9 +75,6 @@ export default function HomePage() {
             <AdvertisementCarousel />
           </section>
         )}
-
-        {/* Sell Car Banner */}
-        <SellCarBanner />
 
         {/* Security Banner */}
         <div className="bg-green-50 border border-green-200 rounded-xl p-4">
