@@ -118,9 +118,25 @@ AUTOBID.TJ is a full-stack car auction platform built with React, Express.js, an
 - Environment variable handling for database connections
 - Health check endpoints for monitoring
 
+## Known Issues
+
+### PostgreSQL Database Authentication
+- **Problem**: Replit создает базы данных с неработающими учетными данными 'neondb_owner'
+- **Ошибка**: "password authentication failed for user 'neondb_owner'"
+- **Временное решение**: Используется SimpleMemoryStorage для хранения данных
+- **Статус**: Приложение полностью функционально с данными в памяти
+- **Для продакшена**: Потребуется настройка рабочих учетных данных PostgreSQL
+
+### Current Data Storage
+- Приложение использует память для хранения всех данных
+- Включает полный набор демонстрационных данных (пользователи, автомобили, ставки)
+- Данные сбрасываются при перезапуске сервера
+
 ## Changelog
-- June 28, 2025. Initial setup
+- June 28, 2025: Исправлена проблема с базой данных, переключено на память
+- June 28, 2025: Добавлена секция "Специальные предложения" 
+- June 28, 2025: Initial setup
 
 ## User Preferences
 
-Preferred communication style: Simple, everyday language.
+Preferred communication style: Simple, everyday language in Russian.
