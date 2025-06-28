@@ -531,9 +531,46 @@ export class SQLiteStorage implements IStorage {
       createdAt: new Date(row.created_at)
     };
   }
-  async getFavoritesByUser(userId: number): Promise<Favorite[]> { return []; }
-  async createFavorite(insertFavorite: InsertFavorite): Promise<Favorite> { throw new Error('Not implemented'); }
-  async deleteFavorite(id: number): Promise<boolean> { return false; }
+  // Favorites operations
+  async getFavoritesByUser(userId: number): Promise<Favorite[]> {
+    const stmt = this.db.prepare('SELECT * FROM favorites WHERE user_id = ?');
+    const rows: any[] = stmt.all(userId);
+    return rows.map((row: any) => ({
+      id: row.id,
+      userId: row.user_id,
+      listingId: row.listing_id,
+      createdAt: new Date(row.created_at)
+    }));
+  }
+
+  async createFavorite(insertFavorite: InsertFavorite): Promise<Favorite> {
+    const stmt = this.db.prepare(`
+      INSERT INTO favorites (user_id, listing_id) 
+      VALUES (?, ?)
+    `);
+    
+    const result = stmt.run(
+      insertFavorite.userId,
+      insertFavorite.listingId
+    );
+    
+    // Get the created favorite
+    const getFavoriteStmt = this.db.prepare('SELECT * FROM favorites WHERE id = ?');
+    const row: any = getFavoriteStmt.get(result.lastInsertRowid);
+    
+    return {
+      id: row.id,
+      userId: row.user_id,
+      listingId: row.listing_id,
+      createdAt: new Date(row.created_at)
+    };
+  }
+
+  async deleteFavorite(id: number): Promise<boolean> {
+    const stmt = this.db.prepare('DELETE FROM favorites WHERE id = ?');
+    const result = stmt.run(id);
+    return result.changes > 0;
+  }
   async getUsersWithFavoriteListing(listingId: number): Promise<number[]> { return []; }
   async getNotificationsByUser(userId: number): Promise<Notification[]> { return []; }
   async createNotification(insertNotification: InsertNotification): Promise<Notification> { throw new Error('Not implemented'); }
