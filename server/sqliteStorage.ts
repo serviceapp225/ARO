@@ -637,11 +637,9 @@ export class SQLiteStorage implements IStorage {
   // Car alerts operations
   async getCarAlertsByUser(userId: number): Promise<CarAlert[]> {
     try {
-      console.log('Fetching car alerts for user:', userId);
       const stmt = this.db.prepare('SELECT * FROM car_alerts WHERE user_id = ? ORDER BY created_at DESC');
       const rows: any[] = stmt.all(userId);
-      console.log('Found car alerts rows:', rows);
-      const mapped = rows.map((row: any) => ({
+      return rows.map((row: any) => ({
         id: row.id,
         userId: row.user_id,
         make: row.make,
@@ -653,11 +651,9 @@ export class SQLiteStorage implements IStorage {
         isActive: Boolean(row.is_active),
         createdAt: new Date(row.created_at)
       }));
-      console.log('Mapped car alerts:', mapped);
-      return mapped;
     } catch (error) {
       console.error('Error fetching car alerts for user:', userId, error);
-      throw error;
+      return [];
     }
   }
 
