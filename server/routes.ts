@@ -999,10 +999,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.delete("/api/car-alerts/:id", async (req, res) => {
     try {
       const alertId = parseInt(req.params.id);
-      console.log('DELETE car-alerts route called with id:', alertId);
-      
       const success = await storage.deleteCarAlert(alertId);
-      console.log('Delete car alert result:', success);
       
       if (!success) {
         return res.status(404).json({ error: "Alert not found" });
