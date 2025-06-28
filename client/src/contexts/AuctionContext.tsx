@@ -40,7 +40,6 @@ export function AuctionProvider({ children }: { children: ReactNode }) {
   const fetchListings = useCallback(async () => {
     try {
       setIsLoading(true);
-      console.log('AuctionContext: Fetching listings...');
       const response = await fetch('/api/listings', {
         cache: 'no-cache',
         headers: {
@@ -49,24 +48,18 @@ export function AuctionProvider({ children }: { children: ReactNode }) {
         }
       });
       
-      console.log('AuctionContext: Response status:', response.status, response.ok);
-      
       if (response.ok) {
         const data = await response.json();
-        console.log('AuctionContext: Received data:', data?.length, 'items');
         if (Array.isArray(data)) {
           setListings(data);
-          console.log('AuctionContext: Set listings:', data.length);
         } else {
-          console.log('AuctionContext: Data is not array:', typeof data);
           setListings([]);
         }
       } else {
-        console.log('AuctionContext: Response not ok');
         setListings([]);
       }
     } catch (error) {
-      console.error('AuctionContext: Error fetching listings:', error);
+      console.error('Error fetching listings:', error);
       setListings([]);
     } finally {
       setIsLoading(false);
