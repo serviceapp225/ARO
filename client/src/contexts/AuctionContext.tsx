@@ -37,15 +37,19 @@ export function AuctionProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   // Fetch listings with direct fetch
-  const fetchListings = useCallback(async () => {
+  const fetchListings = useCallback(async (forceRefresh = false) => {
     try {
-      setIsLoading(true);
+      // Только показываем loading при принудительном обновлении или первой загрузке
+      if (forceRefresh || listings.length === 0) {
+        setIsLoading(true);
+      }
+      
       const response = await fetch('/api/listings', {
-        cache: 'no-cache',
-        headers: {
+        cache: forceRefresh ? 'no-cache' : 'default',
+        headers: forceRefresh ? {
           'Cache-Control': 'no-cache',
           'Pragma': 'no-cache'
-        }
+        } : {}
       });
       
       if (response.ok) {
@@ -67,8 +71,9 @@ export function AuctionProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
-    fetchListings();
-    const interval = setInterval(fetchListings, 30000);
+    fetchListings(true); // Первая загрузка с индикатором
+    // Фоновые обновления каждые 60 секунд без индикатора загрузки
+    const interval = setInterval(() => fetchListings(false), 60000);
     return () => clearInterval(interval);
   }, [fetchListings]);
 
@@ -99,8 +104,8 @@ export function AuctionProvider({ children }: { children: ReactNode }) {
 
 
 
-  const refreshAuctions = useCallback(() => {
-    fetchListings();
+  const refreshAuctions = useCallback((forceRefresh = false) => {
+    fetchListings(forceRefresh);
   }, [fetchListings]);
 
   return (
