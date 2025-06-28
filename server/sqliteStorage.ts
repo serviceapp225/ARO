@@ -345,12 +345,17 @@ export class SQLiteStorage implements IStorage {
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
     
+    // Calculate auction end time
+    const now = new Date();
+    const auctionStartTime = now.toISOString();
+    const auctionEndTime = new Date(now.getTime() + (insertListing.auctionDuration * 60 * 60 * 1000)).toISOString();
+    
     const result = stmt.run(
       insertListing.sellerId, insertListing.lotNumber, insertListing.make, insertListing.model,
       insertListing.year, insertListing.mileage, insertListing.description, 
       parseFloat(insertListing.startingPrice), JSON.stringify(insertListing.photos), 
       insertListing.auctionDuration, (insertListing as any).status || 'pending',
-      null, null, // auctionStartTime and auctionEndTime will be set when approved
+      auctionStartTime, auctionEndTime, // Set proper auction times
       insertListing.customsCleared ? 1 : 0, insertListing.recycled ? 1 : 0,
       insertListing.technicalInspectionValid ? 1 : 0, insertListing.technicalInspectionDate || null,
       insertListing.tinted ? 1 : 0, insertListing.tintingDate || null,
