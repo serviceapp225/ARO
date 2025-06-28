@@ -145,7 +145,16 @@ AUTOBID.TJ is a full-stack car auction platform built with React, Express.js, an
 ✅ Приложение запускается без ошибок базы данных  
 ✅ Исправлены типы для SellCarSection и AdvertisementCarousel  
 
+## Текущая проблема
+**Навигация в банере "Продай свое авто" не работает**
+- Создан компонент SellCarBanner с кнопкой перехода на /sell
+- Испробованы: Button с onClick, Link компонент, HTML ссылка, window.location.href
+- Клики не регистрируются в консоли браузера
+- Возможная причина: CSS конфликт или перекрытие элементов
+- Статус: Создан тестовый красный банер для диагностики
+
 ## Changelog
+- June 28, 2025: Проблема навигации в банере "Продай свое авто"
 - June 28, 2025: Исправлены проблемы создания таблиц в SQLite
 - June 28, 2025: Обновлены типы данных для SellCarSection и AdvertisementCarousel
 - June 28, 2025: Переключено на SQLite с постоянным хранением данных
