@@ -1,9 +1,12 @@
 import { Plus } from "lucide-react";
+import { useLocation } from "wouter";
 
 export function SellCarBanner() {
+  const [, setLocation] = useLocation();
+  
   const handleClick = () => {
     console.log('КЛИК РАБОТАЕТ! Переход на /sell');
-    window.location.href = '/sell';
+    setLocation('/sell');
   };
 
   return (
