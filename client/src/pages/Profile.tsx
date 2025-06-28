@@ -56,6 +56,7 @@ export default function Profile() {
     { icon: UserIcon, label: "Мои данные", action: () => setLocation("/user-data") },
     { icon: Car, label: "Мои продажи", action: () => setLocation("/my-sales") },
     { icon: Bell, label: "Поисковые уведомления", action: () => setLocation("/notifications") },
+    ...(currentUser?.role === 'admin' ? [{ icon: Settings, label: "Админ панель", action: () => setLocation("/admin") }] : []),
     { icon: Globe, label: "Поменять язык", action: () => setLocation("/language") },
     { icon: HelpCircle, label: "Правила и условия", action: () => setLocation("/terms") },
     { icon: FileText, label: "Политика конфиденциальности", action: () => setLocation("/privacy") },
