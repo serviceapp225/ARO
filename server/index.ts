@@ -52,7 +52,12 @@ app.use((req, res, next) => {
 
 (async () => {
   // Initialize database with sample data
-  await initializeDatabaseWithSampleData();
+  try {
+    await initializeDatabaseWithSampleData();
+  } catch (error) {
+    console.error("Database initialization failed:", error.message);
+    console.log("Continuing without sample data - database may need to be set up manually");
+  }
   
   const server = await registerRoutes(app);
 
