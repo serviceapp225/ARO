@@ -794,7 +794,7 @@ export class DatabaseStorage implements IStorage {
   }
 }
 
-// Используем память для хранения данных (проблемы с PostgreSQL учетными данными)
-console.log('Используем память для хранения данных - PostgreSQL требует исправления учетных данных');
-import { SimpleMemoryStorage } from './simpleMemoryStorage';
-export const storage = new SimpleMemoryStorage();
+// Используем SQLite для локальной базы данных 
+console.log('Инициализация SQLite базы данных...');
+import { SQLiteStorage } from './sqliteStorage';
+export const storage = new SQLiteStorage();

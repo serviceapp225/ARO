@@ -1,0 +1,520 @@
+import Database from 'better-sqlite3';
+import { IStorage } from './storage';
+import type {
+  User, CarListing, Bid, Favorite, Notification, CarAlert,
+  Banner, SellCarSection, AdvertisementCarousel, Document, AlertView,
+  InsertUser, InsertCarListing, InsertBid, InsertFavorite, InsertNotification,
+  InsertCarAlert, InsertBanner, InsertSellCarSection, InsertAdvertisementCarousel,
+  InsertDocument, InsertAlertView
+} from '@shared/schema';
+
+export class SQLiteStorage implements IStorage {
+  private db: Database.Database;
+
+  constructor() {
+    this.db = new Database(':memory:');
+    this.createTables();
+    this.initializeSampleData();
+  }
+
+  private createTables() {
+    // Create users table
+    this.db.exec(`
+      CREATE TABLE users (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        email TEXT NOT NULL UNIQUE,
+        username TEXT NOT NULL UNIQUE,
+        full_name TEXT,
+        role TEXT NOT NULL,
+        profile_photo TEXT,
+        is_active BOOLEAN DEFAULT 0,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    // Create car_listings table
+    this.db.exec(`
+      CREATE TABLE car_listings (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        seller_id INTEGER NOT NULL,
+        lot_number TEXT NOT NULL,
+        make TEXT NOT NULL,
+        model TEXT NOT NULL,
+        year INTEGER NOT NULL,
+        mileage INTEGER NOT NULL,
+        description TEXT NOT NULL,
+        starting_price DECIMAL(12,2) NOT NULL,
+        current_bid DECIMAL(12,2),
+        photos TEXT NOT NULL,
+        auction_duration INTEGER NOT NULL,
+        status TEXT NOT NULL DEFAULT 'pending',
+        auction_start_time DATETIME,
+        auction_end_time DATETIME,
+        customs_cleared BOOLEAN DEFAULT 0,
+        recycled BOOLEAN DEFAULT 0,
+        technical_inspection_valid BOOLEAN DEFAULT 0,
+        technical_inspection_date TEXT,
+        tinted BOOLEAN DEFAULT 0,
+        tinting_date TEXT,
+        engine TEXT,
+        transmission TEXT,
+        fuel_type TEXT,
+        body_type TEXT,
+        drive_type TEXT,
+        color TEXT,
+        condition TEXT,
+        vin TEXT,
+        location TEXT,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    // Create other tables
+    this.db.exec(`
+      CREATE TABLE bids (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        listing_id INTEGER NOT NULL,
+        bidder_id INTEGER NOT NULL,
+        amount DECIMAL(12,2) NOT NULL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    this.db.exec(`
+      CREATE TABLE favorites (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        listing_id INTEGER NOT NULL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    this.db.exec(`
+      CREATE TABLE notifications (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        type TEXT NOT NULL,
+        title TEXT NOT NULL,
+        message TEXT NOT NULL,
+        is_read BOOLEAN DEFAULT 0,
+        listing_id INTEGER,
+        alert_id INTEGER,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    this.db.exec(`
+      CREATE TABLE car_alerts (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        make TEXT NOT NULL,
+        model TEXT,
+        min_price DECIMAL(12,2),
+        max_price DECIMAL(12,2),
+        max_year INTEGER,
+        min_year INTEGER,
+        is_active BOOLEAN DEFAULT 1,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    this.db.exec(`
+      CREATE TABLE banners (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        title TEXT NOT NULL,
+        description TEXT,
+        image_url TEXT,
+        link_url TEXT,
+        position TEXT,
+        "order" INTEGER DEFAULT 0,
+        is_active BOOLEAN DEFAULT 1,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    this.db.exec(`
+      CREATE TABLE sell_car_section (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        title TEXT NOT NULL,
+        description TEXT NOT NULL,
+        button_text TEXT NOT NULL,
+        image_url TEXT,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    this.db.exec(`
+      CREATE TABLE advertisement_carousel (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        title TEXT NOT NULL,
+        description TEXT,
+        image_url TEXT NOT NULL,
+        link_url TEXT,
+        display_order INTEGER DEFAULT 0,
+        is_active BOOLEAN DEFAULT 1,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    this.db.exec(`
+      CREATE TABLE documents (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        title TEXT NOT NULL,
+        content TEXT NOT NULL,
+        type TEXT NOT NULL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    this.db.exec(`
+      CREATE TABLE alert_views (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        alert_id INTEGER NOT NULL,
+        listing_id INTEGER NOT NULL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+  }
+
+  private initializeSampleData() {
+    // Insert sample users
+    const insertUser = this.db.prepare(`
+      INSERT INTO users (username, email, role, is_active, full_name) 
+      VALUES (?, ?, ?, ?, ?)
+    `);
+
+    insertUser.run('admin', 'admin@autoauction.tj', 'admin', 1, 'Администратор');
+    insertUser.run('seller123', 'seller@autoauction.tj', 'seller', 1, 'Продавец автомобилей');
+    insertUser.run('buyer456', 'buyer@autoauction.tj', 'buyer', 1, 'Покупатель автомобилей');
+
+    // Insert sample listings
+    const insertListing = this.db.prepare(`
+      INSERT INTO car_listings (
+        seller_id, lot_number, make, model, year, mileage, vin, description,
+        starting_price, current_bid, photos, auction_duration, status,
+        auction_start_time, auction_end_time, customs_cleared, recycled,
+        technical_inspection_valid, technical_inspection_date, engine,
+        transmission, fuel_type, body_type, drive_type, color, condition, location
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `);
+
+    insertListing.run(
+      2, 'LOT724583', 'Porsche', '911 Turbo S', 2020, 15000, 'WP0AB2A95LS123456',
+      'Потрясающий Porsche 911 Turbo S 2020 года - шедевр автомобильной инженерии',
+      140000.00, 145500.00, 
+      JSON.stringify(["https://images.unsplash.com/photo-1544636331-e26879cd4d9b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600", "https://images.unsplash.com/photo-1563720223185-11003d516935?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"]),
+      72, 'active', new Date().toISOString(), '2025-06-30T13:30:00Z', 1, 0, 1, '2025-12-31',
+      '3.8L Twin-Turbo V6', 'Автомат', 'Бензин', 'Купе', 'Полный привод', 'Черный', 'Отличное', 'Душанбе'
+    );
+
+    insertListing.run(
+      2, 'LOT892456', 'BMW', 'M5 Competition', 2021, 8500, 'WBSJF0C59MCE12345',
+      'Исключительный BMW M5 Competition 2021 года в безупречном состоянии',
+      85000.00, null,
+      JSON.stringify(["https://images.unsplash.com/photo-1555215695-3004980ad54e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"]),
+      72, 'active', new Date().toISOString(), '2025-07-01T18:45:00Z', 1, 0, 1, '2025-11-30',
+      '4.4L Twin-Turbo V8', 'Автомат', 'Бензин', 'Седан', 'Задний привод', 'Белый', 'Отличное', 'Душанбе'
+    );
+
+    // Insert sample bid
+    const insertBid = this.db.prepare(`
+      INSERT INTO bids (listing_id, bidder_id, amount) VALUES (?, ?, ?)
+    `);
+    insertBid.run(1, 3, 145500.00);
+
+    // Insert carousel items
+    const insertCarousel = this.db.prepare(`
+      INSERT INTO advertisement_carousel (title, description, image_url, link_url, display_order, is_active) 
+      VALUES (?, ?, ?, ?, ?, ?)
+    `);
+    insertCarousel.run('Специальные предложения', 'Лучшие автомобили с особыми условиями', 'https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=400', '/special-offers', 1, 1);
+    insertCarousel.run('Эксклюзивные аукционы', 'Премиум автомобили для истинных ценителей', 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=400', '/exclusive', 2, 1);
+
+    // Insert sell car section
+    const insertSellSection = this.db.prepare(`
+      INSERT INTO sell_car_section (title, description, button_text, image_url) 
+      VALUES (?, ?, ?, ?)
+    `);
+    insertSellSection.run('Продайте свой автомобиль', 'Получите лучшую цену за ваш автомобиль на нашем аукционе', 'Начать продажу', 'https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=400');
+  }
+
+  // Implement all IStorage methods with SQLite queries...
+  async getUser(id: number): Promise<User | undefined> {
+    const stmt = this.db.prepare('SELECT * FROM users WHERE id = ?');
+    const row = stmt.get(id);
+    return row ? this.mapUser(row) : undefined;
+  }
+
+  async getUserByUsername(username: string): Promise<User | undefined> {
+    const stmt = this.db.prepare('SELECT * FROM users WHERE username = ?');
+    const row = stmt.get(username);
+    return row ? this.mapUser(row) : undefined;
+  }
+
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    const stmt = this.db.prepare('SELECT * FROM users WHERE email = ?');
+    const row = stmt.get(email);
+    return row ? this.mapUser(row) : undefined;
+  }
+
+  async createUser(insertUser: InsertUser): Promise<User> {
+    const stmt = this.db.prepare(`
+      INSERT INTO users (username, email, role, full_name, profile_photo, is_active)
+      VALUES (?, ?, ?, ?, ?, ?)
+    `);
+    const result = stmt.run(insertUser.username, insertUser.email, insertUser.role, 
+                           insertUser.fullName || null, insertUser.profilePhoto || null, 
+                           insertUser.isActive ? 1 : 0);
+    
+    return this.getUser(result.lastInsertRowid as number) as Promise<User>;
+  }
+
+  async updateUserStatus(id: number, isActive: boolean): Promise<User | undefined> {
+    const stmt = this.db.prepare('UPDATE users SET is_active = ? WHERE id = ?');
+    stmt.run(isActive ? 1 : 0, id);
+    return this.getUser(id);
+  }
+
+  async updateUserProfile(id: number, data: { fullName?: string; profilePhoto?: string }): Promise<User | undefined> {
+    let setParts = [];
+    let values = [];
+    if (data.fullName !== undefined) {
+      setParts.push('full_name = ?');
+      values.push(data.fullName);
+    }
+    if (data.profilePhoto !== undefined) {
+      setParts.push('profile_photo = ?');
+      values.push(data.profilePhoto);
+    }
+    if (setParts.length > 0) {
+      values.push(id);
+      const stmt = this.db.prepare(`UPDATE users SET ${setParts.join(', ')} WHERE id = ?`);
+      stmt.run(...values);
+    }
+    return this.getUser(id);
+  }
+
+  async getAllUsers(): Promise<User[]> {
+    const stmt = this.db.prepare('SELECT * FROM users ORDER BY created_at DESC');
+    const rows = stmt.all();
+    return rows.map(row => this.mapUser(row));
+  }
+
+  async getListing(id: number): Promise<CarListing | undefined> {
+    const stmt = this.db.prepare('SELECT * FROM car_listings WHERE id = ?');
+    const row = stmt.get(id);
+    return row ? this.mapListing(row) : undefined;
+  }
+
+  async getListingsByStatus(status: string, limit?: number): Promise<CarListing[]> {
+    let query = 'SELECT * FROM car_listings WHERE status = ? ORDER BY created_at DESC';
+    if (limit) {
+      query += ` LIMIT ${limit}`;
+    }
+    const stmt = this.db.prepare(query);
+    const rows = stmt.all(status);
+    return rows.map(row => this.mapListing(row));
+  }
+
+  async getListingsBySeller(sellerId: number): Promise<CarListing[]> {
+    const stmt = this.db.prepare('SELECT * FROM car_listings WHERE seller_id = ? ORDER BY created_at DESC');
+    const rows = stmt.all(sellerId);
+    return rows.map(row => this.mapListing(row));
+  }
+
+  async createListing(insertListing: InsertCarListing): Promise<CarListing> {
+    const stmt = this.db.prepare(`
+      INSERT INTO car_listings (
+        seller_id, lot_number, make, model, year, mileage, description, starting_price,
+        photos, auction_duration, status, auction_start_time, auction_end_time,
+        customs_cleared, recycled, technical_inspection_valid, technical_inspection_date,
+        tinted, tinting_date, engine, transmission, fuel_type, body_type, drive_type,
+        color, condition, vin, location
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `);
+    
+    const result = stmt.run(
+      insertListing.sellerId, insertListing.lotNumber, insertListing.make, insertListing.model,
+      insertListing.year, insertListing.mileage, insertListing.description, 
+      parseFloat(insertListing.startingPrice), JSON.stringify(insertListing.photos), 
+      insertListing.auctionDuration, 'pending',
+      insertListing.auctionStartTime || null, insertListing.auctionEndTime || null,
+      insertListing.customsCleared ? 1 : 0, insertListing.recycled ? 1 : 0,
+      insertListing.technicalInspectionValid ? 1 : 0, insertListing.technicalInspectionDate || null,
+      insertListing.tinted ? 1 : 0, insertListing.tintingDate || null,
+      insertListing.engine || null, insertListing.transmission || null,
+      insertListing.fuelType || null, insertListing.bodyType || null,
+      insertListing.driveType || null, insertListing.color || null,
+      insertListing.condition || null, insertListing.vin || null,
+      insertListing.location || null
+    );
+    
+    return this.getListing(result.lastInsertRowid as number) as Promise<CarListing>;
+  }
+
+  async updateListingStatus(id: number, status: string): Promise<CarListing | undefined> {
+    const stmt = this.db.prepare('UPDATE car_listings SET status = ? WHERE id = ?');
+    stmt.run(status, id);
+    return this.getListing(id);
+  }
+
+  async updateListingCurrentBid(id: number, amount: string): Promise<CarListing | undefined> {
+    const stmt = this.db.prepare('UPDATE car_listings SET current_bid = ? WHERE id = ?');
+    stmt.run(parseFloat(amount), id);
+    return this.getListing(id);
+  }
+
+  async searchListings(filters: any): Promise<CarListing[]> {
+    let query = 'SELECT * FROM car_listings WHERE status = "active"';
+    let params = [];
+    
+    if (filters.query) {
+      query += ' AND (make LIKE ? OR model LIKE ? OR description LIKE ?)';
+      const searchTerm = `%${filters.query}%`;
+      params.push(searchTerm, searchTerm, searchTerm);
+    }
+    if (filters.make) {
+      query += ' AND make = ?';
+      params.push(filters.make);
+    }
+    if (filters.model) {
+      query += ' AND model = ?';
+      params.push(filters.model);
+    }
+    if (filters.minPrice) {
+      query += ' AND starting_price >= ?';
+      params.push(filters.minPrice);
+    }
+    if (filters.maxPrice) {
+      query += ' AND starting_price <= ?';
+      params.push(filters.maxPrice);
+    }
+    if (filters.year) {
+      query += ' AND year = ?';
+      params.push(filters.year);
+    }
+    
+    query += ' ORDER BY created_at DESC';
+    
+    const stmt = this.db.prepare(query);
+    const rows = stmt.all(...params);
+    return rows.map(row => this.mapListing(row));
+  }
+
+  // Helper methods to map SQLite rows to TypeScript objects
+  private mapUser(row: any): User {
+    return {
+      id: row.id,
+      email: row.email,
+      username: row.username,
+      fullName: row.full_name,
+      role: row.role,
+      profilePhoto: row.profile_photo,
+      isActive: Boolean(row.is_active),
+      createdAt: new Date(row.created_at)
+    };
+  }
+
+  private mapListing(row: any): CarListing {
+    return {
+      id: row.id,
+      sellerId: row.seller_id,
+      lotNumber: row.lot_number,
+      make: row.make,
+      model: row.model,
+      year: row.year,
+      mileage: row.mileage,
+      description: row.description,
+      startingPrice: row.starting_price.toString(),
+      currentBid: row.current_bid ? row.current_bid.toString() : null,
+      photos: JSON.parse(row.photos),
+      auctionDuration: row.auction_duration,
+      status: row.status,
+      auctionStartTime: row.auction_start_time ? new Date(row.auction_start_time) : null,
+      auctionEndTime: row.auction_end_time ? new Date(row.auction_end_time) : null,
+      customsCleared: Boolean(row.customs_cleared),
+      recycled: Boolean(row.recycled),
+      technicalInspectionValid: Boolean(row.technical_inspection_valid),
+      technicalInspectionDate: row.technical_inspection_date,
+      tinted: Boolean(row.tinted),
+      tintingDate: row.tinting_date,
+      engine: row.engine,
+      transmission: row.transmission,
+      fuelType: row.fuel_type,
+      bodyType: row.body_type,
+      driveType: row.drive_type,
+      color: row.color,
+      condition: row.condition,
+      vin: row.vin,
+      location: row.location,
+      createdAt: new Date(row.created_at)
+    };
+  }
+
+  // Stub implementations for other required methods
+  async getBidsForListing(listingId: number): Promise<Bid[]> { return []; }
+  async getBidsByUser(bidderId: number): Promise<Bid[]> { return []; }
+  async getBidCountForListing(listingId: number): Promise<number> { return 0; }
+  async getBidCountsForListings(listingIds: number[]): Promise<Record<number, number>> { return {}; }
+  async createBid(insertBid: InsertBid): Promise<Bid> { throw new Error('Not implemented'); }
+  async getFavoritesByUser(userId: number): Promise<Favorite[]> { return []; }
+  async createFavorite(insertFavorite: InsertFavorite): Promise<Favorite> { throw new Error('Not implemented'); }
+  async deleteFavorite(id: number): Promise<boolean> { return false; }
+  async getUsersWithFavoriteListing(listingId: number): Promise<number[]> { return []; }
+  async getNotificationsByUser(userId: number): Promise<Notification[]> { return []; }
+  async createNotification(insertNotification: InsertNotification): Promise<Notification> { throw new Error('Not implemented'); }
+  async markNotificationAsRead(id: number): Promise<boolean> { return false; }
+  async deleteNotification(id: number): Promise<boolean> { return false; }
+  async getUnreadNotificationCount(userId: number): Promise<number> { return 0; }
+  async getCarAlertsByUser(userId: number): Promise<CarAlert[]> { return []; }
+  async createCarAlert(insertAlert: InsertCarAlert): Promise<CarAlert> { throw new Error('Not implemented'); }
+  async deleteCarAlert(id: number): Promise<boolean> { return false; }
+  async checkAlertsForNewListing(listing: CarListing): Promise<CarAlert[]> { return []; }
+  async getBanners(position?: string): Promise<Banner[]> { return []; }
+  async createBanner(insertBanner: InsertBanner): Promise<Banner> { throw new Error('Not implemented'); }
+  async updateBanner(id: number, bannerData: Partial<InsertBanner>): Promise<Banner | undefined> { return undefined; }
+  async deleteBanner(id: number): Promise<boolean> { return false; }
+  async getSellCarSection(): Promise<SellCarSection | undefined> {
+    const stmt = this.db.prepare('SELECT * FROM sell_car_section LIMIT 1');
+    const row = stmt.get();
+    return row ? {
+      id: row.id,
+      title: row.title,
+      description: row.description,
+      buttonText: row.button_text,
+      imageUrl: row.image_url,
+      createdAt: new Date(row.created_at)
+    } : undefined;
+  }
+  async updateSellCarSection(data: Partial<InsertSellCarSection>): Promise<SellCarSection | undefined> { return undefined; }
+  async getAdvertisementCarousel(): Promise<AdvertisementCarousel[]> {
+    const stmt = this.db.prepare('SELECT * FROM advertisement_carousel WHERE is_active = 1 ORDER BY display_order');
+    const rows = stmt.all();
+    return rows.map(row => ({
+      id: row.id,
+      title: row.title,
+      description: row.description,
+      imageUrl: row.image_url,
+      linkUrl: row.link_url,
+      displayOrder: row.display_order,
+      isActive: Boolean(row.is_active),
+      createdAt: new Date(row.created_at)
+    }));
+  }
+  async getAdvertisementCarouselItem(id: number): Promise<AdvertisementCarousel | undefined> { return undefined; }
+  async createAdvertisementCarouselItem(insertItem: InsertAdvertisementCarousel): Promise<AdvertisementCarousel> { throw new Error('Not implemented'); }
+  async updateAdvertisementCarouselItem(id: number, itemData: Partial<InsertAdvertisementCarousel>): Promise<AdvertisementCarousel | undefined> { return undefined; }
+  async deleteAdvertisementCarouselItem(id: number): Promise<boolean> { return false; }
+  async getDocuments(type?: string): Promise<Document[]> { return []; }
+  async getDocument(id: number): Promise<Document | undefined> { return undefined; }
+  async createDocument(insertDocument: InsertDocument): Promise<Document> { throw new Error('Not implemented'); }
+  async updateDocument(id: number, documentData: Partial<InsertDocument>): Promise<Document | undefined> { return undefined; }
+  async deleteDocument(id: number): Promise<boolean> { return false; }
+  async createAlertView(insertView: InsertAlertView): Promise<AlertView> { throw new Error('Not implemented'); }
+  async hasUserViewedAlert(userId: number, alertId: number, listingId: number): Promise<boolean> { return false; }
+  async getAdminStats(): Promise<{ pendingListings: number; activeAuctions: number; totalUsers: number; bannedUsers: number }> {
+    return { pendingListings: 0, activeAuctions: 2, totalUsers: 3, bannedUsers: 0 };
+  }
+}
