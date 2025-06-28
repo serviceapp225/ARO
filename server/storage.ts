@@ -794,4 +794,30 @@ export class DatabaseStorage implements IStorage {
   }
 }
 
-export const storage = new DatabaseStorage();
+import { MemoryStorage } from './memoryStorage';
+
+// Try to use database storage, fall back to memory storage if database connection fails
+let storage: IStorage;
+
+async function initializeStorage(): Promise<IStorage> {
+  try {
+    const dbStorage = new DatabaseStorage();
+    // Test the database connection
+    await dbStorage.getListingsByStatus('active', 1);
+    console.log('Database connection successful, using DatabaseStorage');
+    return dbStorage;
+  } catch (error) {
+    console.warn('Database connection failed, falling back to MemoryStorage:', error instanceof Error ? error.message : String(error));
+    return new MemoryStorage();
+  }
+}
+
+// Initialize storage asynchronously
+storage = new MemoryStorage(); // Start with memory storage
+initializeStorage().then(initializedStorage => {
+  storage = initializedStorage;
+}).catch(error => {
+  console.error('Failed to initialize storage:', error);
+});
+
+export { storage };
