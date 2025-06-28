@@ -39,46 +39,27 @@ export function AuctionProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const [lastUpdateTime, setLastUpdateTime] = useState<number>(0);
 
-  // Fetch listings with smart caching and debouncing
+  // Simplified fetch listings without complex caching logic
   const fetchListings = useCallback(async (forceRefresh = false) => {
     try {
-      // Проверяем время последнего обновления (дебаунсинг)
+      // Проверяем время последнего обновления (дебаунсинг 1 секунда)
       const now = Date.now();
-      if (!forceRefresh && (now - lastUpdateTime) < 2000) {
+      if (!forceRefresh && (now - lastUpdateTime) < 1000) {
         return; // Слишком частые обновления, пропускаем
       }
 
-      // Сначала проверяем есть ли данные в React Query кэше
-      const cachedData = queryClient.getQueryData(['/api/listings']);
-      if (cachedData && !forceRefresh && Array.isArray(cachedData)) {
-        setListings(cachedData);
-        setIsLoading(false);
-        setLastUpdateTime(now);
-        return;
-      }
-
-      // Только показываем loading при принудительном обновлении или первой загрузке
-      if (forceRefresh || listings.length === 0) {
+      // Показываем loading только при первой загрузке
+      if (listings.length === 0) {
         setIsLoading(true);
       }
       
-      const response = await fetch('/api/listings', {
-        cache: forceRefresh ? 'no-cache' : 'default',
-        headers: forceRefresh ? {
-          'Cache-Control': 'no-cache',
-          'Pragma': 'no-cache'
-        } : {}
-      });
+      const response = await fetch('/api/listings');
       
       if (response.ok) {
         const data = await response.json();
         if (Array.isArray(data)) {
-          // Проверяем, изменились ли данные на самом деле
-          const dataHash = JSON.stringify(data).length;
-          if (dataHash !== lastUpdateTime || listings.length === 0) {
-            setListings(data);
-            setLastUpdateTime(dataHash);
-          }
+          setListings(data);
+          setLastUpdateTime(now);
         } else {
           setListings([]);
         }
@@ -91,19 +72,16 @@ export function AuctionProvider({ children }: { children: ReactNode }) {
     } finally {
       setIsLoading(false);
     }
-  }, [queryClient, lastUpdateTime, listings.length]);
+  }, [lastUpdateTime, listings.length]);
 
   useEffect(() => {
-    // Задерживаем первую загрузку на 100мс для оптимизации
-    const delayedLoad = setTimeout(() => {
-      fetchListings(true); // Первая загрузка с индикатором
-    }, 100);
+    // Немедленная загрузка при инициализации
+    fetchListings(true);
     
-    // Фоновые обновления каждые 3 минуты без индикатора загрузки
-    const interval = setInterval(() => fetchListings(false), 180000);
+    // Фоновые обновления каждые 5 минут
+    const interval = setInterval(() => fetchListings(false), 300000);
     
     return () => {
-      clearTimeout(delayedLoad);
       clearInterval(interval);
     };
   }, [fetchListings]);
