@@ -4,6 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { ActiveAuctions } from "@/components/ActiveAuctions";
 import { SellCarSection } from "@/components/SellCarSection";
+import { SellCarBanner } from "@/components/SellCarBanner";
 import { AdvertisementCarousel } from "@/components/AdvertisementCarousel";
 import { TopHeader } from "@/components/TopHeader";
 import { Link } from "wouter";
@@ -75,6 +76,9 @@ export default function HomePage() {
             <AdvertisementCarousel />
           </section>
         )}
+
+        {/* Sell Car Banner */}
+        <SellCarBanner />
 
         {/* Security Banner */}
         <div className="bg-green-50 border border-green-200 rounded-xl p-4">
