@@ -142,6 +142,10 @@ export class SimpleMemoryStorage {
     return this.data.users.find(u => u.email === email);
   }
 
+  async getUserByUsername(username) {
+    return this.data.users.find(u => u.username === username);
+  }
+
   async getNotificationsByUser(userId) {
     return []; // Empty for now
   }
