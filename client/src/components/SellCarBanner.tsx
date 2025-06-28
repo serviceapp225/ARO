@@ -3,8 +3,6 @@ import { Button } from '@/components/ui/button';
 import { useLocation } from 'wouter';
 
 export function SellCarBanner() {
-  const [, setLocation] = useLocation();
-
   return (
     <div className="bg-gradient-to-r from-blue-600 to-purple-700 rounded-lg p-6 md:p-8 text-white shadow-lg mb-8">
         <div className="flex flex-col md:flex-row items-center justify-between">
@@ -22,23 +20,29 @@ export function SellCarBanner() {
             </div>
           </div>
           
-          <button 
-            className="inline-flex items-center bg-white text-blue-600 hover:bg-blue-50 font-semibold px-6 py-3 rounded-lg transition-colors border-0 cursor-pointer z-50 relative"
-            style={{ 
-              pointerEvents: 'auto',
-              position: 'relative',
-              zIndex: 1000
-            }}
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              console.log('КЛИК СРАБОТАЛ! Переход на /sell');
-              window.location.href = '/sell';
-            }}
-          >
-            Начать продажу
-            <ArrowRight className="w-5 h-5 ml-2" />
-          </button>
+          <div style={{zIndex: 9999, position: 'relative'}}>
+            <a 
+              href="/sell"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                background: 'white',
+                color: '#2563eb',
+                fontWeight: '600',
+                padding: '12px 24px',
+                borderRadius: '8px',
+                textDecoration: 'none',
+                cursor: 'pointer',
+                zIndex: 9999,
+                position: 'relative'
+              }}
+              onMouseDown={() => console.log('mousedown')}
+              onClick={() => console.log('click')}
+            >
+              Начать продажу
+              <ArrowRight className="w-5 h-5 ml-2" style={{marginLeft: '8px'}} />
+            </a>
+          </div>
         </div>
         
         <div className="grid grid-cols-3 gap-4 mt-6 pt-6 border-t border-white/20">
