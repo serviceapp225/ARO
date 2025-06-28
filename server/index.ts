@@ -52,8 +52,20 @@ app.use((req, res, next) => {
 });
 
 (async () => {
-  // Временно отключаем базу данных - используем демо данные
-  console.log("Приложение запущено с демо-данными");
+  // Настройка базы данных и инициализация
+  try {
+    console.log("Создание таблиц базы данных...");
+    const tablesCreated = await createTables();
+    
+    if (tablesCreated) {
+      console.log("✅ Таблицы созданы успешно");
+      await initializeDatabaseWithSampleData();
+      console.log("✅ База данных инициализирована с данными");
+    }
+  } catch (error) {
+    console.warn("⚠️ Ошибка настройки базы данных:", error instanceof Error ? error.message : String(error));
+    console.log("Приложение будет использовать временные данные");
+  }
   
   const server = await registerRoutes(app);
 
