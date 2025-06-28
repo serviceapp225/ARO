@@ -40,6 +40,11 @@ export function ActiveAuctions({ searchQuery = "", customListings }: ActiveAucti
   const displayedAuctions = useMemo(() => {
     console.log("Source auctions:", sourceAuctions.length, "Sample:", sourceAuctions[0]);
     
+    // Debug: check status of first auction
+    if (sourceAuctions.length > 0) {
+      console.log("First auction status:", sourceAuctions[0].status, "Type:", typeof sourceAuctions[0].status);
+    }
+    
     // First filter for active auctions only
     const activeAuctions = sourceAuctions.filter((auction: any) => auction.status === 'active');
     console.log("Active auctions after filter:", activeAuctions.length);
