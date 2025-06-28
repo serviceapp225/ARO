@@ -1,8 +1,9 @@
 import { Car, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Link } from 'wouter';
+import { useLocation } from 'wouter';
 
 export function SellCarBanner() {
+  const [, setLocation] = useLocation();
 
   return (
     <div className="bg-gradient-to-r from-blue-600 to-purple-700 rounded-lg p-6 md:p-8 text-white shadow-lg mb-8">
@@ -21,14 +22,19 @@ export function SellCarBanner() {
             </div>
           </div>
           
-          <Link href="/sell">
-            <Button 
-              className="bg-white text-blue-600 hover:bg-blue-50 font-semibold px-6 py-3 rounded-lg transition-colors"
-            >
-              Начать продажу
-              <ArrowRight className="w-5 h-5 ml-2" />
-            </Button>
-          </Link>
+          <a 
+            href="/sell"
+            className="inline-flex items-center bg-white text-blue-600 hover:bg-blue-50 font-semibold px-6 py-3 rounded-lg transition-colors no-underline"
+            onClick={(e) => {
+              e.preventDefault();
+              console.log('Клик по ссылке "Начать продажу"');
+              console.log('Переход на /sell');
+              setLocation('/sell');
+            }}
+          >
+            Начать продажу
+            <ArrowRight className="w-5 h-5 ml-2" />
+          </a>
         </div>
         
         <div className="grid grid-cols-3 gap-4 mt-6 pt-6 border-t border-white/20">
