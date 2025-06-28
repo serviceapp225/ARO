@@ -1,4 +1,4 @@
-import { Car } from "lucide-react";
+import { Plus } from "lucide-react";
 
 export function SellCarBanner() {
   const handleClick = () => {
@@ -9,29 +9,41 @@ export function SellCarBanner() {
   return (
     <div 
       onClick={handleClick}
-      className="bg-white rounded-2xl p-4 shadow-sm cursor-pointer hover:shadow-md transition-all duration-300"
+      className="relative h-44 rounded-2xl p-6 text-white overflow-hidden shadow-2xl cursor-pointer hover:shadow-3xl transition-all duration-300"
     >
-      <div className="flex items-center justify-between">
-        <div className="flex-1">
-          <h3 className="text-lg font-bold text-gray-900 mb-2">
-            Продайте свой автомобиль
-          </h3>
-          <p className="text-gray-600 text-sm mb-3">
-            Более 2000 покупателей ждут ваше предложение
-          </p>
-          <div className="flex items-center space-x-4 text-gray-500 text-xs">
-            <span className="flex items-center">
-              <div className="w-1.5 h-1.5 bg-green-500 rounded-full mr-1"></div>
-              95% успешных продаж
-            </span>
-            <span className="flex items-center">
-              <div className="w-1.5 h-1.5 bg-blue-500 rounded-full mr-1"></div>
-              24ч средний срок
-            </span>
-          </div>
-        </div>
-        <div className="ml-4 bg-blue-50 p-3 rounded-xl">
-          <Car className="w-8 h-8 text-blue-600" />
+      {/* Background Image */}
+      <div 
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat rounded-2xl"
+        style={{
+          backgroundImage: `url('https://images.unsplash.com/photo-1503376780353-7e6692767b70?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80')`
+        }}
+      ></div>
+      
+      {/* Overlay */}
+      <div 
+        className="absolute inset-0 bg-black rounded-2xl"
+        style={{ opacity: 0.4 }}
+      ></div>
+      
+      {/* Content */}
+      <div className="relative z-10 h-full flex flex-col justify-center items-center text-center space-y-2">
+        <h2 className="text-2xl font-bold text-white">
+          Продай свое авто
+        </h2>
+        <p className="text-base leading-relaxed opacity-90 text-white">
+          Получи максимальную цену за свой автомобиль на нашем аукционе
+        </p>
+        <div className="mt-4">
+          <span 
+            className="px-4 py-2 rounded-full text-sm font-bold hover:opacity-90 transition-all duration-300 cursor-pointer inline-flex items-center gap-1"
+            style={{ 
+              backgroundColor: '#ffffff',
+              color: '#059669' 
+            }}
+          >
+            <Plus className="w-4 h-4" />
+            Начать продажу →
+          </span>
         </div>
       </div>
     </div>
