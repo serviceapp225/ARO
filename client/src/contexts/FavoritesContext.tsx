@@ -25,10 +25,12 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
 
   const userId = getCurrentUserId();
 
-  // Fetch favorites from database
+  // Fetch favorites from database with smart caching
   const { data: favoritesData, isLoading } = useQuery({
     queryKey: [`/api/users/${userId}/favorites`],
     enabled: !!userId,
+    staleTime: 60000, // 1 минута кэша
+    gcTime: 300000, // 5 минут в памяти (было cacheTime в v4)
     queryFn: async () => {
       const response = await fetch(`/api/users/${userId}/favorites`);
       if (!response.ok) throw new Error('Failed to fetch favorites');

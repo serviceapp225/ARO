@@ -39,14 +39,21 @@ export function AuctionProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const [lastUpdateTime, setLastUpdateTime] = useState<number>(0);
 
-  // Fetch listings with smart caching
+  // Fetch listings with smart caching and debouncing
   const fetchListings = useCallback(async (forceRefresh = false) => {
     try {
+      // Проверяем время последнего обновления (дебаунсинг)
+      const now = Date.now();
+      if (!forceRefresh && (now - lastUpdateTime) < 2000) {
+        return; // Слишком частые обновления, пропускаем
+      }
+
       // Сначала проверяем есть ли данные в React Query кэше
       const cachedData = queryClient.getQueryData(['/api/listings']);
       if (cachedData && !forceRefresh && Array.isArray(cachedData)) {
         setListings(cachedData);
         setIsLoading(false);
+        setLastUpdateTime(now);
         return;
       }
 
@@ -87,10 +94,18 @@ export function AuctionProvider({ children }: { children: ReactNode }) {
   }, [queryClient, lastUpdateTime, listings.length]);
 
   useEffect(() => {
-    fetchListings(true); // Первая загрузка с индикатором
-    // Фоновые обновления каждые 2 минуты без индикатора загрузки
-    const interval = setInterval(() => fetchListings(false), 120000);
-    return () => clearInterval(interval);
+    // Задерживаем первую загрузку на 100мс для оптимизации
+    const delayedLoad = setTimeout(() => {
+      fetchListings(true); // Первая загрузка с индикатором
+    }, 100);
+    
+    // Фоновые обновления каждые 3 минуты без индикатора загрузки
+    const interval = setInterval(() => fetchListings(false), 180000);
+    
+    return () => {
+      clearTimeout(delayedLoad);
+      clearInterval(interval);
+    };
   }, [fetchListings]);
 
   // Debug logging (can be removed in production)
