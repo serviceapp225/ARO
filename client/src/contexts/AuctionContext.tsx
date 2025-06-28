@@ -35,6 +35,7 @@ export function AuctionProvider({ children }: { children: ReactNode }) {
   const [selectedAuction, setSelectedAuction] = useState<Auction | null>(null);
   const [listings, setListings] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [lastUpdateTime, setLastUpdateTime] = useState<number>(0);
 
   // Fetch listings with direct fetch
   const fetchListings = useCallback(async (forceRefresh = false) => {
@@ -55,7 +56,12 @@ export function AuctionProvider({ children }: { children: ReactNode }) {
       if (response.ok) {
         const data = await response.json();
         if (Array.isArray(data)) {
-          setListings(data);
+          // Проверяем, изменились ли данные на самом деле
+          const dataHash = JSON.stringify(data).length;
+          if (dataHash !== lastUpdateTime || listings.length === 0) {
+            setListings(data);
+            setLastUpdateTime(dataHash);
+          }
         } else {
           setListings([]);
         }
@@ -68,7 +74,7 @@ export function AuctionProvider({ children }: { children: ReactNode }) {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [lastUpdateTime, listings.length]);
 
   useEffect(() => {
     fetchListings(true); // Первая загрузка с индикатором
