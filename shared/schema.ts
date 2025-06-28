@@ -9,6 +9,7 @@ export const users = pgTable("users", {
   fullName: text("full_name"), // Real name from profile
   role: text("role").notNull(), // 'buyer', 'seller', 'admin'
   profilePhoto: text("profile_photo"),
+  phoneNumber: text("phone_number"), // Phone number for authentication
   isActive: boolean("is_active").default(false),
   createdAt: timestamp("created_at").defaultNow(),
 });

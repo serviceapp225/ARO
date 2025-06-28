@@ -258,8 +258,9 @@ export class SQLiteStorage implements IStorage {
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
-    const stmt = this.db.prepare('SELECT * FROM users WHERE username = ?');
-    const row = stmt.get(username);
+    // Поиск по username или номеру телефона
+    const stmt = this.db.prepare('SELECT * FROM users WHERE username = ? OR phone_number = ?');
+    const row = stmt.get(username, username);
     return row ? this.mapUser(row) : undefined;
   }
 
@@ -428,6 +429,7 @@ export class SQLiteStorage implements IStorage {
       role: row.role,
       profilePhoto: row.profile_photo,
       isActive: Boolean(row.is_active),
+      phoneNumber: row.phone_number,
       createdAt: new Date(row.created_at)
     };
   }
