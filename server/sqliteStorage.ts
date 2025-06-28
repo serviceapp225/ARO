@@ -350,7 +350,7 @@ export class SQLiteStorage implements IStorage {
       insertListing.year, insertListing.mileage, insertListing.description, 
       parseFloat(insertListing.startingPrice), JSON.stringify(insertListing.photos), 
       insertListing.auctionDuration, 'pending',
-      insertListing.auctionStartTime || null, insertListing.auctionEndTime || null,
+      null, null, // auctionStartTime and auctionEndTime will be set when approved
       insertListing.customsCleared ? 1 : 0, insertListing.recycled ? 1 : 0,
       insertListing.technicalInspectionValid ? 1 : 0, insertListing.technicalInspectionDate || null,
       insertListing.tinted ? 1 : 0, insertListing.tintingDate || null,
@@ -488,29 +488,38 @@ export class SQLiteStorage implements IStorage {
   async deleteBanner(id: number): Promise<boolean> { return false; }
   async getSellCarSection(): Promise<SellCarSection | undefined> {
     const stmt = this.db.prepare('SELECT * FROM sell_car_section LIMIT 1');
-    const row = stmt.get();
+    const row: any = stmt.get();
     return row ? {
       id: row.id,
       title: row.title,
-      description: row.description,
-      buttonText: row.button_text,
-      imageUrl: row.image_url,
-      createdAt: new Date(row.created_at)
+      subtitle: row.description || '',
+      linkUrl: '',
+      buttonText: row.button_text || 'Продать авто',
+      backgroundImageUrl: row.image_url || '',
+      isActive: true,
+      overlayOpacity: 0.5,
+      textColor: '#ffffff',
+      buttonColor: '#007bff',
+      buttonTextColor: '#ffffff',
+      createdAt: new Date(row.created_at),
+      updatedAt: null
     } : undefined;
   }
   async updateSellCarSection(data: Partial<InsertSellCarSection>): Promise<SellCarSection | undefined> { return undefined; }
   async getAdvertisementCarousel(): Promise<AdvertisementCarousel[]> {
     const stmt = this.db.prepare('SELECT * FROM advertisement_carousel WHERE is_active = 1 ORDER BY display_order');
-    const rows = stmt.all();
-    return rows.map(row => ({
+    const rows: any[] = stmt.all();
+    return rows.map((row: any) => ({
       id: row.id,
       title: row.title,
-      description: row.description,
+      description: row.description || null,
       imageUrl: row.image_url,
-      linkUrl: row.link_url,
-      displayOrder: row.display_order,
+      linkUrl: row.link_url || null,
+      order: row.display_order || null,
+      buttonText: row.button_text || null,
       isActive: Boolean(row.is_active),
-      createdAt: new Date(row.created_at)
+      createdAt: new Date(row.created_at),
+      updatedAt: row.updated_at ? new Date(row.updated_at) : null
     }));
   }
   async getAdvertisementCarouselItem(id: number): Promise<AdvertisementCarousel | undefined> { return undefined; }

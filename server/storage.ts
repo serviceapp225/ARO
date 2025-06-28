@@ -318,9 +318,9 @@ export class DatabaseStorage implements IStorage {
     
     const listingData = {
       ...insertListing,
-      // Keep the status as provided (should be "pending" from routes.ts)
-      auctionStartTime: insertListing.status === "pending" ? null : now,
-      auctionEndTime: auctionEndTime
+      status: "pending", // Always start as pending for admin review
+      auctionStartTime: null, // Will be set when approved
+      auctionEndTime: null // Will be calculated when approved
     };
     
     const [listing] = await db.insert(carListings).values(listingData).returning();
