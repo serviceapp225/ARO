@@ -585,6 +585,7 @@ export class SQLiteStorage implements IStorage {
         title: row.title,
         message: row.message,
         listingId: row.listing_id,
+        alertId: row.alert_id || null,
         isRead: Boolean(row.is_read),
         createdAt: new Date(row.created_at)
       }));
@@ -596,8 +597,8 @@ export class SQLiteStorage implements IStorage {
   async createNotification(insertNotification: InsertNotification): Promise<Notification> {
     try {
       const stmt = this.db.prepare(`
-        INSERT INTO notifications (user_id, type, title, message, listing_id, is_read) 
-        VALUES (?, ?, ?, ?, ?, ?)
+        INSERT INTO notifications (user_id, type, title, message, listing_id, alert_id, is_read) 
+        VALUES (?, ?, ?, ?, ?, ?, ?)
       `);
       
       const result = stmt.run(
@@ -606,6 +607,7 @@ export class SQLiteStorage implements IStorage {
         insertNotification.title,
         insertNotification.message,
         insertNotification.listingId || null,
+        insertNotification.alertId || null,
         insertNotification.isRead !== true ? 0 : 1
       );
       
@@ -620,6 +622,7 @@ export class SQLiteStorage implements IStorage {
         title: row.title,
         message: row.message,
         listingId: row.listing_id,
+        alertId: row.alert_id || null,
         isRead: Boolean(row.is_read),
         createdAt: new Date(row.created_at)
       };
