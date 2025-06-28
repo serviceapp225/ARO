@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, ReactNode, useCallback, useEffect } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 
 interface Auction {
   id: string;
@@ -32,14 +33,23 @@ interface AuctionContextType {
 const AuctionContext = createContext<AuctionContextType | undefined>(undefined);
 
 export function AuctionProvider({ children }: { children: ReactNode }) {
+  const queryClient = useQueryClient();
   const [selectedAuction, setSelectedAuction] = useState<Auction | null>(null);
   const [listings, setListings] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [lastUpdateTime, setLastUpdateTime] = useState<number>(0);
 
-  // Fetch listings with direct fetch
+  // Fetch listings with smart caching
   const fetchListings = useCallback(async (forceRefresh = false) => {
     try {
+      // Сначала проверяем есть ли данные в React Query кэше
+      const cachedData = queryClient.getQueryData(['/api/listings']);
+      if (cachedData && !forceRefresh && Array.isArray(cachedData)) {
+        setListings(cachedData);
+        setIsLoading(false);
+        return;
+      }
+
       // Только показываем loading при принудительном обновлении или первой загрузке
       if (forceRefresh || listings.length === 0) {
         setIsLoading(true);
@@ -74,7 +84,7 @@ export function AuctionProvider({ children }: { children: ReactNode }) {
     } finally {
       setIsLoading(false);
     }
-  }, [lastUpdateTime, listings.length]);
+  }, [queryClient, lastUpdateTime, listings.length]);
 
   useEffect(() => {
     fetchListings(true); // Первая загрузка с индикатором

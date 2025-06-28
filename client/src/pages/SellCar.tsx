@@ -393,9 +393,18 @@ export default function SellCar() {
         setUploadedImages([]);
       }, 100);
 
-      // Force immediate cache refresh
-      queryClient.invalidateQueries({ queryKey: ['/api/listings'] });
-      queryClient.refetchQueries({ queryKey: ['/api/listings'] });
+      // Optimistic update - add new listing to cache without full reload
+      queryClient.setQueryData(['/api/listings'], (oldData: any) => {
+        if (Array.isArray(oldData)) {
+          return [newListing, ...oldData];
+        }
+        return [newListing];
+      });
+      
+      // Mark cache as fresh to prevent immediate reload on page navigation
+      queryClient.setQueryData(['/api/listings'], (data: any) => data, {
+        updatedAt: Date.now()
+      });
 
     } catch (error) {
       console.error('Error creating listing:', error);
