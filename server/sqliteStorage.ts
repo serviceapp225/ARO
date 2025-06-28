@@ -468,12 +468,69 @@ export class SQLiteStorage implements IStorage {
     };
   }
 
-  // Stub implementations for other required methods
-  async getBidsForListing(listingId: number): Promise<Bid[]> { return []; }
-  async getBidsByUser(bidderId: number): Promise<Bid[]> { return []; }
-  async getBidCountForListing(listingId: number): Promise<number> { return 0; }
-  async getBidCountsForListings(listingIds: number[]): Promise<Record<number, number>> { return {}; }
-  async createBid(insertBid: InsertBid): Promise<Bid> { throw new Error('Not implemented'); }
+  // Bid operations
+  async getBidsForListing(listingId: number): Promise<Bid[]> {
+    const stmt = this.db.prepare('SELECT * FROM bids WHERE listing_id = ? ORDER BY created_at DESC');
+    const rows: any[] = stmt.all(listingId);
+    return rows.map((row: any) => ({
+      id: row.id,
+      listingId: row.listing_id,
+      bidderId: row.bidder_id,
+      amount: row.amount.toString(),
+      createdAt: new Date(row.created_at)
+    }));
+  }
+
+  async getBidsByUser(bidderId: number): Promise<Bid[]> {
+    const stmt = this.db.prepare('SELECT * FROM bids WHERE bidder_id = ? ORDER BY created_at DESC');
+    const rows: any[] = stmt.all(bidderId);
+    return rows.map((row: any) => ({
+      id: row.id,
+      listingId: row.listing_id,
+      bidderId: row.bidder_id,
+      amount: row.amount.toString(),
+      createdAt: new Date(row.created_at)
+    }));
+  }
+
+  async getBidCountForListing(listingId: number): Promise<number> {
+    const stmt = this.db.prepare('SELECT COUNT(*) as count FROM bids WHERE listing_id = ?');
+    const row: any = stmt.get(listingId);
+    return row.count;
+  }
+
+  async getBidCountsForListings(listingIds: number[]): Promise<Record<number, number>> {
+    const counts: Record<number, number> = {};
+    for (const id of listingIds) {
+      counts[id] = await this.getBidCountForListing(id);
+    }
+    return counts;
+  }
+
+  async createBid(insertBid: InsertBid): Promise<Bid> {
+    const stmt = this.db.prepare(`
+      INSERT INTO bids (listing_id, bidder_id, amount) 
+      VALUES (?, ?, ?)
+    `);
+    
+    const result = stmt.run(
+      insertBid.listingId,
+      insertBid.bidderId,
+      parseFloat(insertBid.amount)
+    );
+    
+    // Get the created bid
+    const getBidStmt = this.db.prepare('SELECT * FROM bids WHERE id = ?');
+    const row: any = getBidStmt.get(result.lastInsertRowid);
+    
+    return {
+      id: row.id,
+      listingId: row.listing_id,
+      bidderId: row.bidder_id,
+      amount: row.amount.toString(),
+      createdAt: new Date(row.created_at)
+    };
+  }
   async getFavoritesByUser(userId: number): Promise<Favorite[]> { return []; }
   async createFavorite(insertFavorite: InsertFavorite): Promise<Favorite> { throw new Error('Not implemented'); }
   async deleteFavorite(id: number): Promise<boolean> { return false; }
