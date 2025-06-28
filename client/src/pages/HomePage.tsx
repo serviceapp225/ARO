@@ -3,7 +3,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { ActiveAuctions } from "@/components/ActiveAuctions";
-import { SellCarSection } from "@/components/SellCarSection";
 import { SellCarBanner } from "@/components/SellCarBanner";
 import { AdvertisementCarousel } from "@/components/AdvertisementCarousel";
 import { TopHeader } from "@/components/TopHeader";
@@ -64,8 +63,7 @@ export default function HomePage() {
           </form>
         </div>
 
-        {/* Sell Car Section - Lazy loaded */}
-        {showSecondaryContent && <SellCarSection />}
+
 
         {/* Advertisement Carousel - Lazy loaded */}
         {showSecondaryContent && (
