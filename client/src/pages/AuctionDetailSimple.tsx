@@ -146,32 +146,38 @@ export default function AuctionDetail() {
       setBidAmount("");
     },
     onError: (error: any) => {
-      console.log("Error in onError:", error);
+      console.log("🔴 Error in onError callback:", error);
+      console.log("🔴 Error type:", error?.errorType);
+      console.log("🔴 Error message:", error?.errorMessage);
       
       // Handle specific error types
-      if (error.errorType === "Already highest bidder") {
+      if (error?.errorType === "Already highest bidder") {
+        console.log("🔴 Showing 'already highest bidder' toast");
         toast({
           title: "Вы уже лидируете",
-          description: error.errorMessage || "Вы уже лидируете в аукционе с максимальной ставкой.",
+          description: "Вы уже лидируете в аукционе с максимальной ставкой.",
           variant: "destructive",
-          duration: 3000,
+          duration: 4000,
         });
-      } else if (error.errorType === "Bid too low") {
+      } else if (error?.errorType === "Bid too low") {
+        console.log("🔴 Showing 'bid too low' toast");
         toast({
           title: "Ставка слишком низкая", 
-          description: error.errorMessage || "Ваша ставка должна быть выше текущей максимальной ставки.",
+          description: "Ваша ставка должна быть выше текущей максимальной ставки.",
           variant: "destructive",
-          duration: 3000,
+          duration: 4000,
         });
-      } else if (error.errorType === "Account not activated") {
+      } else if (error?.errorType === "Account not activated") {
+        console.log("🔴 Showing activation dialog");
         setShowActivationDialog(true);
       } else {
+        console.log("🔴 Showing generic error toast");
         // Generic error handling
         toast({
           title: "Ошибка размещения ставки",
-          description: error.errorMessage || error.message || "Не удалось разместить ставку.",
+          description: error?.errorMessage || error?.message || "Не удалось разместить ставку.",
           variant: "destructive",
-          duration: 3000,
+          duration: 4000,
         });
       }
     }
