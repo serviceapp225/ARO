@@ -128,8 +128,9 @@ export default function AuctionDetail() {
       setBidAmount("");
     },
     onError: (error: any) => {
-      // Simple fallback - just check the error message for keywords and show appropriate messages
+      // Debug: show actual error message
       const errorMessage = error?.message || String(error) || "";
+      console.log("Debug - Raw error message:", errorMessage);
       
       if (errorMessage.includes("Already highest bidder") || errorMessage.includes("уже лидируете")) {
         toast({
