@@ -108,31 +108,6 @@ export default function AuctionDetail() {
         
         if (!response.ok) {
           const errorData = await response.json();
-          
-          // Show toast immediately based on error type
-          if (errorData.error === "Already highest bidder") {
-            toast({
-              title: "Вы уже лидируете",
-              description: errorData.message || "Вы уже лидируете в аукционе с максимальной ставкой.",
-              variant: "destructive",
-              duration: 3000,
-            });
-          } else if (errorData.error === "Bid too low") {
-            toast({
-              title: "Ставка слишком низкая",
-              description: errorData.message || "Ваша ставка должна быть выше текущей максимальной ставки.",
-              variant: "destructive",
-              duration: 3000,
-            });
-          } else {
-            toast({
-              title: "Ошибка размещения ставки",
-              description: errorData.message || "Не удалось разместить ставку.",
-              variant: "destructive",
-              duration: 3000,
-            });
-          }
-          
           const error = new Error(errorData.message || 'Failed to place bid');
           (error as any).errorType = errorData.error;
           (error as any).errorMessage = errorData.message;
@@ -142,17 +117,6 @@ export default function AuctionDetail() {
         return response.json();
       } catch (fetchError) {
         console.log("Fetch error:", fetchError);
-        // If it's our custom error, re-throw it
-        if ((fetchError as any).errorType) {
-          throw fetchError;
-        }
-        // Otherwise, show generic error
-        toast({
-          title: "Ошибка сети",
-          description: "Не удалось подключиться к серверу.",
-          variant: "destructive",
-          duration: 3000,
-        });
         throw fetchError;
       }
     },
@@ -181,6 +145,36 @@ export default function AuctionDetail() {
       // Reset bid amount
       setBidAmount("");
     },
+    onError: (error: any) => {
+      console.log("Error in onError:", error);
+      
+      // Handle specific error types
+      if (error.errorType === "Already highest bidder") {
+        toast({
+          title: "Вы уже лидируете",
+          description: error.errorMessage || "Вы уже лидируете в аукционе с максимальной ставкой.",
+          variant: "destructive",
+          duration: 3000,
+        });
+      } else if (error.errorType === "Bid too low") {
+        toast({
+          title: "Ставка слишком низкая", 
+          description: error.errorMessage || "Ваша ставка должна быть выше текущей максимальной ставки.",
+          variant: "destructive",
+          duration: 3000,
+        });
+      } else if (error.errorType === "Account not activated") {
+        setShowActivationDialog(true);
+      } else {
+        // Generic error handling
+        toast({
+          title: "Ошибка размещения ставки",
+          description: error.errorMessage || error.message || "Не удалось разместить ставку.",
+          variant: "destructive",
+          duration: 3000,
+        });
+      }
+    }
 
   });
 
