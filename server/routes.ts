@@ -410,7 +410,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             await storage.createNotification({
               userId: alert.userId,
               title: "Найден автомобиль по вашему запросу",
-              message: `${listing.make} ${listing.model} ${listing.year} г. - ${listing.startingPrice}$ (лот #${listing.lotNumber})`,
+              message: `${listing.make.toUpperCase()} ${listing.model.toUpperCase()} ${listing.year} г. - ${listing.startingPrice} Сомони (лот #${listing.lotNumber})`,
               type: "car_found",
               listingId: listing.id,
               alertId: alert.id,
