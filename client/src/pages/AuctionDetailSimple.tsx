@@ -99,7 +99,6 @@ export default function AuctionDetail() {
   // Bid mutation with celebration effects
   const bidMutation = useMutation({
     mutationFn: async (bidData: { bidderId: number; amount: string }) => {
-      alert("Debug: Mutation function called with " + JSON.stringify(bidData));
       try {
         const response = await fetch(`/api/listings/${id}/bids`, {
           method: 'POST',
@@ -109,8 +108,6 @@ export default function AuctionDetail() {
         
         if (!response.ok) {
           const errorData = await response.json();
-          console.log("Server error response:", errorData);
-          alert("Debug: Error type = " + errorData.error + ", Message = " + errorData.message);
           
           // Show toast immediately based on error type
           if (errorData.error === "Already highest bidder") {
