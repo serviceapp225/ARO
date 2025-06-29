@@ -843,6 +843,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Полное обновление объявления
+  app.put("/api/admin/listings/:id", adminAuth, async (req, res) => {
+    try {
+      const listingId = parseInt(req.params.id);
+      const { make, model, year, mileage, description, startingPrice, status, location } = req.body;
+      
+      const listing = await storage.updateListing(listingId, {
+        make,
+        model, 
+        year,
+        mileage,
+        description,
+        startingPrice,
+        status,
+        location
+      });
+      
+      if (!listing) {
+        return res.status(404).json({ error: "Listing not found" });
+      }
+      
+      // Clear all caches when admin updates listing
+      clearAllCaches();
+      
+      res.json(listing);
+    } catch (error) {
+      console.error("Error updating listing:", error);
+      res.status(500).json({ error: "Failed to update listing" });
+    }
+  });
+
   app.put("/api/admin/listings/:id/status", async (req, res) => {
     try {
       const listingId = parseInt(req.params.id);

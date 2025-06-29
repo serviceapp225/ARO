@@ -19,6 +19,7 @@ export interface IStorage {
   getListingsByStatus(status: string, limit?: number): Promise<CarListing[]>;
   getListingsBySeller(sellerId: number): Promise<CarListing[]>;
   createListing(listing: InsertCarListing): Promise<CarListing>;
+  updateListing(id: number, data: Partial<InsertCarListing>): Promise<CarListing | undefined>;
   updateListingStatus(id: number, status: string): Promise<CarListing | undefined>;
   updateListingCurrentBid(id: number, amount: string): Promise<CarListing | undefined>;
   searchListings(filters: {

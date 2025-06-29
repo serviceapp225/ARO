@@ -418,6 +418,55 @@ export class SQLiteStorage implements IStorage {
     return this.getListing(result.lastInsertRowid as number) as Promise<CarListing>;
   }
 
+  async updateListing(id: number, data: Partial<any>): Promise<CarListing | undefined> {
+    const fields = [];
+    const values = [];
+    
+    if (data.make !== undefined) {
+      fields.push('make = ?');
+      values.push(data.make);
+    }
+    if (data.model !== undefined) {
+      fields.push('model = ?');
+      values.push(data.model);
+    }
+    if (data.year !== undefined) {
+      fields.push('year = ?');
+      values.push(data.year);
+    }
+    if (data.mileage !== undefined) {
+      fields.push('mileage = ?');
+      values.push(data.mileage);
+    }
+    if (data.description !== undefined) {
+      fields.push('description = ?');
+      values.push(data.description);
+    }
+    if (data.startingPrice !== undefined) {
+      fields.push('starting_price = ?');
+      values.push(parseFloat(data.startingPrice));
+    }
+    if (data.status !== undefined) {
+      fields.push('status = ?');
+      values.push(data.status);
+    }
+    if (data.location !== undefined) {
+      fields.push('location = ?');
+      values.push(data.location);
+    }
+    
+    if (fields.length === 0) {
+      return this.getListing(id);
+    }
+    
+    const query = `UPDATE car_listings SET ${fields.join(', ')} WHERE id = ?`;
+    values.push(id);
+    
+    const stmt = this.db.prepare(query);
+    stmt.run(...values);
+    return this.getListing(id);
+  }
+
   async updateListingStatus(id: number, status: string): Promise<CarListing | undefined> {
     const stmt = this.db.prepare('UPDATE car_listings SET status = ? WHERE id = ?');
     stmt.run(status, id);

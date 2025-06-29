@@ -266,6 +266,15 @@ function ListingsManagement() {
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setSelectedListingId(listing.id)}
+                    className="flex items-center gap-1"
+                  >
+                    <Edit className="w-4 h-4" />
+                    Редактировать
+                  </Button>
                   <Select
                     value={listing.status}
                     onValueChange={(status) => 
