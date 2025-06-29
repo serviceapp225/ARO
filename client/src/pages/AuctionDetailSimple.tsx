@@ -109,6 +109,7 @@ export default function AuctionDetail() {
         if (!response.ok) {
           const errorData = await response.json();
           console.log("Server error response:", errorData);
+          alert("Debug: Error type = " + errorData.error + ", Message = " + errorData.message);
           
           // Show toast immediately based on error type
           if (errorData.error === "Already highest bidder") {
