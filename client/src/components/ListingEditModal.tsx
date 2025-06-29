@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
 import { Save, X } from 'lucide-react';
 import type { CarListing } from '@shared/schema';
@@ -29,6 +30,24 @@ export function ListingEditModal({ listingId, isOpen, onClose }: ListingEditModa
   const [startingPrice, setStartingPrice] = useState('');
   const [status, setStatus] = useState('');
   const [location, setLocation] = useState('');
+  
+  // Additional car specifications
+  const [engine, setEngine] = useState('');
+  const [transmission, setTransmission] = useState('');
+  const [fuelType, setFuelType] = useState('');
+  const [bodyType, setBodyType] = useState('');
+  const [driveType, setDriveType] = useState('');
+  const [color, setColor] = useState('');
+  const [condition, setCondition] = useState('');
+  const [vin, setVin] = useState('');
+  
+  // Legal documents and status
+  const [customsCleared, setCustomsCleared] = useState(false);
+  const [recycled, setRecycled] = useState(false);
+  const [technicalInspectionValid, setTechnicalInspectionValid] = useState(false);
+  const [technicalInspectionDate, setTechnicalInspectionDate] = useState('');
+  const [tinted, setTinted] = useState(false);
+  const [tintingDate, setTintingDate] = useState('');
 
   // Fetch listing data
   const { data: listing, isLoading } = useQuery<CarListing>({
@@ -47,6 +66,24 @@ export function ListingEditModal({ listingId, isOpen, onClose }: ListingEditModa
       setStartingPrice(listing.startingPrice || '');
       setStatus(listing.status || '');
       setLocation(listing.location || '');
+      
+      // Additional car specifications
+      setEngine(listing.engine || '');
+      setTransmission(listing.transmission || '');
+      setFuelType(listing.fuelType || '');
+      setBodyType(listing.bodyType || '');
+      setDriveType(listing.driveType || '');
+      setColor(listing.color || '');
+      setCondition(listing.condition || '');
+      setVin(listing.vin || '');
+      
+      // Legal documents and status
+      setCustomsCleared(listing.customsCleared || false);
+      setRecycled(listing.recycled || false);
+      setTechnicalInspectionValid(listing.technicalInspectionValid || false);
+      setTechnicalInspectionDate(listing.technicalInspectionDate || '');
+      setTinted(listing.tinted || false);
+      setTintingDate(listing.tintingDate || '');
     }
   }, [listing]);
 
@@ -61,6 +98,24 @@ export function ListingEditModal({ listingId, isOpen, onClose }: ListingEditModa
       setStartingPrice('');
       setStatus('');
       setLocation('');
+      
+      // Reset additional specifications
+      setEngine('');
+      setTransmission('');
+      setFuelType('');
+      setBodyType('');
+      setDriveType('');
+      setColor('');
+      setCondition('');
+      setVin('');
+      
+      // Reset legal documents
+      setCustomsCleared(false);
+      setRecycled(false);
+      setTechnicalInspectionValid(false);
+      setTechnicalInspectionDate('');
+      setTinted(false);
+      setTintingDate('');
     }
   }, [isOpen]);
 
@@ -75,6 +130,22 @@ export function ListingEditModal({ listingId, isOpen, onClose }: ListingEditModa
       startingPrice: string;
       status: string;
       location: string;
+      // Additional specifications
+      engine?: string;
+      transmission?: string;
+      fuelType?: string;
+      bodyType?: string;
+      driveType?: string;
+      color?: string;
+      condition?: string;
+      vin?: string;
+      // Legal documents
+      customsCleared?: boolean;
+      recycled?: boolean;
+      technicalInspectionValid?: boolean;
+      technicalInspectionDate?: string;
+      tinted?: boolean;
+      tintingDate?: string;
     }) => {
       const response = await fetch(`/api/admin/listings/${listingId}`, {
         method: 'PUT',
@@ -124,6 +195,22 @@ export function ListingEditModal({ listingId, isOpen, onClose }: ListingEditModa
       startingPrice: startingPrice.trim(),
       status: status,
       location: location.trim(),
+      // Additional specifications
+      engine: engine.trim() || undefined,
+      transmission: transmission.trim() || undefined,
+      fuelType: fuelType.trim() || undefined,
+      bodyType: bodyType.trim() || undefined,
+      driveType: driveType.trim() || undefined,
+      color: color.trim() || undefined,
+      condition: condition.trim() || undefined,
+      vin: vin.trim() || undefined,
+      // Legal documents
+      customsCleared,
+      recycled,
+      technicalInspectionValid,
+      technicalInspectionDate: technicalInspectionDate.trim() || undefined,
+      tinted,
+      tintingDate: tintingDate.trim() || undefined,
     });
   };
 
