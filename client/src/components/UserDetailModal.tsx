@@ -28,7 +28,6 @@ export function UserDetailModal({ userId, isOpen, onClose }: UserDetailModalProp
   // Form state
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
-  const [username, setUsername] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [isActive, setIsActive] = useState(true);
 
@@ -54,7 +53,6 @@ export function UserDetailModal({ userId, isOpen, onClose }: UserDetailModalProp
     if (user) {
       setFullName(user.fullName || '');
       setEmail(user.email || '');
-      setUsername(user.username || '');
       setPhoneNumber(user.phoneNumber || '');
       setIsActive(user.isActive || false);
     }
@@ -181,7 +179,6 @@ export function UserDetailModal({ userId, isOpen, onClose }: UserDetailModalProp
     updateUserMutation.mutate({
       fullName,
       email,
-      username,
       phoneNumber,
     });
   };

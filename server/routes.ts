@@ -1323,12 +1323,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.put("/api/admin/users/:id", adminAuth, async (req, res) => {
     try {
       const userId = parseInt(req.params.id);
-      const { fullName, email, username, phoneNumber } = req.body;
+      const { fullName, email, phoneNumber } = req.body;
       
       const user = await storage.updateUserProfile(userId, {
         fullName,
         email,
-        username,
         phoneNumber
       });
       
