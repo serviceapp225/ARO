@@ -62,7 +62,7 @@ export function UserDetailModal({ userId, isOpen, onClose }: UserDetailModalProp
 
   // Update user profile mutation
   const updateUserMutation = useMutation({
-    mutationFn: async (data: { fullName: string; email: string; username: string; phoneNumber: string }) => {
+    mutationFn: async (data: { fullName: string; email: string; phoneNumber: string }) => {
       const response = await fetch(`/api/admin/users/${userId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -272,16 +272,7 @@ export function UserDetailModal({ userId, isOpen, onClose }: UserDetailModalProp
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="username">Имя пользователя</Label>
-                      <Input
-                        id="username"
-                        value={username}
-                        onChange={(e) => setUsername(e.target.value)}
-                        placeholder="Введите имя пользователя"
-                      />
-                    </div>
+                  <div>
                     <div>
                       <Label htmlFor="phoneNumber">Номер телефона</Label>
                       <Input

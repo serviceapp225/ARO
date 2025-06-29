@@ -151,7 +151,7 @@ function UsersManagement() {
                 <div className="flex-1">
                   <div className="flex items-center gap-3">
                     <div>
-                      <p className="font-medium">{user.fullName || 'Без имени'}</p>
+                      <p className="font-medium">{user.fullName || 'Имя не указано'}</p>
                       <p className="text-sm text-gray-600 dark:text-gray-300">
                         {user.phoneNumber} • {user.role}
                       </p>

@@ -599,9 +599,7 @@ export default function AuctionDetail() {
                         </div>
                         <div>
                           <p className="font-medium">{
-                            userDataMap[bid.bidderId]?.fullName && userDataMap[bid.bidderId]?.fullName.trim() !== '' 
-                              ? userDataMap[bid.bidderId]?.fullName 
-                              : "(не указано)"
+                            userDataMap[bid.bidderId]?.fullName || 'Участник аукциона'
                           }</p>
                           <p className="text-sm text-muted-foreground">
                             {new Date(bid.createdAt).toLocaleString('ru-RU')}
