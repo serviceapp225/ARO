@@ -18,12 +18,10 @@ interface AdvertisementCarouselData {
 
 export function AdvertisementCarousel() {
   const [currentSlide, setCurrentSlide] = useState(0);
-  const shouldLoad = useDelayedLoading({ delay: 500 }); // Задержка 500мс
-
-  // Use cached query with stale-while-revalidate for instant loading
+  // Use cached query with aggressive caching for instant loading
   const { data: carouselItems = [], isLoading } = useQuery<AdvertisementCarouselData[]>({
     queryKey: ['/api/advertisement-carousel'],
-    enabled: shouldLoad, // Загружаем только после задержки
+    enabled: true, // Загружаем сразу
     queryFn: async () => {
       const response = await fetch('/api/advertisement-carousel');
       if (!response.ok) throw new Error('Failed to fetch advertisement carousel');

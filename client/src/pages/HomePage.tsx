@@ -7,25 +7,15 @@ import { SellCarBanner } from "@/components/SellCarBanner";
 import { AdvertisementCarousel } from "@/components/AdvertisementCarousel";
 import { TopHeader } from "@/components/TopHeader";
 import { Link } from "wouter";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useLocation } from "wouter";
 import { useAuth } from "@/contexts/AuthContext";
-import { loadFastLoginData, prepareFastLogin } from "@/lib/fastLogin";
+
 
 export default function HomePage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [, setLocation] = useLocation();
-  const [showSecondaryContent, setShowSecondaryContent] = useState(false);
   const { user } = useAuth();
-
-  // Optimized loading - delay secondary content for better perceived performance
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setShowSecondaryContent(true);
-    }, 150);
-
-    return () => clearTimeout(timer);
-  }, []);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -56,15 +46,13 @@ export default function HomePage() {
         {/* Sell Car Banner */}
         <SellCarBanner />
 
-        {/* Advertisement Carousel - Lazy loaded */}
-        {showSecondaryContent && (
-          <section>
-            <h2 className="text-xl font-bold text-gray-900 mb-4">
-              Специальные предложения
-            </h2>
-            <AdvertisementCarousel />
-          </section>
-        )}
+        {/* Advertisement Carousel - Load immediately */}
+        <section>
+          <h2 className="text-xl font-bold text-gray-900 mb-4">
+            Специальные предложения
+          </h2>
+          <AdvertisementCarousel />
+        </section>
 
         {/* Security Banner */}
         <div className="bg-green-50 border border-green-200 rounded-xl p-4">
