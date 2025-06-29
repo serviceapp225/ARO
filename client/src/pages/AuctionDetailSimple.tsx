@@ -99,7 +99,20 @@ export default function AuctionDetail() {
   // Bid mutation with celebration effects
   const bidMutation = useMutation({
     mutationFn: async (bidData: { bidderId: number; amount: string }) => {
-      const response = await apiRequest('POST', `/api/listings/${id}/bids`, bidData);
+      const response = await fetch(`/api/listings/${id}/bids`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(bidData),
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        const error = new Error(errorData.message || 'Failed to place bid');
+        (error as any).errorType = errorData.error;
+        (error as any).errorMessage = errorData.message;
+        throw error;
+      }
+      
       return response.json();
     },
     onSuccess: (data, variables) => {
@@ -128,25 +141,25 @@ export default function AuctionDetail() {
       setBidAmount("");
     },
     onError: (error: any) => {
-      // Debug: show actual error message
-      const errorMessage = error?.message || String(error) || "";
-      console.log("Debug - Raw error message:", errorMessage);
+      console.log("Error details:", error);
+      console.log("Error type:", error.errorType);
+      console.log("Error message:", error.errorMessage);
       
-      if (errorMessage.includes("Already highest bidder") || errorMessage.includes("уже лидируете")) {
+      if (error.errorType === "Already highest bidder") {
         toast({
           title: "Вы уже лидируете",
-          description: "Вы уже лидируете в аукционе с максимальной ставкой.",
+          description: error.errorMessage || "Вы уже лидируете в аукционе с максимальной ставкой.",
           variant: "destructive",
           duration: 3000,
         });
-      } else if (errorMessage.includes("Bid too low") || errorMessage.includes("слишком низкая") || errorMessage.includes("должна быть выше")) {
+      } else if (error.errorType === "Bid too low") {
         toast({
           title: "Ставка слишком низкая",
-          description: "Ваша ставка должна быть выше текущей максимальной ставки.",
+          description: error.errorMessage || "Ваша ставка должна быть выше текущей максимальной ставки.",
           variant: "destructive",
           duration: 3000,
         });
-      } else if (errorMessage.includes("завершен")) {
+      } else if (error.message?.includes("завершен")) {
         toast({
           title: "Аукцион завершен",
           description: "К сожалению, ваша ставка не была высокой. Аукцион уже завершен.",
@@ -156,7 +169,7 @@ export default function AuctionDetail() {
       } else {
         toast({
           title: "Ошибка размещения ставки",
-          description: "Не удалось разместить ставку. Проверьте сумму и попробуйте снова.",
+          description: error.errorMessage || error.message || "Не удалось разместить ставку. Проверьте сумму и попробуйте снова.",
           variant: "destructive",
           duration: 3000,
         });
