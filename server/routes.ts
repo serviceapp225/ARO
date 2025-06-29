@@ -999,15 +999,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.delete("/api/car-alerts/:id", async (req, res) => {
     try {
       const alertId = parseInt(req.params.id);
+      
+      // Сначала получаем alert, чтобы знать userId для очистки кэша
+      const alertToDelete = await storage.getCarAlertsByUser(alertId); // Need to find userId first
+      
       const success = await storage.deleteCarAlert(alertId);
       
       if (!success) {
         return res.status(404).json({ error: "Alert not found" });
       }
       
-      // Очищаем кэш
-      clearCachePattern(`car-alerts-`);
+      // Агрессивно очищаем весь кэш связанный с car-alerts
+      clearCachePattern('car-alerts-');
+      clearAllCaches(); // Полная очистка всех кэшей
       
+      console.log(`Deleted car alert ${alertId}, changes: 1`);
       res.status(204).send();
     } catch (error) {
       console.error('Error in DELETE car-alerts route:', error);

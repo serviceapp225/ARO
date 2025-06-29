@@ -14,6 +14,7 @@ export function SearchAlertNotifications({ userId }: SearchAlertNotificationsPro
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const [deletingIds, setDeletingIds] = useState<Set<number>>(new Set());
+  const [forceRefreshKey, setForceRefreshKey] = useState(0);
   
   const handleDelete = (alertId: number) => {
     // Предотвращаем множественные клики
@@ -24,7 +25,7 @@ export function SearchAlertNotifications({ userId }: SearchAlertNotificationsPro
   };
 
   const { data: carAlerts = [], isLoading } = useQuery<CarAlert[]>({
-    queryKey: ['/api/car-alerts', userId],
+    queryKey: ['/api/car-alerts', userId, forceRefreshKey],
     queryFn: async () => {
       const response = await fetch(`/api/car-alerts/${userId}`);
       if (!response.ok) throw new Error('Failed to fetch car alerts');
@@ -122,6 +123,9 @@ export function SearchAlertNotifications({ userId }: SearchAlertNotificationsPro
       queryClient.removeQueries({ queryKey: ['/api/car-alerts', userId] });
       await queryClient.invalidateQueries({ queryKey: ['/api/car-alerts', userId] });
       
+      // Принудительно обновляем компонент через изменение ключа
+      setForceRefreshKey(prev => prev + 1);
+      
       toast({
         title: "Поисковый запрос удален",
         duration: 1000, // Автоматически исчезает через 1 секунду
@@ -138,22 +142,22 @@ export function SearchAlertNotifications({ userId }: SearchAlertNotificationsPro
       // Многократно очищаем кэш для предотвращения появления старых данных
       queryClient.removeQueries({ queryKey: ['/api/car-alerts', userId] });
       queryClient.removeQueries({ queryKey: ['/api/car-alerts'] });
+      queryClient.clear(); // Полная очистка кэша React Query
       
-      // Принудительная перезагрузка с дополнительной очисткой
-      setTimeout(async () => {
-        queryClient.removeQueries({ queryKey: ['/api/car-alerts', userId] });
-        queryClient.removeQueries({ queryKey: ['/api/car-alerts'] });
-        queryClient.clear(); // Полная очистка кэша React Query
-        await queryClient.refetchQueries({ 
-          queryKey: ['/api/car-alerts', userId],
-          type: 'active' 
-        });
-      }, 50);
+      // Принудительно обновляем компонент
+      setForceRefreshKey(prev => prev + 1);
       
-      // Дополнительная очистка через 500мс на случай задержки
+      // Дополнительная очистка через интервалы
       setTimeout(() => {
         queryClient.removeQueries({ queryKey: ['/api/car-alerts', userId] });
-      }, 500);
+        queryClient.removeQueries({ queryKey: ['/api/car-alerts'] });
+        setForceRefreshKey(prev => prev + 1);
+      }, 100);
+      
+      setTimeout(() => {
+        queryClient.removeQueries({ queryKey: ['/api/car-alerts', userId] });
+        setForceRefreshKey(prev => prev + 1);
+      }, 300);
     }
   });
 
