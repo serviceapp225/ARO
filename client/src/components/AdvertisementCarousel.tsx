@@ -3,7 +3,6 @@ import { useQuery } from "@tanstack/react-query";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { useDelayedLoading } from "@/hooks/useDelayedLoading";
 
 interface AdvertisementCarouselData {
   id: number;
@@ -18,19 +17,21 @@ interface AdvertisementCarouselData {
 
 export function AdvertisementCarousel() {
   const [currentSlide, setCurrentSlide] = useState(0);
-  // Use cached query with aggressive caching for instant loading
+  // Максимально агрессивное кэширование для мгновенной загрузки
   const { data: carouselItems = [], isLoading } = useQuery<AdvertisementCarouselData[]>({
     queryKey: ['/api/advertisement-carousel'],
-    enabled: true, // Загружаем сразу
+    enabled: true,
     queryFn: async () => {
       const response = await fetch('/api/advertisement-carousel');
       if (!response.ok) throw new Error('Failed to fetch advertisement carousel');
       return response.json();
     },
-    staleTime: 10 * 60 * 1000, // 10 minutes stale time
-    gcTime: 30 * 60 * 1000, // 30 minutes garbage collection
+    staleTime: Infinity, // Никогда не считать данные устаревшими
+    gcTime: Infinity, // Никогда не удалять из кэша
     refetchOnWindowFocus: false,
-    refetchOnMount: false, // Don't refetch on mount if cached
+    refetchOnMount: false,
+    refetchOnReconnect: false,
+    retry: false, // Не повторять запросы для ускорения
   });
 
   useEffect(() => {

@@ -1,6 +1,7 @@
 import { Switch, Route, useLocation } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
+import { useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/contexts/AuthContext";
@@ -32,6 +33,19 @@ import { ScrollToTop } from "@/components/ScrollToTop";
 
 function Router() {
   const [location] = useLocation();
+  
+  // Предзагружаем критически важные данные для мгновенной загрузки
+  useEffect(() => {
+    queryClient.prefetchQuery({
+      queryKey: ['/api/advertisement-carousel'],
+      queryFn: async () => {
+        const response = await fetch('/api/advertisement-carousel');
+        if (response.ok) return response.json();
+        return [];
+      },
+      staleTime: Infinity,
+    });
+  }, []);
   
   // Скрываем нижнюю навигацию на странице входа
   const hideBottomNav = location === '/login';
