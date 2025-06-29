@@ -631,9 +631,39 @@ export class SQLiteStorage implements IStorage {
       throw new Error('Failed to create notification');
     }
   }
-  async markNotificationAsRead(id: number): Promise<boolean> { return false; }
-  async deleteNotification(id: number): Promise<boolean> { return false; }
-  async getUnreadNotificationCount(userId: number): Promise<number> { return 0; }
+  async markNotificationAsRead(id: number): Promise<boolean> {
+    try {
+      const stmt = this.db.prepare('UPDATE notifications SET is_read = 1 WHERE id = ?');
+      const result = stmt.run(id);
+      console.log(`Marked notification ${id} as read, changes: ${result.changes}`);
+      return result.changes > 0;
+    } catch (error) {
+      console.error('Error marking notification as read:', error);
+      return false;
+    }
+  }
+
+  async deleteNotification(id: number): Promise<boolean> {
+    try {
+      const stmt = this.db.prepare('DELETE FROM notifications WHERE id = ?');
+      const result = stmt.run(id);
+      console.log(`Deleted notification ${id}, changes: ${result.changes}`);
+      return result.changes > 0;
+    } catch (error) {
+      console.error('Error deleting notification:', error);
+      return false;
+    }
+  }
+  async getUnreadNotificationCount(userId: number): Promise<number> {
+    try {
+      const stmt = this.db.prepare('SELECT COUNT(*) as count FROM notifications WHERE user_id = ? AND is_read = 0');
+      const result = stmt.get(userId) as { count: number };
+      return result.count;
+    } catch (error) {
+      console.error('Error getting unread notification count:', error);
+      return 0;
+    }
+  }
   // Car alerts operations
   async getCarAlertsByUser(userId: number): Promise<CarAlert[]> {
     try {
