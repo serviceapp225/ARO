@@ -742,7 +742,66 @@ export class SQLiteStorage implements IStorage {
       return false;
     }
   }
-  async checkAlertsForNewListing(listing: CarListing): Promise<CarAlert[]> { return []; }
+  async checkAlertsForNewListing(listing: CarListing): Promise<CarAlert[]> {
+    try {
+      let query = `
+        SELECT * FROM car_alerts 
+        WHERE is_active = 1 
+        AND (make = ? OR make IS NULL)
+      `;
+      const params: any[] = [listing.make.toLowerCase()];
+      
+      // Добавляем фильтр по модели если указана
+      if (listing.model) {
+        query += ' AND (model = ? OR model IS NULL)';
+        params.push(listing.model.toLowerCase());
+      }
+      
+      // Добавляем фильтры по цене если указаны
+      const startingPrice = parseFloat(listing.startingPrice);
+      if (!isNaN(startingPrice)) {
+        query += ' AND (min_price IS NULL OR min_price <= ?)';
+        params.push(startingPrice);
+        query += ' AND (max_price IS NULL OR max_price >= ?)';
+        params.push(startingPrice);
+      }
+      
+      // Добавляем фильтр по году если указан
+      if (listing.year) {
+        query += ' AND (min_year IS NULL OR min_year <= ?)';
+        params.push(listing.year);
+        query += ' AND (max_year IS NULL OR max_year >= ?)';
+        params.push(listing.year);
+      }
+      
+      console.log('Alert check query:', query);
+      console.log('Alert check params:', params);
+      
+      const stmt = this.db.prepare(query);
+      const rows: any[] = stmt.all(...params);
+      
+      console.log(`Checking alerts for ${listing.make} ${listing.model}, found ${rows.length} matching alerts`);
+      if (rows.length > 0) {
+        console.log('Found alerts:', rows);
+      }
+      
+      return rows.map((row: any) => ({
+        id: row.id,
+        userId: row.user_id,
+        make: row.make,
+        model: row.model,
+        minPrice: row.min_price,
+        maxPrice: row.max_price,
+        minYear: row.min_year,
+        maxYear: row.max_year,
+        isActive: Boolean(row.is_active),
+        createdAt: new Date(row.created_at)
+      }));
+    } catch (error) {
+      console.error('Error checking alerts for new listing:', error);
+      return [];
+    }
+  }
   async getBanners(position?: string): Promise<Banner[]> { return []; }
   async createBanner(insertBanner: InsertBanner): Promise<Banner> { throw new Error('Not implemented'); }
   async updateBanner(id: number, bannerData: Partial<InsertBanner>): Promise<Banner | undefined> { return undefined; }
