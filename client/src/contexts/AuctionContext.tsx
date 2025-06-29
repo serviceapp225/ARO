@@ -42,9 +42,9 @@ export function AuctionProvider({ children }: { children: ReactNode }) {
   // Simplified fetch listings without complex caching logic
   const fetchListings = useCallback(async (forceRefresh = false) => {
     try {
-      // Проверяем время последнего обновления (дебаунсинг 1 секунда)
+      // Проверяем время последнего обновления (дебаунсинг 3 секунды)
       const now = Date.now();
-      if (!forceRefresh && (now - lastUpdateTime) < 1000) {
+      if (!forceRefresh && (now - lastUpdateTime) < 3000) {
         return; // Слишком частые обновления, пропускаем
       }
 

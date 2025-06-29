@@ -57,29 +57,45 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             return;
           }
 
-          // Only fallback to database for unknown users
-          try {
-            const emailFromPhone = demoUser.phoneNumber.replace(/\D/g, '') + '@autoauction.tj';
-            const response = await fetch(`/api/users/by-email/${encodeURIComponent(emailFromPhone)}`);
-            
-            if (response.ok) {
-              const dbUser = await response.json();
-              demoUser.isActive = dbUser.isActive;
-              demoUser.userId = dbUser.id;
-              
-              // Cache for future instant access
-              preCacheUserData(demoUser.phoneNumber, {
-                isActive: dbUser.isActive,
-                userId: dbUser.id
-              });
-            } else {
-              demoUser.isActive = false;
-              demoUser.userId = null;
-            }
-          } catch (error) {
-            console.error('Failed to fetch user activation status:', error);
+          // Быстрый фолбэк для неизвестных пользователей - избегаем медленных запросов
+          const phoneDigits = demoUser.phoneNumber.replace(/\D/g, '');
+          
+          // Используем предустановленные данные для известных пользователей
+          if (phoneDigits === '992000000000') {
+            demoUser.isActive = true;
+            demoUser.userId = 4;
+          } else if (phoneDigits === '992111111111') {
+            demoUser.isActive = true;
+            demoUser.userId = 3;
+          } else {
+            // Для остальных пользователей - быстрый запрос без блокировки UI
             demoUser.isActive = false;
             demoUser.userId = null;
+            
+            // Асинхронная проверка в фоне
+            setTimeout(async () => {
+              try {
+                const emailFromPhone = phoneDigits + '@autoauction.tj';
+                const response = await fetch(`/api/users/by-email/${encodeURIComponent(emailFromPhone)}`);
+                
+                if (response.ok) {
+                  const dbUser = await response.json();
+                  demoUser.isActive = dbUser.isActive;
+                  demoUser.userId = dbUser.id;
+                  
+                  // Обновляем пользователя после получения данных
+                  setUser({...demoUser});
+                  
+                  // Кэшируем для будущих входов
+                  preCacheUserData(demoUser.phoneNumber, {
+                    isActive: dbUser.isActive,
+                    userId: dbUser.id
+                  });
+                }
+              } catch (error) {
+                console.error('Background user check failed:', error);
+              }
+            }, 100);
           }
           
           setUser(demoUser);

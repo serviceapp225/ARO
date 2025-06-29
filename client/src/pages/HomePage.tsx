@@ -18,24 +18,14 @@ export default function HomePage() {
   const [showSecondaryContent, setShowSecondaryContent] = useState(false);
   const { user } = useAuth();
 
-  // Ultra-fast loading optimization
+  // Optimized loading - delay secondary content for better perceived performance
   useEffect(() => {
-    if (user?.userId) {
-      // Try to load cached data immediately
-      const cachedData = loadFastLoginData(user.userId);
-      if (!cachedData) {
-        // Prepare data for next time
-        prepareFastLogin(user.userId);
-      }
-    }
-
-    // Load secondary content after minimal delay
     const timer = setTimeout(() => {
       setShowSecondaryContent(true);
-    }, 25);
+    }, 150);
 
     return () => clearTimeout(timer);
-  }, [user?.userId]);
+  }, []);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
