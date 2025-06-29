@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Switch } from '@/components/ui/switch';
+
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -128,24 +128,7 @@ function UsersManagement() {
     queryKey: ['/api/admin/users'],
   });
 
-  const updateUserStatusMutation = useMutation({
-    mutationFn: async ({ userId, isActive }: { userId: number; isActive: boolean }) => {
-      const response = await fetch(`/api/admin/users/${userId}/status`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ isActive }),
-      });
-      if (!response.ok) throw new Error('Failed to update user status');
-      return response.json();
-    },
-    onSuccess: () => {
-      toast({ title: 'Статус пользователя обновлен' });
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/users'] });
-    },
-    onError: () => {
-      toast({ title: 'Ошибка', description: 'Не удалось обновить статус', variant: 'destructive' });
-    },
-  });
+
 
   if (isLoading) {
     return <div className="text-center py-8">Загрузка пользователей...</div>;
@@ -187,17 +170,13 @@ function UsersManagement() {
                     <Edit className="w-4 h-4" />
                     Редактировать
                   </Button>
-                  <Label htmlFor={`user-${user.id}`} className="text-sm">
+                  <span className={`text-xs px-2 py-1 rounded ${
+                    user.isActive 
+                      ? 'bg-green-100 text-green-800' 
+                      : 'bg-red-100 text-red-800'
+                  }`}>
                     {user.isActive ? 'Активен' : 'Заблокирован'}
-                  </Label>
-                  <Switch
-                    id={`user-${user.id}`}
-                    checked={user.isActive || false}
-                    onCheckedChange={(isActive) => 
-                      updateUserStatusMutation.mutate({ userId: user.id, isActive })
-                    }
-                    disabled={updateUserStatusMutation.isPending}
-                  />
+                  </span>
                 </div>
               </div>
             ))}
