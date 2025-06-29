@@ -1,97 +1,134 @@
-import { useState, useEffect } from "react";
-import { useAuth } from "@/contexts/AuthContext";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Users, Car, TrendingUp, AlertCircle, CheckCircle, XCircle } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
-
-interface User {
-  id: number;
-  email: string;
-  username: string;
-  fullName: string;
-  role: string;
-  isActive: boolean;
-  phoneNumber?: string;
-  createdAt: string;
-}
-
-interface CarListing {
-  id: number;
-  make: string;
-  model: string;
-  year: number;
-  sellerId: number;
-  status: string;
-  startingPrice: string;
-  createdAt: string;
-}
-
-interface AdminStats {
-  pendingListings: number;
-  activeAuctions: number;
-  totalUsers: number;
-  bannedUsers: number;
-}
+import { useState, useEffect } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Switch } from '@/components/ui/switch';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Trash2, User as UserIcon, Car, Bell, Settings, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
+import { Link } from 'wouter';
+import type { User, CarListing, Notification } from '@shared/schema';
 
 export default function AdminPanel() {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [activeTab, setActiveTab] = useState<'stats' | 'users' | 'listings'>('stats');
+  
+  // Проверяем права доступа - только номер +992000000000
+  const hasAdminAccess = user?.phoneNumber === '+992000000000';
 
-  // Проверка админских прав
-  if (!user || user.role !== 'admin') {
+  if (loading) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <Card className="max-w-md mx-auto">
-          <CardContent className="text-center py-8">
-            <AlertCircle className="h-16 w-16 text-red-500 mx-auto mb-4" />
-            <h2 className="text-xl font-semibold mb-2">Доступ запрещен</h2>
-            <p className="text-gray-600">У вас нет прав для доступа к админ панели.</p>
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600 dark:text-gray-300">Загрузка...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user || !hasAdminAccess) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+        <Card className="w-full max-w-md">
+          <CardHeader className="text-center">
+            <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+            <CardTitle className="text-red-600">Доступ запрещен</CardTitle>
+            <CardDescription>
+              У вас нет прав доступа к админ панели
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="text-center">
+            <Link href="/">
+              <Button variant="outline">На главную</Button>
+            </Link>
           </CardContent>
         </Card>
       </div>
     );
   }
 
-  // Получение статистики
-  const { data: stats } = useQuery<AdminStats>({
-    queryKey: ['/api/admin/stats'],
-    queryFn: async () => {
-      const response = await fetch('/api/admin/stats');
-      if (!response.ok) throw new Error('Failed to fetch stats');
-      return response.json();
-    },
-  });
+  return (
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <div className="container mx-auto px-4 py-8">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+            Админ панель
+          </h1>
+          <p className="text-gray-600 dark:text-gray-300">
+            Управление платформой автоаукциона
+          </p>
+        </div>
 
-  // Получение пользователей
-  const { data: users } = useQuery<User[]>({
+        <Tabs defaultValue="users" className="w-full">
+          <TabsList className="grid w-full grid-cols-5">
+            <TabsTrigger value="users" className="flex items-center gap-2">
+              <UserIcon className="h-4 w-4" />
+              Пользователи
+            </TabsTrigger>
+            <TabsTrigger value="listings" className="flex items-center gap-2">
+              <Car className="h-4 w-4" />
+              Объявления
+            </TabsTrigger>
+            <TabsTrigger value="notifications" className="flex items-center gap-2">
+              <Bell className="h-4 w-4" />
+              Уведомления
+            </TabsTrigger>
+            <TabsTrigger value="banners" className="flex items-center gap-2">
+              <Settings className="h-4 w-4" />
+              Баннеры
+            </TabsTrigger>
+            <TabsTrigger value="stats" className="flex items-center gap-2">
+              <Settings className="h-4 w-4" />
+              Статистика
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="users">
+            <UsersManagement />
+          </TabsContent>
+
+          <TabsContent value="listings">
+            <ListingsManagement />
+          </TabsContent>
+
+          <TabsContent value="notifications">
+            <NotificationsManagement />
+          </TabsContent>
+
+          <TabsContent value="banners">
+            <BannersManagement />
+          </TabsContent>
+
+          <TabsContent value="stats">
+            <AdminStats />
+          </TabsContent>
+        </Tabs>
+      </div>
+    </div>
+  );
+}
+
+// Компонент управления пользователями
+function UsersManagement() {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  const { data: users = [], isLoading } = useQuery<User[]>({
     queryKey: ['/api/admin/users'],
-    queryFn: async () => {
-      const response = await fetch('/api/admin/users');
-      if (!response.ok) throw new Error('Failed to fetch users');
-      return response.json();
-    },
   });
 
-  // Получение объявлений на модерацию
-  const { data: pendingListings } = useQuery<CarListing[]>({
-    queryKey: ['/api/admin/listings/pending'],
-    queryFn: async () => {
-      const response = await fetch('/api/admin/listings?status=pending');
-      if (!response.ok) throw new Error('Failed to fetch pending listings');
-      return response.json();
-    },
-  });
-
-  // Мутация для изменения статуса пользователя
-  const toggleUserStatusMutation = useMutation({
+  const updateUserStatusMutation = useMutation({
     mutationFn: async ({ userId, isActive }: { userId: number; isActive: boolean }) => {
       const response = await fetch(`/api/admin/users/${userId}/status`, {
-        method: 'PUT',
+        method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ isActive }),
       });
@@ -99,228 +136,262 @@ export default function AdminPanel() {
       return response.json();
     },
     onSuccess: () => {
+      toast({ title: 'Статус пользователя обновлен' });
       queryClient.invalidateQueries({ queryKey: ['/api/admin/users'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/stats'] });
-      toast({ title: "Статус пользователя обновлен" });
     },
     onError: () => {
-      toast({ title: "Ошибка при обновлении статуса", variant: "destructive" });
+      toast({ title: 'Ошибка', description: 'Не удалось обновить статус', variant: 'destructive' });
     },
   });
 
-  // Мутация для модерации объявлений
-  const moderateListingMutation = useMutation({
+  if (isLoading) {
+    return <div className="text-center py-8">Загрузка пользователей...</div>;
+  }
+
+  return (
+    <div className="space-y-4">
+      <Card>
+        <CardHeader>
+          <CardTitle>Управление пользователями</CardTitle>
+          <CardDescription>
+            Активация и деактивация пользователей системы
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {users.map((user) => (
+              <div key={user.id} className="flex items-center justify-between p-4 border rounded-lg">
+                <div className="flex-1">
+                  <div className="flex items-center gap-3">
+                    <div>
+                      <p className="font-medium">{user.fullName || 'Без имени'}</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-300">
+                        {user.phoneNumber} • {user.role}
+                      </p>
+                    </div>
+                    <Badge variant={(user.isActive || false) ? 'default' : 'secondary'}>
+                      {(user.isActive || false) ? 'Активен' : 'Неактивен'}
+                    </Badge>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Label htmlFor={`user-${user.id}`} className="text-sm">
+                    {user.isActive ? 'Активен' : 'Заблокирован'}
+                  </Label>
+                  <Switch
+                    id={`user-${user.id}`}
+                    checked={user.isActive || false}
+                    onCheckedChange={(isActive) => 
+                      updateUserStatusMutation.mutate({ userId: user.id, isActive })
+                    }
+                    disabled={updateUserStatusMutation.isPending}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+// Компонент управления объявлениями
+function ListingsManagement() {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  const { data: listings = [], isLoading } = useQuery<CarListing[]>({
+    queryKey: ['/api/admin/listings'],
+  });
+
+  const updateListingStatusMutation = useMutation({
     mutationFn: async ({ listingId, status }: { listingId: number; status: string }) => {
       const response = await fetch(`/api/admin/listings/${listingId}/status`, {
-        method: 'PUT',
+        method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status }),
       });
-      if (!response.ok) throw new Error('Failed to moderate listing');
+      if (!response.ok) throw new Error('Failed to update listing status');
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/listings/pending'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/stats'] });
-      toast({ title: "Статус объявления обновлен" });
+      toast({ title: 'Статус объявления обновлен' });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/listings'] });
     },
     onError: () => {
-      toast({ title: "Ошибка при модерации объявления", variant: "destructive" });
+      toast({ title: 'Ошибка', description: 'Не удалось обновить статус', variant: 'destructive' });
     },
   });
 
+  if (isLoading) {
+    return <div className="text-center py-8">Загрузка объявлений...</div>;
+  }
+
   return (
-    <div className="container mx-auto px-4 py-8 max-w-6xl">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Админ панель</h1>
-        <p className="text-gray-600">Управление пользователями и объявлениями</p>
-      </div>
-
-      {/* Навигационные табы */}
-      <div className="flex space-x-1 mb-6 bg-gray-100 p-1 rounded-lg w-fit">
-        <button
-          onClick={() => setActiveTab('stats')}
-          className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-            activeTab === 'stats'
-              ? 'bg-white text-gray-900 shadow-sm'
-              : 'text-gray-600 hover:text-gray-900'
-          }`}
-        >
-          <TrendingUp className="h-4 w-4 inline mr-2" />
-          Статистика
-        </button>
-        <button
-          onClick={() => setActiveTab('users')}
-          className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-            activeTab === 'users'
-              ? 'bg-white text-gray-900 shadow-sm'
-              : 'text-gray-600 hover:text-gray-900'
-          }`}
-        >
-          <Users className="h-4 w-4 inline mr-2" />
-          Пользователи ({users?.length || 0})
-        </button>
-        <button
-          onClick={() => setActiveTab('listings')}
-          className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-            activeTab === 'listings'
-              ? 'bg-white text-gray-900 shadow-sm'
-              : 'text-gray-600 hover:text-gray-900'
-          }`}
-        >
-          <Car className="h-4 w-4 inline mr-2" />
-          Модерация ({pendingListings?.length || 0})
-        </button>
-      </div>
-
-      {/* Контент табов */}
-      {activeTab === 'stats' && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Всего пользователей</CardTitle>
-              <Users className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats?.totalUsers || 0}</div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Активные аукционы</CardTitle>
-              <Car className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats?.activeAuctions || 0}</div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">На модерации</CardTitle>
-              <AlertCircle className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats?.pendingListings || 0}</div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Заблокированные</CardTitle>
-              <XCircle className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats?.bannedUsers || 0}</div>
-            </CardContent>
-          </Card>
-        </div>
-      )}
-
-      {activeTab === 'users' && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Управление пользователями</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {users?.map((user) => (
-                <div key={user.id} className="flex items-center justify-between p-4 border rounded-lg">
-                  <div className="flex-1">
-                    <div className="flex items-center space-x-3">
-                      <div>
-                        <p className="font-medium">{user.fullName || user.username}</p>
-                        <p className="text-sm text-gray-600">{user.email}</p>
-                        {user.phoneNumber && (
-                          <p className="text-sm text-gray-500">{user.phoneNumber}</p>
-                        )}
-                      </div>
-                      <div className="flex space-x-2">
-                        <Badge variant={user.role === 'admin' ? 'default' : 'secondary'}>
-                          {user.role}
-                        </Badge>
-                        <Badge variant={user.isActive ? 'default' : 'destructive'}>
-                          {user.isActive ? 'Активен' : 'Заблокирован'}
-                        </Badge>
-                      </div>
+    <div className="space-y-4">
+      <Card>
+        <CardHeader>
+          <CardTitle>Управление объявлениями</CardTitle>
+          <CardDescription>
+            Модерация объявлений и управление статусами аукционов
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {listings.map((listing) => (
+              <div key={listing.id} className="flex items-center justify-between p-4 border rounded-lg">
+                <div className="flex-1">
+                  <div className="flex items-center gap-3">
+                    <div className="w-16 h-16 bg-gray-200 dark:bg-gray-700 rounded-lg flex-shrink-0">
+                      {listing.photos && Array.isArray(listing.photos) && listing.photos.length > 0 ? (
+                        <img 
+                          src={listing.photos[0]} 
+                          alt={`${listing.make} ${listing.model}`}
+                          className="w-full h-full object-cover rounded-lg"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <Car className="h-6 w-6 text-gray-400" />
+                        </div>
+                      )}
+                    </div>
+                    <div>
+                      <p className="font-medium">
+                        {listing.make} {listing.model} {listing.year}
+                      </p>
+                      <p className="text-sm text-gray-600 dark:text-gray-300">
+                        Лот #{listing.lotNumber} • {listing.currentBid} Сомони
+                      </p>
+                      <Badge variant={
+                        listing.status === 'pending' ? 'secondary' :
+                        listing.status === 'active' ? 'default' :
+                        listing.status === 'ended' ? 'outline' : 'destructive'
+                      }>
+                        {listing.status === 'pending' ? 'На модерации' :
+                         listing.status === 'active' ? 'Активен' :
+                         listing.status === 'ended' ? 'Завершен' : 'Отклонен'}
+                      </Badge>
                     </div>
                   </div>
-                  <div className="flex space-x-2">
-                    <Button
-                      size="sm"
-                      variant={user.isActive ? "destructive" : "default"}
-                      onClick={() => toggleUserStatusMutation.mutate({
-                        userId: user.id,
-                        isActive: !user.isActive
-                      })}
-                      disabled={toggleUserStatusMutation.isPending}
-                    >
-                      {user.isActive ? 'Заблокировать' : 'Активировать'}
-                    </Button>
-                  </div>
                 </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
+                <div className="flex items-center gap-2">
+                  <Select
+                    value={listing.status}
+                    onValueChange={(status) => 
+                      updateListingStatusMutation.mutate({ listingId: listing.id, status })
+                    }
+                    disabled={updateListingStatusMutation.isPending}
+                  >
+                    <SelectTrigger className="w-40">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="pending">На модерации</SelectItem>
+                      <SelectItem value="active">Активен</SelectItem>
+                      <SelectItem value="ended">Завершен</SelectItem>
+                      <SelectItem value="rejected">Отклонен</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
 
-      {activeTab === 'listings' && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Модерация объявлений</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {pendingListings?.map((listing) => (
-                <div key={listing.id} className="flex items-center justify-between p-4 border rounded-lg">
-                  <div className="flex-1">
-                    <h3 className="font-medium">{listing.make} {listing.model} {listing.year}</h3>
-                    <p className="text-sm text-gray-600">
-                      Стартовая цена: {listing.startingPrice} сомони
-                    </p>
-                    <p className="text-xs text-gray-500">
-                      Создано: {new Date(listing.createdAt).toLocaleDateString('ru-RU')}
-                    </p>
-                  </div>
-                  <div className="flex space-x-2">
-                    <Button
-                      size="sm"
-                      variant="default"
-                      onClick={() => moderateListingMutation.mutate({
-                        listingId: listing.id,
-                        status: 'active'
-                      })}
-                      disabled={moderateListingMutation.isPending}
-                    >
-                      <CheckCircle className="h-4 w-4 mr-1" />
-                      Одобрить
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="destructive"
-                      onClick={() => moderateListingMutation.mutate({
-                        listingId: listing.id,
-                        status: 'rejected'
-                      })}
-                      disabled={moderateListingMutation.isPending}
-                    >
-                      <XCircle className="h-4 w-4 mr-1" />
-                      Отклонить
-                    </Button>
-                  </div>
-                </div>
-              ))}
-              {!pendingListings?.length && (
-                <div className="text-center py-8 text-gray-500">
-                  Нет объявлений на модерации
-                </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      )}
+// Компонент управления уведомлениями
+function NotificationsManagement() {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Управление уведомлениями</CardTitle>
+        <CardDescription>
+          Системные уведомления и их настройки
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <p className="text-gray-600 dark:text-gray-300">
+          Раздел в разработке. Здесь будет управление системными уведомлениями.
+        </p>
+      </CardContent>
+    </Card>
+  );
+}
+
+// Компонент управления баннерами
+function BannersManagement() {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Управление баннерами</CardTitle>
+        <CardDescription>
+          Рекламные баннеры и объявления
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <p className="text-gray-600 dark:text-gray-300">
+          Раздел в разработке. Здесь будет управление баннерами.
+        </p>
+      </CardContent>
+    </Card>
+  );
+}
+
+// Компонент статистики
+function AdminStats() {
+  const { data: stats, isLoading } = useQuery({
+    queryKey: ['/api/admin/stats'],
+  });
+
+  if (isLoading) {
+    return <div className="text-center py-8">Загрузка статистики...</div>;
+  }
+
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-sm font-medium">Всего пользователей</CardTitle>
+          <User className="h-4 w-4 text-muted-foreground" />
+        </CardHeader>
+        <CardContent>
+          <div className="text-2xl font-bold">{stats?.totalUsers || 0}</div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-sm font-medium">Активные аукционы</CardTitle>
+          <Car className="h-4 w-4 text-muted-foreground" />
+        </CardHeader>
+        <CardContent>
+          <div className="text-2xl font-bold">{stats?.activeAuctions || 0}</div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-sm font-medium">На модерации</CardTitle>
+          <AlertCircle className="h-4 w-4 text-muted-foreground" />
+        </CardHeader>
+        <CardContent>
+          <div className="text-2xl font-bold">{stats?.pendingListings || 0}</div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-sm font-medium">Заблокированных</CardTitle>
+          <XCircle className="h-4 w-4 text-muted-foreground" />
+        </CardHeader>
+        <CardContent>
+          <div className="text-2xl font-bold">{stats?.bannedUsers || 0}</div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
