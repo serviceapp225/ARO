@@ -128,55 +128,24 @@ export default function AuctionDetail() {
       setBidAmount("");
     },
     onError: (error: any) => {
-      console.error("Error placing bid:", error);
-      console.error("Error message:", error.message);
-      console.error("Error keys:", Object.keys(error));
-      console.error("Error constructor:", error.constructor.name);
+      // Simple fallback - just check the error message for keywords and show appropriate messages
+      const errorMessage = error?.message || String(error) || "";
       
-      // Parse error message from apiRequest format "400: {...}"
-      let errorData: any = {};
-      try {
-        if (error.message && error.message.includes(': ')) {
-          const parts = error.message.split(': ');
-          if (parts.length >= 2) {
-            // Join all parts after the first one in case the JSON contains colons
-            const errorText = parts.slice(1).join(': ');
-            console.error("Extracted error text:", errorText);
-            if (errorText) {
-              errorData = JSON.parse(errorText);
-            }
-          }
-        }
-      } catch (e) {
-        console.error("Failed to parse error:", e);
-        // If JSON parsing fails, try to extract info from the plain text
-        if (error.message) {
-          if (error.message.includes("Already highest bidder")) {
-            errorData = { error: "Already highest bidder", message: "Вы уже лидируете в аукционе с максимальной ставкой." };
-          } else if (error.message.includes("Bid too low")) {
-            errorData = { error: "Bid too low", message: "Ваша ставка должна быть выше текущей максимальной ставки." };
-          }
-        }
-      }
-      
-      console.error("Parsed error data:", errorData);
-      
-      // Check for specific error types
-      if (errorData.error === "Already highest bidder") {
+      if (errorMessage.includes("Already highest bidder") || errorMessage.includes("уже лидируете")) {
         toast({
           title: "Вы уже лидируете",
-          description: errorData.message || "Вы уже лидируете в аукционе с максимальной ставкой.",
+          description: "Вы уже лидируете в аукционе с максимальной ставкой.",
           variant: "destructive",
           duration: 3000,
         });
-      } else if (errorData.error === "Bid too low") {
+      } else if (errorMessage.includes("Bid too low") || errorMessage.includes("слишком низкая") || errorMessage.includes("должна быть выше")) {
         toast({
           title: "Ставка слишком низкая",
-          description: errorData.message || "Ваша ставка должна быть выше текущей максимальной ставки.",
+          description: "Ваша ставка должна быть выше текущей максимальной ставки.",
           variant: "destructive",
           duration: 3000,
         });
-      } else if (error.message.includes("завершен") || errorData.message?.includes("завершен")) {
+      } else if (errorMessage.includes("завершен")) {
         toast({
           title: "Аукцион завершен",
           description: "К сожалению, ваша ставка не была высокой. Аукцион уже завершен.",
@@ -185,8 +154,8 @@ export default function AuctionDetail() {
         });
       } else {
         toast({
-          title: "Ошибка",
-          description: errorData.message || error.message || "Не удалось разместить ставку. Попробуйте снова.",
+          title: "Ошибка размещения ставки",
+          description: "Не удалось разместить ставку. Проверьте сумму и попробуйте снова.",
           variant: "destructive",
           duration: 3000,
         });
