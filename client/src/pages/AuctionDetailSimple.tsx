@@ -137,14 +137,26 @@ export default function AuctionDetail() {
       let errorData: any = {};
       try {
         if (error.message && error.message.includes(': ')) {
-          const errorText = error.message.split(': ')[1];
-          console.error("Extracted error text:", errorText);
-          if (errorText) {
-            errorData = JSON.parse(errorText);
+          const parts = error.message.split(': ');
+          if (parts.length >= 2) {
+            // Join all parts after the first one in case the JSON contains colons
+            const errorText = parts.slice(1).join(': ');
+            console.error("Extracted error text:", errorText);
+            if (errorText) {
+              errorData = JSON.parse(errorText);
+            }
           }
         }
       } catch (e) {
         console.error("Failed to parse error:", e);
+        // If JSON parsing fails, try to extract info from the plain text
+        if (error.message) {
+          if (error.message.includes("Already highest bidder")) {
+            errorData = { error: "Already highest bidder", message: "Вы уже лидируете в аукционе с максимальной ставкой." };
+          } else if (error.message.includes("Bid too low")) {
+            errorData = { error: "Bid too low", message: "Ваша ставка должна быть выше текущей максимальной ставки." };
+          }
+        }
       }
       
       console.error("Parsed error data:", errorData);
