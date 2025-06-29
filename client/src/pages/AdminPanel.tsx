@@ -14,6 +14,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { Link } from 'wouter';
 import { UserDetailModal } from '@/components/UserDetailModal';
+import { ListingEditModal } from '@/components/ListingEditModal';
 import type { User, CarListing, Notification } from '@shared/schema';
 
 export default function AdminPanel() {
@@ -190,6 +191,7 @@ function UsersManagement() {
 function ListingsManagement() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [selectedListingId, setSelectedListingId] = useState<number | null>(null);
 
   const { data: listings = [], isLoading } = useQuery<CarListing[]>({
     queryKey: ['/api/admin/listings'],
@@ -298,6 +300,12 @@ function ListingsManagement() {
           </div>
         </CardContent>
       </Card>
+      
+      <ListingEditModal
+        listingId={selectedListingId}
+        isOpen={!!selectedListingId}
+        onClose={() => setSelectedListingId(null)}
+      />
     </div>
   );
 }
