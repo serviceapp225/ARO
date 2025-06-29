@@ -66,57 +66,65 @@ export function NotificationBell({ userId }: NotificationBellProps) {
       if (!response.ok && response.status !== 404) throw new Error('Failed to delete notification');
       return notificationId;
     },
-    onSuccess: (notificationId) => {
-      // Add to local deleted list to prevent showing again
+    onMutate: async (notificationId: number) => {
+      // Немедленно добавляем в список удаленных для мгновенного скрытия
       setDeletedNotificationIds(prev => new Set(prev).add(notificationId));
-      
-      // Also update cache to remove immediately
-      queryClient.setQueryData<Notification[]>(
-        [`/api/notifications/${userId}`],
-        (oldData) => oldData ? oldData.filter(n => n.id !== notificationId) : []
-      );
     },
-    onError: (error) => {
+    onSuccess: (notificationId) => {
+      // Принудительно обновляем кеш
+      queryClient.removeQueries({ queryKey: [`/api/notifications/${userId}`] });
+      queryClient.invalidateQueries({ queryKey: [`/api/notifications/${userId}`] });
+    },
+    onError: (error, notificationId) => {
       console.error('Failed to delete notification:', error);
+      // При ошибке убираем из списка удаленных
+      setDeletedNotificationIds(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(notificationId);
+        return newSet;
+      });
     },
   });
 
   const clearAllNotificationsMutation = useMutation({
     mutationFn: async () => {
-      const deletePromises = notifications.map(notification => 
-        fetch(`/api/notifications/${notification.id}`, {
-          method: 'DELETE',
-        })
-      );
-      await Promise.all(deletePromises);
+      // Удаляем уведомления последовательно, чтобы избежать конфликтов
+      for (const notification of notifications) {
+        try {
+          const response = await fetch(`/api/notifications/${notification.id}`, {
+            method: 'DELETE',
+          });
+          if (!response.ok) {
+            console.warn(`Failed to delete notification ${notification.id}:`, response.status);
+          }
+        } catch (error) {
+          console.warn(`Error deleting notification ${notification.id}:`, error);
+        }
+      }
       return true;
     },
     onMutate: async () => {
-      // Cancel any outgoing refetches
+      // Отменяем все текущие запросы
       await queryClient.cancelQueries({ queryKey: [`/api/notifications/${userId}`] });
       
-      // Snapshot the previous value
-      const previousNotifications = queryClient.getQueryData<Notification[]>([`/api/notifications/${userId}`]);
-      
-      // Optimistically clear all notifications
-      if (previousNotifications) {
-        queryClient.setQueryData<Notification[]>(
-          [`/api/notifications/${userId}`],
-          []
-        );
-      }
-      
-      return { previousNotifications };
+      // Добавляем все ID уведомлений в список удаленных
+      const notificationIds = notifications.map(n => n.id);
+      setDeletedNotificationIds(prev => {
+        const newSet = new Set(prev);
+        notificationIds.forEach(id => newSet.add(id));
+        return newSet;
+      });
     },
-    onError: (err, variables, context) => {
-      // Rollback on error
-      if (context?.previousNotifications) {
-        queryClient.setQueryData([`/api/notifications/${userId}`], context.previousNotifications);
-      }
-    },
-    onSettled: () => {
-      // Force cache invalidation and immediate refetch
+    onSuccess: () => {
+      // Принудительно обновляем данные после успешного удаления
       queryClient.removeQueries({ queryKey: [`/api/notifications/${userId}`] });
+      queryClient.invalidateQueries({ queryKey: [`/api/notifications/${userId}`] });
+    },
+    onError: (error) => {
+      console.error('Failed to clear all notifications:', error);
+      // При ошибке очищаем локальный список удаленных
+      setDeletedNotificationIds(new Set());
+      // И принудительно обновляем данные
       queryClient.invalidateQueries({ queryKey: [`/api/notifications/${userId}`] });
     },
   });
