@@ -694,8 +694,18 @@ export class SQLiteStorage implements IStorage {
 
   async deleteCarAlert(id: number): Promise<boolean> {
     try {
+      // Сначала удаляем связанные уведомления (если таблица существует)
+      try {
+        const deleteNotificationsStmt = this.db.prepare('DELETE FROM notifications WHERE alert_id = ?');
+        deleteNotificationsStmt.run(id);
+      } catch (e) {
+        // Игнорируем если таблица notifications не существует
+      }
+      
+      // Затем удаляем сам поисковый запрос
       const stmt = this.db.prepare('DELETE FROM car_alerts WHERE id = ?');
       const result = stmt.run(id);
+      console.log(`Deleted car alert ${id}, changes: ${result.changes}`);
       return result.changes > 0;
     } catch (error) {
       console.error('Error deleting car alert:', id, error);

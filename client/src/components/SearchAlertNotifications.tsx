@@ -76,6 +76,11 @@ export function SearchAlertNotifications({ userId }: SearchAlertNotificationsPro
       // Получаем предыдущие данные для возможного отката
       const previousAlerts = queryClient.getQueryData<CarAlert[]>(['/api/car-alerts', userId]);
       
+      // Немедленно удаляем из UI (оптимистическое обновление)
+      queryClient.setQueryData<CarAlert[]>(['/api/car-alerts', userId], (old = []) =>
+        old.filter(alert => alert.id !== alertId)
+      );
+      
       return { previousAlerts };
     },
     onError: (error, alertId, context) => {
@@ -122,13 +127,20 @@ export function SearchAlertNotifications({ userId }: SearchAlertNotificationsPro
         duration: 1000, // Автоматически исчезает через 1 секунду
       });
     },
-    onSettled: (data, error, alertId) => {
+    onSettled: async (data, error, alertId) => {
       // Принудительно убираем из списка удаляемых в любом случае
       setDeletingIds((prev: Set<number>) => {
         const newSet = new Set(prev);
         newSet.delete(alertId);
         return newSet;
       });
+      
+      // Принудительно перезагружаем данные в любом случае
+      setTimeout(async () => {
+        queryClient.removeQueries({ queryKey: ['/api/car-alerts', userId] });
+        queryClient.removeQueries({ queryKey: ['/api/car-alerts'] });
+        await queryClient.refetchQueries({ queryKey: ['/api/car-alerts', userId] });
+      }, 100);
     }
   });
 
