@@ -69,12 +69,12 @@ export function ListingEditModal({ listingId, isOpen, onClose }: ListingEditModa
       
       // Additional car specifications
       setEngine(listing.engine || '');
-      setTransmission(listing.transmission || '');
-      setFuelType(listing.fuelType || '');
-      setBodyType(listing.bodyType || '');
-      setDriveType(listing.driveType || '');
+      setTransmission(listing.transmission || 'not_specified');
+      setFuelType(listing.fuelType || 'not_specified');
+      setBodyType(listing.bodyType || 'not_specified');
+      setDriveType(listing.driveType || 'not_specified');
       setColor(listing.color || '');
-      setCondition(listing.condition || '');
+      setCondition(listing.condition || 'not_specified');
       setVin(listing.vin || '');
       
       // Legal documents and status
@@ -101,12 +101,12 @@ export function ListingEditModal({ listingId, isOpen, onClose }: ListingEditModa
       
       // Reset additional specifications
       setEngine('');
-      setTransmission('');
-      setFuelType('');
-      setBodyType('');
-      setDriveType('');
+      setTransmission('not_specified');
+      setFuelType('not_specified');
+      setBodyType('not_specified');
+      setDriveType('not_specified');
       setColor('');
-      setCondition('');
+      setCondition('not_specified');
       setVin('');
       
       // Reset legal documents
@@ -197,12 +197,12 @@ export function ListingEditModal({ listingId, isOpen, onClose }: ListingEditModa
       location: location.trim(),
       // Additional specifications
       engine: engine.trim() || undefined,
-      transmission: transmission.trim() || undefined,
-      fuelType: fuelType.trim() || undefined,
-      bodyType: bodyType.trim() || undefined,
-      driveType: driveType.trim() || undefined,
+      transmission: transmission === 'not_specified' ? undefined : transmission,
+      fuelType: fuelType === 'not_specified' ? undefined : fuelType,
+      bodyType: bodyType === 'not_specified' ? undefined : bodyType,
+      driveType: driveType === 'not_specified' ? undefined : driveType,
       color: color.trim() || undefined,
-      condition: condition.trim() || undefined,
+      condition: condition === 'not_specified' ? undefined : condition,
       vin: vin.trim() || undefined,
       // Legal documents
       customsCleared,
@@ -335,7 +335,7 @@ export function ListingEditModal({ listingId, isOpen, onClose }: ListingEditModa
                       <SelectValue placeholder="Выберите тип" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">Не указано</SelectItem>
+                      <SelectItem value="not_specified">Не указано</SelectItem>
                       <SelectItem value="manual">Механическая</SelectItem>
                       <SelectItem value="automatic">Автоматическая</SelectItem>
                       <SelectItem value="cvt">Вариатор</SelectItem>
@@ -350,7 +350,7 @@ export function ListingEditModal({ listingId, isOpen, onClose }: ListingEditModa
                       <SelectValue placeholder="Выберите тип" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">Не указано</SelectItem>
+                      <SelectItem value="not_specified">Не указано</SelectItem>
                       <SelectItem value="gasoline">Бензин</SelectItem>
                       <SelectItem value="diesel">Дизель</SelectItem>
                       <SelectItem value="hybrid">Гибрид</SelectItem>
@@ -366,7 +366,7 @@ export function ListingEditModal({ listingId, isOpen, onClose }: ListingEditModa
                       <SelectValue placeholder="Выберите тип" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">Не указано</SelectItem>
+                      <SelectItem value="not_specified">Не указано</SelectItem>
                       <SelectItem value="sedan">Седан</SelectItem>
                       <SelectItem value="hatchback">Хэтчбек</SelectItem>
                       <SelectItem value="suv">Внедорожник</SelectItem>
@@ -385,7 +385,7 @@ export function ListingEditModal({ listingId, isOpen, onClose }: ListingEditModa
                       <SelectValue placeholder="Выберите тип" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">Не указано</SelectItem>
+                      <SelectItem value="not_specified">Не указано</SelectItem>
                       <SelectItem value="fwd">Передний</SelectItem>
                       <SelectItem value="rwd">Задний</SelectItem>
                       <SelectItem value="awd">Полный</SelectItem>
@@ -408,7 +408,7 @@ export function ListingEditModal({ listingId, isOpen, onClose }: ListingEditModa
                       <SelectValue placeholder="Выберите состояние" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">Не указано</SelectItem>
+                      <SelectItem value="not_specified">Не указано</SelectItem>
                       <SelectItem value="excellent">Отличное</SelectItem>
                       <SelectItem value="good">Хорошее</SelectItem>
                       <SelectItem value="fair">Удовлетворительное</SelectItem>
