@@ -42,7 +42,7 @@ export function NotificationBell({ userId }: NotificationBellProps) {
 
   // Показываем только уведомления о ставках, исключаем уведомления о создании поисковых запросов
   const notifications = allNotifications.filter(n => 
-    !deletedNotificationIds.has(n.id) && n.type !== 'alert_create'
+    !deletedNotificationIds.has(n.id) && n.type !== 'alert_created'
   );
 
   const markAsReadMutation = useMutation({
