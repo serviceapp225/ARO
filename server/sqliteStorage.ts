@@ -1011,6 +1011,32 @@ export class SQLiteStorage implements IStorage {
   async createAlertView(insertView: InsertAlertView): Promise<AlertView> { throw new Error('Not implemented'); }
   async hasUserViewedAlert(userId: number, alertId: number, listingId: number): Promise<boolean> { return false; }
   async getAdminStats(): Promise<{ pendingListings: number; activeAuctions: number; totalUsers: number; bannedUsers: number }> {
-    return { pendingListings: 0, activeAuctions: 2, totalUsers: 3, bannedUsers: 0 };
+    try {
+      // Подсчет объявлений на модерации
+      const pendingStmt = this.db.prepare('SELECT COUNT(*) as count FROM car_listings WHERE status = ?');
+      const pendingResult = pendingStmt.get('pending') as { count: number };
+      
+      // Подсчет активных аукционов
+      const activeStmt = this.db.prepare('SELECT COUNT(*) as count FROM car_listings WHERE status = ?');
+      const activeResult = activeStmt.get('active') as { count: number };
+      
+      // Подсчет общего количества пользователей
+      const usersStmt = this.db.prepare('SELECT COUNT(*) as count FROM users');
+      const usersResult = usersStmt.get() as { count: number };
+      
+      // Подсчет заблокированных пользователей
+      const bannedStmt = this.db.prepare('SELECT COUNT(*) as count FROM users WHERE is_active = 0');
+      const bannedResult = bannedStmt.get() as { count: number };
+
+      return {
+        pendingListings: pendingResult.count,
+        activeAuctions: activeResult.count,
+        totalUsers: usersResult.count,
+        bannedUsers: bannedResult.count
+      };
+    } catch (error) {
+      console.error('Error getting admin stats:', error);
+      return { pendingListings: 0, activeAuctions: 0, totalUsers: 0, bannedUsers: 0 };
+    }
   }
 }
