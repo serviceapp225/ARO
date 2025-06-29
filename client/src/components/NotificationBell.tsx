@@ -40,7 +40,7 @@ export function NotificationBell({ userId }: NotificationBellProps) {
     refetchOnMount: true, // Обновлять при монтировании компонента
   });
 
-  // Показываем только уведомления о ставках, исключаем уведомления о создании поисковых запросов
+  // Показываем уведомления о ставках и найденных машинах, исключаем уведомления о создании поисковых запросов
   const notifications = allNotifications.filter(n => 
     !deletedNotificationIds.has(n.id) && n.type !== 'alert_created'
   );
