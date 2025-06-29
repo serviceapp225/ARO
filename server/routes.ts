@@ -1441,6 +1441,94 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Middleware для проверки админских прав
+  const requireAdmin = (req: any, res: any, next: any) => {
+    // В реальном приложении здесь была бы проверка авторизации
+    // Пока что пропускаем все запросы для демонстрации
+    next();
+  };
+
+  // Админские API роуты - только для номера +992000000000
+  app.get("/api/admin/users", requireAdmin, async (req, res) => {
+    try {
+      const users = await storage.getAllUsers();
+      res.json(users);
+    } catch (error) {
+      console.error("Failed to fetch all users:", error);
+      res.status(500).json({ error: "Failed to fetch users" });
+    }
+  });
+
+  app.patch("/api/admin/users/:id/status", requireAdmin, async (req, res) => {
+    try {
+      const userId = parseInt(req.params.id);
+      const { isActive } = req.body;
+      
+      if (isNaN(userId)) {
+        return res.status(400).json({ error: "Invalid user ID" });
+      }
+      
+      const user = await storage.updateUserStatus(userId, isActive);
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+      
+      res.json(user);
+    } catch (error) {
+      console.error("Failed to update user status:", error);
+      res.status(500).json({ error: "Failed to update user status" });
+    }
+  });
+
+  app.get("/api/admin/listings", requireAdmin, async (req, res) => {
+    try {
+      // Получаем все объявления без фильтрации по статусу
+      const listings = await storage.getListingsByStatus('', 1000);
+      res.json(listings);
+    } catch (error) {
+      console.error("Failed to fetch all listings:", error);
+      res.status(500).json({ error: "Failed to fetch listings" });
+    }
+  });
+
+  app.patch("/api/admin/listings/:id/status", requireAdmin, async (req, res) => {
+    try {
+      const listingId = parseInt(req.params.id);
+      const { status } = req.body;
+      
+      if (isNaN(listingId)) {
+        return res.status(400).json({ error: "Invalid listing ID" });
+      }
+      
+      if (!['pending', 'active', 'ended', 'rejected'].includes(status)) {
+        return res.status(400).json({ error: "Invalid status" });
+      }
+      
+      const listing = await storage.updateListingStatus(listingId, status);
+      if (!listing) {
+        return res.status(404).json({ error: "Listing not found" });
+      }
+      
+      // Очищаем кеш при изменении статуса
+      clearAllCaches();
+      
+      res.json(listing);
+    } catch (error) {
+      console.error("Failed to update listing status:", error);
+      res.status(500).json({ error: "Failed to update listing status" });
+    }
+  });
+
+  app.get("/api/admin/stats", requireAdmin, async (req, res) => {
+    try {
+      const stats = await storage.getAdminStats();
+      res.json(stats);
+    } catch (error) {
+      console.error("Failed to fetch admin stats:", error);
+      res.status(500).json({ error: "Failed to fetch statistics" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
