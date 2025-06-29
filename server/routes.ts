@@ -1267,6 +1267,102 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Получить профиль конкретного пользователя
+  app.get("/api/admin/users/:id", adminAuth, async (req, res) => {
+    try {
+      const userId = parseInt(req.params.id);
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+      res.json(user);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch user" });
+    }
+  });
+
+  // Обновить профиль пользователя
+  app.put("/api/admin/users/:id", adminAuth, async (req, res) => {
+    try {
+      const userId = parseInt(req.params.id);
+      const { fullName, email, username, phoneNumber } = req.body;
+      
+      const user = await storage.updateUserProfile(userId, {
+        fullName,
+        email,
+        username,
+        phoneNumber
+      });
+      
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+      
+      res.json(user);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to update user profile" });
+    }
+  });
+
+  // Удалить пользователя
+  app.delete("/api/admin/users/:id", adminAuth, async (req, res) => {
+    try {
+      const userId = parseInt(req.params.id);
+      const deleted = await storage.deleteUser(userId);
+      if (!deleted) {
+        return res.status(404).json({ error: "User not found" });
+      }
+      res.status(204).send();
+    } catch (error) {
+      res.status(500).json({ error: "Failed to delete user" });
+    }
+  });
+
+  // Получить документы пользователя
+  app.get("/api/admin/users/:id/documents", adminAuth, async (req, res) => {
+    try {
+      const userId = parseInt(req.params.id);
+      const documents = await storage.getUserDocuments(userId);
+      res.json(documents);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch user documents" });
+    }
+  });
+
+  // Добавить документ пользователю
+  app.post("/api/admin/users/:id/documents", adminAuth, async (req, res) => {
+    try {
+      const userId = parseInt(req.params.id);
+      const { type, title, content, fileUrl } = req.body;
+      
+      const document = await storage.createDocument({
+        userId,
+        type,
+        title,
+        content,
+        fileUrl
+      });
+      
+      res.status(201).json(document);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to create document" });
+    }
+  });
+
+  // Удалить документ пользователя
+  app.delete("/api/admin/users/:userId/documents/:documentId", adminAuth, async (req, res) => {
+    try {
+      const documentId = parseInt(req.params.documentId);
+      const deleted = await storage.deleteDocument(documentId);
+      if (!deleted) {
+        return res.status(404).json({ error: "Document not found" });
+      }
+      res.status(204).send();
+    } catch (error) {
+      res.status(500).json({ error: "Failed to delete document" });
+    }
+  });
+
   // Модерация объявлений
   app.get("/api/admin/listings", adminAuth, async (req, res) => {
     try {

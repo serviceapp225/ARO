@@ -220,8 +220,9 @@ export type AdvertisementCarousel = typeof advertisementCarousel.$inferSelect;
 // Documents table for policies and rules
 export const documents = pgTable("documents", {
   id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id, { onDelete: "cascade" }), // NULL для системных документов
   title: text("title").notNull(),
-  type: text("type").notNull(), // 'policy' or 'rules'
+  type: text("type").notNull(), // 'policy', 'rules', 'passport', 'license', 'identity'
   content: text("content").notNull(),
   fileUrl: text("file_url"),
   fileName: text("file_name"),

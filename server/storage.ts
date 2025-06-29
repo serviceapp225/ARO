@@ -9,8 +9,10 @@ export interface IStorage {
   getUserByEmail(email: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
   updateUserStatus(id: number, isActive: boolean): Promise<User | undefined>;
-  updateUserProfile(id: number, data: { fullName?: string; profilePhoto?: string }): Promise<User | undefined>;
+  updateUserProfile(id: number, data: { fullName?: string; profilePhoto?: string; email?: string; username?: string; phoneNumber?: string }): Promise<User | undefined>;
   getAllUsers(): Promise<User[]>;
+  deleteUser(id: number): Promise<boolean>;
+  getUserDocuments(userId: number): Promise<Document[]>;
 
   // Car listing operations
   getListing(id: number): Promise<CarListing | undefined>;
@@ -121,10 +123,13 @@ export class DatabaseStorage implements IStorage {
     return user || undefined;
   }
 
-  async updateUserProfile(id: number, data: { fullName?: string; profilePhoto?: string }): Promise<User | undefined> {
+  async updateUserProfile(id: number, data: { fullName?: string; profilePhoto?: string; email?: string; username?: string; phoneNumber?: string }): Promise<User | undefined> {
     const updateData: any = {};
     if (data.fullName !== undefined) updateData.fullName = data.fullName;
     if (data.profilePhoto !== undefined) updateData.profilePhoto = data.profilePhoto;
+    if (data.email !== undefined) updateData.email = data.email;
+    if (data.username !== undefined) updateData.username = data.username;
+    if (data.phoneNumber !== undefined) updateData.phoneNumber = data.phoneNumber;
     
     const [user] = await db
       .update(users)
@@ -136,6 +141,20 @@ export class DatabaseStorage implements IStorage {
 
   async getAllUsers(): Promise<User[]> {
     return await db.select().from(users);
+  }
+
+  async deleteUser(id: number): Promise<boolean> {
+    try {
+      await db.delete(users).where(eq(users.id, id));
+      return true;
+    } catch (error) {
+      console.error("Failed to delete user:", error);
+      return false;
+    }
+  }
+
+  async getUserDocuments(userId: number): Promise<Document[]> {
+    return await db.select().from(documents).where(eq(documents.userId, userId));
   }
 
   async getListing(id: number): Promise<CarListing | undefined> {
