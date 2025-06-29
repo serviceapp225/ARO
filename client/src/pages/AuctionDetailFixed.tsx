@@ -193,9 +193,18 @@ export default function AuctionDetail() {
   const auction = currentAuction as any;
   const sortedBids = Array.isArray(bidsData) ? bidsData : [];
 
-  // Локальное состояние для мгновенного обновления текущей ставки
-  const [localCurrentBid, setLocalCurrentBid] = useState<number | null>(null);
-  const currentBid = localCurrentBid ?? (auction ? (auction.currentBid ? parseFloat(auction.currentBid) : parseFloat(auction.startingPrice)) : 0);
+  // Вычисляем текущую ставку из реальных данных
+  const getCurrentBid = () => {
+    if (Array.isArray(bidsData) && bidsData.length > 0) {
+      // Находим максимальную ставку из истории ставок
+      const maxBid = Math.max(...bidsData.map((bid: any) => parseFloat(bid.amount)));
+      return maxBid;
+    }
+    // Если ставок нет, используем стартовую цену
+    return auction ? parseFloat(auction.startingPrice) : 0;
+  };
+  
+  const currentBid = getCurrentBid();
   
   const condition = auction ? translateCondition(auction.condition) : "Неизвестно";
 
@@ -240,32 +249,15 @@ export default function AuctionDetail() {
     }
   }, [auctionEndTime, isTimerReady]);
 
-  // Синхронизируем локальное состояние с серверными данными
-  useEffect(() => {
-    if (auction && auction.currentBid && !localCurrentBid) {
-      // Сбрасываем локальное состояние только если оно не было установлено локально
-      const serverCurrentBid = parseFloat(auction.currentBid);
-      if (localCurrentBid === null || Math.abs(localCurrentBid - serverCurrentBid) > 100) {
-        setLocalCurrentBid(null); // Позволяем серверным данным взять верх
-      }
-    }
-  }, [auction?.currentBid, localCurrentBid]);
+  // Синхронизация теперь происходит автоматически через реальные данные ставок
 
   useEffect(() => {
-    if (auction && auction.currentBid) {
-      const newPrice = parseFloat(auction.currentBid);
-      if (newPrice !== currentPrice) {
-        setCurrentPrice(newPrice);
-        setBidAmount((newPrice + 1000).toString());
-      }
-    } else if (auction && auction.startingPrice) {
-      const startPrice = parseFloat(auction.startingPrice);
-      if (startPrice !== currentPrice) {
-        setCurrentPrice(startPrice);
-        setBidAmount((startPrice + 1000).toString());
-      }
+    // Обновляем currentPrice на основе реальной текущей ставки
+    if (currentBid && currentBid !== currentPrice) {
+      setCurrentPrice(currentBid);
+      setBidAmount((currentBid + 1000).toString());
     }
-  }, [auction, currentPrice]);
+  }, [currentBid, currentPrice]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -508,8 +500,7 @@ export default function AuctionDetail() {
         throw new Error(errorData.message || 'Failed to place bid');
       }
       
-      // Мгновенно обновляем локальное состояние текущей ставки
-      setLocalCurrentBid(bidValue);
+      // Ставка размещена успешно, данные обновятся автоматически
       
       // Автоматически добавляем в избранное при размещении ставки
       if (!isFavorite(id!)) {
