@@ -12,6 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useFavorites } from "@/contexts/FavoritesContext";
 import { useAuctions } from "@/contexts/AuctionContext";
 import { useAuth } from "@/contexts/AuthContext";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 import { CountdownTimer } from "@/components/CountdownTimer";
 import { ConfettiEffect } from "@/components/ConfettiEffect";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -98,19 +99,7 @@ export default function AuctionDetail() {
   // Bid mutation with celebration effects
   const bidMutation = useMutation({
     mutationFn: async (bidData: { bidderId: number; amount: string }) => {
-      const response = await fetch(`/api/listings/${id}/bids`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(bidData),
-      });
-      
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        const error = new Error(errorData.message || errorData.error || 'Failed to place bid');
-        (error as any).errorType = errorData.error;
-        (error as any).serverMessage = errorData.message;
-        throw error;
-      }
+      const response = await apiRequest('POST', `/api/listings/${id}/bids`, bidData);
       return response.json();
     },
     onSuccess: (data, variables) => {
@@ -141,32 +130,45 @@ export default function AuctionDetail() {
     onError: (error: any) => {
       console.error("Error placing bid:", error);
       
-      // Check if auction ended
-      if (error.message.includes("завершен")) {
+      // Parse error message from apiRequest format "400: {...}"
+      let errorData: any = {};
+      try {
+        const errorText = error.message.split(': ')[1];
+        if (errorText) {
+          errorData = JSON.parse(errorText);
+        }
+      } catch (e) {
+        // If parsing fails, use the original error message
+      }
+      
+      console.error("Parsed error data:", errorData);
+      
+      // Check for specific error types
+      if (errorData.error === "Already highest bidder") {
+        toast({
+          title: "Вы уже лидируете",
+          description: errorData.message || "Вы уже лидируете в аукционе с максимальной ставкой.",
+          variant: "destructive",
+          duration: 3000,
+        });
+      } else if (errorData.error === "Bid too low") {
+        toast({
+          title: "Ставка слишком низкая",
+          description: errorData.message || "Ваша ставка должна быть выше текущей максимальной ставки.",
+          variant: "destructive",
+          duration: 3000,
+        });
+      } else if (error.message.includes("завершен") || errorData.message?.includes("завершен")) {
         toast({
           title: "Аукцион завершен",
           description: "К сожалению, ваша ставка не была высокой. Аукцион уже завершен.",
           variant: "destructive",
           duration: 5000,
         });
-      } else if (error.errorType === "Already highest bidder") {
-        toast({
-          title: "Вы уже лидируете",
-          description: error.serverMessage || "Вы уже лидируете в аукционе с максимальной ставкой.",
-          variant: "destructive",
-          duration: 3000,
-        });
-      } else if (error.errorType === "Bid too low") {
-        toast({
-          title: "Ставка слишком низкая",
-          description: error.serverMessage || "Ваша ставка должна быть выше текущей максимальной ставки.",
-          variant: "destructive",
-          duration: 3000,
-        });
       } else {
         toast({
           title: "Ошибка",
-          description: error.message || "Не удалось разместить ставку. Попробуйте снова.",
+          description: errorData.message || error.message || "Не удалось разместить ставку. Попробуйте снова.",
           variant: "destructive",
           duration: 3000,
         });
