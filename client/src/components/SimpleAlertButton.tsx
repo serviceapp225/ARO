@@ -86,7 +86,7 @@ export default function SimpleAlertButton({ searchFilters = {} }: SimpleAlertBut
       toast({
         title: "Поисковый запрос сохранён",
         description: "Мы сообщим вам в колокольчике о новых автомобилях по вашим параметрам",
-        duration: 2000,
+        duration: 1000, // Автоматически исчезает через 1 секунду
       });
       
       // Сбрасываем состояние через 2 секунды
