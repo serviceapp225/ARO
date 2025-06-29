@@ -135,12 +135,25 @@ export function SearchAlertNotifications({ userId }: SearchAlertNotificationsPro
         return newSet;
       });
       
-      // Принудительно перезагружаем данные в любом случае
+      // Многократно очищаем кэш для предотвращения появления старых данных
+      queryClient.removeQueries({ queryKey: ['/api/car-alerts', userId] });
+      queryClient.removeQueries({ queryKey: ['/api/car-alerts'] });
+      
+      // Принудительная перезагрузка с дополнительной очисткой
       setTimeout(async () => {
         queryClient.removeQueries({ queryKey: ['/api/car-alerts', userId] });
         queryClient.removeQueries({ queryKey: ['/api/car-alerts'] });
-        await queryClient.refetchQueries({ queryKey: ['/api/car-alerts', userId] });
-      }, 100);
+        queryClient.clear(); // Полная очистка кэша React Query
+        await queryClient.refetchQueries({ 
+          queryKey: ['/api/car-alerts', userId],
+          type: 'active' 
+        });
+      }, 50);
+      
+      // Дополнительная очистка через 500мс на случай задержки
+      setTimeout(() => {
+        queryClient.removeQueries({ queryKey: ['/api/car-alerts', userId] });
+      }, 500);
     }
   });
 

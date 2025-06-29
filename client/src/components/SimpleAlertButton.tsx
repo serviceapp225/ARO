@@ -52,9 +52,15 @@ export default function SimpleAlertButton({ searchFilters = {} }: SimpleAlertBut
       return response.json();
     },
     onSuccess: async () => {
-      // Полностью очищаем кэш и принудительно перезагружаем данные
+      // Агрессивная очистка кэша для предотвращения возврата старых данных
       queryClient.removeQueries({ queryKey: ['/api/car-alerts', userId] });
-      await queryClient.invalidateQueries({ queryKey: ['/api/car-alerts', userId] });
+      queryClient.removeQueries({ queryKey: ['/api/car-alerts'] });
+      
+      // Дополнительная очистка через короткий интервал
+      setTimeout(() => {
+        queryClient.removeQueries({ queryKey: ['/api/car-alerts', userId] });
+      }, 100);
+      
       setIsCreated(true);
       
       // Создаем уведомление о создании поискового запроса для отображения в профиле
