@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -8,6 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
 import { User, Document } from '@shared/schema';
@@ -29,6 +30,7 @@ export function UserDetailModal({ userId, isOpen, onClose }: UserDetailModalProp
   const [email, setEmail] = useState('');
   const [username, setUsername] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
+  const [isActive, setIsActive] = useState(true);
 
   // Document form state
   const [documentType, setDocumentType] = useState('');
@@ -54,6 +56,7 @@ export function UserDetailModal({ userId, isOpen, onClose }: UserDetailModalProp
       setEmail(user.email || '');
       setUsername(user.username || '');
       setPhoneNumber(user.phoneNumber || '');
+      setIsActive(user.isActive || false);
     }
   }, [user]);
 
@@ -94,6 +97,27 @@ export function UserDetailModal({ userId, isOpen, onClose }: UserDetailModalProp
     },
     onError: () => {
       toast({ title: 'Ошибка при удалении пользователя', variant: 'destructive' });
+    },
+  });
+
+  // Update user status mutation
+  const updateUserStatusMutation = useMutation({
+    mutationFn: async (isActive: boolean) => {
+      const response = await fetch(`/api/admin/users/${userId}/status`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isActive }),
+      });
+      if (!response.ok) throw new Error('Failed to update user status');
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({ title: 'Статус пользователя обновлен' });
+      queryClient.invalidateQueries({ queryKey: [`/api/admin/users/${userId}`] });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/users'] });
+    },
+    onError: () => {
+      toast({ title: 'Ошибка при обновлении статуса', variant: 'destructive' });
     },
   });
 
@@ -186,6 +210,9 @@ export function UserDetailModal({ userId, isOpen, onClose }: UserDetailModalProp
             <User2 className="w-5 h-5" />
             Управление пользователем {user?.fullName || `ID: ${userId}`}
           </DialogTitle>
+          <DialogDescription>
+            Редактирование профиля пользователя и управление документами
+          </DialogDescription>
         </DialogHeader>
 
         {userLoading ? (
