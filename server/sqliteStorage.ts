@@ -160,9 +160,15 @@ export class SQLiteStorage implements IStorage {
     this.db.exec(`
       CREATE TABLE IF NOT EXISTS documents (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER,
         title TEXT NOT NULL,
         content TEXT NOT NULL,
         type TEXT NOT NULL,
+        file_url TEXT,
+        file_name TEXT,
+        file_size INTEGER,
+        is_active BOOLEAN DEFAULT 1,
+        "order" INTEGER DEFAULT 0,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
       )
@@ -288,7 +294,7 @@ export class SQLiteStorage implements IStorage {
     return this.getUser(id);
   }
 
-  async updateUserProfile(id: number, data: { fullName?: string; profilePhoto?: string }): Promise<User | undefined> {
+  async updateUserProfile(id: number, data: { fullName?: string; profilePhoto?: string; email?: string; username?: string; phoneNumber?: string }): Promise<User | undefined> {
     let setParts = [];
     let values = [];
     if (data.fullName !== undefined) {
@@ -299,12 +305,54 @@ export class SQLiteStorage implements IStorage {
       setParts.push('profile_photo = ?');
       values.push(data.profilePhoto);
     }
+    if (data.email !== undefined) {
+      setParts.push('email = ?');
+      values.push(data.email);
+    }
+    if (data.username !== undefined) {
+      setParts.push('username = ?');
+      values.push(data.username);
+    }
+    if (data.phoneNumber !== undefined) {
+      setParts.push('phone_number = ?');
+      values.push(data.phoneNumber);
+    }
     if (setParts.length > 0) {
       values.push(id);
       const stmt = this.db.prepare(`UPDATE users SET ${setParts.join(', ')} WHERE id = ?`);
       stmt.run(...values);
     }
     return this.getUser(id);
+  }
+
+  async deleteUser(id: number): Promise<boolean> {
+    try {
+      const stmt = this.db.prepare('DELETE FROM users WHERE id = ?');
+      stmt.run(id);
+      return true;
+    } catch (error) {
+      console.error("Failed to delete user:", error);
+      return false;
+    }
+  }
+
+  async getUserDocuments(userId: number): Promise<Document[]> {
+    const stmt = this.db.prepare('SELECT * FROM documents WHERE user_id = ? ORDER BY created_at DESC');
+    const rows = stmt.all(userId) as any[];
+    return rows.map((row: any) => ({
+      id: row.id,
+      userId: row.user_id,
+      title: row.title,
+      type: row.type,
+      content: row.content,
+      fileUrl: row.file_url,
+      fileName: row.file_name,
+      fileSize: row.file_size,
+      isActive: Boolean(row.is_active),
+      order: row.order,
+      createdAt: new Date(row.created_at),
+      updatedAt: new Date(row.updated_at || row.created_at)
+    }));
   }
 
   async getAllUsers(): Promise<User[]> {

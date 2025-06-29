@@ -9,10 +9,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Trash2, User as UserIcon, Car, Bell, Settings, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
+import { Trash2, User as UserIcon, Car, Bell, Settings, CheckCircle, XCircle, AlertCircle, Edit } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { Link } from 'wouter';
+import { UserDetailModal } from '@/components/UserDetailModal';
 import type { User, CarListing, Notification } from '@shared/schema';
 
 export default function AdminPanel() {
@@ -121,6 +122,7 @@ export default function AdminPanel() {
 function UsersManagement() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
 
   const { data: users = [], isLoading } = useQuery<User[]>({
     queryKey: ['/api/admin/users'],
