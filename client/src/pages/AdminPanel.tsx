@@ -341,9 +341,17 @@ function BannersManagement() {
   );
 }
 
+// Интерфейс для статистики
+interface AdminStatsData {
+  totalUsers: number;
+  activeAuctions: number;
+  pendingListings: number;
+  bannedUsers: number;
+}
+
 // Компонент статистики
 function AdminStats() {
-  const { data: stats, isLoading } = useQuery({
+  const { data: stats, isLoading } = useQuery<AdminStatsData>({
     queryKey: ['/api/admin/stats'],
   });
 
@@ -356,7 +364,7 @@ function AdminStats() {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">Всего пользователей</CardTitle>
-          <User className="h-4 w-4 text-muted-foreground" />
+          <UserIcon className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">{stats?.totalUsers || 0}</div>

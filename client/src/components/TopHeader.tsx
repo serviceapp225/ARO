@@ -1,4 +1,4 @@
-import { ArrowLeft, Gavel } from "lucide-react";
+import { ArrowLeft, Gavel, Settings } from "lucide-react";
 import { FaWhatsapp } from "react-icons/fa";
 import { useLocation, Link } from "wouter";
 import { NotificationBell } from "./NotificationBell";
@@ -109,7 +109,15 @@ export function TopHeader({
       </h1>
 
       {/* Правая часть */}
-      <div className="flex items-center">
+      <div className="flex items-center gap-2">
+        {/* Кнопка админ панели - только для номера +992000000000 */}
+        {user?.phoneNumber === '+992000000000' && (
+          <Link href="/admin">
+            <button className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 dark:text-gray-400 dark:hover:text-blue-400 dark:hover:bg-blue-900/20 rounded-lg transition-colors" title="Админ панель">
+              <Settings className="w-5 h-5" />
+            </button>
+          </Link>
+        )}
         {!shouldHideNotifications() && (
           <NotificationBell userId={currentUserId} />
         )}
