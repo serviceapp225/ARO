@@ -315,6 +315,181 @@ export function ListingEditModal({ listingId, isOpen, onClose }: ListingEditModa
               />
             </div>
 
+            {/* Technical Specifications */}
+            <div className="border-t pt-4">
+              <h3 className="text-lg font-semibold mb-3">Технические характеристики</h3>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="engine">Двигатель</Label>
+                  <Input
+                    id="engine"
+                    value={engine}
+                    onChange={(e) => setEngine(e.target.value)}
+                    placeholder="2.0 TSI, V6 3.5L, etc."
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="transmission">Коробка передач</Label>
+                  <Select value={transmission} onValueChange={setTransmission}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Выберите тип" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">Не указано</SelectItem>
+                      <SelectItem value="manual">Механическая</SelectItem>
+                      <SelectItem value="automatic">Автоматическая</SelectItem>
+                      <SelectItem value="cvt">Вариатор</SelectItem>
+                      <SelectItem value="robotic">Робот</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label htmlFor="fuelType">Тип топлива</Label>
+                  <Select value={fuelType} onValueChange={setFuelType}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Выберите тип" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">Не указано</SelectItem>
+                      <SelectItem value="gasoline">Бензин</SelectItem>
+                      <SelectItem value="diesel">Дизель</SelectItem>
+                      <SelectItem value="hybrid">Гибрид</SelectItem>
+                      <SelectItem value="electric">Электро</SelectItem>
+                      <SelectItem value="gas">Газ</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label htmlFor="bodyType">Тип кузова</Label>
+                  <Select value={bodyType} onValueChange={setBodyType}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Выберите тип" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">Не указано</SelectItem>
+                      <SelectItem value="sedan">Седан</SelectItem>
+                      <SelectItem value="hatchback">Хэтчбек</SelectItem>
+                      <SelectItem value="suv">Внедорожник</SelectItem>
+                      <SelectItem value="crossover">Кроссовер</SelectItem>
+                      <SelectItem value="wagon">Универсал</SelectItem>
+                      <SelectItem value="coupe">Купе</SelectItem>
+                      <SelectItem value="convertible">Кабриолет</SelectItem>
+                      <SelectItem value="pickup">Пикап</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label htmlFor="driveType">Привод</Label>
+                  <Select value={driveType} onValueChange={setDriveType}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Выберите тип" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">Не указано</SelectItem>
+                      <SelectItem value="fwd">Передний</SelectItem>
+                      <SelectItem value="rwd">Задний</SelectItem>
+                      <SelectItem value="awd">Полный</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label htmlFor="color">Цвет</Label>
+                  <Input
+                    id="color"
+                    value={color}
+                    onChange={(e) => setColor(e.target.value)}
+                    placeholder="Белый, Черный, Серебристый, etc."
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="condition">Состояние</Label>
+                  <Select value={condition} onValueChange={setCondition}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Выберите состояние" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">Не указано</SelectItem>
+                      <SelectItem value="excellent">Отличное</SelectItem>
+                      <SelectItem value="good">Хорошее</SelectItem>
+                      <SelectItem value="fair">Удовлетворительное</SelectItem>
+                      <SelectItem value="needs_repair">Требует ремонта</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label htmlFor="vin">VIN номер</Label>
+                  <Input
+                    id="vin"
+                    value={vin}
+                    onChange={(e) => setVin(e.target.value)}
+                    placeholder="17-значный VIN код"
+                    maxLength={17}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Legal Documents */}
+            <div className="border-t pt-4">
+              <h3 className="text-lg font-semibold mb-3">Документы и статус</h3>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="customsCleared">Растаможен</Label>
+                  <Switch
+                    id="customsCleared"
+                    checked={customsCleared}
+                    onCheckedChange={setCustomsCleared}
+                  />
+                </div>
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="recycled">Утилизационный сбор</Label>
+                  <Switch
+                    id="recycled"
+                    checked={recycled}
+                    onCheckedChange={setRecycled}
+                  />
+                </div>
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="technicalInspectionValid">Техосмотр действителен</Label>
+                  <Switch
+                    id="technicalInspectionValid"
+                    checked={technicalInspectionValid}
+                    onCheckedChange={setTechnicalInspectionValid}
+                  />
+                </div>
+                {technicalInspectionValid && (
+                  <div>
+                    <Label htmlFor="technicalInspectionDate">Дата техосмотра</Label>
+                    <Input
+                      id="technicalInspectionDate"
+                      type="date"
+                      value={technicalInspectionDate}
+                      onChange={(e) => setTechnicalInspectionDate(e.target.value)}
+                    />
+                  </div>
+                )}
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="tinted">Тонировка</Label>
+                  <Switch
+                    id="tinted"
+                    checked={tinted}
+                    onCheckedChange={setTinted}
+                  />
+                </div>
+                {tinted && (
+                  <div>
+                    <Label htmlFor="tintingDate">Дата тонировки</Label>
+                    <Input
+                      id="tintingDate"
+                      type="date"
+                      value={tintingDate}
+                      onChange={(e) => setTintingDate(e.target.value)}
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
+
             <div>
               <Label htmlFor="description">Описание</Label>
               <Textarea

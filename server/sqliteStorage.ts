@@ -455,6 +455,66 @@ export class SQLiteStorage implements IStorage {
       values.push(data.location);
     }
     
+    // Additional car specifications
+    if (data.engine !== undefined) {
+      fields.push('engine = ?');
+      values.push(data.engine);
+    }
+    if (data.transmission !== undefined) {
+      fields.push('transmission = ?');
+      values.push(data.transmission);
+    }
+    if (data.fuelType !== undefined) {
+      fields.push('fuel_type = ?');
+      values.push(data.fuelType);
+    }
+    if (data.bodyType !== undefined) {
+      fields.push('body_type = ?');
+      values.push(data.bodyType);
+    }
+    if (data.driveType !== undefined) {
+      fields.push('drive_type = ?');
+      values.push(data.driveType);
+    }
+    if (data.color !== undefined) {
+      fields.push('color = ?');
+      values.push(data.color);
+    }
+    if (data.condition !== undefined) {
+      fields.push('condition = ?');
+      values.push(data.condition);
+    }
+    if (data.vin !== undefined) {
+      fields.push('vin = ?');
+      values.push(data.vin);
+    }
+    
+    // Legal documents and status
+    if (data.customsCleared !== undefined) {
+      fields.push('customs_cleared = ?');
+      values.push(data.customsCleared ? 1 : 0);
+    }
+    if (data.recycled !== undefined) {
+      fields.push('recycled = ?');
+      values.push(data.recycled ? 1 : 0);
+    }
+    if (data.technicalInspectionValid !== undefined) {
+      fields.push('technical_inspection_valid = ?');
+      values.push(data.technicalInspectionValid ? 1 : 0);
+    }
+    if (data.technicalInspectionDate !== undefined) {
+      fields.push('technical_inspection_date = ?');
+      values.push(data.technicalInspectionDate);
+    }
+    if (data.tinted !== undefined) {
+      fields.push('tinted = ?');
+      values.push(data.tinted ? 1 : 0);
+    }
+    if (data.tintingDate !== undefined) {
+      fields.push('tinting_date = ?');
+      values.push(data.tintingDate);
+    }
+    
     if (fields.length === 0) {
       return this.getListing(id);
     }
