@@ -536,6 +536,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
+      // Get current highest bid to validate new bid amount
+      const existingBids = await storage.getBidsForListing(listingId);
+      const currentHighestBid = existingBids.length > 0 
+        ? Math.max(...existingBids.map(bid => parseFloat(bid.amount)))
+        : parseFloat(listing.startingPrice);
+      
+      const newBidAmount = parseFloat(validatedData.amount);
+      
+      // Validate that new bid is higher than current highest bid
+      if (newBidAmount <= currentHighestBid) {
+        return res.status(400).json({ 
+          error: "Bid too low", 
+          message: `Ваша ставка должна быть выше текущей максимальной ставки ${currentHighestBid} Сомони.`
+        });
+      }
+      
+      // Check if user already has the highest bid
+      const userHighestBid = existingBids
+        .filter(bid => bid.bidderId === validatedData.bidderId)
+        .sort((a, b) => parseFloat(b.amount) - parseFloat(a.amount))[0];
+      
+      if (userHighestBid && parseFloat(userHighestBid.amount) === currentHighestBid) {
+        return res.status(400).json({ 
+          error: "Already highest bidder", 
+          message: "Вы уже лидируете в аукционе с максимальной ставкой."
+        });
+      }
+      
       const bid = await storage.createBid(validatedData);
       
       // Update listing's current bid
