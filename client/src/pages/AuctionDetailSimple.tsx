@@ -129,16 +129,22 @@ export default function AuctionDetail() {
     },
     onError: (error: any) => {
       console.error("Error placing bid:", error);
+      console.error("Error message:", error.message);
+      console.error("Error keys:", Object.keys(error));
+      console.error("Error constructor:", error.constructor.name);
       
       // Parse error message from apiRequest format "400: {...}"
       let errorData: any = {};
       try {
-        const errorText = error.message.split(': ')[1];
-        if (errorText) {
-          errorData = JSON.parse(errorText);
+        if (error.message && error.message.includes(': ')) {
+          const errorText = error.message.split(': ')[1];
+          console.error("Extracted error text:", errorText);
+          if (errorText) {
+            errorData = JSON.parse(errorText);
+          }
         }
       } catch (e) {
-        // If parsing fails, use the original error message
+        console.error("Failed to parse error:", e);
       }
       
       console.error("Parsed error data:", errorData);
