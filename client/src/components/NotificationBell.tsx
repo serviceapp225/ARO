@@ -15,9 +15,12 @@ export function NotificationBell({ userId }: NotificationBellProps) {
   const [deletedNotificationIds, setDeletedNotificationIds] = useState<Set<number>>(() => {
     try {
       const stored = localStorage.getItem(`deletedNotifications_${userId}`);
-      return stored ? new Set(JSON.parse(stored)) : new Set();
+      const result = stored ? new Set<number>(JSON.parse(stored)) : new Set<number>();
+
+      return result;
     } catch {
-      return new Set();
+      console.log('Failed to load deleted notifications from localStorage');
+      return new Set<number>();
     }
   });
 
@@ -27,7 +30,9 @@ export function NotificationBell({ userId }: NotificationBellProps) {
     try {
       const arrayData: number[] = [];
       newSet.forEach(id => arrayData.push(id));
-      localStorage.setItem(`deletedNotifications_${userId}`, JSON.stringify(arrayData));
+      const key = `deletedNotifications_${userId}`;
+      localStorage.setItem(key, JSON.stringify(arrayData));
+
     } catch (error) {
       console.warn('Failed to save deleted notifications to localStorage:', error);
     }
@@ -86,8 +91,7 @@ export function NotificationBell({ userId }: NotificationBellProps) {
     !deletedNotificationIds.has(n.id) && n.type !== 'alert_created'
   );
 
-  // Дебаг информация
-  console.log('All notifications:', allNotifications.length, 'Deleted IDs:', Array.from(deletedNotificationIds), 'Visible:', notifications.length);
+
 
   const markAsReadMutation = useMutation({
     mutationFn: async (notificationId: number) => {
@@ -113,6 +117,7 @@ export function NotificationBell({ userId }: NotificationBellProps) {
     onMutate: async (notificationId: number) => {
       // Немедленно добавляем в список удаленных для мгновенного скрытия
       const newSet = new Set(deletedNotificationIds).add(notificationId);
+
       updateDeletedNotifications(newSet);
     },
     onSuccess: (notificationId) => {
