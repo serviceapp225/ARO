@@ -99,6 +99,7 @@ export default function AuctionDetail() {
   // Bid mutation with celebration effects
   const bidMutation = useMutation({
     mutationFn: async (bidData: { bidderId: number; amount: string }) => {
+      alert("Debug: Mutation function called with " + JSON.stringify(bidData));
       try {
         const response = await fetch(`/api/listings/${id}/bids`, {
           method: 'POST',
