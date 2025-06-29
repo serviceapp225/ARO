@@ -130,12 +130,16 @@ export default function AuctionDetail() {
   const { data: currentAuction, refetch: refetchAuction } = useQuery({
     queryKey: [`/api/listings/${id}`],
     enabled: !!id,
+    refetchInterval: 5000, // Refresh every 5 seconds
+    refetchIntervalInBackground: true,
   });
 
-  // Fetch real bidding history
+  // Fetch real bidding history with auto-refresh
   const { data: bidsData } = useQuery({
     queryKey: [`/api/listings/${id}/bids`],
     enabled: !!id,
+    refetchInterval: 3000, // Refresh every 3 seconds
+    refetchIntervalInBackground: true,
   });
 
   // Get unique bidder IDs to fetch user data
