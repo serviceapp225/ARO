@@ -301,30 +301,6 @@ export default function AuctionDetail() {
     bidMutation.mutate({
       bidderId: userId,
       amount: bidAmount
-    }, {
-      onSuccess: () => {
-        // Автоматически добавляем в избранное при размещении ставки
-        if (!isFavorite(id!)) {
-          addToFavorites(id!);
-          toast({
-            title: "Добавлено в избранное",
-            description: "Аукцион автоматически добавлен в избранное",
-            duration: 2000,
-          });
-        }
-      },
-      onError: (error: any) => {
-        if (error.status === 403 && error.data?.error === "Account not activated") {
-          // Show activation dialog
-          setShowActivationDialog(true);
-        } else {
-          toast({
-            title: "Ошибка",
-            description: "Не удалось сделать ставку. Попробуйте еще раз.",
-            variant: "destructive",
-          });
-        }
-      }
     });
   };
 
