@@ -1,6 +1,5 @@
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { AllNotifications } from "@/components/AllNotifications";
 import { SearchAlertNotifications } from "@/components/SearchAlertNotifications";
 import { useLocation } from "wouter";
 import { useAuth } from "@/contexts/AuthContext";
@@ -34,11 +33,7 @@ export default function Notifications() {
       </header>
 
       <main className="container mx-auto px-4 py-8">
-        <div className="max-w-4xl mx-auto space-y-6">
-          {/* Все уведомления - включая уведомления о перебитии ставок */}
-          <AllNotifications userId={userId} />
-          
-          {/* Поисковые запросы */}
+        <div className="max-w-4xl mx-auto">
           <SearchAlertNotifications userId={userId} />
         </div>
       </main>

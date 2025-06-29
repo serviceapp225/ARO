@@ -26,8 +26,12 @@ export function TopHeader({
     
     // Map phone numbers to user IDs (based on actual database IDs)
     const phoneToUserIdMap: Record<string, number> = {
+      "+992 (00) 000-00-00": 4,   // Пользователь 992000000000
+      "+992 (11) 111-11-11": 3,   // Пользователь 992111111111  
       "+992 (22) 222-22-22": 18,  // Sony Vaio0
       "+992 (88) 888-88-88": 17,  // Тестовый пользователь
+      "+992000000000": 4,
+      "+992111111111": 3,
       "+992222222222": 18,
       "+992888888888": 17
     };

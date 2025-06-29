@@ -28,11 +28,16 @@ export function NotificationBell({ userId }: NotificationBellProps) {
 
   const { data: allNotifications = [], isLoading } = useQuery<Notification[]>({
     queryKey: [`/api/notifications/${userId}`],
-    enabled: false, // Полностью отключаем автозагрузку
-    refetchInterval: false, // Completely disable auto-refresh
-    staleTime: Infinity, // Never consider data stale
-    refetchOnWindowFocus: false, // Don't refetch when window gains focus
-    refetchOnMount: false, // Don't refetch on component mount
+    queryFn: async () => {
+      const response = await fetch(`/api/notifications/${userId}`);
+      if (!response.ok) throw new Error('Failed to fetch notifications');
+      return response.json();
+    },
+    enabled: true, // Включаем автозагрузку уведомлений
+    refetchInterval: 30000, // Обновляем каждые 30 секунд для новых уведомлений
+    staleTime: 10000, // Считать данные свежими 10 секунд
+    refetchOnWindowFocus: true, // Обновлять при фокусе окна
+    refetchOnMount: true, // Обновлять при монтировании компонента
   });
 
   // Показываем все уведомления кроме удаленных локально
