@@ -954,16 +954,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = parseInt(req.params.userId);
       const cacheKey = `car-alerts-${userId}`;
       
-      // Проверяем кэш
-      const cached = getCached(cacheKey);
-      if (cached) {
-        return res.json(cached);
-      }
-      
+      // Временно отключаем кэширование для отладки проблемы с удалением
       const alerts = await storage.getCarAlertsByUser(userId);
       
-      // Кэшируем результат
-      setCache(cacheKey, alerts);
+      // Устанавливаем заголовки против кэширования браузера
+      res.set({
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0'
+      });
       
       res.json(alerts);
     } catch (error) {
