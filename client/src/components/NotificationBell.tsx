@@ -52,11 +52,22 @@ export function NotificationBell({ userId }: NotificationBellProps) {
     queryFn: async () => {
       const response = await fetch(`/api/notifications/${userId}`);
       if (!response.ok) throw new Error('Failed to fetch notifications');
-      const data = response.json();
-      
-      // Очищаем удаленные уведомления, которых больше нет в базе данных
-      const currentNotificationIds = new Set((await data).map((n: Notification) => n.id));
+      const data = await response.json();
+      return data;
+    },
+    enabled: true,
+    refetchInterval: 60000, // Обновляем каждую минуту
+    staleTime: 30000, // Считать данные свежими 30 секунд
+    refetchOnWindowFocus: false, // НЕ обновлять при фокусе - это вызывает лишние запросы
+    refetchOnMount: false, // НЕ обновлять при каждом монтировании
+  });
+
+  // Очищаем удаленные уведомления, которых больше нет в базе данных
+  useEffect(() => {
+    if (allNotifications.length > 0) {
+      const currentNotificationIds = new Set(allNotifications.map(n => n.id));
       const filteredDeletedIds = new Set<number>();
+      
       deletedNotificationIds.forEach(id => {
         if (currentNotificationIds.has(id)) {
           filteredDeletedIds.add(id);
@@ -67,20 +78,16 @@ export function NotificationBell({ userId }: NotificationBellProps) {
       if (filteredDeletedIds.size !== deletedNotificationIds.size) {
         updateDeletedNotifications(filteredDeletedIds);
       }
-      
-      return data;
-    },
-    enabled: true, // Включаем автозагрузку уведомлений
-    refetchInterval: 30000, // Обновляем каждые 30 секунд для новых уведомлений
-    staleTime: 10000, // Считать данные свежими 10 секунд
-    refetchOnWindowFocus: true, // Обновлять при фокусе окна
-    refetchOnMount: true, // Обновлять при монтировании компонента
-  });
+    }
+  }, [allNotifications.length]); // Только длина массива, чтобы избежать циклов
 
   // Показываем уведомления о ставках и найденных машинах, исключаем уведомления о создании поисковых запросов
   const notifications = allNotifications.filter(n => 
     !deletedNotificationIds.has(n.id) && n.type !== 'alert_created'
   );
+
+  // Дебаг информация
+  console.log('All notifications:', allNotifications.length, 'Deleted IDs:', Array.from(deletedNotificationIds), 'Visible:', notifications.length);
 
   const markAsReadMutation = useMutation({
     mutationFn: async (notificationId: number) => {
@@ -109,8 +116,7 @@ export function NotificationBell({ userId }: NotificationBellProps) {
       updateDeletedNotifications(newSet);
     },
     onSuccess: (notificationId) => {
-      // Принудительно обновляем кеш
-      queryClient.removeQueries({ queryKey: [`/api/notifications/${userId}`] });
+      // Уведомление уже скрыто через onMutate, просто инвалидируем кэш
       queryClient.invalidateQueries({ queryKey: [`/api/notifications/${userId}`] });
     },
     onError: (error, notificationId) => {
