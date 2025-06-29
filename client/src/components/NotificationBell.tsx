@@ -10,7 +10,28 @@ interface NotificationBellProps {
 
 export function NotificationBell({ userId }: NotificationBellProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [deletedNotificationIds, setDeletedNotificationIds] = useState<Set<number>>(new Set());
+  
+  // Загружаем список удаленных уведомлений из localStorage
+  const [deletedNotificationIds, setDeletedNotificationIds] = useState<Set<number>>(() => {
+    try {
+      const stored = localStorage.getItem(`deletedNotifications_${userId}`);
+      return stored ? new Set(JSON.parse(stored)) : new Set();
+    } catch {
+      return new Set();
+    }
+  });
+
+  // Сохраняем изменения в localStorage
+  const updateDeletedNotifications = (newSet: Set<number>) => {
+    setDeletedNotificationIds(newSet);
+    try {
+      const arrayData: number[] = [];
+      newSet.forEach(id => arrayData.push(id));
+      localStorage.setItem(`deletedNotifications_${userId}`, JSON.stringify(arrayData));
+    } catch (error) {
+      console.warn('Failed to save deleted notifications to localStorage:', error);
+    }
+  };
   
   // Manual refetch when opening notifications
   const handleToggleOpen = () => {
@@ -31,7 +52,23 @@ export function NotificationBell({ userId }: NotificationBellProps) {
     queryFn: async () => {
       const response = await fetch(`/api/notifications/${userId}`);
       if (!response.ok) throw new Error('Failed to fetch notifications');
-      return response.json();
+      const data = response.json();
+      
+      // Очищаем удаленные уведомления, которых больше нет в базе данных
+      const currentNotificationIds = new Set((await data).map((n: Notification) => n.id));
+      const filteredDeletedIds = new Set<number>();
+      deletedNotificationIds.forEach(id => {
+        if (currentNotificationIds.has(id)) {
+          filteredDeletedIds.add(id);
+        }
+      });
+      
+      // Обновляем список удаленных, если что-то изменилось
+      if (filteredDeletedIds.size !== deletedNotificationIds.size) {
+        updateDeletedNotifications(filteredDeletedIds);
+      }
+      
+      return data;
     },
     enabled: true, // Включаем автозагрузку уведомлений
     refetchInterval: 30000, // Обновляем каждые 30 секунд для новых уведомлений
@@ -68,7 +105,8 @@ export function NotificationBell({ userId }: NotificationBellProps) {
     },
     onMutate: async (notificationId: number) => {
       // Немедленно добавляем в список удаленных для мгновенного скрытия
-      setDeletedNotificationIds(prev => new Set(prev).add(notificationId));
+      const newSet = new Set(deletedNotificationIds).add(notificationId);
+      updateDeletedNotifications(newSet);
     },
     onSuccess: (notificationId) => {
       // Принудительно обновляем кеш
@@ -78,11 +116,9 @@ export function NotificationBell({ userId }: NotificationBellProps) {
     onError: (error, notificationId) => {
       console.error('Failed to delete notification:', error);
       // При ошибке убираем из списка удаленных
-      setDeletedNotificationIds(prev => {
-        const newSet = new Set(prev);
-        newSet.delete(notificationId);
-        return newSet;
-      });
+      const newSet = new Set(deletedNotificationIds);
+      newSet.delete(notificationId);
+      updateDeletedNotifications(newSet);
     },
   });
 
@@ -109,11 +145,9 @@ export function NotificationBell({ userId }: NotificationBellProps) {
       
       // Добавляем все ID уведомлений в список удаленных
       const notificationIds = notifications.map(n => n.id);
-      setDeletedNotificationIds(prev => {
-        const newSet = new Set(prev);
-        notificationIds.forEach(id => newSet.add(id));
-        return newSet;
-      });
+      const newSet = new Set(deletedNotificationIds);
+      notificationIds.forEach(id => newSet.add(id));
+      updateDeletedNotifications(newSet);
     },
     onSuccess: () => {
       // Принудительно обновляем данные после успешного удаления
@@ -123,7 +157,7 @@ export function NotificationBell({ userId }: NotificationBellProps) {
     onError: (error) => {
       console.error('Failed to clear all notifications:', error);
       // При ошибке очищаем локальный список удаленных
-      setDeletedNotificationIds(new Set());
+      updateDeletedNotifications(new Set());
       // И принудительно обновляем данные
       queryClient.invalidateQueries({ queryKey: [`/api/notifications/${userId}`] });
     },
