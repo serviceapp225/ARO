@@ -99,21 +99,63 @@ export default function AuctionDetail() {
   // Bid mutation with celebration effects
   const bidMutation = useMutation({
     mutationFn: async (bidData: { bidderId: number; amount: string }) => {
-      const response = await fetch(`/api/listings/${id}/bids`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(bidData),
-      });
-      
-      if (!response.ok) {
-        const errorData = await response.json();
-        const error = new Error(errorData.message || 'Failed to place bid');
-        (error as any).errorType = errorData.error;
-        (error as any).errorMessage = errorData.message;
-        throw error;
+      try {
+        const response = await fetch(`/api/listings/${id}/bids`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(bidData),
+        });
+        
+        if (!response.ok) {
+          const errorData = await response.json();
+          console.log("Server error response:", errorData);
+          
+          // Show toast immediately based on error type
+          if (errorData.error === "Already highest bidder") {
+            toast({
+              title: "Вы уже лидируете",
+              description: errorData.message || "Вы уже лидируете в аукционе с максимальной ставкой.",
+              variant: "destructive",
+              duration: 3000,
+            });
+          } else if (errorData.error === "Bid too low") {
+            toast({
+              title: "Ставка слишком низкая",
+              description: errorData.message || "Ваша ставка должна быть выше текущей максимальной ставки.",
+              variant: "destructive",
+              duration: 3000,
+            });
+          } else {
+            toast({
+              title: "Ошибка размещения ставки",
+              description: errorData.message || "Не удалось разместить ставку.",
+              variant: "destructive",
+              duration: 3000,
+            });
+          }
+          
+          const error = new Error(errorData.message || 'Failed to place bid');
+          (error as any).errorType = errorData.error;
+          (error as any).errorMessage = errorData.message;
+          throw error;
+        }
+        
+        return response.json();
+      } catch (fetchError) {
+        console.log("Fetch error:", fetchError);
+        // If it's our custom error, re-throw it
+        if ((fetchError as any).errorType) {
+          throw fetchError;
+        }
+        // Otherwise, show generic error
+        toast({
+          title: "Ошибка сети",
+          description: "Не удалось подключиться к серверу.",
+          variant: "destructive",
+          duration: 3000,
+        });
+        throw fetchError;
       }
-      
-      return response.json();
     },
     onSuccess: (data, variables) => {
       // Trigger celebration effects
@@ -140,41 +182,7 @@ export default function AuctionDetail() {
       // Reset bid amount
       setBidAmount("");
     },
-    onError: (error: any) => {
-      console.log("Error details:", error);
-      console.log("Error type:", error.errorType);
-      console.log("Error message:", error.errorMessage);
-      
-      if (error.errorType === "Already highest bidder") {
-        toast({
-          title: "Вы уже лидируете",
-          description: error.errorMessage || "Вы уже лидируете в аукционе с максимальной ставкой.",
-          variant: "destructive",
-          duration: 3000,
-        });
-      } else if (error.errorType === "Bid too low") {
-        toast({
-          title: "Ставка слишком низкая",
-          description: error.errorMessage || "Ваша ставка должна быть выше текущей максимальной ставки.",
-          variant: "destructive",
-          duration: 3000,
-        });
-      } else if (error.message?.includes("завершен")) {
-        toast({
-          title: "Аукцион завершен",
-          description: "К сожалению, ваша ставка не была высокой. Аукцион уже завершен.",
-          variant: "destructive",
-          duration: 5000,
-        });
-      } else {
-        toast({
-          title: "Ошибка размещения ставки",
-          description: error.errorMessage || error.message || "Не удалось разместить ставку. Проверьте сумму и попробуйте снова.",
-          variant: "destructive",
-          duration: 3000,
-        });
-      }
-    },
+
   });
 
   // Helper function to determine condition by mileage
