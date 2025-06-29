@@ -30,10 +30,10 @@ export function SearchAlertNotifications({ userId }: SearchAlertNotificationsPro
       if (!response.ok) throw new Error('Failed to fetch car alerts');
       return response.json();
     },
-    staleTime: 60000, // Кэш на 1 минуту
+    staleTime: 0, // Всегда считать данные устаревшими для немедленного обновления
     gcTime: 300000, // Хранить в кэше 5 минут
-    refetchOnWindowFocus: false,
-    refetchOnMount: false,
+    refetchOnWindowFocus: true, // Обновлять при фокусе окна
+    refetchOnMount: true, // Всегда перезапрашивать при монтировании
     retry: 2,
     retryDelay: 1000,
   });

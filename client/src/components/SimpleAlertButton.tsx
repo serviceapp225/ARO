@@ -52,7 +52,8 @@ export default function SimpleAlertButton({ searchFilters = {} }: SimpleAlertBut
       return response.json();
     },
     onSuccess: async () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/car-alerts'] });
+      // Инвалидируем кэш для конкретного пользователя
+      queryClient.invalidateQueries({ queryKey: ['/api/car-alerts', userId] });
       setIsCreated(true);
       
       // Создаем уведомление о создании поискового запроса для отображения в профиле
