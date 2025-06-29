@@ -12,6 +12,7 @@ interface DemoUser {
   role?: string;
   isActive?: boolean;
   userId?: number;
+  username?: string;
 }
 
 interface AuthContextType {

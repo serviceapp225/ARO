@@ -20,8 +20,9 @@ export default function AdminPanel() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   
-  // Проверяем права доступа - только номер +992000000000
-  const hasAdminAccess = user?.phoneNumber === '+992000000000';
+  // Проверяем права доступа - только пользователь 992000000000
+  const hasAdminAccess = user?.email?.includes('992000000000') || 
+                         user?.phoneNumber?.includes('000-00-00');
 
   if (loading) {
     return (
