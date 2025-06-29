@@ -171,6 +171,11 @@ export function UserDetailModal({ userId, isOpen, onClose }: UserDetailModalProp
     });
   };
 
+  const handleStatusChange = (newStatus: boolean) => {
+    setIsActive(newStatus);
+    updateUserStatusMutation.mutate(newStatus);
+  };
+
   const handleDeleteUser = () => {
     if (confirm('Вы уверены, что хотите удалить этого пользователя? Это действие нельзя отменить.')) {
       deleteUserMutation.mutate();
@@ -269,6 +274,28 @@ export function UserDetailModal({ userId, isOpen, onClose }: UserDetailModalProp
                         value={phoneNumber}
                         onChange={(e) => setPhoneNumber(e.target.value)}
                         placeholder="Введите номер телефона"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between p-4 border rounded-lg bg-gray-50 dark:bg-gray-800">
+                    <div>
+                      <Label htmlFor="user-status" className="text-sm font-medium">
+                        Статус аккаунта
+                      </Label>
+                      <p className="text-sm text-gray-600 dark:text-gray-300">
+                        {isActive ? 'Пользователь активен и может использовать платформу' : 'Аккаунт заблокирован'}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Label htmlFor="user-status" className="text-sm">
+                        {isActive ? 'Активен' : 'Заблокирован'}
+                      </Label>
+                      <Switch
+                        id="user-status"
+                        checked={isActive}
+                        onCheckedChange={handleStatusChange}
+                        disabled={updateUserStatusMutation.isPending}
                       />
                     </div>
                   </div>
