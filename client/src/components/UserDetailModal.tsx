@@ -100,10 +100,13 @@ export function UserDetailModal({ userId, isOpen, onClose }: UserDetailModalProp
   // Add document mutation
   const addDocumentMutation = useMutation({
     mutationFn: async (document: { type: string; title: string; content: string }) => {
-      return await apiRequest(`/api/admin/users/${userId}/documents`, {
+      const response = await fetch(`/api/admin/users/${userId}/documents`, {
         method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(document),
       });
+      if (!response.ok) throw new Error('Failed to add document');
+      return response.json();
     },
     onSuccess: () => {
       toast({ title: 'Документ добавлен' });
@@ -120,9 +123,11 @@ export function UserDetailModal({ userId, isOpen, onClose }: UserDetailModalProp
   // Delete document mutation
   const deleteDocumentMutation = useMutation({
     mutationFn: async (documentId: number) => {
-      return await apiRequest(`/api/admin/users/${userId}/documents/${documentId}`, {
+      const response = await fetch(`/api/admin/users/${userId}/documents/${documentId}`, {
         method: 'DELETE',
       });
+      if (!response.ok) throw new Error('Failed to delete document');
+      return response.json();
     },
     onSuccess: () => {
       toast({ title: 'Документ удален' });
@@ -365,7 +370,7 @@ export function UserDetailModal({ userId, isOpen, onClose }: UserDetailModalProp
                               <div className="font-medium">{document.title}</div>
                               <div className="text-sm text-gray-500">
                                 {getDocumentTypeLabel(document.type)} • {' '}
-                                {new Date(document.createdAt).toLocaleDateString('ru-RU')}
+                                {document.createdAt ? new Date(document.createdAt.toString()).toLocaleDateString('ru-RU') : 'Дата не указана'}
                               </div>
                             </div>
                           </div>
