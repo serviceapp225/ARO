@@ -61,30 +61,15 @@ export function NotificationBell({ userId }: NotificationBellProps) {
       return data;
     },
     enabled: true,
-    refetchInterval: 60000, // Обновляем каждую минуту
-    staleTime: 30000, // Считать данные свежими 30 секунд
+    refetchInterval: false, // НЕ обновляем автоматически - это может восстанавливать удаленные уведомления
+    staleTime: 5 * 60 * 1000, // Считать данные свежими 5 минут
     refetchOnWindowFocus: false, // НЕ обновлять при фокусе - это вызывает лишние запросы
     refetchOnMount: false, // НЕ обновлять при каждом монтировании
   });
 
-  // Очищаем удаленные уведомления, которых больше нет в базе данных
-  useEffect(() => {
-    if (allNotifications.length > 0) {
-      const currentNotificationIds = new Set(allNotifications.map(n => n.id));
-      const filteredDeletedIds = new Set<number>();
-      
-      deletedNotificationIds.forEach(id => {
-        if (currentNotificationIds.has(id)) {
-          filteredDeletedIds.add(id);
-        }
-      });
-      
-      // Обновляем список удаленных, если что-то изменилось
-      if (filteredDeletedIds.size !== deletedNotificationIds.size) {
-        updateDeletedNotifications(filteredDeletedIds);
-      }
-    }
-  }, [allNotifications.length]); // Только длина массива, чтобы избежать циклов
+  // НЕ очищаем удаленные уведомления автоматически
+  // Пользователь удалил их намеренно, они должны оставаться скрытыми
+  // пока не будут очищены вручную или не истечет срок хранения
 
   // Показываем уведомления о ставках и найденных машинах, исключаем уведомления о создании поисковых запросов
   const notifications = allNotifications.filter(n => 
