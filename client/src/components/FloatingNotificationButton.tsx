@@ -73,8 +73,10 @@ export default function FloatingNotificationButton() {
       if (!response.ok) throw new Error('Failed to delete alert');
       return response.json();
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/car-alerts', userId] });
+    onSuccess: async () => {
+      // Полностью очищаем кэш и принудительно перезагружаем данные
+      queryClient.removeQueries({ queryKey: ['/api/car-alerts', userId] });
+      await queryClient.invalidateQueries({ queryKey: ['/api/car-alerts', userId] });
     },
   });
 

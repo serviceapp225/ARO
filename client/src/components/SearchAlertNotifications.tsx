@@ -31,9 +31,10 @@ export function SearchAlertNotifications({ userId }: SearchAlertNotificationsPro
       return response.json();
     },
     staleTime: 0, // Всегда считать данные устаревшими для немедленного обновления
-    gcTime: 300000, // Хранить в кэше 5 минут
+    gcTime: 60000, // Сократить кэш до 1 минуты для более частой очистки
     refetchOnWindowFocus: true, // Обновлять при фокусе окна
     refetchOnMount: true, // Всегда перезапрашивать при монтировании
+    refetchInterval: false, // Отключить автообновление по таймеру
     retry: 2,
     retryDelay: 1000,
   });
@@ -112,10 +113,9 @@ export function SearchAlertNotifications({ userId }: SearchAlertNotificationsPro
         return newSet;
       });
       
-      // Оптимистично обновляем локальные данные
-      queryClient.setQueryData<CarAlert[]>(['/api/car-alerts', userId], (old = []) =>
-        old.filter(alert => alert.id !== alertId)
-      );
+      // Полностью очищаем кэш и принудительно перезагружаем данные
+      queryClient.removeQueries({ queryKey: ['/api/car-alerts', userId] });
+      await queryClient.invalidateQueries({ queryKey: ['/api/car-alerts', userId] });
       
       toast({
         title: "Поисковый запрос удален",
