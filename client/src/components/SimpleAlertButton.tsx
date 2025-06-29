@@ -3,6 +3,7 @@ import { Bell, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface SimpleAlertButtonProps {
   searchFilters?: {
@@ -23,9 +24,10 @@ export default function SimpleAlertButton({ searchFilters = {} }: SimpleAlertBut
   const [isCreated, setIsCreated] = useState(false);
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const { user } = useAuth();
   
-  // Mock user ID - в реальном приложении будет из контекста авторизации
-  const userId = 3;
+  // Получаем ID из контекста авторизации
+  const userId = user?.userId || 3;
 
   const createAlertMutation = useMutation({
     mutationFn: async () => {

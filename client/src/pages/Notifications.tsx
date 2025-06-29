@@ -2,12 +2,14 @@ import { ArrowLeft, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SearchAlertNotifications } from "@/components/SearchAlertNotifications";
 import { useLocation } from "wouter";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function Notifications() {
   const [, setLocation] = useLocation();
+  const { user } = useAuth();
   
-  // Mock user ID - в реальном приложении будет из контекста авторизации
-  const userId = 3;
+  // Получаем ID из контекста авторизации
+  const userId = user?.userId || 3;
 
   return (
     <div className="min-h-screen bg-gray-50 pb-20">
