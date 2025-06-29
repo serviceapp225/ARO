@@ -386,8 +386,8 @@ export function ListingEditModal({ listingId, isOpen, onClose }: ListingEditModa
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="not_specified">Не указано</SelectItem>
-                      <SelectItem value="fwd">Передний</SelectItem>
-                      <SelectItem value="rwd">Задний</SelectItem>
+                      <SelectItem value="front">Передний</SelectItem>
+                      <SelectItem value="rear">Задний</SelectItem>
                       <SelectItem value="awd">Полный</SelectItem>
                     </SelectContent>
                   </Select>
@@ -410,6 +410,7 @@ export function ListingEditModal({ listingId, isOpen, onClose }: ListingEditModa
                     <SelectContent>
                       <SelectItem value="not_specified">Не указано</SelectItem>
                       <SelectItem value="excellent">Отличное</SelectItem>
+                      <SelectItem value="very_good">Очень хорошее</SelectItem>
                       <SelectItem value="good">Хорошее</SelectItem>
                       <SelectItem value="fair">Удовлетворительное</SelectItem>
                       <SelectItem value="needs_repair">Требует ремонта</SelectItem>
