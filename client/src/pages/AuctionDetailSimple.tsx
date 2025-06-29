@@ -107,7 +107,8 @@ export default function AuctionDetail() {
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         const error = new Error(errorData.message || errorData.error || 'Failed to place bid');
-        (error as any).data = errorData;
+        (error as any).errorType = errorData.error;
+        (error as any).serverMessage = errorData.message;
         throw error;
       }
       return response.json();
@@ -148,17 +149,17 @@ export default function AuctionDetail() {
           variant: "destructive",
           duration: 5000,
         });
-      } else if (error.data?.error === "Already highest bidder") {
+      } else if (error.errorType === "Already highest bidder") {
         toast({
           title: "Вы уже лидируете",
-          description: "Вы уже лидируете в аукционе с максимальной ставкой.",
+          description: error.serverMessage || "Вы уже лидируете в аукционе с максимальной ставкой.",
           variant: "destructive",
           duration: 3000,
         });
-      } else if (error.data?.error === "Bid too low") {
+      } else if (error.errorType === "Bid too low") {
         toast({
           title: "Ставка слишком низкая",
-          description: error.message || "Ваша ставка должна быть выше текущей максимальной ставки.",
+          description: error.serverMessage || "Ваша ставка должна быть выше текущей максимальной ставки.",
           variant: "destructive",
           duration: 3000,
         });
