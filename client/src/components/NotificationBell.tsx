@@ -40,8 +40,10 @@ export function NotificationBell({ userId }: NotificationBellProps) {
     refetchOnMount: true, // Обновлять при монтировании компонента
   });
 
-  // Показываем все уведомления кроме удаленных локально
-  const notifications = allNotifications.filter(n => !deletedNotificationIds.has(n.id));
+  // Показываем только уведомления о ставках, исключаем уведомления о создании поисковых запросов
+  const notifications = allNotifications.filter(n => 
+    !deletedNotificationIds.has(n.id) && n.type !== 'alert_create'
+  );
 
   const markAsReadMutation = useMutation({
     mutationFn: async (notificationId: number) => {
@@ -209,6 +211,9 @@ export function NotificationBell({ userId }: NotificationBellProps) {
                     )}
                     {notification.type === 'bid_outbid' && (
                       <Gavel className="w-5 h-5 text-red-600 mt-0.5 flex-shrink-0" />
+                    )}
+                    {notification.type !== 'car_found' && notification.type !== 'bid_outbid' && (
+                      <Bell className="w-5 h-5 text-gray-600 mt-0.5 flex-shrink-0" />
                     )}
                     <div 
                       className="flex-1 cursor-pointer"
