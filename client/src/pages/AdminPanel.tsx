@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Trash2, User as UserIcon, Car, Bell, Settings, CheckCircle, XCircle, AlertCircle, Edit } from 'lucide-react';
+import { Trash2, User as UserIcon, Car, Bell, Settings, CheckCircle, XCircle, AlertCircle, Edit, Search } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { Link } from 'wouter';
@@ -192,10 +192,17 @@ function ListingsManagement() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [selectedListingId, setSelectedListingId] = useState<number | null>(null);
+  const [searchLotNumber, setSearchLotNumber] = useState('');
 
-  const { data: listings = [], isLoading } = useQuery<CarListing[]>({
+  const { data: allListings = [], isLoading } = useQuery<CarListing[]>({
     queryKey: ['/api/admin/listings'],
   });
+
+  // Фильтрация объявлений по номеру лота
+  const listings = allListings.filter(listing => 
+    searchLotNumber === '' || 
+    listing.lotNumber?.toLowerCase().includes(searchLotNumber.toLowerCase())
+  );
 
   const updateListingStatusMutation = useMutation({
     mutationFn: async ({ listingId, status }: { listingId: number; status: string }) => {
@@ -230,9 +237,33 @@ function ListingsManagement() {
           </CardDescription>
         </CardHeader>
         <CardContent>
+          {/* Поиск по номеру лота */}
+          <div className="mb-6">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Input
+                type="text"
+                placeholder="Поиск по номеру лота..."
+                value={searchLotNumber}
+                onChange={(e) => setSearchLotNumber(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+            {searchLotNumber && (
+              <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
+                Найдено объявлений: {listings.length}
+              </p>
+            )}
+          </div>
+
           <div className="space-y-4">
-            {listings.map((listing) => (
-              <div key={listing.id} className="flex items-center justify-between p-4 border rounded-lg">
+            {listings.length === 0 ? (
+              <div className="text-center py-8 text-gray-500">
+                {searchLotNumber ? 'Объявления с таким номером лота не найдены' : 'Нет объявлений'}
+              </div>
+            ) : (
+              listings.map((listing) => (
+                <div key={listing.id} className="flex items-center justify-between p-4 border rounded-lg">
                 <div className="flex-1">
                   <div className="flex items-center gap-3">
                     <div className="w-16 h-16 bg-gray-200 dark:bg-gray-700 rounded-lg flex-shrink-0">
@@ -295,8 +326,9 @@ function ListingsManagement() {
                     </SelectContent>
                   </Select>
                 </div>
-              </div>
-            ))}
+                </div>
+              ))
+            )}
           </div>
         </CardContent>
       </Card>
