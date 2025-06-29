@@ -17,8 +17,17 @@ export function Toaster() {
         // Скрываем кнопку закрытия для уведомлений о поисковых запросах
         const hideCloseButton = title === "Поисковый запрос сохранён" || title === "Поисковый запрос удален"
         
+        // Принудительно закрываем уведомление об удалении через 1 секунду
+        const forceAutoClose = title === "Поисковый запрос удален"
+        
         return (
-          <Toast key={id} {...props}>
+          <Toast 
+            key={id} 
+            {...props}
+            duration={forceAutoClose ? 1000 : props.duration}
+            onPause={forceAutoClose ? undefined : props.onPause}
+            onResume={forceAutoClose ? undefined : props.onResume}
+          >
             <div className="grid gap-1">
               {title && <ToastTitle>{title}</ToastTitle>}
               {description && (

@@ -119,7 +119,7 @@ export function SearchAlertNotifications({ userId }: SearchAlertNotificationsPro
       
       toast({
         title: "Поисковый запрос удален",
-        duration: 2000,
+        duration: 1000, // Автоматически исчезает через 1 секунду
       });
     },
     onSettled: (data, error, alertId) => {
