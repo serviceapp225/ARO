@@ -178,6 +178,15 @@ function UsersManagement() {
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setSelectedUserId(user.id)}
+                    className="flex items-center gap-1"
+                  >
+                    <Edit className="w-4 h-4" />
+                    Редактировать
+                  </Button>
                   <Label htmlFor={`user-${user.id}`} className="text-sm">
                     {user.isActive ? 'Активен' : 'Заблокирован'}
                   </Label>
@@ -195,6 +204,12 @@ function UsersManagement() {
           </div>
         </CardContent>
       </Card>
+
+      <UserDetailModal
+        userId={selectedUserId}
+        isOpen={!!selectedUserId}
+        onClose={() => setSelectedUserId(null)}
+      />
     </div>
   );
 }
