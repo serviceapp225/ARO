@@ -274,17 +274,7 @@ export default function AuctionDetail() {
     
     if (!bidAmount || !auction) return;
     
-    const newBidAmount = parseFloat(bidAmount);
-    const currentHighestBid = auction.currentBid ? parseFloat(auction.currentBid) : parseFloat(auction.startingPrice);
-    
-    if (newBidAmount <= currentHighestBid) {
-      toast({
-        title: "Неверная ставка",
-        description: `Ставка должна быть больше текущей цены ${currentHighestBid.toLocaleString()} Сомони`,
-        variant: "destructive",
-      });
-      return;
-    }
+    // Убираем клиентскую валидацию - пусть сервер проверяет ставки
 
     // Get current user ID from auth context
     const userId = (currentUser as any)?.userId;
