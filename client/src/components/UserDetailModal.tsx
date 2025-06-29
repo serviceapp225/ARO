@@ -72,9 +72,15 @@ export function UserDetailModal({ userId, isOpen, onClose }: UserDetailModalProp
       return response.json();
     },
     onSuccess: () => {
-      toast({ title: 'Профиль пользователя обновлен' });
+      toast({ 
+        title: 'Профиль пользователя обновлен',
+        duration: 1000 // Автоматически исчезает через 1 секунду
+      });
+      // Обновляем кэш админ панели
       queryClient.invalidateQueries({ queryKey: [`/api/admin/users/${userId}`] });
       queryClient.invalidateQueries({ queryKey: ['/api/admin/users'] });
+      // Обновляем кэш основного профиля пользователя
+      queryClient.invalidateQueries({ queryKey: [`/api/users/${userId}`] });
     },
     onError: () => {
       toast({ title: 'Ошибка при обновлении профиля', variant: 'destructive' });
@@ -91,7 +97,10 @@ export function UserDetailModal({ userId, isOpen, onClose }: UserDetailModalProp
       return response.json();
     },
     onSuccess: () => {
-      toast({ title: 'Пользователь удален' });
+      toast({ 
+        title: 'Пользователь удален',
+        duration: 1000 // Автоматически исчезает через 1 секунду
+      });
       queryClient.invalidateQueries({ queryKey: ['/api/admin/users'] });
       onClose();
     },
@@ -112,9 +121,15 @@ export function UserDetailModal({ userId, isOpen, onClose }: UserDetailModalProp
       return response.json();
     },
     onSuccess: () => {
-      toast({ title: 'Статус пользователя обновлен' });
+      toast({ 
+        title: 'Статус пользователя обновлен',
+        duration: 1000 // Автоматически исчезает через 1 секунду
+      });
+      // Обновляем кэш админ панели
       queryClient.invalidateQueries({ queryKey: [`/api/admin/users/${userId}`] });
       queryClient.invalidateQueries({ queryKey: ['/api/admin/users'] });
+      // Обновляем кэш основного профиля пользователя
+      queryClient.invalidateQueries({ queryKey: [`/api/users/${userId}`] });
     },
     onError: () => {
       toast({ title: 'Ошибка при обновлении статуса', variant: 'destructive' });
