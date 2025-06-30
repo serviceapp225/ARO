@@ -9,6 +9,7 @@ import { useAuctions } from '@/contexts/AuctionContext';
 import { useFavorites } from '@/contexts/FavoritesContext';
 import { useLocation } from 'wouter';
 import { useState, useEffect, useMemo, memo } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 
 
 interface ActiveAuctionsProps {
@@ -19,7 +20,7 @@ interface ActiveAuctionsProps {
 export function ActiveAuctions({ searchQuery = "", customListings }: ActiveAuctionsProps) {
   const { auctions, loading } = useAuctions();
   const { isFavorite, addToFavorites, removeFromFavorites } = useFavorites();
-  
+  const queryClient = useQueryClient();
 
   const [, setLocation] = useLocation();
   const [page, setPage] = useState(1);
@@ -72,6 +73,23 @@ export function ActiveAuctions({ searchQuery = "", customListings }: ActiveAucti
     // Calculate displayed auctions based on current page
     return sortedAuctions.slice(0, page * ITEMS_PER_PAGE);
   }, [sourceAuctions, searchQuery, sortBy, page]);
+
+  // Fast navigation with preloading
+  const handleCardClick = async (auctionId: number) => {
+    // Preload auction data and bids immediately
+    queryClient.prefetchQuery({
+      queryKey: [`/api/listings/${auctionId}`],
+      staleTime: 30000, // Keep fresh for 30 seconds
+    });
+    
+    queryClient.prefetchQuery({
+      queryKey: [`/api/listings/${auctionId}/bids`],
+      staleTime: 1000, // Bids need frequent updates
+    });
+
+    // Navigate immediately
+    setLocation(`/auction/${auctionId}`);
+  };
 
   const handleToggleFavorite = async (auctionId: string, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -167,7 +185,7 @@ export function ActiveAuctions({ searchQuery = "", customListings }: ActiveAucti
           <Card
             key={`${auction.id}-${index}`}
             className="group relative rounded-xl overflow-hidden bg-white shadow-lg hover:shadow-2xl transition-all duration-300 cursor-pointer"
-            onClick={() => setLocation(`/auction/${auction.id}`)}
+            onClick={() => handleCardClick(auction.id)}
           >
             <div className="relative">
               <LazyCarImage
