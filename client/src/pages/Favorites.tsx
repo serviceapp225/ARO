@@ -50,7 +50,7 @@ export default function Favorites() {
 
   const removeFavorite = async (id: string | number) => {
     try {
-      await removeFromFavorites(id);
+      await removeFromFavorites(String(id));
     } catch (error) {
       console.error('Error removing favorite:', error);
     }
