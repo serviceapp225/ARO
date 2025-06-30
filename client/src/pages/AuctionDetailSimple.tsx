@@ -382,6 +382,11 @@ export default function AuctionDetail() {
     setIsDragging(false);
   };
 
+  // Show drifting car animation while loading
+  if (auctionLoading) {
+    return <DriftingCarLoader message="Загружаем автомобиль..." />;
+  }
+
   if (!auction) {
     return (
       <div className="min-h-screen bg-background p-4">
