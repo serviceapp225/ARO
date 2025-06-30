@@ -37,6 +37,20 @@ export default function Favorites() {
   const { auctions, refreshAuctions, setSelectedAuction } = useAuctions();
   const queryClient = useQueryClient();
   
+  // Предзагружаем данные для первых 3 карточек при загрузке страницы
+  useEffect(() => {
+    const preloadFirstFavorites = async () => {
+      const firstThree = favoriteAuctions.slice(0, 3);
+      for (const auction of firstThree) {
+        prefetchAuctionData(auction.id);
+      }
+    };
+    
+    if (favoriteAuctions.length > 0) {
+      preloadFirstFavorites();
+    }
+  }, [favoriteAuctions]);
+
   // Don't auto-refresh to avoid slowdowns - use cached data
   
   // Get favorite auctions from the auction list
@@ -56,6 +70,28 @@ export default function Favorites() {
     }
   };
 
+  // Предзагрузка данных при наведении для мгновенного открытия
+  const prefetchAuctionData = async (id: string | number) => {
+    try {
+      await Promise.all([
+        queryClient.prefetchQuery({
+          queryKey: [`/api/listings/${String(id)}`],
+          staleTime: 30000, // 30 секунд кэша
+        }),
+        queryClient.prefetchQuery({
+          queryKey: [`/api/listings/${String(id)}/bids`],
+          staleTime: 5000, // 5 секунд для ставок
+        }),
+        queryClient.prefetchQuery({
+          queryKey: [`/api/listings/${String(id)}/photos`],
+          staleTime: 60000, // 1 минута для фото
+        })
+      ]);
+    } catch (error) {
+      // Тихо игнорируем ошибки предзагрузки
+    }
+  };
+
   const goToAuction = async (id: string | number) => {
     // Предварительно устанавливаем выбранный аукцион для быстрого отображения
     const selectedAuction = favoriteAuctions.find(auction => auction.id == id);
@@ -63,22 +99,7 @@ export default function Favorites() {
       setSelectedAuction(selectedAuction);
     }
     
-    // Предварительная загрузка данных аукциона и ставок для мгновенного отображения
-    try {
-      await Promise.all([
-        queryClient.prefetchQuery({
-          queryKey: [`/api/listings/${String(id)}`],
-          staleTime: 10000,
-        }),
-        queryClient.prefetchQuery({
-          queryKey: [`/api/listings/${String(id)}/bids`],
-          staleTime: 0,
-        })
-      ]);
-    } catch (error) {
-      console.log('Prefetch failed, but continuing with navigation');
-    }
-    
+    // Мгновенная навигация, данные уже должны быть предзагружены при наведении
     setLocation(`/auction/${String(id)}`);
   };
 
@@ -158,7 +179,12 @@ export default function Favorites() {
             {/* Favorites Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {sortedFavorites.map((car) => (
-                <Card key={car.id} className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer" onClick={() => goToAuction(car.id)}>
+                <Card 
+                  key={car.id} 
+                  className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer" 
+                  onClick={() => goToAuction(car.id)}
+                  onMouseEnter={() => prefetchAuctionData(car.id)}
+                >
                   <div className="relative">
                     <LazyCarImage
                       listingId={car.id}
