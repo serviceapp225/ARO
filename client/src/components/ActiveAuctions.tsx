@@ -121,7 +121,7 @@ export function ActiveAuctions({ searchQuery = "", customListings }: ActiveAucti
 
   if (loading) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-20">
+      <div className="space-y-4 mb-20">
         {[1, 2, 3, 4, 5, 6].map((i) => (
           <Card key={i} className="animate-pulse rounded-xl overflow-hidden">
             <div className="h-48 bg-gray-200" />
@@ -162,7 +162,7 @@ export function ActiveAuctions({ searchQuery = "", customListings }: ActiveAucti
           </SelectContent>
         </Select>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="space-y-4">
         {displayedAuctions.map((auction, index) => (
           <Card
             key={`${auction.id}-${index}`}
