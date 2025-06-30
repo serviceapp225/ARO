@@ -12,7 +12,8 @@ import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
 import { User, Document, CarListing } from '@shared/schema';
-import { User2, FileText, Trash2, Upload, X, Car } from 'lucide-react';
+import { User2, FileText, Trash2, Upload, X, Car, Edit, Eye } from 'lucide-react';
+import { ListingEditModal } from '@/components/ListingEditModal';
 
 interface UserDetailModalProps {
   userId: number | null;
@@ -24,6 +25,7 @@ export function UserDetailModal({ userId, isOpen, onClose }: UserDetailModalProp
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState('profile');
+  const [editingListingId, setEditingListingId] = useState<number | null>(null);
 
   // Form state
   const [fullName, setFullName] = useState('');
@@ -375,11 +377,12 @@ export function UserDetailModal({ userId, isOpen, onClose }: UserDetailModalProp
                   ) : (
                     <div className="space-y-4">
                       {listings.map((listing) => (
-                        <div key={listing.id} className="border rounded-lg p-6 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
-                          <div className="flex justify-between items-start gap-4">
-                            <div className="flex-1 space-y-3">
+                        <Card key={listing.id} className="overflow-hidden">
+                          <CardContent className="p-0">
+                            {/* Заголовок с кнопками */}
+                            <div className="bg-gray-50 dark:bg-gray-800 px-6 py-4 border-b flex justify-between items-center">
                               <div className="flex items-center gap-3">
-                                <h4 className="font-semibold text-lg">
+                                <h4 className="font-bold text-lg text-gray-900 dark:text-gray-100">
                                   {listing.make} {listing.model} {listing.year}
                                 </h4>
                                 <Badge 
@@ -388,57 +391,157 @@ export function UserDetailModal({ userId, isOpen, onClose }: UserDetailModalProp
                                     listing.status === 'pending' ? 'secondary' :
                                     listing.status === 'ended' ? 'outline' : 'destructive'
                                   }
+                                  className="px-3 py-1"
                                 >
-                                  {listing.status === 'active' ? 'Активный' :
-                                   listing.status === 'pending' ? 'На модерации' :
-                                   listing.status === 'ended' ? 'Завершен' : 'Отклонен'}
+                                  {listing.status === 'active' ? 'АКТИВНЫЙ' :
+                                   listing.status === 'pending' ? 'НА МОДЕРАЦИИ' :
+                                   listing.status === 'ended' ? 'ЗАВЕРШЕН' : 'ОТКЛОНЕН'}
                                 </Badge>
                               </div>
-                              
-                              <div className="grid grid-cols-2 gap-3 text-sm">
-                                <div className="space-y-1">
-                                  <p><span className="font-medium">Лот №:</span> {listing.lotNumber}</p>
-                                  <p><span className="font-medium">Стартовая цена:</span> ${listing.startingPrice}</p>
-                                  <p><span className="font-medium">Текущая ставка:</span> {listing.currentBid ? `$${listing.currentBid}` : 'Нет ставок'}</p>
-                                </div>
-                                <div className="space-y-1">
-                                  <p><span className="font-medium">Пробег:</span> {listing.mileage ? `${listing.mileage.toLocaleString()} км` : 'Не указан'}</p>
-                                  <p><span className="font-medium">Состояние:</span> {listing.condition || 'Не указано'}</p>
-                                  <p><span className="font-medium">Местоположение:</span> {listing.location || 'Не указано'}</p>
-                                </div>
+                              <div className="flex gap-2">
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => window.open(`/auction/${listing.id}`, '_blank')}
+                                  className="flex items-center gap-2"
+                                >
+                                  <Eye className="w-4 h-4" />
+                                  Просмотр
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => setEditingListingId(listing.id)}
+                                  className="flex items-center gap-2"
+                                >
+                                  <Edit className="w-4 h-4" />
+                                  Редактировать
+                                </Button>
                               </div>
-                              
-                              {listing.description && (
-                                <div className="pt-2 border-t">
-                                  <p className="text-sm text-gray-600 dark:text-gray-400">{listing.description}</p>
-                                </div>
-                              )}
-                              
-                              {/* Дополнительные характеристики */}
-                              {(listing.engine || listing.transmission || listing.fuelType) && (
-                                <div className="pt-2 border-t">
-                                  <h5 className="font-medium text-sm mb-2">Технические характеристики:</h5>
-                                  <div className="grid grid-cols-3 gap-2 text-sm text-gray-600 dark:text-gray-400">
-                                    {listing.engine && <p><span className="font-medium">Двигатель:</span> {listing.engine}</p>}
-                                    {listing.transmission && <p><span className="font-medium">КПП:</span> {listing.transmission}</p>}
-                                    {listing.fuelType && <p><span className="font-medium">Топливо:</span> {listing.fuelType}</p>}
+                            </div>
+
+                            {/* Основная информация */}
+                            <div className="p-6">
+                              <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+                                {/* Блок 1: Основные данные */}
+                                <div className="space-y-3">
+                                  <h5 className="font-semibold text-gray-700 dark:text-gray-300 text-sm uppercase tracking-wide">Основное</h5>
+                                  <div className="space-y-2 text-sm">
+                                    <div className="flex flex-col">
+                                      <span className="text-gray-500 text-xs">Лот №</span>
+                                      <span className="font-medium">{listing.lotNumber}</span>
+                                    </div>
+                                    <div className="flex flex-col">
+                                      <span className="text-gray-500 text-xs">Пробег</span>
+                                      <span className="font-medium">{listing.mileage ? `${listing.mileage.toLocaleString()} км` : 'Не указан'}</span>
+                                    </div>
+                                    <div className="flex flex-col">
+                                      <span className="text-gray-500 text-xs">Состояние</span>
+                                      <span className="font-medium">{listing.condition || 'Не указано'}</span>
+                                    </div>
                                   </div>
                                 </div>
+
+                                {/* Блок 2: Финансы */}
+                                <div className="space-y-3">
+                                  <h5 className="font-semibold text-gray-700 dark:text-gray-300 text-sm uppercase tracking-wide">Цены</h5>
+                                  <div className="space-y-2 text-sm">
+                                    <div className="flex flex-col">
+                                      <span className="text-gray-500 text-xs">Стартовая цена</span>
+                                      <span className="font-bold text-green-600">${Number(listing.startingPrice).toLocaleString()}</span>
+                                    </div>
+                                    <div className="flex flex-col">
+                                      <span className="text-gray-500 text-xs">Текущая ставка</span>
+                                      <span className="font-bold text-blue-600">
+                                        {listing.currentBid ? `$${Number(listing.currentBid).toLocaleString()}` : 'Нет ставок'}
+                                      </span>
+                                    </div>
+                                  </div>
+                                </div>
+
+                                {/* Блок 3: Технические характеристики */}
+                                <div className="space-y-3">
+                                  <h5 className="font-semibold text-gray-700 dark:text-gray-300 text-sm uppercase tracking-wide">Техника</h5>
+                                  <div className="space-y-2 text-sm">
+                                    <div className="flex flex-col">
+                                      <span className="text-gray-500 text-xs">Двигатель</span>
+                                      <span className="font-medium">{listing.engine || 'Не указан'}</span>
+                                    </div>
+                                    <div className="flex flex-col">
+                                      <span className="text-gray-500 text-xs">КПП</span>
+                                      <span className="font-medium">{listing.transmission || 'Не указана'}</span>
+                                    </div>
+                                    <div className="flex flex-col">
+                                      <span className="text-gray-500 text-xs">Топливо</span>
+                                      <span className="font-medium">{listing.fuelType || 'Не указано'}</span>
+                                    </div>
+                                  </div>
+                                </div>
+
+                                {/* Блок 4: Даты и местоположение */}
+                                <div className="space-y-3">
+                                  <h5 className="font-semibold text-gray-700 dark:text-gray-300 text-sm uppercase tracking-wide">Дополнительно</h5>
+                                  <div className="space-y-2 text-sm">
+                                    <div className="flex flex-col">
+                                      <span className="text-gray-500 text-xs">Местоположение</span>
+                                      <span className="font-medium">{listing.location || 'Не указано'}</span>
+                                    </div>
+                                    <div className="flex flex-col">
+                                      <span className="text-gray-500 text-xs">Создано</span>
+                                      <span className="font-medium">
+                                        {listing.createdAt instanceof Date ? listing.createdAt.toLocaleDateString('ru-RU') : 'Не указано'}
+                                      </span>
+                                    </div>
+                                    {listing.auctionEndTime && (
+                                      <div className="flex flex-col">
+                                        <span className="text-gray-500 text-xs">Окончание</span>
+                                        <span className="font-medium">
+                                          {listing.auctionEndTime instanceof Date ? listing.auctionEndTime.toLocaleDateString('ru-RU') : 'Не указано'}
+                                        </span>
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+
+                              {/* Описание */}
+                              {listing.description && (
+                                <div className="border-t pt-4">
+                                  <h5 className="font-semibold text-gray-700 dark:text-gray-300 text-sm uppercase tracking-wide mb-2">Описание</h5>
+                                  <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">{listing.description}</p>
+                                </div>
                               )}
+
+                              {/* Дополнительные характеристики */}
+                              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-4 pt-4 border-t">
+                                <div className="flex items-center justify-between">
+                                  <span className="text-sm text-gray-500">Растаможен</span>
+                                  <Badge variant={listing.customsCleared ? 'default' : 'secondary'}>
+                                    {listing.customsCleared ? 'Да' : 'Нет'}
+                                  </Badge>
+                                </div>
+                                <div className="flex items-center justify-between">
+                                  <span className="text-sm text-gray-500">Утилизирован</span>
+                                  <Badge variant={listing.recycled ? 'default' : 'secondary'}>
+                                    {listing.recycled ? 'Да' : 'Нет'}
+                                  </Badge>
+                                </div>
+                                <div className="flex items-center justify-between">
+                                  <span className="text-sm text-gray-500">Техосмотр</span>
+                                  <Badge variant={listing.technicalInspectionValid ? 'default' : 'secondary'}>
+                                    {listing.technicalInspectionValid ? 'Действителен' : 'Недействителен'}
+                                  </Badge>
+                                </div>
+                                <div className="flex items-center justify-between">
+                                  <span className="text-sm text-gray-500">Тонировка</span>
+                                  <Badge variant={listing.tinted ? 'default' : 'secondary'}>
+                                    {listing.tinted ? 'Есть' : 'Нет'}
+                                  </Badge>
+                                </div>
+                              </div>
                             </div>
-                            
-                            <div className="text-right text-sm text-gray-500 flex-shrink-0">
-                              <p className="font-medium">Создано:</p>
-                              <p>{listing.createdAt instanceof Date ? listing.createdAt.toLocaleDateString('ru-RU') : 'Не указано'}</p>
-                              {listing.auctionEndTime && (
-                                <>
-                                  <p className="font-medium mt-2">Окончание:</p>
-                                  <p>{listing.auctionEndTime instanceof Date ? listing.auctionEndTime.toLocaleDateString('ru-RU') : 'Не указано'}</p>
-                                </>
-                              )}
-                            </div>
-                          </div>
-                        </div>
+                          </CardContent>
+                        </Card>
                       ))}
                     </div>
                   )}
@@ -549,6 +652,17 @@ export function UserDetailModal({ userId, isOpen, onClose }: UserDetailModalProp
           </Tabs>
         )}
       </DialogContent>
+      
+      {/* Модальное окно редактирования объявления */}
+      <ListingEditModal 
+        listingId={editingListingId}
+        isOpen={!!editingListingId}
+        onClose={() => {
+          setEditingListingId(null);
+          // Обновляем список объявлений после редактирования
+          queryClient.invalidateQueries({ queryKey: [`/api/admin/users/${userId}/listings`] });
+        }}
+      />
     </Dialog>
   );
 }
