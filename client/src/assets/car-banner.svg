@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 400">
+  <defs>
+    <linearGradient id="carGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1e293b"/>
+      <stop offset="50%" style="stop-color:#0f172a"/>
+      <stop offset="100%" style="stop-color:#020617"/>
+    </linearGradient>
+    <linearGradient id="carBody" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ffffff;stop-opacity:0.2"/>
+      <stop offset="50%" style="stop-color:#ffffff;stop-opacity:0.15"/>
+      <stop offset="100%" style="stop-color:#ffffff;stop-opacity:0.1"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="800" height="400" fill="url(#carGradient)"/>
+  
+  <!-- Car illustration -->
+  <g transform="translate(150,120)">
+    <!-- Car body -->
+    <path d="M50 100 L120 80 L200 80 L320 80 L400 90 L450 100 L480 120 L490 140 L480 160 L450 170 L50 170 Z" 
+          fill="url(#carBody)" stroke="rgba(255,255,255,0.3)" stroke-width="1"/>
+    
+    <!-- Car roof -->
+    <path d="M120 80 L200 60 L320 60 L400 80 L320 80 L200 80 Z" 
+          fill="rgba(255,255,255,0.15)" stroke="rgba(255,255,255,0.2)" stroke-width="1"/>
+    
+    <!-- Windows -->
+    <rect x="140" y="70" width="60" height="30" rx="2" fill="rgba(135,206,235,0.3)"/>
+    <rect x="220" y="70" width="80" height="30" rx="2" fill="rgba(135,206,235,0.3)"/>
+    <rect x="320" y="70" width="60" height="30" rx="2" fill="rgba(135,206,235,0.3)"/>
+    
+    <!-- Wheels -->
+    <circle cx="120" cy="160" r="20" fill="rgba(64,64,64,0.8)" stroke="rgba(255,255,255,0.3)" stroke-width="2"/>
+    <circle cx="120" cy="160" r="12" fill="rgba(128,128,128,0.6)"/>
+    <circle cx="400" cy="160" r="20" fill="rgba(64,64,64,0.8)" stroke="rgba(255,255,255,0.3)" stroke-width="2"/>
+    <circle cx="400" cy="160" r="12" fill="rgba(128,128,128,0.6)"/>
+    
+    <!-- Headlights -->
+    <ellipse cx="470" cy="120" rx="8" ry="12" fill="rgba(255,255,255,0.4)"/>
+    <ellipse cx="470" cy="140" rx="8" ry="12" fill="rgba(255,255,255,0.4)"/>
+    
+    <!-- Grille -->
+    <rect x="460" y="110" width="15" height="40" rx="2" fill="rgba(255,255,255,0.2)"/>
+    <line x1="465" y1="115" x2="465" y2="145" stroke="rgba(255,255,255,0.3)" stroke-width="1"/>
+    <line x1="470" y1="115" x2="470" y2="145" stroke="rgba(255,255,255,0.3)" stroke-width="1"/>
+  </g>
+  
+  <!-- Decorative elements -->
+  <g opacity="0.4">
+    <circle cx="100" cy="100" r="2" fill="white"/>
+    <circle cx="200" cy="80" r="1.5" fill="white"/>
+    <circle cx="300" cy="120" r="1" fill="white"/>
+    <circle cx="600" cy="90" r="2.5" fill="white"/>
+    <circle cx="700" cy="110" r="1.5" fill="white"/>
+  </g>
+</svg>

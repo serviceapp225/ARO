@@ -1,5 +1,6 @@
 import { Plus } from "lucide-react";
 import { useLocation } from "wouter";
+import carBannerSvg from "@/assets/car-banner.svg";
 
 export function SellCarBanner() {
   const [, setLocation] = useLocation();
@@ -14,11 +15,11 @@ export function SellCarBanner() {
       onClick={handleClick}
       className="relative h-44 rounded-2xl p-6 text-white overflow-hidden shadow-2xl cursor-pointer hover:shadow-3xl transition-all duration-300"
     >
-      {/* Fast Gradient Background */}
+      {/* Background with Car SVG */}
       <div 
-        className="absolute inset-0 rounded-2xl"
+        className="absolute inset-0 rounded-2xl bg-cover bg-center bg-no-repeat"
         style={{
-          background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 50%, #020617 100%)'
+          backgroundImage: `url('${carBannerSvg}')`
         }}
       ></div>
       
