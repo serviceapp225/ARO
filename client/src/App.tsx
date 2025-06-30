@@ -25,7 +25,6 @@ import Terms from "@/pages/Terms";
 import Privacy from "@/pages/Privacy";
 import Login from "@/pages/Login";
 import AdminPanel from "@/pages/AdminPanel";
-import LoaderTest from "@/pages/LoaderTest";
 
 import NotFound from "@/pages/not-found";
 import { FlutterPreview } from "@/pages/FlutterPreview";
@@ -72,7 +71,6 @@ function Router() {
         <Route path="/privacy" component={Privacy} />
         <Route path="/login" component={Login} />
         <Route path="/admin" component={AdminPanel} />
-        <Route path="/loader-test" component={LoaderTest} />
 
         <Route path="/flutter-preview" component={FlutterPreview} />
         <Route component={NotFound} />

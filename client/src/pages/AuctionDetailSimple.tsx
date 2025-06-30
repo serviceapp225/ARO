@@ -15,7 +15,6 @@ import { useAuth } from "@/contexts/AuthContext";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { CountdownTimer } from "@/components/CountdownTimer";
 import { ConfettiEffect } from "@/components/ConfettiEffect";
-import DriftingCarLoader from "@/components/DriftingCarLoader";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 export default function AuctionDetail() {
@@ -51,16 +50,9 @@ export default function AuctionDetail() {
   const queryClient = useQueryClient();
 
   // Fetch current auction data
-  const { data: currentAuction, refetch: refetchAuction, isLoading: auctionLoading } = useQuery({
+  const { data: currentAuction, refetch: refetchAuction } = useQuery({
     queryKey: [`/api/listings/${id}`],
     enabled: !!id,
-    staleTime: 0, // Всегда загружать данные, чтобы показать анимацию
-    queryFn: async () => {
-      // Добавляем небольшую задержку для демонстрации анимации
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      const response = await fetch(`/api/listings/${id}`);
-      return response.json();
-    },
   });
 
   // Fetch real bidding history with fast updates
@@ -389,10 +381,7 @@ export default function AuctionDetail() {
     setIsDragging(false);
   };
 
-  // Show drifting car animation while loading
-  if (auctionLoading) {
-    return <DriftingCarLoader message="Загружаем автомобиль..." />;
-  }
+
 
   if (!auction) {
     return (
