@@ -33,12 +33,9 @@ export default function Favorites() {
   const [sortBy, setSortBy] = useState("recent");
   const [, setLocation] = useLocation();
   const { getFavoritesList, removeFromFavorites } = useFavorites();
-  const { auctions, refreshAuctions } = useAuctions();
+  const { auctions, refreshAuctions, setSelectedAuction } = useAuctions();
   
-  // Auto-refresh data when favorites page is accessed
-  useEffect(() => {
-    refreshAuctions();
-  }, []); // Empty dependency array to run only once on mount
+  // Don't auto-refresh to avoid slowdowns - use cached data
   
   // Get favorite auctions from the auction list
   const favoriteIds = getFavoritesList();
@@ -58,6 +55,11 @@ export default function Favorites() {
   };
 
   const goToAuction = (id: string) => {
+    // Предварительно устанавливаем выбранный аукцион для быстрого отображения
+    const selectedAuction = favoriteAuctions.find(auction => auction.id === id);
+    if (selectedAuction) {
+      setSelectedAuction(selectedAuction);
+    }
     setLocation(`/auction/${id}`);
   };
 

@@ -36,12 +36,14 @@ const AuctionContext = createContext<AuctionContextType | undefined>(undefined);
 export function AuctionProvider({ children }: { children: ReactNode }) {
   const [selectedAuction, setSelectedAuction] = useState<Auction | null>(null);
 
-  // Use TanStack Query for data fetching with caching
+  // Use TanStack Query for data fetching with optimized caching
   const { data: listings = [], isLoading, refetch } = useQuery<any[]>({
     queryKey: ['/api/listings'],
-    refetchInterval: 30000, // Refresh every 30 seconds
-    staleTime: 10000, // Consider data fresh for 10 seconds
-    gcTime: 300000, // Keep in cache for 5 minutes
+    refetchInterval: 60000, // Refresh every 60 seconds (was 30)
+    staleTime: 30000, // Consider data fresh for 30 seconds (was 10)
+    gcTime: 600000, // Keep in cache for 10 minutes (was 5)
+    refetchOnWindowFocus: false, // Don't refetch when switching tabs
+    refetchOnMount: false, // Don't refetch on component mount if cached
   });
 
   // Transform listings to auctions format  
