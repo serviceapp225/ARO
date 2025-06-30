@@ -96,22 +96,7 @@ export function TripleCarouselBanner() {
     <div className="w-full">
       <Card className="overflow-hidden">
         <CardContent className="p-0">
-          {/* Carousel Tabs */}
-          <div className="flex border-b bg-gray-50">
-            {[0, 1, 2].map((index) => (
-              <button
-                key={index}
-                onClick={() => switchCarousel(index)}
-                className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${
-                  activeCarousel === index
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-gray-50 text-gray-700 hover:bg-gray-100'
-                }`}
-              >
-                Реклама {index + 1}
-              </button>
-            ))}
-          </div>
+
 
           {/* Carousel Content */}
           <div className="relative h-48 overflow-hidden">
