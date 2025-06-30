@@ -242,10 +242,21 @@ export function ActiveAuctions({ searchQuery = "", customListings }: ActiveAucti
                 </span>
               </div>
               <div className="mb-2">
-                <p className="text-xs text-gray-500">Текущая ставка</p>
-                <p className="text-sm font-bold text-green-600">
-                  {auction.currentBid ? parseFloat(auction.currentBid).toLocaleString() : parseFloat(auction.startingPrice).toLocaleString()} Сомони
-                </p>
+                {(auction.currentBid && auction.currentBid !== '0' && auction.currentBid !== '' && !isNaN(parseFloat(auction.currentBid))) ? (
+                  <>
+                    <p className="text-xs text-gray-500">Текущая ставка</p>
+                    <p className="text-sm font-bold text-green-600">
+                      {parseFloat(auction.currentBid).toLocaleString()} Сомони
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <p className="text-xs text-gray-500">Стартовая цена</p>
+                    <p className="text-sm font-bold text-blue-600">
+                      {parseFloat(auction.startingPrice || '0').toLocaleString()} Сомони
+                    </p>
+                  </>
+                )}
               </div>
               <div className="flex justify-between items-center text-xs text-gray-500">
                 <span>{auction.bidCount} ставок</span>
