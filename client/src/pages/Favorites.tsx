@@ -58,7 +58,7 @@ export default function Favorites() {
 
   const goToAuction = async (id: string | number) => {
     // Предварительно устанавливаем выбранный аукцион для быстрого отображения
-    const selectedAuction = favoriteAuctions.find(auction => auction.id === id);
+    const selectedAuction = favoriteAuctions.find(auction => auction.id == id);
     if (selectedAuction) {
       setSelectedAuction(selectedAuction);
     }
@@ -67,11 +67,11 @@ export default function Favorites() {
     try {
       await Promise.all([
         queryClient.prefetchQuery({
-          queryKey: [`/api/listings/${id}`],
+          queryKey: [`/api/listings/${String(id)}`],
           staleTime: 10000,
         }),
         queryClient.prefetchQuery({
-          queryKey: [`/api/listings/${id}/bids`],
+          queryKey: [`/api/listings/${String(id)}/bids`],
           staleTime: 0,
         })
       ]);
@@ -79,7 +79,7 @@ export default function Favorites() {
       console.log('Prefetch failed, but continuing with navigation');
     }
     
-    setLocation(`/auction/${id}`);
+    setLocation(`/auction/${String(id)}`);
   };
 
   const formatPrice = (price: number) => {
