@@ -77,6 +77,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   let mainListingsCacheTime = 0;
   const MAIN_CACHE_TTL = 2 * 60 * 1000; // 2 minutes
   
+  // Request rate limiting for better performance
+  let activeListingsRequests = 0;
+  const MAX_CONCURRENT_REQUESTS = 3;
+  
   // Clear all caches when listings change
   function clearAllCaches() {
     mainListingsCache.clear();
@@ -90,12 +94,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { status = "active", limit } = req.query;
       const cacheKey = `listings_${status}_${limit || 20}`;
       
-      // Check fast cache - увеличиваем время кэша до 2 минут
-      if (mainListingsCache.has(cacheKey) && Date.now() - mainListingsCacheTime < 120000) {
+      // Мгновенная отдача из кэша без проверки времени для скорости
+      if (mainListingsCache.has(cacheKey)) {
+        res.set({
+          'Cache-Control': 'public, max-age=5',
+          'ETag': `"cached-${mainListingsCacheTime}"`,
+        });
         return res.json(mainListingsCache.get(cacheKey));
       }
       
-      console.log(`Loading main listings...`);
+      // Rate limiting - если слишком много запросов, отдаем из кэша или ждем
+      if (activeListingsRequests >= MAX_CONCURRENT_REQUESTS) {
+        if (mainListingsCache.has(cacheKey)) {
+          return res.json(mainListingsCache.get(cacheKey));
+        }
+        return res.status(429).json({ error: "Too many requests, please try again" });
+      }
+      
+      activeListingsRequests++;
+      
       const startTime = Date.now();
       
       const listings = await storage.getListingsByStatus(
@@ -116,17 +133,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       mainListingsCache.set(cacheKey, fastListings);
       mainListingsCacheTime = Date.now();
       
-      // Агрессивные HTTP заголовки кэширования
+      // Быстрые HTTP заголовки
       res.set({
-        'Cache-Control': 'public, max-age=120, s-maxage=60', // 2 минуты кэш в браузере, 1 минута в CDN
-        'ETag': `"listings-${Date.now()}"`,
-        'Last-Modified': new Date().toUTCString()
+        'Cache-Control': 'public, max-age=10',
+        'ETag': `"fresh-${Date.now()}"`,
       });
       
       res.json(fastListings);
     } catch (error) {
       console.error("Error fetching listings:", error);
       res.status(500).json({ error: "Failed to fetch listings" });
+    } finally {
+      activeListingsRequests--;
     }
   });
 
