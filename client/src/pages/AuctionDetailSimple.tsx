@@ -54,6 +54,13 @@ export default function AuctionDetail() {
   const { data: currentAuction, refetch: refetchAuction, isLoading: auctionLoading } = useQuery({
     queryKey: [`/api/listings/${id}`],
     enabled: !!id,
+    staleTime: 0, // Всегда загружать данные, чтобы показать анимацию
+    queryFn: async () => {
+      // Добавляем небольшую задержку для демонстрации анимации
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      const response = await fetch(`/api/listings/${id}`);
+      return response.json();
+    },
   });
 
   // Fetch real bidding history with fast updates
