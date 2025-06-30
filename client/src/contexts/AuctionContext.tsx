@@ -9,6 +9,7 @@ interface Auction {
   mileage: number;
   photos: string[];
   currentBid: number;
+  startingPrice: string;
   bidCount: number;
   endTime: Date;
   status: 'active' | 'ended';
@@ -71,6 +72,7 @@ export function AuctionProvider({ children }: { children: ReactNode }) {
     mileage: listing.mileage || 0,
     photos: Array.isArray(listing.photos) ? listing.photos : [],
     currentBid: parseFloat(listing.currentBid) || 0,
+    startingPrice: listing.startingPrice || '0',
     bidCount: listing.bidCount || 0,
     endTime: new Date(listing.auctionEndTime || Date.now() + 86400000),
     status: listing.status === 'active' ? 'active' : 'ended',

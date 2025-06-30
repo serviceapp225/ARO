@@ -253,19 +253,7 @@ export function ActiveAuctions({ searchQuery = "", customListings }: ActiveAucti
                   <>
                     <p className="text-xs text-gray-500">Стартовая цена</p>
                     <p className="text-sm font-bold text-blue-600">
-                      {(() => {
-                        const price = parseFloat(auction.startingPrice || '0');
-                        // Отладка для лота 12
-                        if (auction.lotNumber === '100805') {
-                          console.log('Лот 12 отладка:', {
-                            startingPrice: auction.startingPrice,
-                            parsedPrice: price,
-                            currentBid: auction.currentBid,
-                            fullAuction: auction
-                          });
-                        }
-                        return price.toLocaleString();
-                      })()} Сомони
+                      {parseFloat(auction.startingPrice || '0').toLocaleString()} Сомони
                     </p>
                   </>
                 )}
