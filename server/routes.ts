@@ -123,7 +123,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       cachedListings = fastListings;
       lastCacheUpdate = Date.now();
-      console.log(`Cache updated with ${fastListings.length} listings`);
+      // console.log(`Cache updated with ${fastListings.length} listings`); // Убрано для производительности
     } catch (error) {
       console.error('Cache update failed:', error);
     }
@@ -132,8 +132,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Предзагружаем кэш при старте
   await updateListingsCache();
   
-  // Обновляем кэш каждые 10 секунд (менее агрессивно)
-  setInterval(updateListingsCache, 10000);
+  // Обновляем кэш каждые 60 секунд для экономии ресурсов
+  setInterval(updateListingsCache, 60000);
   
   // Clear all caches when listings change
   function clearAllCaches() {
@@ -169,7 +169,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Car listing routes - ультрабыстрая отдача с агрессивным кэшированием
   app.get("/api/listings", (req, res) => {
     try {
-      console.log("Listings endpoint called, cache size:", cachedListings.length);
+      // console.log("Listings endpoint called, cache size:", cachedListings.length); // Убрано для производительности
       
       // Агрессивное HTTP кэширование - 10 секунд
       res.setHeader('Cache-Control', 'public, max-age=10, s-maxage=10');
@@ -204,7 +204,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         bidCount: bidCountsCache.get(listing.id) || 0
       }));
       
-      console.log("Sending optimized response");
+      // console.log("Sending optimized response"); // Убрано для производительности
       res.json(optimizedListings);
     } catch (error) {
       console.error("Error in listings endpoint:", error);
@@ -459,7 +459,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             const originalBuffer = Buffer.from(base64Data, 'base64');
             const originalSize = originalBuffer.length;
             
-            console.log(`🔄 Сжимаем фото размером ${(originalSize/1024).toFixed(1)}KB`);
+            // console.log(`🔄 Сжимаем фото размером ${(originalSize/1024).toFixed(1)}KB`); // Убрано для производительности
             
             try {
               // Агрессивное серверное сжатие
