@@ -82,16 +82,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const listings = await storage.getListingsByStatus('active', 20);
       
-      // Отладка: проверим первое объявление
-      if (listings.length > 0) {
-        console.log("Sample listing fields:", {
-          id: listings[0].id,
-          tinted: listings[0].tinted,
-          tintingDate: listings[0].tintingDate,
-          technicalInspectionDate: listings[0].technicalInspectionDate
-        });
-      }
-      
       // Обновляем кэш количества ставок
       bidCountsCache.clear();
       for (const listing of listings) {

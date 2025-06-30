@@ -67,9 +67,9 @@ export default function Favorites() {
   const sortedFavorites = [...favoriteAuctions].sort((a, b) => {
     switch (sortBy) {
       case "price-low":
-        return a.currentBid - b.currentBid;
+        return parseFloat(String(a.currentBid ?? '0')) - parseFloat(String(b.currentBid ?? '0'));
       case "price-high":
-        return b.currentBid - a.currentBid;
+        return parseFloat(String(b.currentBid ?? '0')) - parseFloat(String(a.currentBid ?? '0'));
       case "year-new":
         return b.year - a.year;
       case "year-old":
