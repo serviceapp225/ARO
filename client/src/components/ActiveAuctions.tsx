@@ -237,7 +237,12 @@ export function ActiveAuctions({ searchQuery = "", customListings }: ActiveAucti
                 )}
                 {auction.technicalInspectionValid && (
                   <span className="text-xs px-2 py-1 rounded bg-purple-100 text-purple-700">
-                    ТО
+                    ТО до {auction.technicalInspectionDate || 'н/д'}
+                  </span>
+                )}
+                {auction.tinted && (
+                  <span className="text-xs px-2 py-1 rounded bg-indigo-100 text-indigo-700">
+                    Тонировка {auction.tintingDate ? `до ${auction.tintingDate}` : ''}
                   </span>
                 )}
               </div>
