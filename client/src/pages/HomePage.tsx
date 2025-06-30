@@ -53,9 +53,9 @@ export default function HomePage() {
             Специальные предложения
           </h2>
           <div 
-            className="relative rounded-xl p-8 text-white text-center overflow-hidden min-h-[200px] bg-cover bg-center bg-no-repeat"
+            className="relative rounded-xl p-8 text-white text-center overflow-hidden min-h-[200px] bg-gradient-to-br from-blue-600 to-purple-700 bg-cover bg-center bg-no-repeat"
             style={{
-              backgroundImage: `url('${premiumCarsSvg}')`
+              backgroundImage: `linear-gradient(135deg, rgba(59,130,246,0.8) 0%, rgba(147,51,234,0.8) 100%), url('https://images.unsplash.com/photo-1544636331-e26879cd4d9b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=85'), url('${premiumCarsSvg}')`
             }}
           >
             <div className="relative z-10">
