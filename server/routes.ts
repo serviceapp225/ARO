@@ -72,80 +72,56 @@ const externalAdminAuth = (req: any, res: any, next: any) => {
 };
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Fast cache for main listings
-  const mainListingsCache = new Map();
-  let mainListingsCacheTime = 0;
-  const MAIN_CACHE_TTL = 2 * 60 * 1000; // 2 minutes
+  // Простой глобальный кэш с предзагрузкой
+  let cachedListings: any[] = [];
+  let cacheUpdateTime = 0;
+  let isUpdatingCache = false;
   
-  // Request rate limiting for better performance
-  let activeListingsRequests = 0;
-  const MAX_CONCURRENT_REQUESTS = 3;
+  // Функция для обновления кэша в фоне
+  const updateListingsCache = async () => {
+    if (isUpdatingCache) return;
+    isUpdatingCache = true;
+    
+    try {
+      const listings = await storage.getListingsByStatus('active', 20);
+      const fastListings = listings.map(listing => ({
+        ...listing,
+        bidCount: 0,
+        thumbnailPhoto: null
+      }));
+      
+      cachedListings = fastListings;
+      cacheUpdateTime = Date.now();
+      console.log(`Cache updated with ${fastListings.length} listings`);
+    } catch (error) {
+      console.error('Cache update failed:', error);
+    } finally {
+      isUpdatingCache = false;
+    }
+  };
+  
+  // Предзагружаем кэш при старте
+  await updateListingsCache();
+  
+  // Обновляем кэш каждые 5 секунд
+  setInterval(updateListingsCache, 5000);
   
   // Clear all caches when listings change
   function clearAllCaches() {
-    mainListingsCache.clear();
-    mainListingsCacheTime = 0;
+    // Принудительно обновляем кэш при изменении данных
+    updateListingsCache();
     sellerListingsCache.clear();
   }
   
-  // Car listing routes - optimized with aggressive caching
-  app.get("/api/listings", async (req, res) => {
-    try {
-      const { status = "active", limit } = req.query;
-      const cacheKey = `listings_${status}_${limit || 20}`;
-      
-      // Мгновенная отдача из кэша без проверки времени для скорости
-      if (mainListingsCache.has(cacheKey)) {
-        res.set({
-          'Cache-Control': 'public, max-age=5',
-          'ETag': `"cached-${mainListingsCacheTime}"`,
-        });
-        return res.json(mainListingsCache.get(cacheKey));
-      }
-      
-      // Rate limiting - если слишком много запросов, отдаем из кэша или ждем
-      if (activeListingsRequests >= MAX_CONCURRENT_REQUESTS) {
-        if (mainListingsCache.has(cacheKey)) {
-          return res.json(mainListingsCache.get(cacheKey));
-        }
-        return res.status(429).json({ error: "Too many requests, please try again" });
-      }
-      
-      activeListingsRequests++;
-      
-      const startTime = Date.now();
-      
-      const listings = await storage.getListingsByStatus(
-        status as string, 
-        limit ? Number(limit) : 20
-      );
-      
-      // Skip bid count calculation for speed - use 0 for all
-      const fastListings = listings.map(listing => ({
-        ...listing,
-        bidCount: 0, // Skip slow bid count query
-        thumbnailPhoto: null // Skip photo processing
-      }));
-      
-      console.log(`Main listings loaded in ${Date.now() - startTime}ms`);
-      
-      // Cache result
-      mainListingsCache.set(cacheKey, fastListings);
-      mainListingsCacheTime = Date.now();
-      
-      // Быстрые HTTP заголовки
-      res.set({
-        'Cache-Control': 'public, max-age=10',
-        'ETag': `"fresh-${Date.now()}"`,
-      });
-      
-      res.json(fastListings);
-    } catch (error) {
-      console.error("Error fetching listings:", error);
-      res.status(500).json({ error: "Failed to fetch listings" });
-    } finally {
-      activeListingsRequests--;
-    }
+  // Car listing routes - мгновенная отдача из предзагруженного кэша
+  app.get("/api/listings", (req, res) => {
+    // Всегда отдаем данные из кэша мгновенно
+    res.set({
+      'Cache-Control': 'public, max-age=5',
+      'ETag': `"cached-${cacheUpdateTime}"`,
+    });
+    
+    res.json(cachedListings);
   });
 
   // Cached endpoint for getting individual photo by index
