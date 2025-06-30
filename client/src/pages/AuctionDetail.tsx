@@ -138,13 +138,14 @@ export default function AuctionDetail() {
     refetchOnWindowFocus: false,
   });
 
-  // Fetch real bidding history with optimized updates
+  // Fetch real bidding history with fast updates
   const { data: realBiddingHistory = [] } = useQuery({
     queryKey: [`/api/listings/${id}/bids`],
     enabled: !!id,
-    refetchInterval: 2000, // Update bids every 2 seconds для баланса performance/real-time
-    staleTime: 1000, // Cache for 1 second to reduce requests
-    refetchOnWindowFocus: false,
+    refetchInterval: 1000, // Обновление ставок каждую секунду
+    staleTime: 0, // Данные всегда считаются устаревшими
+    refetchOnWindowFocus: true,
+    refetchIntervalInBackground: true, // Обновление даже когда вкладка не активна
   });
 
   // Sort bids by amount (highest first) to show current winning bid at top

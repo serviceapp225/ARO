@@ -55,10 +55,14 @@ export default function AuctionDetail() {
     enabled: !!id,
   });
 
-  // Fetch real bidding history
+  // Fetch real bidding history with fast updates
   const { data: realBiddingHistory = [] } = useQuery({
     queryKey: [`/api/listings/${id}/bids`],
     enabled: !!id,
+    refetchInterval: 1000, // Обновление ставок каждую секунду
+    staleTime: 0, // Данные всегда считаются устаревшими
+    refetchOnWindowFocus: true,
+    refetchIntervalInBackground: true, // Обновление даже когда вкладка не активна
   });
 
   // Get unique bidder IDs to fetch user data
