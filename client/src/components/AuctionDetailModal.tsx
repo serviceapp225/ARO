@@ -15,7 +15,7 @@ export function AuctionDetailModal() {
 
   if (!selectedAuction) return null;
 
-  const minimumBid = selectedAuction.currentBid + 1;
+  const minimumBid = parseFloat(selectedAuction.currentBid?.toString() || '0') + 1;
 
   const handlePlaceBid = (e: React.FormEvent) => {
     e.preventDefault();
@@ -54,10 +54,11 @@ export function AuctionDetailModal() {
   };
 
   // Mock bid history with real user names
+  const currentBidValue = parseFloat(selectedAuction.currentBid?.toString() || '0');
   const bidHistory = [
-    { bidder: 'Алексей Петров', amount: selectedAuction.currentBid, time: '2 минуты назад' },
-    { bidder: 'Мария Иванова', amount: selectedAuction.currentBid - 500, time: '5 минут назад' },
-    { bidder: 'Дмитрий Козлов', amount: selectedAuction.currentBid - 1000, time: '8 минут назад' },
+    { bidder: 'Алексей Петров', amount: currentBidValue, time: '2 минуты назад' },
+    { bidder: 'Мария Иванова', amount: currentBidValue - 500, time: '5 минут назад' },
+    { bidder: 'Дмитрий Козлов', amount: currentBidValue - 1000, time: '8 минут назад' },
   ];
 
   return (
