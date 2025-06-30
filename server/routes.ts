@@ -72,16 +72,11 @@ const externalAdminAuth = (req: any, res: any, next: any) => {
 };
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Простой глобальный кэш с предзагрузкой
+  // Статический кэш для максимальной скорости
   let cachedListings: any[] = [];
-  let cacheUpdateTime = 0;
-  let isUpdatingCache = false;
   
   // Функция для обновления кэша в фоне
   const updateListingsCache = async () => {
-    if (isUpdatingCache) return;
-    isUpdatingCache = true;
-    
     try {
       const listings = await storage.getListingsByStatus('active', 20);
       const fastListings = listings.map(listing => ({
@@ -91,20 +86,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }));
       
       cachedListings = fastListings;
-      cacheUpdateTime = Date.now();
       console.log(`Cache updated with ${fastListings.length} listings`);
     } catch (error) {
       console.error('Cache update failed:', error);
-    } finally {
-      isUpdatingCache = false;
     }
   };
   
   // Предзагружаем кэш при старте
   await updateListingsCache();
   
-  // Обновляем кэш каждые 5 секунд
-  setInterval(updateListingsCache, 5000);
+  // Обновляем кэш каждые 10 секунд (менее агрессивно)
+  setInterval(updateListingsCache, 10000);
   
   // Clear all caches when listings change
   function clearAllCaches() {
@@ -113,14 +105,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     sellerListingsCache.clear();
   }
   
-  // Car listing routes - мгновенная отдача из предзагруженного кэша
+  // Car listing routes - ультрабыстрая отдача
   app.get("/api/listings", (req, res) => {
-    // Всегда отдаем данные из кэша мгновенно
-    res.set({
-      'Cache-Control': 'public, max-age=5',
-      'ETag': `"cached-${cacheUpdateTime}"`,
-    });
-    
     res.json(cachedListings);
   });
 
