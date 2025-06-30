@@ -65,9 +65,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           if (phoneDigits === '992000000000') {
             demoUser.isActive = true;
             demoUser.userId = 4;
+            // Загружаем полные данные пользователя из API
+            try {
+              const response = await fetch('/api/users/4');
+              if (response.ok) {
+                const userData = await response.json();
+                demoUser.fullName = userData.fullName;
+                demoUser.username = userData.username;
+              }
+            } catch (error) {
+              console.error('Failed to load user data:', error);
+            }
           } else if (phoneDigits === '992111111111') {
             demoUser.isActive = true;
             demoUser.userId = 3;
+            // Загружаем полные данные пользователя из API
+            try {
+              const response = await fetch('/api/users/3');
+              if (response.ok) {
+                const userData = await response.json();
+                demoUser.fullName = userData.fullName;
+                demoUser.username = userData.username;
+              }
+            } catch (error) {
+              console.error('Failed to load user data:', error);
+            }
           } else {
             // Для остальных пользователей - быстрый запрос без блокировки UI
             demoUser.isActive = false;
