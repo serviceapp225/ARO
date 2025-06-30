@@ -140,6 +140,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json({ test: "fast", time: Date.now() });
   });
 
+  // Быстрый endpoint для получения фотографий конкретного объявления
+  app.get("/api/listings/:id/photos", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const listing = await storage.getListing(id);
+      
+      if (!listing) {
+        return res.status(404).json({ error: "Listing not found" });
+      }
+      
+      // Возвращаем только первое фото для превью
+      const photos = Array.isArray(listing.photos) ? listing.photos.slice(0, 1) : [];
+      res.json({ photos });
+    } catch (error) {
+      console.error("Error getting photos:", error);
+      res.status(500).json({ error: "Server error" });
+    }
+  });
+
   // Car listing routes - ультрабыстрая отдача с агрессивным кэшированием
   app.get("/api/listings", (req, res) => {
     try {
