@@ -218,13 +218,13 @@ class AuctionWebSocketManager {
   private broadcastToRoom(room: AuctionRoom, message: any) {
     const deadClients: WebSocketClient[] = [];
     
-    for (const client of room.clients) {
+    room.clients.forEach((client) => {
       if (client.ws.readyState === WebSocket.OPEN) {
         this.sendMessage(client, message);
       } else {
         deadClients.push(client);
       }
-    }
+    });
     
     // Удаляем мертвые соединения
     deadClients.forEach(client => room.clients.delete(client));

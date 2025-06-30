@@ -1,5 +1,5 @@
 import { useParams, useLocation } from "wouter";
-import { ArrowLeft, Heart, MessageCircle, Eye, Car, Calendar, Gauge, Users, Phone, Clock, X, ChevronLeft, ChevronRight } from "lucide-react";
+import { ArrowLeft, Heart, MessageCircle, Eye, Car, Calendar, Gauge, Users, Phone, Clock, X, ChevronLeft, ChevronRight, Wifi, WifiOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -12,6 +12,7 @@ import { AnimatedPrice } from "@/components/AnimatedPrice";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
+import { useAuctionWebSocket } from "@/hooks/useAuctionWebSocket";
 
 export default function AuctionDetail() {
   const { id } = useParams();
@@ -40,6 +41,17 @@ export default function AuctionDetail() {
   
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  
+  // WebSocket для real-time обновлений
+  const { 
+    isConnected: wsConnected, 
+    connectionQuality, 
+    joinAuction, 
+    leaveAuction, 
+    lastBidUpdate,
+    participantCount,
+    isHotAuction 
+  } = useAuctionWebSocket();
 
   // Translation functions for car characteristics
   const translateTransmission = (transmission: string) => {
@@ -221,6 +233,40 @@ export default function AuctionDetail() {
       setIsTimerReady(true);
     }
   }, [auction, auctionEndTime]);
+
+  // WebSocket подключение к аукциону
+  useEffect(() => {
+    if (auction?.id) {
+      joinAuction(parseInt(auction.id));
+      
+      return () => {
+        leaveAuction();
+      };
+    }
+  }, [auction?.id, joinAuction, leaveAuction]);
+
+  // Обработка real-time обновлений ставок
+  useEffect(() => {
+    if (lastBidUpdate && lastBidUpdate.listingId === parseInt(id || '0')) {
+      console.log('🔥 Real-time обновление ставки:', lastBidUpdate);
+      
+      // Обновляем цену без перезагрузки
+      if (lastBidUpdate.data?.bid?.amount) {
+        setCurrentPrice(parseFloat(lastBidUpdate.data.bid.amount));
+        
+        // Показываем уведомление о новой ставке
+        toast({
+          title: "🔥 Новая ставка!",
+          description: `${parseFloat(lastBidUpdate.data.bid.amount).toLocaleString()} Сомони`,
+          duration: 2000,
+        });
+      }
+      
+      // Инвалидируем кэш для обновления интерфейса
+      queryClient.invalidateQueries({ queryKey: [`/api/listings/${id}/bids`] });
+      queryClient.invalidateQueries({ queryKey: [`/api/listings/${id}`] });
+    }
+  }, [lastBidUpdate, id, queryClient, toast]);
 
   // Show loading state while auction data is loading
   if (!auction) {
@@ -506,6 +552,27 @@ export default function AuctionDetail() {
             Назад
           </Button>
           <div className="flex items-center gap-2">
+            {/* WebSocket индикатор */}
+            <div className="flex items-center gap-1">
+              {wsConnected ? (
+                <div className="flex items-center gap-1">
+                  <Wifi className="w-4 h-4 text-green-600" />
+                  {isHotAuction && (
+                    <span className="text-xs bg-red-100 text-red-700 px-2 py-1 rounded-full font-medium">
+                      🔥 LIVE
+                    </span>
+                  )}
+                  {participantCount > 0 && (
+                    <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full">
+                      {participantCount} участника
+                    </span>
+                  )}
+                </div>
+              ) : (
+                <WifiOff className="w-4 h-4 text-gray-400" />
+              )}
+            </div>
+            
             <Button variant="ghost" size="sm" onClick={handleToggleFavorite}>
               <Heart className={`w-5 h-5 ${isFavorite(id || "1") ? 'fill-red-500 text-red-500' : 'text-gray-600'}`} />
             </Button>
