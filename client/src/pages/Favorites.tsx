@@ -56,39 +56,109 @@ export default function Favorites() {
     }
   };
 
+  // Локальное кэширование для избранных карточек
+  const getCachedData = (key: string) => {
+    try {
+      const cached = localStorage.getItem(`favorites_cache_${key}`);
+      if (cached) {
+        const { data, timestamp } = JSON.parse(cached);
+        // Кэш живет 2 минуты для избранных
+        if (Date.now() - timestamp < 120000) {
+          return data;
+        }
+      }
+    } catch (error) {
+      // Игнорируем ошибки кэширования
+    }
+    return null;
+  };
+
+  const setCachedData = (key: string, data: any) => {
+    try {
+      localStorage.setItem(`favorites_cache_${key}`, JSON.stringify({
+        data,
+        timestamp: Date.now()
+      }));
+    } catch (error) {
+      // Игнорируем ошибки кэширования
+    }
+  };
+
   // Предзагрузка данных при наведении для мгновенного открытия
   const prefetchAuctionData = async (id: string | number) => {
     try {
-      await Promise.all([
-        queryClient.prefetchQuery({
-          queryKey: [`/api/listings/${String(id)}`],
-          staleTime: 30000, // 30 секунд кэша
-        }),
-        queryClient.prefetchQuery({
-          queryKey: [`/api/listings/${String(id)}/bids`],
-          staleTime: 5000, // 5 секунд для ставок
-        }),
-        queryClient.prefetchQuery({
-          queryKey: [`/api/listings/${String(id)}/photos`],
-          staleTime: 60000, // 1 минута для фото
-        })
-      ]);
+      const promises = [];
+      
+      // Проверяем кэш перед загрузкой
+      if (!getCachedData(`listing_${id}`)) {
+        promises.push(
+          queryClient.prefetchQuery({
+            queryKey: [`/api/listings/${String(id)}`],
+            staleTime: 300000,
+            queryFn: async () => {
+              const res = await fetch(`/api/listings/${String(id)}`);
+              const data = await res.json();
+              setCachedData(`listing_${id}`, data);
+              return data;
+            },
+          })
+        );
+      }
+      
+      if (!getCachedData(`bids_${id}`)) {
+        promises.push(
+          queryClient.prefetchQuery({
+            queryKey: [`/api/listings/${String(id)}/bids`],
+            staleTime: 30000,
+            queryFn: async () => {
+              const res = await fetch(`/api/listings/${String(id)}/bids`);
+              const data = await res.json();
+              setCachedData(`bids_${id}`, data);
+              return data;
+            },
+          })
+        );
+      }
+      
+      if (!getCachedData(`photos_${id}`)) {
+        promises.push(
+          queryClient.prefetchQuery({
+            queryKey: [`/api/listings/${String(id)}/photos`],
+            staleTime: 600000,
+            queryFn: async () => {
+              const res = await fetch(`/api/listings/${String(id)}/photos`);
+              const data = await res.json();
+              setCachedData(`photos_${id}`, data);
+              return data;
+            },
+          })
+        );
+      }
+      
+      if (promises.length > 0) {
+        await Promise.all(promises);
+      }
     } catch (error) {
       // Тихо игнорируем ошибки предзагрузки
     }
   };
 
-  // Предзагружаем данные для первых 3 карточек при загрузке страницы
+  // Предзагружаем данные для всех избранных карточек при загрузке страницы
   useEffect(() => {
-    const preloadFirstFavorites = async () => {
-      const firstThree = favoriteAuctions.slice(0, 3);
-      for (const auction of firstThree) {
-        prefetchAuctionData(auction.id);
-      }
+    const preloadAllFavorites = async () => {
+      // Загружаем данные параллельно для всех избранных
+      const preloadPromises = favoriteAuctions.map(auction => 
+        prefetchAuctionData(auction.id)
+      );
+      
+      // Не ждем завершения, чтобы не блокировать UI
+      Promise.all(preloadPromises).catch(() => {
+        // Игнорируем ошибки предзагрузки
+      });
     };
     
     if (favoriteAuctions.length > 0) {
-      preloadFirstFavorites();
+      preloadAllFavorites();
     }
   }, [favoriteAuctions]);
 
@@ -99,7 +169,10 @@ export default function Favorites() {
       setSelectedAuction(selectedAuction);
     }
     
-    // Мгновенная навигация, данные уже должны быть предзагружены при наведении
+    // Дополнительная предзагрузка на случай если данные еще не готовы
+    prefetchAuctionData(id);
+    
+    // Мгновенная навигация
     setLocation(`/auction/${String(id)}`);
   };
 
