@@ -46,12 +46,21 @@ export default function HomePage() {
         {/* Sell Car Banner */}
         <SellCarBanner />
 
-        {/* Advertisement Carousel - Load immediately */}
+        {/* Advertisement Carousel - Optimized loading */}
         <section>
           <h2 className="text-xl font-bold text-gray-900 mb-4">
             Специальные предложения
           </h2>
-          <AdvertisementCarousel />
+          <div className="bg-gradient-to-br from-blue-600 to-purple-700 rounded-xl p-8 text-white text-center">
+            <h3 className="text-2xl font-bold mb-2">Автомобили премиум-класса</h3>
+            <p className="text-blue-100 mb-4">Найдите автомобиль своей мечты на наших эксклюзивных аукционах</p>
+            <Button 
+              onClick={() => setLocation('/')} 
+              className="bg-white text-blue-600 hover:bg-blue-50 font-semibold px-6 py-2"
+            >
+              Смотреть аукционы
+            </Button>
+          </div>
         </section>
 
         {/* Security Banner */}

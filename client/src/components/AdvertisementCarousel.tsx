@@ -89,8 +89,13 @@ export function AdvertisementCarousel() {
                 }`}
               >
                 <div 
-                  className="relative h-full bg-cover bg-center bg-no-repeat"
-                  style={{ backgroundImage: `url('${item.imageUrl}')` }}
+                  className="relative h-full bg-gradient-to-br from-blue-600 to-purple-700"
+                  style={{ 
+                    backgroundImage: item.imageUrl ? `url('${item.imageUrl}')` : undefined,
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                    backgroundRepeat: 'no-repeat'
+                  }}
                 >
                   <div className="absolute inset-0 bg-black bg-opacity-40"></div>
                   <div className="relative z-10 h-full flex flex-col justify-center items-center text-center space-y-2 p-6">
