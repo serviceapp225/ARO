@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Car } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
 
 interface LazyCarImageProps {
   listingId: string;
@@ -15,6 +16,27 @@ export function LazyCarImage({ listingId, make, model, year, className = "" }: L
   const [error, setError] = useState(false);
 
   useEffect(() => {
+    // Проверяем кэш в localStorage
+    const cacheKey = `photos_${listingId}`;
+    const cached = localStorage.getItem(cacheKey);
+    
+    if (cached) {
+      try {
+        const cachedData = JSON.parse(cached);
+        const cacheTime = cachedData.timestamp;
+        const now = Date.now();
+        
+        // Если кэш свежий (менее 5 минут), используем его
+        if (now - cacheTime < 300000) {
+          setPhotos(cachedData.photos || []);
+          setLoading(false);
+          return;
+        }
+      } catch (e) {
+        // Игнорируем ошибки парсинга кэша
+      }
+    }
+
     // Загружаем фотографии с задержкой для ленивой загрузки
     const timer = setTimeout(async () => {
       try {
@@ -23,6 +45,11 @@ export function LazyCarImage({ listingId, make, model, year, className = "" }: L
           const data = await response.json();
           if (data.photos && data.photos.length > 0) {
             setPhotos(data.photos);
+            // Сохраняем в кэш
+            localStorage.setItem(cacheKey, JSON.stringify({
+              photos: data.photos,
+              timestamp: Date.now()
+            }));
           } else {
             setError(true);
           }
@@ -34,7 +61,7 @@ export function LazyCarImage({ listingId, make, model, year, className = "" }: L
       } finally {
         setLoading(false);
       }
-    }, Math.random() * 2000); // Случайная задержка до 2 секунд
+    }, Math.random() * 500 + 100); // Случайная задержка от 100 до 600мс
 
     return () => clearTimeout(timer);
   }, [listingId]);
