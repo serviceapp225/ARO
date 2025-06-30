@@ -84,12 +84,15 @@ export default function AuctionDetail() {
       return users.filter(Boolean);
     },
     enabled: bidderIds.length > 0,
+    staleTime: 0, // Принудительно обновляем данные пользователей
+    refetchOnWindowFocus: true,
   });
 
   // Create a map of user data by ID
   const userDataMap = usersData.reduce((acc: Record<number, any>, user: any) => {
     if (user && user.id) {
       acc[user.id] = user;
+      console.log(`User ${user.id} mapped:`, user.fullName); // Отладка
     }
     return acc;
   }, {});
@@ -590,7 +593,12 @@ export default function AuctionDetail() {
                         </div>
                         <div>
                           <p className="font-medium">{
-                            userDataMap[bid.bidderId]?.fullName || 'Участник аукциона'
+                            (() => {
+                              const fullNameFromMap = userDataMap[bid.bidderId]?.fullName;
+                              const usernameFromBid = bid.bidder?.username;
+                              console.log(`Bid ${bid.id}: fullName="${fullNameFromMap}", username="${usernameFromBid}"`);
+                              return fullNameFromMap || usernameFromBid || 'Участник аукциона';
+                            })()
                           }</p>
                           <p className="text-sm text-muted-foreground">
                             {new Date(bid.createdAt).toLocaleString('ru-RU')}
