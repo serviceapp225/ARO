@@ -4,7 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { ActiveAuctions } from "@/components/ActiveAuctions";
 import { SellCarBanner } from "@/components/SellCarBanner";
-import { TripleCarouselBanner } from "@/components/TripleCarouselBanner";
+import { PremiumBanner } from "@/components/PremiumBanner";
 import { TopHeader } from "@/components/TopHeader";
 import { Link } from "wouter";
 import { useState } from "react";
@@ -47,8 +47,8 @@ export default function HomePage() {
         {/* Sell Car Banner */}
         <SellCarBanner />
 
-        {/* Triple Advertisement Carousel Banner */}
-        <TripleCarouselBanner />
+        {/* Premium Banner */}
+        <PremiumBanner />
 
         {/* Security Banner */}
         <div className="bg-green-50 border border-green-200 rounded-xl p-4">
