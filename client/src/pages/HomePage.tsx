@@ -47,8 +47,18 @@ export default function HomePage() {
         {/* Sell Car Banner */}
         <SellCarBanner />
 
-        {/* Advertisement Carousel Banner */}
+        {/* Advertisement Carousel Banners */}
         <AdvertisementCarousel />
+        
+        {/* Second Advertisement Carousel */}
+        <div className="mt-6">
+          <AdvertisementCarousel />
+        </div>
+        
+        {/* Third Advertisement Carousel */}
+        <div className="mt-6">
+          <AdvertisementCarousel />
+        </div>
 
         {/* Security Banner */}
         <div className="bg-green-50 border border-green-200 rounded-xl p-4">
