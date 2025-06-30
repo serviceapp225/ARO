@@ -1,4 +1,5 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { createContext, useContext, useState, ReactNode } from "react";
+import { useQuery } from "@tanstack/react-query";
 
 interface Auction {
   id: string;
@@ -33,37 +34,18 @@ interface AuctionContextType {
 const AuctionContext = createContext<AuctionContextType | undefined>(undefined);
 
 export function AuctionProvider({ children }: { children: ReactNode }) {
-  const [listings, setListings] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [selectedAuction, setSelectedAuction] = useState<Auction | null>(null);
 
-  // Simple fetch function without complex logic
-  const loadListings = async () => {
-    try {
-      const response = await fetch('/api/listings');
-      if (response.ok) {
-        const data = await response.json();
-        if (Array.isArray(data)) {
-          setListings(data);
-        }
-      }
-    } catch (error) {
-      console.error('Error loading listings:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  // Use TanStack Query for data fetching with caching
+  const { data: listings = [], isLoading, refetch } = useQuery<any[]>({
+    queryKey: ['/api/listings'],
+    refetchInterval: 30000, // Refresh every 30 seconds
+    staleTime: 10000, // Consider data fresh for 10 seconds
+    gcTime: 300000, // Keep in cache for 5 minutes
+  });
 
-  // Load once on mount, then refresh every 30 seconds
-  useEffect(() => {
-    loadListings();
-    
-    const interval = setInterval(loadListings, 30000);
-    return () => clearInterval(interval);
-  }, []);
-
-  // Transform listings to auctions format
-  const auctions: Auction[] = listings.map((listing: any) => ({
+  // Transform listings to auctions format  
+  const auctions: Auction[] = Array.isArray(listings) ? listings.map((listing: any) => ({
     id: listing.id.toString(),
     lotNumber: listing.lotNumber || 'N/A',
     make: listing.make || 'Unknown',
@@ -83,10 +65,10 @@ export function AuctionProvider({ children }: { children: ReactNode }) {
     tinted: listing.tinted || false,
     tintingDate: listing.tintingDate,
     condition: listing.condition || 'good'
-  }));
+  })) : [];
 
   const refreshAuctions = () => {
-    loadListings();
+    refetch();
   };
 
   return (
