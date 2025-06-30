@@ -1,10 +1,17 @@
 import express, { type Request, Response, NextFunction } from "express";
+import compression from "compression";
 import { registerRoutes } from "./routes";
 import { initializeDatabaseWithSampleData } from "./initDatabase";
 import { createTables } from "./createTables";
 import { setupVite, serveStatic, log } from "./vite";
 
 const app = express();
+
+// Enable gzip compression for all responses
+app.use(compression({
+  threshold: 0, // Compress all responses
+  level: 6 // Good balance between compression and speed
+}));
 
 // Add caching headers for better performance
 app.use((req, res, next) => {
