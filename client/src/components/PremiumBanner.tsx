@@ -76,21 +76,21 @@ export function PremiumBanner() {
                   {currentBanner.icon}
                 </div>
                 
-                <h2 className="text-2xl font-bold text-white tracking-wide">
+                <h2 className="text-xl font-bold text-white tracking-wide">
                   {currentBanner.title}
                 </h2>
                 
-                <p className="text-lg text-white opacity-95 font-semibold tracking-wide">
+                <p className="text-base text-white opacity-95 font-semibold tracking-wide">
                   {currentBanner.subtitle}
                 </p>
                 
-                <p className="text-sm text-white opacity-90 leading-relaxed max-w-md font-medium">
+                <p className="text-xs text-white opacity-90 leading-relaxed max-w-md font-medium">
                   {currentBanner.description}
                 </p>
                 
-                <div className="mt-4">
+                <div className="mt-3">
                   <Button
-                    className="px-6 py-2 bg-white text-gray-800 hover:bg-gray-100 font-bold rounded-full transition-all duration-300 inline-flex items-center gap-2 shadow-lg hover:shadow-xl tracking-wide"
+                    className="px-4 py-1.5 bg-white text-gray-800 hover:bg-gray-100 font-bold rounded-full transition-all duration-300 inline-flex items-center gap-1 shadow-lg hover:shadow-xl tracking-wide text-sm"
                   >
                     {currentBanner.buttonText} →
                   </Button>
