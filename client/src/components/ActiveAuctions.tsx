@@ -260,7 +260,8 @@ export function ActiveAuctions({ searchQuery = "", customListings }: ActiveAucti
                           console.log('Лот 12 отладка:', {
                             startingPrice: auction.startingPrice,
                             parsedPrice: price,
-                            currentBid: auction.currentBid
+                            currentBid: auction.currentBid,
+                            fullAuction: auction
                           });
                         }
                         return price.toLocaleString();
