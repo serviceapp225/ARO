@@ -74,14 +74,23 @@ const externalAdminAuth = (req: any, res: any, next: any) => {
 export async function registerRoutes(app: Express): Promise<Server> {
   // Статический кэш для максимальной скорости
   let cachedListings: any[] = [];
+  let bidCountsCache = new Map<number, number>();
   
   // Функция для обновления кэша в фоне
   const updateListingsCache = async () => {
     try {
       const listings = await storage.getListingsByStatus('active', 20);
+      
+      // Обновляем кэш количества ставок
+      bidCountsCache.clear();
+      for (const listing of listings) {
+        const bidCount = await storage.getBidCountForListing(listing.id);
+        bidCountsCache.set(listing.id, bidCount);
+      }
+      
       const fastListings = listings.map(listing => ({
         ...listing,
-        bidCount: 0,
+        bidCount: bidCountsCache.get(listing.id) || 0,
         thumbnailPhoto: null
       }));
       
@@ -112,8 +121,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Car listing routes - ультрабыстрая отдача
   app.get("/api/listings", (req, res) => {
-    console.log("Listings endpoint called, cache size:", cachedListings.length);
-    res.json(cachedListings || []);
+    try {
+      console.log("Listings endpoint called, cache size:", cachedListings.length);
+      
+      // Оптимизируем данные для скорости но сохраняем важные поля
+      const optimizedListings = cachedListings.map(listing => ({
+        id: listing.id,
+        lotNumber: listing.lotNumber,
+        make: listing.make,
+        model: listing.model,
+        year: listing.year,
+        mileage: listing.mileage,
+        currentBid: listing.currentBid,
+        startingPrice: listing.startingPrice,
+        status: listing.status,
+        auctionEndTime: listing.auctionEndTime,
+        auctionStartTime: listing.auctionStartTime,
+        photos: listing.photos ? listing.photos.slice(0, 3) : [], // Максимум 3 фото
+        customsCleared: listing.customsCleared,
+        recycled: listing.recycled,
+        technicalInspectionValid: listing.technicalInspectionValid,
+        engine: listing.engine,
+        transmission: listing.transmission,
+        fuelType: listing.fuelType,
+        color: listing.color,
+        condition: listing.condition,
+        location: listing.location,
+        bidCount: bidCountsCache.get(listing.id) || 0
+      }));
+      
+      console.log("Sending optimized response");
+      res.json(optimizedListings);
+    } catch (error) {
+      console.error("Error in listings endpoint:", error);
+      res.status(500).json({ error: "Server error" });
+    }
   });
 
   // Cached endpoint for getting individual photo by index
