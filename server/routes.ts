@@ -7,6 +7,7 @@ import { eq, sql } from "drizzle-orm";
 import sharp from "sharp";
 import { insertCarListingSchema, insertBidSchema, insertFavoriteSchema, insertNotificationSchema, insertCarAlertSchema, insertBannerSchema, type CarAlert } from "@shared/schema";
 import { z } from "zod";
+import AuctionWebSocketManager from "./websocket";
 
 // Input validation schemas
 const idParamSchema = z.object({
@@ -70,6 +71,9 @@ const externalAdminAuth = (req: any, res: any, next: any) => {
   
   next();
 };
+
+// Глобальный WebSocket менеджер
+let wsManager: AuctionWebSocketManager;
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Статический кэш для максимальной скорости
@@ -751,6 +755,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
             console.error(`Failed to create notification for user ${previousHighestBidder.bidderId}:`, notificationError);
           }
         }
+      }
+      
+      // Отправляем real-time обновление через WebSocket
+      if (wsManager) {
+        const updatedListing = await storage.getListing(listingId);
+        const allBids = await storage.getBidsForListing(listingId);
+        
+        wsManager.broadcastBidUpdate(listingId, {
+          bid,
+          listing: updatedListing,
+          totalBids: allBids.length,
+          highestBid: Math.max(...allBids.map(b => parseFloat(b.amount))),
+          timestamp: Date.now()
+        });
+        
+        console.log(`📡 WebSocket broadcast: новая ставка ${bid.amount} на аукцион ${listingId}`);
       }
       
       res.status(201).json(bid);
@@ -1845,6 +1865,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   const httpServer = createServer(app);
+  
+  // Инициализируем WebSocket для real-time обновлений
+  wsManager = new AuctionWebSocketManager(httpServer);
+  
   return httpServer;
 }
 
