@@ -53,9 +53,9 @@ export function ActiveAuctions({ searchQuery = "", customListings }: ActiveAucti
     const sortedAuctions = [...filteredAuctions].sort((a: any, b: any) => {
       switch (sortBy) {
         case "price-low":
-          return a.currentBid - b.currentBid;
+          return parseFloat(a.currentBid || '0') - parseFloat(b.currentBid || '0');
         case "price-high":
-          return b.currentBid - a.currentBid;
+          return parseFloat(b.currentBid || '0') - parseFloat(a.currentBid || '0');
         case "year-new":
           return b.year - a.year;
         case "year-old":

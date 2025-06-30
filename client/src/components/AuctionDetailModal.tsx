@@ -15,7 +15,7 @@ export function AuctionDetailModal() {
 
   if (!selectedAuction) return null;
 
-  const minimumBid = parseFloat(selectedAuction.currentBid as string ?? '0') + 1;
+  const minimumBid = parseFloat(String(selectedAuction.currentBid) || '0') + 1;
 
   const handlePlaceBid = (e: React.FormEvent) => {
     e.preventDefault();
@@ -54,7 +54,7 @@ export function AuctionDetailModal() {
   };
 
   // Mock bid history with real user names
-  const currentBidValue = parseFloat(selectedAuction.currentBid as string ?? '0');
+  const currentBidValue = parseFloat(String(selectedAuction.currentBid) || '0');
   const bidHistory = [
     { bidder: 'Алексей Петров', amount: currentBidValue, time: '2 минуты назад' },
     { bidder: 'Мария Иванова', amount: currentBidValue - 500, time: '5 минут назад' },

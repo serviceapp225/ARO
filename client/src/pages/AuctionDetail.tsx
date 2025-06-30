@@ -341,7 +341,7 @@ export default function AuctionDetail() {
     }
     
     const bidValue = parseFloat(bidAmount);
-    const currentBidValue = (currentAuction as any)?.currentBid ? parseFloat((currentAuction as any).currentBid) : auction.currentBid;
+    const currentBidValue = (currentAuction as any)?.currentBid ? parseFloat((currentAuction as any).currentBid) : parseFloat(auction.currentBid || '0');
     
     if (bidValue <= currentBidValue) {
       toast({
@@ -363,7 +363,7 @@ export default function AuctionDetail() {
   };
 
   const handleQuickBid = (amount: number) => {
-    const newBidAmount = auction.currentBid + amount;
+    const newBidAmount = parseFloat(auction.currentBid || '0') + amount;
     extendAuctionIfNeeded();
     setBidAmount(newBidAmount.toString());
   };
@@ -738,10 +738,10 @@ export default function AuctionDetail() {
           <CardContent className="p-6">
             <div className="text-center mb-6">
               <div className="text-4xl font-bold text-green-600 mb-2">
-                {auction.currentBid.toLocaleString()} Сомони
+                {parseFloat(auction.currentBid || '0').toLocaleString()} Сомони
               </div>
               <p className="text-gray-600 text-sm bg-gray-50 rounded-lg px-3 py-2 inline-block">
-                Следующая ставка от {(auction.currentBid + 500).toLocaleString()} Сомони
+                Следующая ставка от {(parseFloat(auction.currentBid || '0') + 500).toLocaleString()} Сомони
               </p>
               
               {/* Reserve Price Information */}
