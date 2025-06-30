@@ -8,6 +8,7 @@ import { useLocation } from "wouter";
 import { useFavorites } from "@/contexts/FavoritesContext";
 import { useAuctions } from "@/contexts/AuctionContext";
 import { CountdownTimer } from "@/components/CountdownTimer";
+import { LazyCarImage } from "@/components/LazyCarImage";
 
 
 interface FavoriteCar {
@@ -138,9 +139,11 @@ export default function Favorites() {
               {sortedFavorites.map((car) => (
                 <Card key={car.id} className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer" onClick={() => goToAuction(car.id)}>
                   <div className="relative">
-                    <img
-                      src={car.photos[0] || "/api/placeholder/300/200"}
-                      alt={`${car.make} ${car.model}`}
+                    <LazyCarImage
+                      listingId={car.id}
+                      make={car.make}
+                      model={car.model}
+                      year={car.year}
                       className="w-full h-48 object-cover"
                     />
                     <div className="absolute top-3 right-3 flex gap-2">
