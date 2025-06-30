@@ -129,16 +129,22 @@ export default function AuctionDetail() {
     return translations[condition as keyof typeof translations] || condition || 'Не указано';
   };
 
-  // Fetch current auction data
+  // Fetch current auction data with optimized caching
   const { data: currentAuction, refetch: refetchAuction } = useQuery({
     queryKey: [`/api/listings/${id}`],
     enabled: !!id,
+    staleTime: 10000, // Consider data fresh for 10 seconds
+    gcTime: 300000, // Keep in cache for 5 minutes
+    refetchOnWindowFocus: false,
   });
 
-  // Fetch real bidding history
+  // Fetch real bidding history with faster updates
   const { data: realBiddingHistory = [] } = useQuery({
     queryKey: [`/api/listings/${id}/bids`],
     enabled: !!id,
+    refetchInterval: 500, // Update bids every 500ms for real-time feel
+    staleTime: 0, // Always fresh for bids
+    refetchOnWindowFocus: false,
   });
 
   // Sort bids by amount (highest first) to show current winning bid at top

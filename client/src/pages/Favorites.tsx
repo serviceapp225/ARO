@@ -9,6 +9,7 @@ import { useFavorites } from "@/contexts/FavoritesContext";
 import { useAuctions } from "@/contexts/AuctionContext";
 import { CountdownTimer } from "@/components/CountdownTimer";
 import { LazyCarImage } from "@/components/LazyCarImage";
+import { useQueryClient } from "@tanstack/react-query";
 
 
 interface FavoriteCar {
@@ -34,6 +35,7 @@ export default function Favorites() {
   const [, setLocation] = useLocation();
   const { getFavoritesList, removeFromFavorites } = useFavorites();
   const { auctions, refreshAuctions, setSelectedAuction } = useAuctions();
+  const queryClient = useQueryClient();
   
   // Don't auto-refresh to avoid slowdowns - use cached data
   
@@ -54,12 +56,29 @@ export default function Favorites() {
     }
   };
 
-  const goToAuction = (id: string) => {
+  const goToAuction = async (id: string) => {
     // Предварительно устанавливаем выбранный аукцион для быстрого отображения
     const selectedAuction = favoriteAuctions.find(auction => auction.id === id);
     if (selectedAuction) {
       setSelectedAuction(selectedAuction);
     }
+    
+    // Предварительная загрузка данных аукциона и ставок для мгновенного отображения
+    try {
+      await Promise.all([
+        queryClient.prefetchQuery({
+          queryKey: [`/api/listings/${id}`],
+          staleTime: 10000,
+        }),
+        queryClient.prefetchQuery({
+          queryKey: [`/api/listings/${id}/bids`],
+          staleTime: 0,
+        })
+      ]);
+    } catch (error) {
+      console.log('Prefetch failed, but continuing with navigation');
+    }
+    
     setLocation(`/auction/${id}`);
   };
 
