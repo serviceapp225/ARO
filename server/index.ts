@@ -8,6 +8,11 @@ const app = express();
 
 // Add caching headers for better performance
 app.use((req, res, next) => {
+  // Пропускаем /api/listings для максимальной скорости
+  if (req.path === '/api/listings') {
+    return next();
+  }
+  
   if (req.path.startsWith('/api/')) {
     // Cache API responses for 30 seconds
     res.set('Cache-Control', 'public, max-age=30');
@@ -22,6 +27,11 @@ app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: false, limit: '50mb' }));
 
 app.use((req, res, next) => {
+  // Отключаем логгирование для /api/listings для максимальной скорости
+  if (req.path === '/api/listings') {
+    return next();
+  }
+  
   const start = Date.now();
   const path = req.path;
   let capturedJsonResponse: Record<string, any> | undefined = undefined;
