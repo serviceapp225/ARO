@@ -90,7 +90,7 @@ export default function UserData() {
 
   const handleEditName = () => {
     setIsEditingName(true);
-    setEditedName(userData.fullName || '');
+    setEditedName(currentData.fullName || '');
   };
 
   const handleSaveName = () => {
@@ -114,11 +114,17 @@ export default function UserData() {
   };
 
   const handleCancelEdit = () => {
-    setEditedName(userData.fullName || '');
+    setEditedName(currentData.fullName || '');
     setIsEditingName(false);
   };
 
-  const currentData = userData;
+  // Используем данные из API как приоритетные, fallback на userData из localStorage
+  const currentData = {
+    ...userData,
+    fullName: user?.fullName || userData.fullName,
+    phoneNumber: user?.phoneNumber || userData.phoneNumber,
+    email: user?.email || userData.email,
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 pb-20">

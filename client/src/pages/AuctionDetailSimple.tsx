@@ -92,7 +92,6 @@ export default function AuctionDetail() {
   const userDataMap = usersData.reduce((acc: Record<number, any>, user: any) => {
     if (user && user.id) {
       acc[user.id] = user;
-      console.log(`User ${user.id} mapped:`, user.fullName); // Отладка
     }
     return acc;
   }, {});
@@ -593,12 +592,7 @@ export default function AuctionDetail() {
                         </div>
                         <div>
                           <p className="font-medium">{
-                            (() => {
-                              const fullNameFromMap = userDataMap[bid.bidderId]?.fullName;
-                              const usernameFromBid = bid.bidder?.username;
-                              console.log(`Bid ${bid.id}: fullName="${fullNameFromMap}", username="${usernameFromBid}"`);
-                              return fullNameFromMap || usernameFromBid || 'Участник аукциона';
-                            })()
+                            userDataMap[bid.bidderId]?.fullName || 'Участник аукциона'
                           }</p>
                           <p className="text-sm text-muted-foreground">
                             {new Date(bid.createdAt).toLocaleString('ru-RU')}
