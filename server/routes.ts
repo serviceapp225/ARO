@@ -75,6 +75,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Статический кэш для максимальной скорости
   let cachedListings: any[] = [];
   let bidCountsCache = new Map<number, number>();
+  let lastCacheUpdate = Date.now();
   
   // Функция для обновления кэша в фоне
   const updateListingsCache = async () => {
@@ -89,12 +90,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       const fastListings = listings.map(listing => ({
-        ...listing,
-        bidCount: bidCountsCache.get(listing.id) || 0,
-        thumbnailPhoto: null
+        id: listing.id,
+        lotNumber: listing.lotNumber,
+        make: listing.make,
+        model: listing.model,
+        year: listing.year,
+        mileage: listing.mileage,
+        currentBid: listing.currentBid,
+        startingPrice: listing.startingPrice,
+        status: listing.status,
+        auctionEndTime: listing.auctionEndTime,
+        auctionStartTime: listing.auctionStartTime,
+        customsCleared: listing.customsCleared,
+        recycled: listing.recycled,
+        technicalInspectionValid: listing.technicalInspectionValid,
+        engine: listing.engine,
+        transmission: listing.transmission,
+        fuelType: listing.fuelType,
+        color: listing.color,
+        condition: listing.condition,
+        location: listing.location,
+        bidCount: bidCountsCache.get(listing.id) || 0
+        // Убираем фотографии из кэша для экономии памяти
       }));
       
       cachedListings = fastListings;
+      lastCacheUpdate = Date.now();
       console.log(`Cache updated with ${fastListings.length} listings`);
     } catch (error) {
       console.error('Cache update failed:', error);
@@ -119,10 +140,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json({ test: "fast", time: Date.now() });
   });
 
-  // Car listing routes - ультрабыстрая отдача
+  // Car listing routes - ультрабыстрая отдача с агрессивным кэшированием
   app.get("/api/listings", (req, res) => {
     try {
       console.log("Listings endpoint called, cache size:", cachedListings.length);
+      
+      // Агрессивное HTTP кэширование - 10 секунд
+      res.setHeader('Cache-Control', 'public, max-age=10, s-maxage=10');
+      res.setHeader('ETag', `"listings-${lastCacheUpdate}"`);
       
       // Оптимизируем данные для скорости но сохраняем важные поля
       const optimizedListings = cachedListings.map(listing => ({
@@ -137,7 +162,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         status: listing.status,
         auctionEndTime: listing.auctionEndTime,
         auctionStartTime: listing.auctionStartTime,
-        photos: listing.photos ? listing.photos.slice(0, 3) : [], // Максимум 3 фото
+        photos: [], // Убираем фотографии из списка для скорости
         customsCleared: listing.customsCleared,
         recycled: listing.recycled,
         technicalInspectionValid: listing.technicalInspectionValid,
