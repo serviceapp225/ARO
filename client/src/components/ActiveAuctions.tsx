@@ -121,14 +121,18 @@ export function ActiveAuctions({ searchQuery = "", customListings }: ActiveAucti
 
   if (loading) {
     return (
-      <div className="grid grid-cols-2 gap-3 mb-20">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-20">
         {[1, 2, 3, 4, 5, 6].map((i) => (
-          <Card key={i} className="animate-pulse">
-            <div className="h-32 bg-gray-200" />
-            <CardContent className="p-3">
-              <div className="h-3 bg-gray-200 rounded mb-2" />
-              <div className="h-3 bg-gray-200 rounded w-2/3 mb-2" />
-              <div className="h-4 bg-gray-200 rounded w-1/2" />
+          <Card key={i} className="animate-pulse rounded-xl overflow-hidden">
+            <div className="h-48 bg-gray-200" />
+            <CardContent className="p-4">
+              <div className="h-4 bg-gray-200 rounded mb-3" />
+              <div className="h-6 bg-gray-200 rounded mb-2" />
+              <div className="h-3 bg-gray-200 rounded mb-3" />
+              <div className="flex justify-between">
+                <div className="h-4 bg-gray-200 rounded w-20" />
+                <div className="h-3 bg-gray-200 rounded w-16" />
+              </div>
             </CardContent>
           </Card>
         ))}
@@ -158,11 +162,11 @@ export function ActiveAuctions({ searchQuery = "", customListings }: ActiveAucti
           </SelectContent>
         </Select>
       </div>
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {displayedAuctions.map((auction, index) => (
           <Card
             key={`${auction.id}-${index}`}
-            className="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md transition-shadow cursor-pointer"
+            className="group relative rounded-xl overflow-hidden bg-white shadow-lg hover:shadow-2xl transition-all duration-300 cursor-pointer"
             onClick={() => setLocation(`/auction/${auction.id}`)}
           >
             <div className="relative">
@@ -171,96 +175,89 @@ export function ActiveAuctions({ searchQuery = "", customListings }: ActiveAucti
                 make={auction.make}
                 model={auction.model}
                 year={auction.year}
-                className="h-32"
+                className="h-48 object-cover group-hover:scale-105 transition-transform duration-300"
               />
-              <div className="absolute top-2 left-2">
+              <div className="absolute inset-0 bg-black bg-opacity-20 group-hover:bg-opacity-10 transition-all duration-300"></div>
+              
+              <div className="absolute top-3 left-3">
                 <CountdownTimer 
                   endTime={auction.endTime || auction.auctionEndTime} 
                   size="small"
                 />
               </div>
-              <div className="absolute top-2 right-2">
+              
+              <div className="absolute top-3 right-3">
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="w-6 h-6 bg-black/50 text-white hover:bg-black/70"
+                  className="w-8 h-8 bg-black/50 text-white hover:bg-black/70 backdrop-blur-sm"
                   onClick={(e) => handleToggleFavorite(auction.id, e)}
                 >
-                  <Heart className={`h-3 w-3 ${isFavorite(auction.id) ? 'fill-red-500 text-red-500' : 'text-white'}`} />
+                  <Heart className={`h-4 w-4 ${isFavorite(auction.id) ? 'fill-red-500 text-red-500' : 'text-white'}`} />
                 </Button>
               </div>
+              
+              {/* Status Badge */}
+              <div className="absolute bottom-3 left-3">
+                <span className={`px-2 py-1 rounded text-xs font-semibold text-white ${
+                  auction.bidCount > 5 ? 'bg-red-600' :
+                  auction.bidCount > 2 ? 'bg-orange-600' :
+                  'bg-green-600'
+                }`}>
+                  {auction.bidCount > 5 ? 'ГОРЯЧИЙ АУКЦИОН' :
+                   auction.bidCount > 2 ? 'АКТИВНЫЙ' :
+                   'НОВЫЙ'}
+                </span>
+              </div>
             </div>
-            <CardContent className="p-3">
-              <div className="mb-1">
-                <span className="text-xs font-mono bg-gray-100 text-gray-700 px-2 py-1 rounded">
+            <CardContent className="p-4">
+              <div className="mb-2">
+                <span className="text-xs font-mono bg-blue-100 text-blue-700 px-2 py-1 rounded">
                   {auction.lotNumber}
                 </span>
               </div>
-              <h3 className="text-sm font-bold text-gray-900 mb-1 truncate">
+              <h3 className="font-bold text-lg text-gray-900 mb-1">
                 {auction.make} {auction.model}
               </h3>
-              <div className="text-xs text-gray-600 mb-2 space-y-0.5">
-                <p>Год: {auction.year}</p>
-                <p>Пробег: {auction.mileage.toLocaleString()} км</p>
-              </div>
+              <p className="text-gray-600 text-sm mb-3">
+                {auction.year} • {auction.mileage.toLocaleString()} км • {auction.location || 'Душанбе'}
+              </p>
               
-              {/* Индикаторы статуса */}
-              <div className="flex flex-wrap gap-1 mb-2">
-                <span className={`text-xs px-2 py-1 rounded-full ${
-                  auction.customsCleared 
-                    ? 'bg-green-100 text-green-700' 
-                    : 'bg-red-100 text-red-700'
-                }`}>
-                  {auction.customsCleared ? '✓ Растаможен' : '✗ Не растаможен'}
-                </span>
-                
-                <span className={`text-xs px-2 py-1 rounded-full ${
-                  auction.recycled 
-                    ? 'bg-blue-100 text-blue-700' 
-                    : 'bg-orange-100 text-orange-700'
-                }`}>
-                  {auction.recycled ? 'Утилизация: есть' : 'Утилизация: нет'}
-                </span>
-                
-                <span className={`text-xs px-2 py-1 rounded-full ${
-                  auction.technicalInspectionValid 
-                    ? 'bg-purple-100 text-purple-700' 
-                    : 'bg-gray-100 text-gray-700'
-                }`}>
-                  {auction.technicalInspectionValid 
-                    ? `ТО до ${auction.technicalInspectionDate}` 
-                    : 'ТО: нет'}
-                </span>
-                
-                <span className={`text-xs px-2 py-1 rounded-full ${
-                  auction.tinted 
-                    ? 'bg-indigo-100 text-indigo-700' 
-                    : 'bg-gray-100 text-gray-700'
-                }`}>
-                  {auction.tinted 
-                    ? `Тонировка (${auction.tintingDate || 'есть'})` 
-                    : 'Тонировка: нет'}
-                </span>
-              </div>
-              <div className="mb-2">
-                {(auction.currentBid && auction.currentBid !== '0' && auction.currentBid !== '' && !isNaN(parseFloat(auction.currentBid))) ? (
-                  <>
-                    <p className="text-xs text-gray-500">Текущая ставка</p>
-                    <p className="text-sm font-bold text-green-600">
-                      {parseFloat(auction.currentBid).toLocaleString()} Сомони
-                    </p>
-                  </>
-                ) : (
-                  <>
-                    <p className="text-xs text-gray-500">Стартовая цена</p>
-                    <p className="text-sm font-bold text-blue-600">
-                      {parseFloat(auction.startingPrice || '0').toLocaleString()} Сомони
-                    </p>
-                  </>
+              {/* Compact status indicators */}
+              <div className="flex flex-wrap gap-1 mb-3">
+                {auction.customsCleared && (
+                  <span className="text-xs px-2 py-1 rounded bg-green-100 text-green-700">
+                    Растаможен
+                  </span>
+                )}
+                {auction.recycled && (
+                  <span className="text-xs px-2 py-1 rounded bg-blue-100 text-blue-700">
+                    Утилизация
+                  </span>
+                )}
+                {auction.technicalInspectionValid && (
+                  <span className="text-xs px-2 py-1 rounded bg-purple-100 text-purple-700">
+                    ТО
+                  </span>
                 )}
               </div>
-              <div className="flex justify-between items-center text-xs text-gray-500">
-                <span>{auction.bidCount} ставок</span>
+              
+              {/* Price section */}
+              <div className="flex justify-between items-center">
+                <div>
+                  {(auction.currentBid && auction.currentBid !== '0' && auction.currentBid !== '' && !isNaN(parseFloat(auction.currentBid))) ? (
+                    <span className="text-blue-600 font-bold">
+                      от {parseFloat(auction.currentBid).toLocaleString()} с.
+                    </span>
+                  ) : (
+                    <span className="text-blue-600 font-bold">
+                      от {parseFloat(auction.startingPrice || '0').toLocaleString()} с.
+                    </span>
+                  )}
+                </div>
+                <span className="text-xs text-gray-500">
+                  {auction.bidCount} ставок
+                </span>
               </div>
             </CardContent>
           </Card>
