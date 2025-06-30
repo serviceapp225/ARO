@@ -37,25 +37,11 @@ export default function Favorites() {
   const { auctions, refreshAuctions, setSelectedAuction } = useAuctions();
   const queryClient = useQueryClient();
   
-  // Предзагружаем данные для первых 3 карточек при загрузке страницы
-  useEffect(() => {
-    const preloadFirstFavorites = async () => {
-      const firstThree = favoriteAuctions.slice(0, 3);
-      for (const auction of firstThree) {
-        prefetchAuctionData(auction.id);
-      }
-    };
-    
-    if (favoriteAuctions.length > 0) {
-      preloadFirstFavorites();
-    }
-  }, [favoriteAuctions]);
-
-  // Don't auto-refresh to avoid slowdowns - use cached data
-  
   // Get favorite auctions from the auction list
   const favoriteIds = getFavoritesList();
   const favoriteAuctions = auctions.filter(auction => favoriteIds.includes(auction.id));
+  
+
   
   // Helper function to check if auction is completed
   const isAuctionCompleted = (endTime: Date | string) => {
@@ -91,6 +77,20 @@ export default function Favorites() {
       // Тихо игнорируем ошибки предзагрузки
     }
   };
+
+  // Предзагружаем данные для первых 3 карточек при загрузке страницы
+  useEffect(() => {
+    const preloadFirstFavorites = async () => {
+      const firstThree = favoriteAuctions.slice(0, 3);
+      for (const auction of firstThree) {
+        prefetchAuctionData(auction.id);
+      }
+    };
+    
+    if (favoriteAuctions.length > 0) {
+      preloadFirstFavorites();
+    }
+  }, [favoriteAuctions]);
 
   const goToAuction = async (id: string | number) => {
     // Предварительно устанавливаем выбранный аукцион для быстрого отображения
