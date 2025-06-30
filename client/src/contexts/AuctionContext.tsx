@@ -42,10 +42,9 @@ export function AuctionProvider({ children }: { children: ReactNode }) {
   // Simplified fetch listings without complex caching logic
   const fetchListings = useCallback(async (forceRefresh = false) => {
     try {
-      // Быстрая загрузка для первого раза, дебаунсинг только для последующих обновлений
-      const now = Date.now();
-      if (!forceRefresh && listings.length > 0 && (now - lastUpdateTime) < 1000) {
-        return; // Дебаунсинг только если данные уже загружены
+      // Убираем дебаунсинг для быстрой загрузки
+      if (!forceRefresh && listings.length > 0) {
+        return; // Просто проверяем что данные уже есть
       }
 
       // Показываем loading только при первой загрузке
@@ -59,7 +58,7 @@ export function AuctionProvider({ children }: { children: ReactNode }) {
         const data = await response.json();
         if (Array.isArray(data)) {
           setListings(data);
-          setLastUpdateTime(now);
+          setLastUpdateTime(Date.now());
         } else {
           setListings([]);
         }
@@ -78,8 +77,8 @@ export function AuctionProvider({ children }: { children: ReactNode }) {
     // Немедленная загрузка при инициализации
     fetchListings(true);
     
-    // Фоновые обновления каждые 5 секунд для актуальности данных
-    const interval = setInterval(() => fetchListings(false), 5000);
+    // Фоновые обновления каждые 30 секунд для стабильности
+    const interval = setInterval(() => fetchListings(false), 30000);
     
     return () => {
       clearInterval(interval);

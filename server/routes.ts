@@ -105,9 +105,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
     sellerListingsCache.clear();
   }
   
+  // Test endpoint для проверки скорости
+  app.get("/api/test", (req, res) => {
+    res.json({ test: "fast", time: Date.now() });
+  });
+
   // Car listing routes - ультрабыстрая отдача
   app.get("/api/listings", (req, res) => {
-    res.json(cachedListings);
+    console.log("Listings endpoint called, cache size:", cachedListings.length);
+    res.json(cachedListings || []);
   });
 
   // Cached endpoint for getting individual photo by index
