@@ -48,7 +48,7 @@ export default function Favorites() {
     return new Date(endTime) <= new Date();
   };
 
-  const removeFavorite = async (id: string) => {
+  const removeFavorite = async (id: string | number) => {
     try {
       await removeFromFavorites(id);
     } catch (error) {
@@ -56,7 +56,7 @@ export default function Favorites() {
     }
   };
 
-  const goToAuction = async (id: string) => {
+  const goToAuction = async (id: string | number) => {
     // Предварительно устанавливаем выбранный аукцион для быстрого отображения
     const selectedAuction = favoriteAuctions.find(auction => auction.id === id);
     if (selectedAuction) {
