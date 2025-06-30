@@ -436,6 +436,82 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Endpoint для предварительного сжатия фотографий
+  app.post("/api/compress-photos", async (req, res) => {
+    try {
+      const { photos } = req.body;
+      
+      if (!Array.isArray(photos)) {
+        return res.status(400).json({ error: "Photos must be an array" });
+      }
+      
+      const compressedPhotos: string[] = [];
+      
+      for (const photoData of photos) {
+        if (typeof photoData === 'string' && photoData.startsWith('data:image/')) {
+          const matches = photoData.match(/data:image\/([^;]+);base64,(.+)/);
+          if (matches) {
+            const base64Data = matches[2];
+            const originalBuffer = Buffer.from(base64Data, 'base64');
+            const originalSize = originalBuffer.length;
+            
+            console.log(`🔄 Сжимаем фото размером ${(originalSize/1024).toFixed(1)}KB`);
+            
+            try {
+              // Агрессивное серверное сжатие
+              let quality = 70;
+              let maxWidth = 1000;
+              
+              if (originalSize > 2 * 1024 * 1024) { // > 2MB
+                quality = 60;
+                maxWidth = 800;
+              } else if (originalSize > 500 * 1024) { // > 500KB
+                quality = 65;
+                maxWidth = 900;
+              }
+              
+              const compressedBuffer = await sharp(originalBuffer)
+                .jpeg({ 
+                  quality,
+                  progressive: true,
+                  mozjpeg: true,
+                  optimiseScans: true
+                })
+                .resize(maxWidth, null, {
+                  fit: 'inside',
+                  withoutEnlargement: true
+                })
+                .toBuffer();
+              
+              const compressedSize = compressedBuffer.length;
+              const compressionRatio = ((originalSize - compressedSize) / originalSize * 100).toFixed(1);
+              
+              console.log(`✅ Сжато: ${(originalSize/1024).toFixed(1)}KB → ${(compressedSize/1024).toFixed(1)}KB (${compressionRatio}% экономия)`);
+              
+              // Конвертируем обратно в base64
+              const compressedBase64 = `data:image/jpeg;base64,${compressedBuffer.toString('base64')}`;
+              compressedPhotos.push(compressedBase64);
+              
+            } catch (error) {
+              console.error('Ошибка сжатия, используем оригинал:', error);
+              compressedPhotos.push(photoData);
+            }
+          } else {
+            compressedPhotos.push(photoData);
+          }
+        } else {
+          compressedPhotos.push(photoData);
+        }
+      }
+      
+      res.json({ compressedPhotos });
+      
+    } catch (error) {
+      console.error('Ошибка сжатия фотографий:', error);
+      res.status(500).json({ error: "Failed to compress photos" });
+    }
+  });
+
   app.post("/api/listings", async (req, res) => {
     try {
       const validatedData = insertCarListingSchema.parse(req.body);
