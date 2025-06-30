@@ -4,7 +4,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { CountdownTimer } from './CountdownTimer';
 import { LazyCarImage } from './LazyCarImage';
-import { AuctionDetailModal } from './AuctionDetailModal';
+
 import { useAuctions } from '@/contexts/AuctionContext';
 import { useFavorites } from '@/contexts/FavoritesContext';
 import { useLocation } from 'wouter';
@@ -17,7 +17,7 @@ interface ActiveAuctionsProps {
 }
 
 export function ActiveAuctions({ searchQuery = "", customListings }: ActiveAuctionsProps) {
-  const { auctions, loading, setSelectedAuction } = useAuctions();
+  const { auctions, loading } = useAuctions();
   const { isFavorite, addToFavorites, removeFromFavorites } = useFavorites();
   
 
@@ -163,7 +163,7 @@ export function ActiveAuctions({ searchQuery = "", customListings }: ActiveAucti
           <Card
             key={`${auction.id}-${index}`}
             className="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md transition-shadow cursor-pointer"
-            onClick={() => setSelectedAuction(auction)}
+            onClick={() => setLocation(`/auction/${auction.id}`)}
           >
             <div className="relative">
               <LazyCarImage
@@ -292,9 +292,6 @@ export function ActiveAuctions({ searchQuery = "", customListings }: ActiveAucti
           )}
         </div>
       )}
-      
-      {/* Auction Detail Modal */}
-      <AuctionDetailModal />
     </div>
   );
 }
