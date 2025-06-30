@@ -363,19 +363,23 @@ export function UserDetailModal({ userId, isOpen, onClose }: UserDetailModalProp
                 </CardHeader>
                 <CardContent>
                   {listingsLoading ? (
-                    <div className="text-center py-8">Загрузка объявлений...</div>
-                  ) : listings.length === 0 ? (
+                    <div className="text-center py-8">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
+                      Загрузка объявлений...
+                    </div>
+                  ) : !listings || listings.length === 0 ? (
                     <div className="text-center py-8 text-gray-500">
+                      <Car className="w-12 h-12 mx-auto mb-2 text-gray-300" />
                       У пользователя пока нет объявлений
                     </div>
                   ) : (
                     <div className="space-y-4">
                       {listings.map((listing) => (
-                        <div key={listing.id} className="border rounded-lg p-4 hover:bg-gray-50 dark:hover:bg-gray-800">
-                          <div className="flex justify-between items-start">
-                            <div className="space-y-2">
-                              <div className="flex items-center gap-2">
-                                <h4 className="font-medium">
+                        <div key={listing.id} className="border rounded-lg p-6 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                          <div className="flex justify-between items-start gap-4">
+                            <div className="flex-1 space-y-3">
+                              <div className="flex items-center gap-3">
+                                <h4 className="font-semibold text-lg">
                                   {listing.make} {listing.model} {listing.year}
                                 </h4>
                                 <Badge 
@@ -390,17 +394,48 @@ export function UserDetailModal({ userId, isOpen, onClose }: UserDetailModalProp
                                    listing.status === 'ended' ? 'Завершен' : 'Отклонен'}
                                 </Badge>
                               </div>
-                              <div className="text-sm text-gray-600 dark:text-gray-400">
-                                <p>Лот №: {listing.lotNumber}</p>
-                                <p>Стартовая цена: {listing.startingPrice}</p>
-                                <p>Текущая ставка: {listing.currentBid || 'Нет ставок'}</p>
-                                <p>Пробег: {listing.mileage || 'Не указан'} км</p>
+                              
+                              <div className="grid grid-cols-2 gap-3 text-sm">
+                                <div className="space-y-1">
+                                  <p><span className="font-medium">Лот №:</span> {listing.lotNumber}</p>
+                                  <p><span className="font-medium">Стартовая цена:</span> ${listing.startingPrice}</p>
+                                  <p><span className="font-medium">Текущая ставка:</span> {listing.currentBid ? `$${listing.currentBid}` : 'Нет ставок'}</p>
+                                </div>
+                                <div className="space-y-1">
+                                  <p><span className="font-medium">Пробег:</span> {listing.mileage ? `${listing.mileage.toLocaleString()} км` : 'Не указан'}</p>
+                                  <p><span className="font-medium">Состояние:</span> {listing.condition || 'Не указано'}</p>
+                                  <p><span className="font-medium">Местоположение:</span> {listing.location || 'Не указано'}</p>
+                                </div>
                               </div>
-                              <p className="text-sm">{listing.description}</p>
+                              
+                              {listing.description && (
+                                <div className="pt-2 border-t">
+                                  <p className="text-sm text-gray-600 dark:text-gray-400">{listing.description}</p>
+                                </div>
+                              )}
+                              
+                              {/* Дополнительные характеристики */}
+                              {(listing.engine || listing.transmission || listing.fuelType) && (
+                                <div className="pt-2 border-t">
+                                  <h5 className="font-medium text-sm mb-2">Технические характеристики:</h5>
+                                  <div className="grid grid-cols-3 gap-2 text-sm text-gray-600 dark:text-gray-400">
+                                    {listing.engine && <p><span className="font-medium">Двигатель:</span> {listing.engine}</p>}
+                                    {listing.transmission && <p><span className="font-medium">КПП:</span> {listing.transmission}</p>}
+                                    {listing.fuelType && <p><span className="font-medium">Топливо:</span> {listing.fuelType}</p>}
+                                  </div>
+                                </div>
+                              )}
                             </div>
-                            <div className="text-right text-sm text-gray-500">
-                              <p>Создано:</p>
-                              <p>{new Date(listing.createdAt).toLocaleDateString('ru-RU')}</p>
+                            
+                            <div className="text-right text-sm text-gray-500 flex-shrink-0">
+                              <p className="font-medium">Создано:</p>
+                              <p>{listing.createdAt instanceof Date ? listing.createdAt.toLocaleDateString('ru-RU') : 'Не указано'}</p>
+                              {listing.auctionEndTime && (
+                                <>
+                                  <p className="font-medium mt-2">Окончание:</p>
+                                  <p>{listing.auctionEndTime instanceof Date ? listing.auctionEndTime.toLocaleDateString('ru-RU') : 'Не указано'}</p>
+                                </>
+                              )}
                             </div>
                           </div>
                         </div>
