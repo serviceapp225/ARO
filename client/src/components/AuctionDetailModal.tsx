@@ -15,7 +15,8 @@ export function AuctionDetailModal() {
 
   if (!selectedAuction) return null;
 
-  const minimumBid = parseFloat(String(selectedAuction.currentBid) || '0') + 1;
+  const currentPrice = selectedAuction.currentBid > 0 ? selectedAuction.currentBid : parseFloat(selectedAuction.startingPrice || '0');
+  const minimumBid = currentPrice + 1;
 
   const handlePlaceBid = (e: React.FormEvent) => {
     e.preventDefault();
@@ -129,11 +130,17 @@ export function AuctionDetailModal() {
                 onTimeUp={() => toast({ title: "Auction Ended", description: "This auction has concluded." })}
               />
 
-              {/* Current Bid */}
-              <div className="text-center p-6 bg-emerald-50 rounded-2xl">
-                <div className="text-sm text-neutral-600 mb-1">Текущая наивысшая ставка</div>
-                <div className="text-4xl font-bold text-emerald-600 font-mono mb-2">
-                  {selectedAuction.currentBid.toLocaleString()} Сомони
+              {/* Current Price */}
+              <div className={`text-center p-6 rounded-2xl ${
+                selectedAuction.currentBid > 0 ? 'bg-emerald-50' : 'bg-blue-50'
+              }`}>
+                <div className="text-sm text-neutral-600 mb-1">
+                  {selectedAuction.currentBid > 0 ? 'Текущая наивысшая ставка' : 'Стартовая цена'}
+                </div>
+                <div className={`text-4xl font-bold font-mono mb-2 ${
+                  selectedAuction.currentBid > 0 ? 'text-emerald-600' : 'text-blue-600'
+                }`}>
+                  {currentPrice.toLocaleString()} Сомони
                 </div>
                 <div className="text-sm text-neutral-600">
                   Ставок размещено: {selectedAuction.bidCount}
