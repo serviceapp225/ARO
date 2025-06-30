@@ -71,7 +71,7 @@ export function PremiumBanner() {
               <div className="absolute inset-0 bg-black bg-opacity-30"></div>
               
               {/* Content */}
-              <div className="relative z-10 h-full flex flex-col justify-center items-center text-center space-y-3 p-6">
+              <div className="relative z-10 h-full flex flex-col justify-center items-center text-center space-y-4 p-6">
                 <div className="text-white opacity-90 mb-2">
                   {currentBanner.icon}
                 </div>
@@ -80,15 +80,7 @@ export function PremiumBanner() {
                   {currentBanner.title}
                 </h2>
                 
-                <p className="text-base text-white opacity-95 font-semibold tracking-wide">
-                  {currentBanner.subtitle}
-                </p>
-                
-                <p className="text-xs text-white opacity-90 leading-relaxed max-w-md font-medium">
-                  {currentBanner.description}
-                </p>
-                
-                <div className="mt-3">
+                <div className="mt-4">
                   <Button
                     className="px-4 py-1.5 bg-white text-gray-800 hover:bg-gray-100 font-bold rounded-full transition-all duration-300 inline-flex items-center gap-1 shadow-lg hover:shadow-xl tracking-wide text-sm"
                   >
