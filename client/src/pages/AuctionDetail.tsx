@@ -205,7 +205,7 @@ export default function AuctionDetail() {
   // Use real auction data from database
   const auction = currentAuction as any;
 
-  const currentBid = auction ? (auction.currentBid ? parseFloat(auction.currentBid) : parseFloat(auction.startingPrice)) : 0;
+  const currentBid = auction ? (auction.currentBid ? parseFloat(auction.currentBid) : parseFloat(auction.startingPrice || '0')) : 0;
   const condition = auction ? getConditionByMileage(auction.mileage) : "Неизвестно";
 
   // Прокрутка к верху страницы при загрузке
@@ -669,7 +669,7 @@ export default function AuctionDetail() {
                 </div>
                 <div className="text-center">
                   <AnimatedPrice 
-                    value={(currentAuction as any)?.currentBid ? parseFloat((currentAuction as any).currentBid) : auction.currentBid}
+                    value={(currentAuction as any)?.currentBid ? parseFloat((currentAuction as any).currentBid) : (auction.currentBid ? parseFloat(auction.currentBid) : parseFloat(auction.startingPrice || '0'))}
                     className="text-2xl font-bold text-green-600"
                     onPriceUpdate={() => {
                       // Additional celebration effects when price updates
@@ -738,10 +738,10 @@ export default function AuctionDetail() {
           <CardContent className="p-6">
             <div className="text-center mb-6">
               <div className="text-4xl font-bold text-green-600 mb-2">
-                {parseFloat(auction.currentBid || '0').toLocaleString()} Сомони
+                {(auction.currentBid ? parseFloat(auction.currentBid) : parseFloat(auction.startingPrice || '0')).toLocaleString()} Сомони
               </div>
               <p className="text-gray-600 text-sm bg-gray-50 rounded-lg px-3 py-2 inline-block">
-                Следующая ставка от {(parseFloat(auction.currentBid || '0') + 500).toLocaleString()} Сомони
+                Следующая ставка от {((auction.currentBid ? parseFloat(auction.currentBid) : parseFloat(auction.startingPrice || '0')) + 500).toLocaleString()} Сомони
               </p>
               
               {/* Reserve Price Information */}
