@@ -11,8 +11,8 @@ import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
-import { User, Document } from '@shared/schema';
-import { User2, FileText, Trash2, Upload, X } from 'lucide-react';
+import { User, Document, CarListing } from '@shared/schema';
+import { User2, FileText, Trash2, Upload, X, Car } from 'lucide-react';
 
 interface UserDetailModalProps {
   userId: number | null;
@@ -45,6 +45,12 @@ export function UserDetailModal({ userId, isOpen, onClose }: UserDetailModalProp
   // Fetch user documents
   const { data: documents = [], isLoading: documentsLoading } = useQuery<Document[]>({
     queryKey: [`/api/admin/users/${userId}/documents`],
+    enabled: !!userId && isOpen,
+  });
+
+  // Fetch user listings
+  const { data: listings = [], isLoading: listingsLoading } = useQuery<CarListing[]>({
+    queryKey: [`/api/admin/users/${userId}/listings`],
     enabled: !!userId && isOpen,
   });
 
@@ -236,8 +242,9 @@ export function UserDetailModal({ userId, isOpen, onClose }: UserDetailModalProp
           <div className="p-8 text-center">Загрузка...</div>
         ) : (
           <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="grid w-full grid-cols-2">
+            <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="profile">Профиль</TabsTrigger>
+              <TabsTrigger value="listings">Объявления</TabsTrigger>
               <TabsTrigger value="documents">Документы</TabsTrigger>
             </TabsList>
 
@@ -342,6 +349,64 @@ export function UserDetailModal({ userId, isOpen, onClose }: UserDetailModalProp
                       {user?.createdAt ? new Date(user.createdAt).toLocaleDateString('ru-RU') : 'Неизвестно'}
                     </span>
                   </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="listings" className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Car className="w-5 h-5" />
+                    Объявления пользователя ({listings.length})
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {listingsLoading ? (
+                    <div className="text-center py-8">Загрузка объявлений...</div>
+                  ) : listings.length === 0 ? (
+                    <div className="text-center py-8 text-gray-500">
+                      У пользователя пока нет объявлений
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {listings.map((listing) => (
+                        <div key={listing.id} className="border rounded-lg p-4 hover:bg-gray-50 dark:hover:bg-gray-800">
+                          <div className="flex justify-between items-start">
+                            <div className="space-y-2">
+                              <div className="flex items-center gap-2">
+                                <h4 className="font-medium">
+                                  {listing.make} {listing.model} {listing.year}
+                                </h4>
+                                <Badge 
+                                  variant={
+                                    listing.status === 'active' ? 'default' : 
+                                    listing.status === 'pending' ? 'secondary' :
+                                    listing.status === 'ended' ? 'outline' : 'destructive'
+                                  }
+                                >
+                                  {listing.status === 'active' ? 'Активный' :
+                                   listing.status === 'pending' ? 'На модерации' :
+                                   listing.status === 'ended' ? 'Завершен' : 'Отклонен'}
+                                </Badge>
+                              </div>
+                              <div className="text-sm text-gray-600 dark:text-gray-400">
+                                <p>Лот №: {listing.lotNumber}</p>
+                                <p>Стартовая цена: {listing.startingPrice}</p>
+                                <p>Текущая ставка: {listing.currentBid || 'Нет ставок'}</p>
+                                <p>Пробег: {listing.mileage || 'Не указан'} км</p>
+                              </div>
+                              <p className="text-sm">{listing.description}</p>
+                            </div>
+                            <div className="text-right text-sm text-gray-500">
+                              <p>Создано:</p>
+                              <p>{new Date(listing.createdAt).toLocaleDateString('ru-RU')}</p>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </TabsContent>

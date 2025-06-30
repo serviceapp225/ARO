@@ -1557,6 +1557,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Получить объявления пользователя
+  app.get("/api/admin/users/:id/listings", adminAuth, async (req, res) => {
+    try {
+      const userId = parseInt(req.params.id);
+      const listings = await storage.getListingsBySeller(userId);
+      res.json(listings);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch user listings" });
+    }
+  });
+
   // Получить документы пользователя
   app.get("/api/admin/users/:id/documents", adminAuth, async (req, res) => {
     try {
