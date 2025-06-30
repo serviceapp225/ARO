@@ -15,6 +15,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { CountdownTimer } from "@/components/CountdownTimer";
 import { ConfettiEffect } from "@/components/ConfettiEffect";
+import DriftingCarLoader from "@/components/DriftingCarLoader";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 export default function AuctionDetail() {
@@ -50,7 +51,7 @@ export default function AuctionDetail() {
   const queryClient = useQueryClient();
 
   // Fetch current auction data
-  const { data: currentAuction, refetch: refetchAuction } = useQuery({
+  const { data: currentAuction, refetch: refetchAuction, isLoading: auctionLoading } = useQuery({
     queryKey: [`/api/listings/${id}`],
     enabled: !!id,
   });
