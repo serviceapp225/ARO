@@ -15,7 +15,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Link } from 'wouter';
 import { UserDetailModal } from '@/components/UserDetailModal';
 import { ListingEditModal } from '@/components/ListingEditModal';
-import type { User, CarListing, Notification } from '@shared/schema';
+import type { User, CarListing, Notification, Banner } from '@shared/schema';
 
 export default function AdminPanel() {
   const { user, loading } = useAuth();
@@ -390,7 +390,7 @@ function BannersManagement() {
   });
 
   // Получение баннеров
-  const { data: banners, isLoading: bannersLoading } = useQuery({
+  const { data: banners = [], isLoading: bannersLoading } = useQuery<Banner[]>({
     queryKey: ['/api/admin/banners'],
     staleTime: 30000,
   });
@@ -661,8 +661,8 @@ function BannersManagement() {
 
       {/* Список баннеров */}
       <div className="grid gap-4">
-        {banners && banners.length > 0 ? (
-          banners.map((banner: any) => (
+        {banners.length > 0 ? (
+          banners.map((banner: Banner) => (
             <Card key={banner.id} className="overflow-hidden">
               <CardContent className="p-6">
                 <div className="flex items-start justify-between gap-4">
