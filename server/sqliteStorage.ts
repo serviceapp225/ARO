@@ -254,15 +254,6 @@ export class SQLiteStorage implements IStorage {
       VALUES (?, ?, ?, ?)
     `);
     insertSellSection.run('Продайте свой автомобиль', 'Получите лучшую цену за ваш автомобиль на нашем аукционе', 'Начать продажу', 'https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=400');
-
-    // Insert sample banners
-    const insertBanner = this.db.prepare(`
-      INSERT INTO banners (title, description, image_url, link_url, position, is_active, "order") 
-      VALUES (?, ?, ?, ?, ?, ?, ?)
-    `);
-    insertBanner.run('Премиум аукционы', 'Эксклюзивные автомобили для настоящих ценителей', 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=800&h=300&fit=crop', '/premium', 'main', 1, 1);
-    insertBanner.run('Специальные предложения', 'Лучшие автомобили по особым ценам', 'https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=800&h=300&fit=crop', '/special', 'main', 1, 2);
-    insertBanner.run('Новые поступления', 'Свежие автомобили каждый день', 'https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?w=800&h=300&fit=crop', '/new', 'sidebar', 1, 3);
   }
 
   // Implement all IStorage methods with SQLite queries...
