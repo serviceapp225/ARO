@@ -204,6 +204,7 @@ export class SQLiteStorage implements IStorage {
     insertUser.run('admin', 'admin@autoauction.tj', 'admin', 1, 'Администратор');
     insertUser.run('seller123', 'seller@autoauction.tj', 'seller', 1, 'Продавец автомобилей');
     insertUser.run('buyer456', 'buyer@autoauction.tj', 'buyer', 1, 'Покупатель автомобилей');
+    insertUser.run('+992000000000', '992000000000@autoauction.tj', 'buyer', 1, 'Главный администратор');
 
     // Insert sample listings
     const insertListing = this.db.prepare(`
@@ -239,6 +240,19 @@ export class SQLiteStorage implements IStorage {
       INSERT INTO bids (listing_id, bidder_id, amount) VALUES (?, ?, ?)
     `);
     insertBid.run(1, 3, 145500.00);
+
+    // Insert favorite for admin user (ID 4)
+    const insertFavorite = this.db.prepare(`
+      INSERT INTO favorites (user_id, listing_id) VALUES (?, ?)
+    `);
+    insertFavorite.run(4, 2);
+
+    // Insert notifications for admin user
+    const insertNotification = this.db.prepare(`
+      INSERT INTO notifications (user_id, type, title, message, listing_id) VALUES (?, ?, ?, ?, ?)
+    `);
+    insertNotification.run(4, 'bid_outbid', 'Перебили вашу ставку', 'Ваша ставка была перебита на аукционе BMW M5 Competition', 2);
+    insertNotification.run(4, 'auction_ending', 'Аукцион скоро завершится', 'Аукцион Porsche 911 Turbo S завершится через 2 часа', 1);
 
     // Insert carousel items
     const insertCarousel = this.db.prepare(`
