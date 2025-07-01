@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Trash2, User as UserIcon, Car, Bell, Settings, CheckCircle, XCircle, AlertCircle, Edit, Search } from 'lucide-react';
+import { Trash2, User as UserIcon, Car, Bell, Settings, CheckCircle, XCircle, AlertCircle, Edit, Search, Image, Plus, Eye } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { Link } from 'wouter';
@@ -361,24 +361,7 @@ function NotificationsManagement() {
   );
 }
 
-// Компонент управления баннерами
-function BannersManagement() {
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Управление баннерами</CardTitle>
-        <CardDescription>
-          Рекламные баннеры и объявления
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <p className="text-gray-600 dark:text-gray-300">
-          Раздел в разработке. Здесь будет управление баннерами.
-        </p>
-      </CardContent>
-    </Card>
-  );
-}
+
 
 // Интерфейс для статистики
 interface AdminStatsData {
@@ -386,6 +369,381 @@ interface AdminStatsData {
   activeAuctions: number;
   pendingListings: number;
   bannedUsers: number;
+}
+
+// Компонент управления баннерами
+function BannersManagement() {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const [editingBanner, setEditingBanner] = useState<any>(null);
+  const [isCreating, setIsCreating] = useState(false);
+
+  // Состояние формы
+  const [formData, setFormData] = useState({
+    title: '',
+    description: '',
+    imageUrl: '',
+    linkUrl: '',
+    position: 'main',
+    isActive: true,
+    order: 1
+  });
+
+  // Получение баннеров
+  const { data: banners, isLoading: bannersLoading } = useQuery({
+    queryKey: ['/api/admin/banners'],
+    staleTime: 30000,
+  });
+
+  // Мутация для создания баннера
+  const createBannerMutation = useMutation({
+    mutationFn: async (bannerData: any) => {
+      const response = await fetch('/api/admin/banners', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(bannerData),
+      });
+      if (!response.ok) throw new Error('Ошибка создания баннера');
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Успешно",
+        description: "Баннер создан успешно",
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/banners'] });
+      setIsCreating(false);
+      resetForm();
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Ошибка",
+        description: error.message || "Не удалось создать баннер",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Мутация для обновления баннера
+  const updateBannerMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: number; data: any }) => {
+      const response = await fetch(`/api/admin/banners/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      if (!response.ok) throw new Error('Ошибка обновления баннера');
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Успешно",
+        description: "Баннер обновлен успешно",
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/banners'] });
+      setEditingBanner(null);
+      resetForm();
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Ошибка",
+        description: error.message || "Не удалось обновить баннер",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Мутация для удаления баннера
+  const deleteBannerMutation = useMutation({
+    mutationFn: async (id: number) => {
+      const response = await fetch(`/api/admin/banners/${id}`, {
+        method: 'DELETE',
+      });
+      if (!response.ok) throw new Error('Ошибка удаления баннера');
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Успешно",
+        description: "Баннер удален успешно",
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/banners'] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Ошибка",
+        description: error.message || "Не удалось удалить баннер",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const resetForm = () => {
+    setFormData({
+      title: '',
+      description: '',
+      imageUrl: '',
+      linkUrl: '',
+      position: 'main',
+      isActive: true,
+      order: 1
+    });
+  };
+
+  const handleEdit = (banner: any) => {
+    setEditingBanner(banner);
+    setFormData({
+      title: banner.title || '',
+      description: banner.description || '',
+      imageUrl: banner.imageUrl || '',
+      linkUrl: banner.linkUrl || '',
+      position: banner.position || 'main',
+      isActive: banner.isActive !== false,
+      order: banner.order || 1
+    });
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (editingBanner) {
+      updateBannerMutation.mutate({ id: editingBanner.id, data: formData });
+    } else {
+      createBannerMutation.mutate(formData);
+    }
+  };
+
+  const handleCancel = () => {
+    setEditingBanner(null);
+    setIsCreating(false);
+    resetForm();
+  };
+
+  if (bannersLoading) {
+    return (
+      <div className="flex items-center justify-center py-8">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Управление баннерами</h2>
+        <Button
+          onClick={() => setIsCreating(true)}
+          className="flex items-center gap-2"
+          disabled={isCreating || editingBanner}
+        >
+          <Plus className="w-4 h-4" />
+          Создать баннер
+        </Button>
+      </div>
+
+      {/* Форма создания/редактирования */}
+      {(isCreating || editingBanner) && (
+        <Card>
+          <CardHeader>
+            <CardTitle>
+              {editingBanner ? 'Редактировать баннер' : 'Создать новый баннер'}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="title">Заголовок</Label>
+                  <Input
+                    id="title"
+                    value={formData.title}
+                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                    placeholder="Заголовок баннера"
+                    required
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="position">Позиция</Label>
+                  <Select 
+                    value={formData.position} 
+                    onValueChange={(value) => setFormData({ ...formData, position: value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Выберите позицию" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="main">Главная страница</SelectItem>
+                      <SelectItem value="sidebar">Боковая панель</SelectItem>
+                      <SelectItem value="footer">Подвал</SelectItem>
+                      <SelectItem value="header">Заголовок</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="description">Описание</Label>
+                <Textarea
+                  id="description"
+                  value={formData.description}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  placeholder="Описание баннера"
+                  rows={3}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="imageUrl">URL изображения</Label>
+                <Input
+                  id="imageUrl"
+                  value={formData.imageUrl}
+                  onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
+                  placeholder="https://example.com/image.jpg"
+                  type="url"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="linkUrl">Ссылка (необязательно)</Label>
+                <Input
+                  id="linkUrl"
+                  value={formData.linkUrl}
+                  onChange={(e) => setFormData({ ...formData, linkUrl: e.target.value })}
+                  placeholder="https://example.com"
+                  type="url"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="order">Порядок отображения</Label>
+                  <Input
+                    id="order"
+                    type="number"
+                    value={formData.order}
+                    onChange={(e) => setFormData({ ...formData, order: parseInt(e.target.value) || 1 })}
+                    min="1"
+                  />
+                </div>
+
+                <div className="flex items-center space-x-2 pt-6">
+                  <input
+                    type="checkbox"
+                    id="isActive"
+                    checked={formData.isActive}
+                    onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
+                    className="rounded border-gray-300"
+                  />
+                  <Label htmlFor="isActive">Активный баннер</Label>
+                </div>
+              </div>
+
+              <div className="flex gap-2 pt-4">
+                <Button
+                  type="submit"
+                  disabled={createBannerMutation.isPending || updateBannerMutation.isPending}
+                >
+                  {createBannerMutation.isPending || updateBannerMutation.isPending
+                    ? 'Сохранение...'
+                    : editingBanner
+                    ? 'Обновить'
+                    : 'Создать'}
+                </Button>
+                <Button type="button" variant="outline" onClick={handleCancel}>
+                  Отмена
+                </Button>
+              </div>
+            </form>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Список баннеров */}
+      <div className="grid gap-4">
+        {banners && banners.length > 0 ? (
+          banners.map((banner: any) => (
+            <Card key={banner.id} className="overflow-hidden">
+              <CardContent className="p-6">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3 mb-2">
+                      <h3 className="text-lg font-semibold">{banner.title}</h3>
+                      <Badge variant={banner.isActive ? 'default' : 'secondary'}>
+                        {banner.isActive ? 'Активный' : 'Неактивный'}
+                      </Badge>
+                      <Badge variant="outline">{banner.position}</Badge>
+                    </div>
+                    
+                    {banner.description && (
+                      <p className="text-gray-600 dark:text-gray-400 mb-3">{banner.description}</p>
+                    )}
+                    
+                    <div className="flex items-center gap-4 text-sm text-gray-500">
+                      {banner.imageUrl && (
+                        <span className="flex items-center gap-1">
+                          <Image className="w-4 h-4" />
+                          Изображение
+                        </span>
+                      )}
+                      {banner.linkUrl && (
+                        <span className="flex items-center gap-1">
+                          <Eye className="w-4 h-4" />
+                          Ссылка
+                        </span>
+                      )}
+                      <span>Порядок: {banner.order}</span>
+                    </div>
+                  </div>
+                  
+                  <div className="flex gap-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handleEdit(banner)}
+                      disabled={isCreating || editingBanner}
+                    >
+                      <Edit className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => deleteBannerMutation.mutate(banner.id)}
+                      disabled={deleteBannerMutation.isPending}
+                      className="text-red-600 hover:text-red-700"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </div>
+
+                {banner.imageUrl && (
+                  <div className="mt-4 pt-4 border-t">
+                    <img
+                      src={banner.imageUrl}
+                      alt={banner.title}
+                      className="max-w-xs h-20 object-cover rounded border"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).style.display = 'none';
+                      }}
+                    />
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          ))
+        ) : (
+          <Card>
+            <CardContent className="text-center py-8">
+              <Image className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+              <p className="text-gray-500">Баннеры не найдены</p>
+              <p className="text-sm text-gray-400 mt-1">Создайте первый баннер</p>
+            </CardContent>
+          </Card>
+        )}
+      </div>
+    </div>
+  );
 }
 
 // Компонент статистики

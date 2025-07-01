@@ -1313,6 +1313,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/admin/banners", async (req, res) => {
+    try {
+      const banners = await storage.getBanners();
+      res.json(banners);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch banners" });
+    }
+  });
+
   app.delete("/api/admin/banners/:id", async (req, res) => {
     try {
       const id = parseInt(req.params.id);
