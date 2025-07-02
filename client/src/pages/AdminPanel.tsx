@@ -407,18 +407,18 @@ function SellBannerManagement() {
 
   // Заполняем форму данными баннера при загрузке
   useEffect(() => {
-    if (banner) {
+    if (banner && typeof banner === 'object') {
       setFormData({
-        title: banner.title || '',
-        description: banner.description || '',
-        buttonText: banner.buttonText || '',
-        linkUrl: banner.linkUrl || '',
-        backgroundImageUrl: banner.backgroundImageUrl || '',
-        gradientFrom: banner.gradientFrom || '',
-        gradientTo: banner.gradientTo || '',
-        textColor: banner.textColor || '',
-        isActive: banner.isActive !== false,
-        overlayOpacity: banner.overlayOpacity || 60
+        title: (banner as any).title || '',
+        description: (banner as any).description || '',
+        buttonText: (banner as any).buttonText || '',
+        linkUrl: (banner as any).linkUrl || '',
+        backgroundImageUrl: (banner as any).backgroundImageUrl || '',
+        gradientFrom: (banner as any).gradientFrom || '',
+        gradientTo: (banner as any).gradientTo || '',
+        textColor: (banner as any).textColor || '',
+        isActive: (banner as any).isActive !== false,
+        overlayOpacity: (banner as any).overlayOpacity || 60
       });
     }
   }, [banner]);
@@ -457,18 +457,18 @@ function SellBannerManagement() {
   };
 
   const handleCancel = () => {
-    if (banner) {
+    if (banner && typeof banner === 'object') {
       setFormData({
-        title: banner.title || '',
-        description: banner.description || '',
-        buttonText: banner.buttonText || '',
-        linkUrl: banner.linkUrl || '',
-        backgroundImageUrl: banner.backgroundImageUrl || '',
-        gradientFrom: banner.gradientFrom || '',
-        gradientTo: banner.gradientTo || '',
-        textColor: banner.textColor || '',
-        isActive: banner.isActive !== false,
-        overlayOpacity: banner.overlayOpacity || 60
+        title: (banner as any).title || '',
+        description: (banner as any).description || '',
+        buttonText: (banner as any).buttonText || '',
+        linkUrl: (banner as any).linkUrl || '',
+        backgroundImageUrl: (banner as any).backgroundImageUrl || '',
+        gradientFrom: (banner as any).gradientFrom || '',
+        gradientTo: (banner as any).gradientTo || '',
+        textColor: (banner as any).textColor || '',
+        isActive: (banner as any).isActive !== false,
+        overlayOpacity: (banner as any).overlayOpacity || 60
       });
     }
     setIsEditing(false);
@@ -487,7 +487,13 @@ function SellBannerManagement() {
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Управление баннером "Продай свое авто"</h2>
         <Button
-          onClick={() => setIsEditing(!isEditing)}
+          onClick={() => {
+            if (isEditing) {
+              handleCancel();
+            } else {
+              setIsEditing(true);
+            }
+          }}
           variant={isEditing ? "outline" : "default"}
           className="flex items-center gap-2"
         >
@@ -506,15 +512,15 @@ function SellBannerManagement() {
             <div 
               className="relative h-44 rounded-2xl p-6 text-white overflow-hidden shadow-2xl"
               style={{
-                background: `linear-gradient(135deg, ${banner.gradientFrom || '#059669'} 0%, ${banner.gradientTo || '#047857'} 100%)`,
+                background: `linear-gradient(135deg, ${(banner as any).gradientFrom || '#059669'} 0%, ${(banner as any).gradientTo || '#047857'} 100%)`,
               }}
             >
-              {banner.backgroundImageUrl && (
+              {(banner as any).backgroundImageUrl && (
                 <div 
                   className="absolute inset-0 rounded-2xl bg-cover bg-center bg-no-repeat"
                   style={{
-                    backgroundImage: `url('${banner.backgroundImageUrl}')`,
-                    opacity: (banner.overlayOpacity || 60) / 100,
+                    backgroundImage: `url('${(banner as any).backgroundImageUrl}')`,
+                    opacity: ((banner as any).overlayOpacity || 60) / 100,
                   }}
                 />
               )}
@@ -522,21 +528,21 @@ function SellBannerManagement() {
               <div 
                 className="absolute inset-0 rounded-2xl"
                 style={{
-                  background: `linear-gradient(135deg, ${banner.gradientFrom || '#059669'}CC 0%, ${banner.gradientTo || '#047857'}CC 100%)`,
+                  background: `linear-gradient(135deg, ${(banner as any).gradientFrom || '#059669'}CC 0%, ${(banner as any).gradientTo || '#047857'}CC 100%)`,
                 }}
               />
               
               <div className="relative z-10 h-full flex flex-col justify-center items-center text-center space-y-3">
                 <h2 className="text-2xl font-bold drop-shadow-lg text-white">
-                  {banner.title}
+                  {(banner as any).title}
                 </h2>
                 <p className="text-base leading-relaxed opacity-95 drop-shadow-md max-w-md text-white">
-                  {banner.description}
+                  {(banner as any).description}
                 </p>
                 <div className="mt-4">
                   <span className="px-6 py-3 rounded-full text-sm font-bold bg-white text-green-600 shadow-lg inline-flex items-center gap-2">
                     <Plus className="w-4 h-4" />
-                    {banner.buttonText}
+                    {(banner as any).buttonText}
                   </span>
                 </div>
               </div>
@@ -545,13 +551,13 @@ function SellBannerManagement() {
             <div className="mt-4 grid grid-cols-2 gap-4 text-sm">
               <div>
                 <span className="font-medium">Статус:</span>
-                <Badge variant={banner.isActive ? 'default' : 'secondary'} className="ml-2">
-                  {banner.isActive ? 'Активный' : 'Неактивный'}
+                <Badge variant={(banner as any).isActive ? 'default' : 'secondary'} className="ml-2">
+                  {(banner as any).isActive ? 'Активный' : 'Неактивный'}
                 </Badge>
               </div>
               <div>
                 <span className="font-medium">Ссылка:</span>
-                <span className="ml-2 text-blue-600">{banner.linkUrl}</span>
+                <span className="ml-2 text-blue-600">{(banner as any).linkUrl}</span>
               </div>
             </div>
           </CardContent>
