@@ -608,14 +608,14 @@ function SellBannerManagement() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="linkUrl">Ссылка</Label>
+                <Label htmlFor="linkUrl">Ссылка (относительный путь)</Label>
                 <Input
                   id="linkUrl"
                   value={formData.linkUrl}
                   onChange={(e) => setFormData({ ...formData, linkUrl: e.target.value })}
                   placeholder="/sell"
-                  type="url"
                 />
+                <p className="text-xs text-gray-500">Введите относительный путь, например: /sell или /create-listing</p>
               </div>
 
               <div className="space-y-2">
