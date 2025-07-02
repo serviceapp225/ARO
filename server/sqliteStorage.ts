@@ -1039,4 +1039,99 @@ export class SQLiteStorage implements IStorage {
       return { pendingListings: 0, activeAuctions: 0, totalUsers: 0, bannedUsers: 0 };
     }
   }
+
+  // Sell Car Banner methods
+  async getSellCarBanner(): Promise<any | undefined> {
+    try {
+      const stmt = this.db.prepare('SELECT * FROM sell_car_banner LIMIT 1');
+      const row = stmt.get() as any;
+      if (!row) return undefined;
+      
+      return {
+        id: row.id,
+        title: row.title,
+        description: row.description,
+        buttonText: row.button_text,
+        linkUrl: row.link_url,
+        backgroundImageUrl: row.background_image_url,
+        gradientFrom: row.gradient_from,
+        gradientTo: row.gradient_to,
+        textColor: row.text_color,
+        isActive: Boolean(row.is_active),
+        overlayOpacity: row.overlay_opacity,
+        createdAt: new Date(row.created_at),
+        updatedAt: new Date(row.updated_at || row.created_at)
+      };
+    } catch (error) {
+      console.error('Error getting sell car banner:', error);
+      return undefined;
+    }
+  }
+
+  async createSellCarBanner(data: any): Promise<any> {
+    try {
+      const stmt = this.db.prepare(`
+        INSERT INTO sell_car_banner (
+          title, description, button_text, link_url, background_image_url,
+          gradient_from, gradient_to, text_color, is_active, overlay_opacity
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `);
+      
+      const result = stmt.run(
+        data.title,
+        data.description,
+        data.buttonText,
+        data.linkUrl,
+        data.backgroundImageUrl,
+        data.gradientFrom,
+        data.gradientTo,
+        data.textColor,
+        data.isActive ? 1 : 0,
+        data.overlayOpacity
+      );
+      
+      return this.getSellCarBanner();
+    } catch (error) {
+      console.error('Error creating sell car banner:', error);
+      throw error;
+    }
+  }
+
+  async updateSellCarBanner(data: any): Promise<any> {
+    try {
+      // Убеждаемся что баннер существует
+      let existingBanner = await this.getSellCarBanner();
+      if (!existingBanner) {
+        // Создаем если не существует
+        return await this.createSellCarBanner(data);
+      }
+      
+      const stmt = this.db.prepare(`
+        UPDATE sell_car_banner SET
+          title = ?, description = ?, button_text = ?, link_url = ?,
+          background_image_url = ?, gradient_from = ?, gradient_to = ?,
+          text_color = ?, is_active = ?, overlay_opacity = ?, updated_at = CURRENT_TIMESTAMP
+        WHERE id = ?
+      `);
+      
+      stmt.run(
+        data.title || existingBanner.title,
+        data.description || existingBanner.description,
+        data.buttonText || existingBanner.buttonText,
+        data.linkUrl || existingBanner.linkUrl,
+        data.backgroundImageUrl || existingBanner.backgroundImageUrl,
+        data.gradientFrom || existingBanner.gradientFrom,
+        data.gradientTo || existingBanner.gradientTo,
+        data.textColor || existingBanner.textColor,
+        data.isActive !== undefined ? (data.isActive ? 1 : 0) : (existingBanner.isActive ? 1 : 0),
+        data.overlayOpacity !== undefined ? data.overlayOpacity : existingBanner.overlayOpacity,
+        existingBanner.id
+      );
+      
+      return this.getSellCarBanner();
+    } catch (error) {
+      console.error('Error updating sell car banner:', error);
+      throw error;
+    }
+  }
 }

@@ -84,6 +84,10 @@ export default function AdminPanel() {
               <Bell className="h-4 w-4" />
               Уведомления
             </TabsTrigger>
+            <TabsTrigger value="sell-banner" className="flex items-center gap-2">
+              <Plus className="h-4 w-4" />
+              Баннер "Продай авто"
+            </TabsTrigger>
             <TabsTrigger value="banners" className="flex items-center gap-2">
               <Settings className="h-4 w-4" />
               Баннеры
@@ -104,6 +108,10 @@ export default function AdminPanel() {
 
           <TabsContent value="notifications">
             <NotificationsManagement />
+          </TabsContent>
+
+          <TabsContent value="sell-banner">
+            <SellBannerManagement />
           </TabsContent>
 
           <TabsContent value="banners">
