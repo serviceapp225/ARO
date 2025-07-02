@@ -379,6 +379,326 @@ interface AdminStatsData {
   bannedUsers: number;
 }
 
+// Компонент управления баннером "Продай свое авто"
+function SellBannerManagement() {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const [isEditing, setIsEditing] = useState(false);
+
+  // Состояние формы
+  const [formData, setFormData] = useState({
+    title: '',
+    description: '',
+    buttonText: '',
+    linkUrl: '',
+    backgroundImageUrl: '',
+    gradientFrom: '',
+    gradientTo: '',
+    textColor: '',
+    isActive: true,
+    overlayOpacity: 60
+  });
+
+  // Получение данных баннера
+  const { data: banner, isLoading: bannerLoading } = useQuery({
+    queryKey: ['/api/sell-car-banner'],
+    staleTime: 30000,
+  });
+
+  // Заполняем форму данными баннера при загрузке
+  useEffect(() => {
+    if (banner) {
+      setFormData({
+        title: banner.title || '',
+        description: banner.description || '',
+        buttonText: banner.buttonText || '',
+        linkUrl: banner.linkUrl || '',
+        backgroundImageUrl: banner.backgroundImageUrl || '',
+        gradientFrom: banner.gradientFrom || '',
+        gradientTo: banner.gradientTo || '',
+        textColor: banner.textColor || '',
+        isActive: banner.isActive !== false,
+        overlayOpacity: banner.overlayOpacity || 60
+      });
+    }
+  }, [banner]);
+
+  // Мутация для обновления баннера
+  const updateBannerMutation = useMutation({
+    mutationFn: async (bannerData: any) => {
+      const response = await fetch('/api/admin/sell-car-banner', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(bannerData),
+      });
+      if (!response.ok) throw new Error('Ошибка обновления баннера');
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Успешно",
+        description: "Баннер обновлен успешно",
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/sell-car-banner'] });
+      setIsEditing(false);
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Ошибка",
+        description: error.message || "Не удалось обновить баннер",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    updateBannerMutation.mutate(formData);
+  };
+
+  const handleCancel = () => {
+    if (banner) {
+      setFormData({
+        title: banner.title || '',
+        description: banner.description || '',
+        buttonText: banner.buttonText || '',
+        linkUrl: banner.linkUrl || '',
+        backgroundImageUrl: banner.backgroundImageUrl || '',
+        gradientFrom: banner.gradientFrom || '',
+        gradientTo: banner.gradientTo || '',
+        textColor: banner.textColor || '',
+        isActive: banner.isActive !== false,
+        overlayOpacity: banner.overlayOpacity || 60
+      });
+    }
+    setIsEditing(false);
+  };
+
+  if (bannerLoading) {
+    return (
+      <div className="flex items-center justify-center py-8">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Управление баннером "Продай свое авто"</h2>
+        <Button
+          onClick={() => setIsEditing(!isEditing)}
+          variant={isEditing ? "outline" : "default"}
+          className="flex items-center gap-2"
+        >
+          <Edit className="w-4 h-4" />
+          {isEditing ? 'Отменить' : 'Редактировать'}
+        </Button>
+      </div>
+
+      {/* Предварительный просмотр */}
+      {banner && !isEditing && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Предварительный просмотр</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div 
+              className="relative h-44 rounded-2xl p-6 text-white overflow-hidden shadow-2xl"
+              style={{
+                background: `linear-gradient(135deg, ${banner.gradientFrom || '#059669'} 0%, ${banner.gradientTo || '#047857'} 100%)`,
+              }}
+            >
+              {banner.backgroundImageUrl && (
+                <div 
+                  className="absolute inset-0 rounded-2xl bg-cover bg-center bg-no-repeat"
+                  style={{
+                    backgroundImage: `url('${banner.backgroundImageUrl}')`,
+                    opacity: (banner.overlayOpacity || 60) / 100,
+                  }}
+                />
+              )}
+              
+              <div 
+                className="absolute inset-0 rounded-2xl"
+                style={{
+                  background: `linear-gradient(135deg, ${banner.gradientFrom || '#059669'}CC 0%, ${banner.gradientTo || '#047857'}CC 100%)`,
+                }}
+              />
+              
+              <div className="relative z-10 h-full flex flex-col justify-center items-center text-center space-y-3">
+                <h2 className="text-2xl font-bold drop-shadow-lg text-white">
+                  {banner.title}
+                </h2>
+                <p className="text-base leading-relaxed opacity-95 drop-shadow-md max-w-md text-white">
+                  {banner.description}
+                </p>
+                <div className="mt-4">
+                  <span className="px-6 py-3 rounded-full text-sm font-bold bg-white text-green-600 shadow-lg inline-flex items-center gap-2">
+                    <Plus className="w-4 h-4" />
+                    {banner.buttonText}
+                  </span>
+                </div>
+              </div>
+            </div>
+            
+            <div className="mt-4 grid grid-cols-2 gap-4 text-sm">
+              <div>
+                <span className="font-medium">Статус:</span>
+                <Badge variant={banner.isActive ? 'default' : 'secondary'} className="ml-2">
+                  {banner.isActive ? 'Активный' : 'Неактивный'}
+                </Badge>
+              </div>
+              <div>
+                <span className="font-medium">Ссылка:</span>
+                <span className="ml-2 text-blue-600">{banner.linkUrl}</span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Форма редактирования */}
+      {isEditing && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Редактировать баннер</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="title">Заголовок</Label>
+                  <Input
+                    id="title"
+                    value={formData.title}
+                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                    placeholder="Продай свое авто"
+                    required
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="buttonText">Текст кнопки</Label>
+                  <Input
+                    id="buttonText"
+                    value={formData.buttonText}
+                    onChange={(e) => setFormData({ ...formData, buttonText: e.target.value })}
+                    placeholder="Начать продажу"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="description">Описание</Label>
+                <Textarea
+                  id="description"
+                  value={formData.description}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  placeholder="Получи максимальную цену за свой автомобиль на нашем аукционе"
+                  rows={3}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="linkUrl">Ссылка</Label>
+                <Input
+                  id="linkUrl"
+                  value={formData.linkUrl}
+                  onChange={(e) => setFormData({ ...formData, linkUrl: e.target.value })}
+                  placeholder="/sell"
+                  type="url"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="backgroundImageUrl">URL фонового изображения</Label>
+                <Input
+                  id="backgroundImageUrl"
+                  value={formData.backgroundImageUrl}
+                  onChange={(e) => setFormData({ ...formData, backgroundImageUrl: e.target.value })}
+                  placeholder="https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?w=800&h=300&fit=crop"
+                  type="url"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="gradientFrom">Цвет градиента (начало)</Label>
+                  <Input
+                    id="gradientFrom"
+                    type="color"
+                    value={formData.gradientFrom}
+                    onChange={(e) => setFormData({ ...formData, gradientFrom: e.target.value })}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="gradientTo">Цвет градиента (конец)</Label>
+                  <Input
+                    id="gradientTo"
+                    type="color"
+                    value={formData.gradientTo}
+                    onChange={(e) => setFormData({ ...formData, gradientTo: e.target.value })}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="textColor">Цвет текста</Label>
+                  <Input
+                    id="textColor"
+                    type="color"
+                    value={formData.textColor}
+                    onChange={(e) => setFormData({ ...formData, textColor: e.target.value })}
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="overlayOpacity">Прозрачность наложения (%)</Label>
+                  <Input
+                    id="overlayOpacity"
+                    type="number"
+                    min="0"
+                    max="100"
+                    value={formData.overlayOpacity}
+                    onChange={(e) => setFormData({ ...formData, overlayOpacity: parseInt(e.target.value) || 60 })}
+                  />
+                </div>
+
+                <div className="flex items-center space-x-2 pt-6">
+                  <input
+                    type="checkbox"
+                    id="isActive"
+                    checked={formData.isActive}
+                    onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
+                    className="rounded border-gray-300"
+                  />
+                  <Label htmlFor="isActive">Активный баннер</Label>
+                </div>
+              </div>
+
+              <div className="flex gap-2 pt-4">
+                <Button
+                  type="submit"
+                  disabled={updateBannerMutation.isPending}
+                >
+                  {updateBannerMutation.isPending ? 'Сохранение...' : 'Сохранить'}
+                </Button>
+                <Button type="button" variant="outline" onClick={handleCancel}>
+                  Отмена
+                </Button>
+              </div>
+            </form>
+          </CardContent>
+        </Card>
+      )}
+    </div>
+  );
+}
+
 // Компонент управления баннерами
 function BannersManagement() {
   const { toast } = useToast();
