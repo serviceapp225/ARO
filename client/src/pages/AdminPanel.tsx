@@ -570,7 +570,7 @@ function SellBannerManagement() {
           <CardHeader>
             <CardTitle>Редактировать баннер</CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="max-h-[70vh] overflow-y-auto">
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
@@ -629,41 +629,31 @@ function SellBannerManagement() {
                 />
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="gradientFrom">Цвет градиента (начало)</Label>
+                  <Label htmlFor="gradientFrom">Цвет начала</Label>
                   <Input
                     id="gradientFrom"
                     type="color"
                     value={formData.gradientFrom}
                     onChange={(e) => setFormData({ ...formData, gradientFrom: e.target.value })}
+                    className="h-10"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="gradientTo">Цвет градиента (конец)</Label>
+                  <Label htmlFor="gradientTo">Цвет конца</Label>
                   <Input
                     id="gradientTo"
                     type="color"
                     value={formData.gradientTo}
                     onChange={(e) => setFormData({ ...formData, gradientTo: e.target.value })}
+                    className="h-10"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="textColor">Цвет текста</Label>
-                  <Input
-                    id="textColor"
-                    type="color"
-                    value={formData.textColor}
-                    onChange={(e) => setFormData({ ...formData, textColor: e.target.value })}
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="overlayOpacity">Прозрачность наложения (%)</Label>
+                  <Label htmlFor="overlayOpacity">Прозрачность (%)</Label>
                   <Input
                     id="overlayOpacity"
                     type="number"
@@ -671,6 +661,7 @@ function SellBannerManagement() {
                     max="100"
                     value={formData.overlayOpacity}
                     onChange={(e) => setFormData({ ...formData, overlayOpacity: parseInt(e.target.value) || 60 })}
+                    className="h-10"
                   />
                 </div>
 
@@ -682,18 +673,19 @@ function SellBannerManagement() {
                     onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
                     className="rounded border-gray-300"
                   />
-                  <Label htmlFor="isActive">Активный баннер</Label>
+                  <Label htmlFor="isActive">Активный</Label>
                 </div>
               </div>
 
-              <div className="flex gap-2 pt-4">
+              <div className="sticky bottom-0 bg-white dark:bg-gray-800 p-4 -mx-6 -mb-6 border-t flex gap-2">
                 <Button
                   type="submit"
                   disabled={updateBannerMutation.isPending}
+                  className="flex-1 md:flex-none"
                 >
-                  {updateBannerMutation.isPending ? 'Сохранение...' : 'Сохранить'}
+                  {updateBannerMutation.isPending ? 'Сохранение...' : 'Сохранить изменения'}
                 </Button>
-                <Button type="button" variant="outline" onClick={handleCancel}>
+                <Button type="button" variant="outline" onClick={handleCancel} className="flex-1 md:flex-none">
                   Отмена
                 </Button>
               </div>
