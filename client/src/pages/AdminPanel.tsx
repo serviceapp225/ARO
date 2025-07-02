@@ -71,28 +71,28 @@ export default function AdminPanel() {
         </div>
 
         <Tabs defaultValue="users" className="w-full">
-          <TabsList className="grid w-full grid-cols-5">
-            <TabsTrigger value="users" className="flex items-center gap-2">
+          <TabsList className="flex flex-col w-full h-auto">
+            <TabsTrigger value="users" className="flex items-center gap-2 w-full justify-start">
               <UserIcon className="h-4 w-4" />
               Пользователи
             </TabsTrigger>
-            <TabsTrigger value="listings" className="flex items-center gap-2">
+            <TabsTrigger value="listings" className="flex items-center gap-2 w-full justify-start">
               <Car className="h-4 w-4" />
               Объявления
             </TabsTrigger>
-            <TabsTrigger value="notifications" className="flex items-center gap-2">
+            <TabsTrigger value="notifications" className="flex items-center gap-2 w-full justify-start">
               <Bell className="h-4 w-4" />
               Уведомления
             </TabsTrigger>
-            <TabsTrigger value="sell-banner" className="flex items-center gap-2">
+            <TabsTrigger value="sell-banner" className="flex items-center gap-2 w-full justify-start">
               <Plus className="h-4 w-4" />
               Баннер "Продай авто"
             </TabsTrigger>
-            <TabsTrigger value="banners" className="flex items-center gap-2">
+            <TabsTrigger value="banners" className="flex items-center gap-2 w-full justify-start">
               <Settings className="h-4 w-4" />
               Баннеры
             </TabsTrigger>
-            <TabsTrigger value="stats" className="flex items-center gap-2">
+            <TabsTrigger value="stats" className="flex items-center gap-2 w-full justify-start">
               <Settings className="h-4 w-4" />
               Статистика
             </TabsTrigger>
