@@ -3,8 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { ActiveAuctions } from "@/components/ActiveAuctions";
-import { SellCarBanner } from "@/components/SellCarBanner";
-import { PremiumBanner } from "@/components/PremiumBanner";
+
 import { TopHeader } from "@/components/TopHeader";
 import { Link } from "wouter";
 import { useState } from "react";
@@ -44,11 +43,7 @@ export default function HomePage() {
           </form>
         </div>
 
-        {/* Sell Car Banner */}
-        <SellCarBanner />
 
-        {/* Premium Banner */}
-        <PremiumBanner />
 
         {/* Security Banner */}
         <div className="bg-green-50 border border-green-200 rounded-xl p-4">
