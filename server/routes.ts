@@ -1422,6 +1422,53 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Sell Car Banner API routes
+  app.get("/api/sell-car-banner", async (req, res) => {
+    try {
+      const cacheKey = 'sell_car_banner';
+      
+      const cached = getCached(cacheKey);
+      if (cached) {
+        return res.json(cached);
+      }
+      
+      const banner = await storage.getSellCarBanner();
+      if (!banner) {
+        // Создаем баннер по умолчанию если его нет
+        const defaultBanner = await storage.createSellCarBanner({
+          title: "Продай свое авто",
+          description: "Получи максимальную цену за свой автомобиль на нашем аукционе",
+          buttonText: "Начать продажу",
+          linkUrl: "/sell",
+          backgroundImageUrl: "https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?w=800&h=300&fit=crop",
+          gradientFrom: "#059669",
+          gradientTo: "#047857",
+          textColor: "#ffffff",
+          isActive: true,
+          overlayOpacity: 60
+        });
+        setCache(cacheKey, defaultBanner);
+        return res.json(defaultBanner);
+      }
+      
+      setCache(cacheKey, banner);
+      res.json(banner);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch sell car banner" });
+    }
+  });
+
+  app.put("/api/admin/sell-car-banner", async (req, res) => {
+    try {
+      const bannerData = req.body; // Will validate in storage
+      const banner = await storage.updateSellCarBanner(bannerData);
+      clearCachePattern('sell_car_banner');
+      res.json(banner);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to update sell car banner" });
+    }
+  });
+
   // Documents API routes
   app.get("/api/documents", async (req, res) => {
     try {

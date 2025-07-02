@@ -242,6 +242,32 @@ export const insertDocumentSchema = createInsertSchema(documents).omit({
 export type InsertDocument = z.infer<typeof insertDocumentSchema>;
 export type Document = typeof documents.$inferSelect;
 
+// Sell Car Banner table for the main homepage banner
+export const sellCarBanner = pgTable("sell_car_banner", {
+  id: serial("id").primaryKey(),
+  title: text("title").notNull().default("Продай свое авто"),
+  description: text("description").notNull().default("Получи максимальную цену за свой автомобиль на нашем аукционе"),
+  buttonText: text("button_text").notNull().default("Начать продажу"),
+  linkUrl: text("link_url").notNull().default("/sell"),
+  backgroundImageUrl: text("background_image_url").default("https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?w=800&h=300&fit=crop"),
+  gradientFrom: text("gradient_from").default("#059669"),
+  gradientTo: text("gradient_to").default("#047857"),
+  textColor: text("text_color").default("#ffffff"),
+  isActive: boolean("is_active").default(true),
+  overlayOpacity: integer("overlay_opacity").default(60), // 0-100
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const insertSellCarBannerSchema = createInsertSchema(sellCarBanner).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertSellCarBanner = z.infer<typeof insertSellCarBannerSchema>;
+export type SellCarBanner = typeof sellCarBanner.$inferSelect;
+
 // Alert Views table to track when users have seen alert notifications
 export const alertViews = pgTable("alert_views", {
   id: serial("id").primaryKey(),
