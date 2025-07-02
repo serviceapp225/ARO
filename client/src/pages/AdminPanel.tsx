@@ -570,7 +570,7 @@ function SellBannerManagement() {
           <CardHeader>
             <CardTitle>Редактировать баннер</CardTitle>
           </CardHeader>
-          <CardContent className="max-h-[70vh] overflow-y-auto">
+          <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
@@ -677,15 +677,21 @@ function SellBannerManagement() {
                 </div>
               </div>
 
-              <div className="sticky bottom-0 bg-white dark:bg-gray-800 p-4 -mx-6 -mb-6 border-t flex gap-2">
+              {/* Кнопки управления */}
+              <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700 flex gap-3">
                 <Button
                   type="submit"
                   disabled={updateBannerMutation.isPending}
-                  className="flex-1 md:flex-none"
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 text-base font-medium"
                 >
                   {updateBannerMutation.isPending ? 'Сохранение...' : 'Сохранить изменения'}
                 </Button>
-                <Button type="button" variant="outline" onClick={handleCancel} className="flex-1 md:flex-none">
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={handleCancel}
+                  className="px-6 py-2 text-base"
+                >
                   Отмена
                 </Button>
               </div>
