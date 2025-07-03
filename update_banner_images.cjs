@@ -33,7 +33,7 @@ try {
   `);
 
   // Реалистичные изображения автомобилей
-  updateCarousel1.run('https://images.unsplash.com/photo-1617469165786-8007eda4bf78?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80'); // BMW
+  updateCarousel1.run('https://images.unsplash.com/photo-1503376780353-7e6692767b70?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80'); // Luxury car
   updateCarousel2.run('https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80'); // Mercedes
   updateCarousel3.run('https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80'); // Handshake/Partnership
 
