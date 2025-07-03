@@ -1234,12 +1234,9 @@ function AdvertisementCarouselManagement() {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <div>
-          <h2 className="text-xl font-semibold">Управление рекламной каруселью</h2>
-          <p className="text-gray-600 dark:text-gray-400">
-            Управление рекламными объявлениями в карусели (максимум 3 активных)
-          </p>
-        </div>
+        <p className="text-sm text-gray-600 dark:text-gray-400">
+          Максимум 3 активных объявления
+        </p>
         <Button onClick={() => setEditingItem({} as AdvertisementCarousel)}>
           <Plus className="w-4 h-4 mr-2" />
           Добавить объявление
