@@ -39,9 +39,9 @@ export function AuctionProvider({ children }: { children: ReactNode }) {
   // Use TanStack Query for data fetching with optimized caching
   const { data: listings = [], isLoading, refetch } = useQuery<any[]>({
     queryKey: ['/api/listings'],
-    refetchInterval: 60000, // Refresh every 60 seconds (was 30)
-    staleTime: 30000, // Consider data fresh for 30 seconds (was 10)
-    gcTime: 600000, // Keep in cache for 10 minutes (was 5)
+    refetchInterval: 120000, // Обновление каждые 2 минуты для максимальной скорости
+    staleTime: 120000, // Данные свежие 2 минуты
+    gcTime: 600000, // В кэше 10 минут
     refetchOnWindowFocus: false, // Don't refetch when switching tabs
     refetchOnMount: false, // Don't refetch on component mount if cached
   });

@@ -1257,10 +1257,19 @@ export class SQLiteStorage implements IStorage {
   async archiveExpiredListings(): Promise<number> {
     try {
       const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+      // Сначала проверим есть ли колонка ended_at
+      try {
+        this.db.prepare("SELECT ended_at FROM car_listings LIMIT 1").get();
+      } catch {
+        // Если колонки нет, добавляем её
+        this.db.prepare("ALTER TABLE car_listings ADD COLUMN ended_at DATETIME").run();
+      }
+      
       const stmt = this.db.prepare(`
         UPDATE car_listings 
         SET status = 'archived' 
         WHERE status = 'ended' 
+        AND ended_at IS NOT NULL 
         AND ended_at <= ?
       `);
       const result = stmt.run(twentyFourHoursAgo);

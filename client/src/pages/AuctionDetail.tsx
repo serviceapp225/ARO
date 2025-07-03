@@ -142,10 +142,10 @@ export default function AuctionDetail() {
   const { data: realBiddingHistory = [] } = useQuery({
     queryKey: [`/api/listings/${id}/bids`],
     enabled: !!id,
-    refetchInterval: 1000, // Обновление ставок каждую секунду
-    staleTime: 0, // Данные всегда считаются устаревшими
-    refetchOnWindowFocus: true,
-    refetchIntervalInBackground: true, // Обновление даже когда вкладка не активна
+    refetchInterval: 5000, // Обновление ставок каждые 5 секунд для лучшей производительности
+    staleTime: 2000, // Данные свежие 2 секунды
+    refetchOnWindowFocus: false,
+    refetchIntervalInBackground: false, // Не обновлять в фоне для экономии ресурсов
   });
 
   // Sort bids by amount (highest first) to show current winning bid at top

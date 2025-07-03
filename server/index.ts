@@ -15,14 +15,9 @@ app.use(compression({
 
 // Add caching headers for better performance
 app.use((req, res, next) => {
-  // Пропускаем /api/listings для максимальной скорости
-  if (req.path === '/api/listings') {
-    return next();
-  }
-  
+  // Максимальное кэширование для критических API запросов
   if (req.path.startsWith('/api/')) {
-    // Cache API responses for 60 seconds
-    res.set('Cache-Control', 'public, max-age=60');
+    res.set('Cache-Control', 'public, max-age=120'); // 2 минуты кэш
   } else if (req.path.match(/\.(css|js|png|jpg|jpeg|gif|ico|svg)$/)) {
     // Cache static assets for 24 hours
     res.set('Cache-Control', 'public, max-age=86400');
@@ -34,8 +29,8 @@ app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: false, limit: '50mb' }));
 
 app.use((req, res, next) => {
-  // Отключаем логгирование для /api/listings для максимальной скорости
-  if (req.path === '/api/listings') {
+  // Отключаем логгирование для всех API запросов для максимальной скорости
+  if (req.path.startsWith('/api/')) {
     return next();
   }
   
@@ -94,18 +89,8 @@ app.use((req, res, next) => {
   // ALWAYS serve the app on port 5000
   // this serves both the API and the client.
   // It is the only port that is not firewalled.
-  // Запускаем автоматическое архивирование каждые 6 часов
-  setInterval(async () => {
-    try {
-      const { storage } = await import('./storage');
-      const archivedCount = await storage.archiveExpiredListings();
-      if (archivedCount > 0) {
-        console.log(`[CRON] Автоматически архивировано ${archivedCount} просроченных аукционов`);
-      }
-    } catch (error) {
-      console.error('[CRON] Ошибка автоматического архивирования:', error);
-    }
-  }, 6 * 60 * 60 * 1000); // Каждые 6 часов
+  // Отключаем автоматическое архивирование для лучшей производительности
+  // Архивирование доступно через админ панель по требованию
 
   const port = process.env.PORT || 5000;
   server.listen({
