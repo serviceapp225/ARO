@@ -1377,7 +1377,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/admin/advertisement-carousel", async (req, res) => {
     try {
-      const carousel = await storage.getAdvertisementCarousel();
+      // For admin, show all items (including inactive)
+      const carousel = await (storage as any).getAdvertisementCarouselAll ? 
+        await (storage as any).getAdvertisementCarouselAll() : 
+        await storage.getAdvertisementCarousel();
       res.json(carousel);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch advertisement carousel" });

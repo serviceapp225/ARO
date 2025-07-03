@@ -15,7 +15,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Link } from 'wouter';
 import { UserDetailModal } from '@/components/UserDetailModal';
 import { ListingEditModal } from '@/components/ListingEditModal';
-import type { User, CarListing, Notification } from '@shared/schema';
+import type { User, CarListing, Notification, AdvertisementCarousel } from '@shared/schema';
 
 export default function AdminPanel() {
   const { user, loading } = useAuth();
@@ -92,6 +92,10 @@ export default function AdminPanel() {
               <Settings className="h-4 w-4" />
               Баннеры
             </TabsTrigger>
+            <TabsTrigger value="ad-carousel" className="flex items-center gap-2 w-full justify-start">
+              <Plus className="h-4 w-4" />
+              Реклама-карусель
+            </TabsTrigger>
             <TabsTrigger value="stats" className="flex items-center gap-2 w-full justify-start">
               <Settings className="h-4 w-4" />
               Статистика
@@ -116,6 +120,10 @@ export default function AdminPanel() {
 
           <TabsContent value="banners">
             <BannersManagement />
+          </TabsContent>
+
+          <TabsContent value="ad-carousel">
+            <AdvertisementCarouselManagement />
           </TabsContent>
 
           <TabsContent value="stats">
@@ -1070,6 +1078,357 @@ function BannersManagement() {
               <Image className="w-12 h-12 mx-auto mb-4 text-gray-300" />
               <p className="text-gray-500">Баннеры не найдены</p>
               <p className="text-sm text-gray-400 mt-1">Создайте первый баннер</p>
+            </CardContent>
+          </Card>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// Компонент управления рекламной каруселью
+function AdvertisementCarouselManagement() {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+  const [editingItem, setEditingItem] = useState<AdvertisementCarousel | null>(null);
+  const [formData, setFormData] = useState({
+    title: '',
+    description: '',
+    imageUrl: '',
+    linkUrl: '',
+    buttonText: 'Узнать больше',
+    order: 1,
+    isActive: true,
+  });
+
+  const { data: carouselItems = [], isLoading } = useQuery<AdvertisementCarousel[]>({
+    queryKey: ['/api/admin/advertisement-carousel'],
+    staleTime: 30000,
+  });
+
+  const createItemMutation = useMutation({
+    mutationFn: async (data: any) => {
+      const response = await fetch('/api/admin/advertisement-carousel', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      if (!response.ok) throw new Error('Failed to create item');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/advertisement-carousel'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/advertisement-carousel'] });
+      handleCancel();
+      toast({
+        title: "Успешно",
+        description: "Рекламное объявление создано",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Ошибка",
+        description: error.message || "Не удалось создать объявление",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const updateItemMutation = useMutation({
+    mutationFn: async (data: any) => {
+      const response = await fetch(`/api/admin/advertisement-carousel/${editingItem?.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      if (!response.ok) throw new Error('Failed to update item');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/advertisement-carousel'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/advertisement-carousel'] });
+      handleCancel();
+      toast({
+        title: "Успешно",
+        description: "Рекламное объявление обновлено",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Ошибка",
+        description: error.message || "Не удалось обновить объявление",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const deleteItemMutation = useMutation({
+    mutationFn: async (id: number) => {
+      const response = await fetch(`/api/admin/advertisement-carousel/${id}`, {
+        method: 'DELETE',
+      });
+      if (!response.ok) throw new Error('Failed to delete item');
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/advertisement-carousel'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/advertisement-carousel'] });
+      toast({
+        title: "Успешно",
+        description: "Рекламное объявление удалено",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Ошибка",
+        description: error.message || "Не удалось удалить объявление",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (editingItem) {
+      updateItemMutation.mutate(formData);
+    } else {
+      createItemMutation.mutate(formData);
+    }
+  };
+
+  const handleEdit = (item: AdvertisementCarousel) => {
+    setEditingItem(item);
+    setFormData({
+      title: item.title,
+      description: item.description || '',
+      imageUrl: item.imageUrl,
+      linkUrl: item.linkUrl || '',
+      buttonText: item.buttonText || 'Узнать больше',
+      order: item.order || 1,
+      isActive: item.isActive,
+    });
+  };
+
+  const handleCancel = () => {
+    setEditingItem(null);
+    setFormData({
+      title: '',
+      description: '',
+      imageUrl: '',
+      linkUrl: '',
+      buttonText: 'Узнать больше',
+      order: 1,
+      isActive: true,
+    });
+  };
+
+  const handleDelete = (id: number) => {
+    if (confirm('Вы уверены, что хотите удалить это объявление?')) {
+      deleteItemMutation.mutate(id);
+    }
+  };
+
+  if (isLoading) {
+    return <div className="text-center py-8">Загрузка...</div>;
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <div>
+          <h2 className="text-xl font-semibold">Управление рекламной каруселью</h2>
+          <p className="text-gray-600 dark:text-gray-400">
+            Управление рекламными объявлениями в карусели (максимум 3 активных)
+          </p>
+        </div>
+        <Button onClick={() => setEditingItem({} as AdvertisementCarousel)}>
+          <Plus className="w-4 h-4 mr-2" />
+          Добавить объявление
+        </Button>
+      </div>
+
+      {/* Форма редактирования */}
+      {editingItem && (
+        <Card>
+          <CardHeader>
+            <CardTitle>
+              {editingItem.id ? 'Редактировать объявление' : 'Новое объявление'}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="title">Заголовок</Label>
+                  <Input
+                    id="title"
+                    value={formData.title}
+                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                    placeholder="Приведи своего друга - получи подарок"
+                    required
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="buttonText">Текст кнопки</Label>
+                  <Input
+                    id="buttonText"
+                    value={formData.buttonText}
+                    onChange={(e) => setFormData({ ...formData, buttonText: e.target.value })}
+                    placeholder="Узнать больше"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="description">Описание</Label>
+                <Textarea
+                  id="description"
+                  value={formData.description}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  placeholder="Подробное описание предложения..."
+                  rows={3}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="imageUrl">URL изображения</Label>
+                <Input
+                  id="imageUrl"
+                  value={formData.imageUrl}
+                  onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
+                  placeholder="https://example.com/image.jpg"
+                  type="url"
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="linkUrl">Ссылка (необязательно)</Label>
+                <Input
+                  id="linkUrl"
+                  value={formData.linkUrl}
+                  onChange={(e) => setFormData({ ...formData, linkUrl: e.target.value })}
+                  placeholder="/referral или https://example.com"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="order">Порядок показа (1-3)</Label>
+                  <Input
+                    id="order"
+                    type="number"
+                    value={formData.order}
+                    onChange={(e) => setFormData({ ...formData, order: parseInt(e.target.value) || 1 })}
+                    min="1"
+                    max="3"
+                    required
+                  />
+                </div>
+
+                <div className="flex items-center space-x-2 pt-6">
+                  <input
+                    type="checkbox"
+                    id="isActive"
+                    checked={formData.isActive}
+                    onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
+                    className="rounded border-gray-300"
+                  />
+                  <Label htmlFor="isActive">Активное</Label>
+                </div>
+              </div>
+
+              <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700 flex gap-3">
+                <Button
+                  type="submit"
+                  disabled={createItemMutation.isPending || updateItemMutation.isPending}
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 text-base font-medium"
+                >
+                  {createItemMutation.isPending || updateItemMutation.isPending
+                    ? 'Сохранение...'
+                    : editingItem.id
+                    ? 'Обновить'
+                    : 'Создать'}
+                </Button>
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={handleCancel}
+                  className="px-6 py-2 text-base"
+                >
+                  Отмена
+                </Button>
+              </div>
+            </form>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Список объявлений */}
+      <div className="grid gap-4">
+        {carouselItems && carouselItems.length > 0 ? (
+          carouselItems.map((item) => (
+            <Card key={item.id} className={`${!item.isActive ? 'opacity-50' : ''}`}>
+              <CardContent className="p-4">
+                <div className="flex justify-between items-start">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-2">
+                      <h3 className="font-semibold text-lg">{item.title}</h3>
+                      <span className="text-sm bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">
+                        #{item.order}
+                      </span>
+                      {item.isActive && (
+                        <span className="text-sm bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100 px-2 py-1 rounded">
+                          Активно
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-gray-600 dark:text-gray-400 mb-2">{item.description}</p>
+                    <div className="text-sm text-gray-500">
+                      <div>Кнопка: {item.buttonText}</div>
+                      {item.linkUrl && <div>Ссылка: {item.linkUrl}</div>}
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleEdit(item)}
+                    >
+                      <Edit className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleDelete(item.id)}
+                      className="text-red-600 hover:text-red-700"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </div>
+
+                {item.imageUrl && (
+                  <div className="mt-4 pt-4 border-t">
+                    <img
+                      src={item.imageUrl}
+                      alt={item.title}
+                      className="max-w-xs h-20 object-cover rounded border"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).style.display = 'none';
+                      }}
+                    />
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          ))
+        ) : (
+          <Card>
+            <CardContent className="text-center py-8">
+              <Plus className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+              <p className="text-gray-500">Рекламные объявления не найдены</p>
+              <p className="text-sm text-gray-400 mt-1">Создайте первое объявление</p>
             </CardContent>
           </Card>
         )}

@@ -984,6 +984,7 @@ export class SQLiteStorage implements IStorage {
   }
   async updateSellCarSection(data: Partial<InsertSellCarSection>): Promise<SellCarSection | undefined> { return undefined; }
   async getAdvertisementCarousel(): Promise<AdvertisementCarousel[]> {
+    // For public API, show only active items
     const stmt = this.db.prepare('SELECT * FROM advertisement_carousel WHERE is_active = 1 ORDER BY display_order');
     const rows: any[] = stmt.all();
     return rows.map((row: any) => ({
@@ -993,16 +994,130 @@ export class SQLiteStorage implements IStorage {
       imageUrl: row.image_url,
       linkUrl: row.link_url || null,
       order: row.display_order || null,
-      buttonText: row.button_text || null,
+      buttonText: row.button_text || 'Узнать больше',
+      isActive: Boolean(row.is_active),
+      createdAt: new Date(row.created_at),
+      updatedAt: row.updated_at ? new Date(row.updated_at) : null
+    }));
+  }
+
+  async getAdvertisementCarouselAll(): Promise<AdvertisementCarousel[]> {
+    // For admin API, show all items
+    const stmt = this.db.prepare('SELECT * FROM advertisement_carousel ORDER BY display_order');
+    const rows: any[] = stmt.all();
+    return rows.map((row: any) => ({
+      id: row.id,
+      title: row.title,
+      description: row.description || null,
+      imageUrl: row.image_url,
+      linkUrl: row.link_url || null,
+      order: row.display_order || null,
+      buttonText: row.button_text || 'Узнать больше',
       isActive: Boolean(row.is_active),
       createdAt: new Date(row.created_at),
       updatedAt: row.updated_at ? new Date(row.updated_at) : null
     }));
   }
   async getAdvertisementCarouselItem(id: number): Promise<AdvertisementCarousel | undefined> { return undefined; }
-  async createAdvertisementCarouselItem(insertItem: InsertAdvertisementCarousel): Promise<AdvertisementCarousel> { throw new Error('Not implemented'); }
-  async updateAdvertisementCarouselItem(id: number, itemData: Partial<InsertAdvertisementCarousel>): Promise<AdvertisementCarousel | undefined> { return undefined; }
-  async deleteAdvertisementCarouselItem(id: number): Promise<boolean> { return false; }
+  async createAdvertisementCarouselItem(insertItem: InsertAdvertisementCarousel): Promise<AdvertisementCarousel> {
+    const stmt = this.db.prepare(`
+      INSERT INTO advertisement_carousel (title, description, image_url, link_url, button_text, display_order, is_active, created_at, updated_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))
+    `);
+    
+    const result = stmt.run(
+      insertItem.title,
+      insertItem.description || null,
+      insertItem.imageUrl,
+      insertItem.linkUrl || null,
+      insertItem.buttonText || 'Узнать больше',
+      insertItem.order || 1,
+      insertItem.isActive !== false ? 1 : 0
+    );
+    
+    const id = result.lastInsertRowid as number;
+    const getStmt = this.db.prepare('SELECT * FROM advertisement_carousel WHERE id = ?');
+    const row: any = getStmt.get(id);
+    
+    return {
+      id: row.id,
+      title: row.title,
+      description: row.description || null,
+      imageUrl: row.image_url,
+      linkUrl: row.link_url || null,
+      buttonText: row.button_text || 'Узнать больше',
+      order: row.display_order,
+      isActive: Boolean(row.is_active),
+      createdAt: new Date(row.created_at),
+      updatedAt: row.updated_at ? new Date(row.updated_at) : null
+    };
+  }
+  async updateAdvertisementCarouselItem(id: number, itemData: Partial<InsertAdvertisementCarousel>): Promise<AdvertisementCarousel | undefined> {
+    const fields = [];
+    const values = [];
+    
+    if (itemData.title !== undefined) {
+      fields.push('title = ?');
+      values.push(itemData.title);
+    }
+    if (itemData.description !== undefined) {
+      fields.push('description = ?');
+      values.push(itemData.description);
+    }
+    if (itemData.imageUrl !== undefined) {
+      fields.push('image_url = ?');
+      values.push(itemData.imageUrl);
+    }
+    if (itemData.linkUrl !== undefined) {
+      fields.push('link_url = ?');
+      values.push(itemData.linkUrl);
+    }
+    if (itemData.buttonText !== undefined) {
+      fields.push('button_text = ?');
+      values.push(itemData.buttonText);
+    }
+    if (itemData.order !== undefined) {
+      fields.push('display_order = ?');
+      values.push(itemData.order);
+    }
+    if (itemData.isActive !== undefined) {
+      fields.push('is_active = ?');
+      values.push(itemData.isActive ? 1 : 0);
+    }
+    
+    fields.push('updated_at = datetime(\'now\')');
+    values.push(id);
+    
+    const stmt = this.db.prepare(`UPDATE advertisement_carousel SET ${fields.join(', ')} WHERE id = ?`);
+    const result = stmt.run(...values);
+    
+    if (result.changes === 0) {
+      return undefined;
+    }
+    
+    const getStmt = this.db.prepare('SELECT * FROM advertisement_carousel WHERE id = ?');
+    const row: any = getStmt.get(id);
+    
+    if (!row) return undefined;
+    
+    return {
+      id: row.id,
+      title: row.title,
+      description: row.description || null,
+      imageUrl: row.image_url,
+      linkUrl: row.link_url || null,
+      buttonText: row.button_text || 'Узнать больше',
+      order: row.display_order,
+      isActive: Boolean(row.is_active),
+      createdAt: new Date(row.created_at),
+      updatedAt: row.updated_at ? new Date(row.updated_at) : null
+    };
+  }
+  async deleteAdvertisementCarouselItem(id: number): Promise<boolean> {
+    const stmt = this.db.prepare('DELETE FROM advertisement_carousel WHERE id = ?');
+    const result = stmt.run(id);
+    return result.changes > 0;
+  }
   async getDocuments(type?: string): Promise<Document[]> { return []; }
   async getDocument(id: number): Promise<Document | undefined> { return undefined; }
   async createDocument(insertDocument: InsertDocument): Promise<Document> { throw new Error('Not implemented'); }

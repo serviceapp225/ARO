@@ -1,10 +1,11 @@
-import { useState, useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { ChevronLeft, ChevronRight } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Link } from 'wouter';
 
-interface AdvertisementCarouselData {
+interface AdvertisementItem {
   id: number;
   title: string;
   description: string;
@@ -17,129 +18,138 @@ interface AdvertisementCarouselData {
 
 export function AdvertisementCarousel() {
   const [currentSlide, setCurrentSlide] = useState(0);
-  // Максимально агрессивное кэширование для мгновенной загрузки
-  const { data: carouselItems = [], isLoading } = useQuery<AdvertisementCarouselData[]>({
+  const [isPaused, setIsPaused] = useState(false);
+
+  const { data: advertisements = [], isLoading } = useQuery<AdvertisementItem[]>({
     queryKey: ['/api/advertisement-carousel'],
-    enabled: true,
-    queryFn: async () => {
-      const response = await fetch('/api/advertisement-carousel');
-      if (!response.ok) throw new Error('Failed to fetch advertisement carousel');
-      return response.json();
-    },
-    staleTime: Infinity, // Никогда не считать данные устаревшими
-    gcTime: Infinity, // Никогда не удалять из кэша
-    refetchOnWindowFocus: false,
-    refetchOnMount: false,
-    refetchOnReconnect: false,
-    retry: false, // Не повторять запросы для ускорения
+    staleTime: 5 * 60 * 1000, // 5 минут
   });
 
+  // Фильтруем только активные объявления и сортируем по порядку
+  const activeAds = advertisements
+    .filter(ad => ad.isActive)
+    .sort((a, b) => a.order - b.order);
+
+  // Автоматическое переключение каждые 5 секунд
   useEffect(() => {
-    if (carouselItems.length > 1) {
-      const timer = setInterval(() => {
-        setCurrentSlide((prev) => (prev + 1) % carouselItems.length);
-      }, 5000); // Auto-advance every 5 seconds
+    if (activeAds.length <= 1 || isPaused) return;
 
-      return () => clearInterval(timer);
-    }
-  }, [carouselItems.length]);
+    const interval = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % activeAds.length);
+    }, 5000);
 
-  const nextSlide = () => {
-    setCurrentSlide((prev) => (prev + 1) % carouselItems.length);
-  };
+    return () => clearInterval(interval);
+  }, [activeAds.length, isPaused]);
 
-  const prevSlide = () => {
-    setCurrentSlide((prev) => (prev - 1 + carouselItems.length) % carouselItems.length);
-  };
-
+  // Ручное переключение слайдов
   const goToSlide = (index: number) => {
     setCurrentSlide(index);
   };
 
+  const nextSlide = () => {
+    setCurrentSlide((prev) => (prev + 1) % activeAds.length);
+  };
+
+  const prevSlide = () => {
+    setCurrentSlide((prev) => (prev - 1 + activeAds.length) % activeAds.length);
+  };
+
   if (isLoading) {
     return (
-      <div className="w-full">
-        <Card>
-          <CardContent className="p-8">
-            <div className="animate-pulse space-y-4">
-              <div className="h-8 bg-gray-200 rounded w-1/3"></div>
-              <div className="h-64 bg-gray-200 rounded"></div>
-            </div>
+      <div className="w-full max-w-6xl mx-auto px-4 py-8">
+        <Card className="h-64 animate-pulse">
+          <CardContent className="p-6">
+            <div className="h-full bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
           </CardContent>
         </Card>
       </div>
     );
   }
 
-  if (!carouselItems.length) {
+  if (activeAds.length === 0) {
     return null;
   }
 
+  const currentAd = activeAds[currentSlide];
+
   return (
-    <div className="w-full">
-      <Card className="overflow-hidden">
+    <div className="w-full max-w-6xl mx-auto px-4 py-8">
+      <Card 
+        className="relative overflow-hidden group"
+        onMouseEnter={() => setIsPaused(true)}
+        onMouseLeave={() => setIsPaused(false)}
+      >
         <CardContent className="p-0">
-          <div className="relative h-48 overflow-hidden">
-            {carouselItems.map((item, index) => (
-              <div
-                key={item.id}
-                className={`absolute inset-0 transition-transform duration-500 ease-in-out ${
-                  index === currentSlide ? 'translate-x-0' : 
-                  index < currentSlide ? '-translate-x-full' : 'translate-x-full'
-                }`}
-              >
-                <div 
-                  className="relative h-full bg-gradient-to-br from-blue-600 to-purple-700"
-                  style={{ 
-                    backgroundImage: item.imageUrl ? `url('${item.imageUrl}')` : undefined,
-                    backgroundSize: 'cover',
-                    backgroundPosition: 'center',
-                    backgroundRepeat: 'no-repeat'
-                  }}
+          <div className="relative h-64 md:h-80 lg:h-96">
+            {/* Фоновое изображение */}
+            <div 
+              className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+              style={{ backgroundImage: `url(${currentAd.imageUrl})` }}
+            >
+              <div className="absolute inset-0 bg-black bg-opacity-40"></div>
+            </div>
+
+            {/* Контент */}
+            <div className="relative z-10 flex items-center justify-between h-full p-6 md:p-8">
+              <div className="flex-1 text-white">
+                <h3 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-4">
+                  {currentAd.title}
+                </h3>
+                <p className="text-lg md:text-xl mb-6 max-w-2xl">
+                  {currentAd.description}
+                </p>
+                {currentAd.linkUrl && (
+                  <Link to={currentAd.linkUrl}>
+                    <Button 
+                      size="lg" 
+                      className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-8 py-3 text-lg"
+                    >
+                      {currentAd.buttonText}
+                    </Button>
+                  </Link>
+                )}
+              </div>
+            </div>
+
+            {/* Кнопки навигации */}
+            {activeAds.length > 1 && (
+              <>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white/20 hover:bg-white/30 border-white/30 text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                  onClick={prevSlide}
                 >
-                  <div className="absolute inset-0 bg-black bg-opacity-40"></div>
-                  <div className="relative z-10 h-full flex flex-col justify-center items-center text-center space-y-2 p-6">
-                    <h2 className="text-2xl font-bold text-white">
-                      {item.title}
-                    </h2>
-                    {item.description && (
-                      <p className="text-base text-white opacity-90 leading-relaxed">
-                        {item.description}
-                      </p>
-                    )}
-                    {item.linkUrl && (
-                      <div className="mt-4">
-                        <a href={item.linkUrl} className="inline-block">
-                          <span className="px-4 py-2 rounded-full text-sm font-bold bg-white text-emerald-700 hover:bg-gray-100 transition-all duration-300 cursor-pointer inline-flex items-center gap-1">
-                            {item.buttonText || 'Подробнее'} →
-                          </span>
-                        </a>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            ))}
-
-
-
-            {/* Dots indicator */}
-            {carouselItems.length > 1 && (
-              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 flex space-x-2">
-                {carouselItems.map((_, index) => (
-                  <button
-                    key={index}
-                    onClick={() => goToSlide(index)}
-                    className={`w-3 h-3 rounded-full transition-all ${
-                      index === currentSlide
-                        ? 'bg-white'
-                        : 'bg-white bg-opacity-50 hover:bg-opacity-75'
-                    }`}
-                  />
-                ))}
-              </div>
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white/20 hover:bg-white/30 border-white/30 text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                  onClick={nextSlide}
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </>
             )}
           </div>
+
+          {/* Индикаторы слайдов */}
+          {activeAds.length > 1 && (
+            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
+              {activeAds.map((_, index) => (
+                <button
+                  key={index}
+                  className={`w-3 h-3 rounded-full transition-colors ${
+                    index === currentSlide 
+                      ? 'bg-white' 
+                      : 'bg-white/50 hover:bg-white/70'
+                  }`}
+                  onClick={() => goToSlide(index)}
+                />
+              ))}
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>
