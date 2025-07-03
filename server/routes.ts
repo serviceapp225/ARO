@@ -1142,29 +1142,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Invalid notification ID" });
       }
       
-      // First, get notification details to mark as viewed
-      try {
-        const result = await db.execute(
-          sql`SELECT user_id, alert_id, listing_id, type FROM notifications WHERE id = ${notificationId}`
-        );
-        
-        if (result.rows.length > 0) {
-          const notification = result.rows[0] as any;
-          
-          if (notification.type === "car_found" && notification.listing_id && notification.alert_id) {
-            // Mark this alert as viewed so it won't appear again
-            await db.execute(
-              sql`INSERT INTO alert_views (user_id, alert_id, listing_id) 
-                  VALUES (${notification.user_id}, ${notification.alert_id}, ${notification.listing_id})
-                  ON CONFLICT (user_id, alert_id, listing_id) DO NOTHING`
-            );
-            console.log(`Marked alert ${notification.alert_id} for listing ${notification.listing_id} as viewed`);
-          }
-        }
-      } catch (viewError) {
-        console.log('Error marking alert as viewed:', viewError);
-      }
-      
       const success = await storage.deleteNotification(notificationId);
       console.log(`Delete notification result: ${success}`);
       
