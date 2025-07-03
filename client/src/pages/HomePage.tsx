@@ -10,6 +10,7 @@ import { Link } from "wouter";
 import { useState } from "react";
 import { useLocation } from "wouter";
 import { useAuth } from "@/contexts/AuthContext";
+import { useQuery } from "@tanstack/react-query";
 import premiumCarsSvg from "@/assets/premium-cars.svg";
 
 
@@ -18,10 +19,64 @@ export default function HomePage() {
   const [, setLocation] = useLocation();
   const { user } = useAuth();
 
+  // Предзагрузка всех данных для синхронного отображения
+  const { data: bannerData, isLoading: bannerLoading } = useQuery({
+    queryKey: ['/api/sell-car-banner'],
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const { data: carouselData, isLoading: carouselLoading } = useQuery({
+    queryKey: ['/api/advertisement-carousel'],
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const { data: listingsData, isLoading: listingsLoading } = useQuery({
+    queryKey: ['/api/listings'],
+    staleTime: 30 * 1000,
+  });
+
+  // Показываем скелетон пока не загрузятся все критические данные
+  const isPageLoading = bannerLoading || carouselLoading || listingsLoading;
+
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     // Поиск будет обрабатываться компонентом ActiveAuctions
   };
+
+  // Показываем скелетон пока данные загружаются
+  if (isPageLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 pb-20">
+        <TopHeader />
+        
+        <main className="container mx-auto px-4 py-6 space-y-6">
+          {/* Search Section */}
+          <div className="bg-white rounded-2xl p-4 shadow-sm">
+            <div className="h-12 bg-gray-200 rounded-lg animate-pulse"></div>
+          </div>
+
+          {/* Banner Skeleton */}
+          <div className="h-44 rounded-2xl bg-gray-200 animate-pulse"></div>
+
+          {/* Carousel Skeleton */}
+          <div className="h-44 rounded-2xl bg-gray-200 animate-pulse"></div>
+
+          {/* Security Banner Skeleton */}
+          <div className="h-16 rounded-xl bg-gray-200 animate-pulse"></div>
+
+          {/* Auctions Skeleton */}
+          <div className="space-y-4">
+            <div className="h-6 w-48 bg-gray-200 rounded animate-pulse"></div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[1, 2, 3, 4, 5, 6].map((i) => (
+                <div key={i} className="h-96 bg-gray-200 rounded-xl animate-pulse"></div>
+              ))}
+            </div>
+          </div>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 pb-20">
