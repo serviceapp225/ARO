@@ -603,6 +603,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.put("/api/listings/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const updateData = req.body;
+      
+      const listing = await storage.updateListing(id, updateData);
+      if (!listing) {
+        return res.status(404).json({ error: "Listing not found" });
+      }
+      
+      // Очищаем кэши после обновления
+      clearAllCaches();
+      
+      res.json(listing);
+    } catch (error) {
+      console.error("Error updating listing:", error);
+      res.status(500).json({ error: "Failed to update listing" });
+    }
+  });
+
   app.patch("/api/listings/:id/status", async (req, res) => {
     try {
       const listingId = parseInt(req.params.id);

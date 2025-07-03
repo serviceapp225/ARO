@@ -400,6 +400,93 @@ export class SQLiteStorage implements IStorage {
     return this.getListing(id);
   }
 
+  async updateListing(id: number, data: any): Promise<CarListing | undefined> {
+    const fields = [];
+    const values = [];
+    
+    // Проверяем и добавляем поля для обновления
+    if (data.make !== undefined) {
+      fields.push('make = ?');
+      values.push(data.make);
+    }
+    if (data.model !== undefined) {
+      fields.push('model = ?');
+      values.push(data.model);
+    }
+    if (data.year !== undefined) {
+      fields.push('year = ?');
+      values.push(data.year);
+    }
+    if (data.mileage !== undefined) {
+      fields.push('mileage = ?');
+      values.push(data.mileage);
+    }
+    if (data.description !== undefined) {
+      fields.push('description = ?');
+      values.push(data.description);
+    }
+    if (data.startingPrice !== undefined) {
+      fields.push('starting_price = ?');
+      values.push(data.startingPrice);
+    }
+    if (data.condition !== undefined) {
+      fields.push('condition = ?');
+      values.push(data.condition);
+    }
+    if (data.location !== undefined) {
+      fields.push('location = ?');
+      values.push(data.location);
+    }
+    if (data.engine !== undefined) {
+      fields.push('engine = ?');
+      values.push(data.engine);
+    }
+    if (data.transmission !== undefined) {
+      fields.push('transmission = ?');
+      values.push(data.transmission);
+    }
+    if (data.fuelType !== undefined) {
+      fields.push('fuel_type = ?');
+      values.push(data.fuelType);
+    }
+    if (data.bodyType !== undefined) {
+      fields.push('body_type = ?');
+      values.push(data.bodyType);
+    }
+    if (data.driveType !== undefined) {
+      fields.push('drive_type = ?');
+      values.push(data.driveType);
+    }
+    if (data.color !== undefined) {
+      fields.push('color = ?');
+      values.push(data.color);
+    }
+    if (data.customsCleared !== undefined) {
+      fields.push('customs_cleared = ?');
+      values.push(data.customsCleared ? 1 : 0);
+    }
+    if (data.recycled !== undefined) {
+      fields.push('recycled = ?');
+      values.push(data.recycled ? 1 : 0);
+    }
+    if (data.technicalInspectionValid !== undefined) {
+      fields.push('technical_inspection_valid = ?');
+      values.push(data.technicalInspectionValid ? 1 : 0);
+    }
+    if (data.tinted !== undefined) {
+      fields.push('tinted = ?');
+      values.push(data.tinted ? 1 : 0);
+    }
+
+    if (fields.length > 0) {
+      values.push(id);
+      const stmt = this.db.prepare(`UPDATE car_listings SET ${fields.join(', ')} WHERE id = ?`);
+      stmt.run(...values);
+    }
+    
+    return this.getListing(id);
+  }
+
   async getListingsBySeller(sellerId: number): Promise<CarListing[]> {
     const stmt = this.db.prepare('SELECT * FROM car_listings WHERE seller_id = ? ORDER BY created_at DESC');
     const rows = stmt.all(sellerId);

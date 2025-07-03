@@ -155,6 +155,7 @@ export default function AdminPanel() {
 function ModerationManagement() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [editingListing, setEditingListing] = useState<CarListing | null>(null);
 
   // Получение объявлений ожидающих одобрения
   const { data: pendingListings = [], isLoading } = useQuery<CarListing[]>({
@@ -220,6 +221,35 @@ function ModerationManagement() {
     }
   });
 
+  // Мутация обновления объявления
+  const updateMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: number, data: any }) => {
+      const response = await fetch(`/api/listings/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      if (!response.ok) throw new Error('Failed to update listing');
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Объявление обновлено",
+        description: "Изменения сохранены успешно",
+        variant: "default"
+      });
+      setEditingListing(null);
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/listings/pending-approval'] });
+    },
+    onError: (error) => {
+      toast({
+        title: "Ошибка обновления",
+        description: error.message,
+        variant: "destructive"
+      });
+    }
+  });
+
   if (isLoading) {
     return (
       <Card>
@@ -278,10 +308,19 @@ function ModerationManagement() {
                   <div className="flex gap-2 ml-4">
                     <Button
                       size="sm"
+                      variant="outline"
+                      onClick={() => setEditingListing(listing)}
+                      disabled={approveMutation.isPending || rejectMutation.isPending || updateMutation.isPending}
+                    >
+                      <Edit className="h-4 w-4 mr-1" />
+                      Редактировать
+                    </Button>
+                    <Button
+                      size="sm"
                       variant="default"
                       className="bg-green-600 hover:bg-green-700"
                       onClick={() => approveMutation.mutate(listing.id)}
-                      disabled={approveMutation.isPending || rejectMutation.isPending}
+                      disabled={approveMutation.isPending || rejectMutation.isPending || updateMutation.isPending}
                     >
                       <CheckCircle className="h-4 w-4 mr-1" />
                       Одобрить
@@ -290,7 +329,7 @@ function ModerationManagement() {
                       size="sm"
                       variant="destructive"
                       onClick={() => rejectMutation.mutate(listing.id)}
-                      disabled={approveMutation.isPending || rejectMutation.isPending}
+                      disabled={approveMutation.isPending || rejectMutation.isPending || updateMutation.isPending}
                     >
                       <XCircle className="h-4 w-4 mr-1" />
                       Отклонить
@@ -302,7 +341,219 @@ function ModerationManagement() {
           </div>
         )}
       </CardContent>
+      
+      {/* Модальное окно редактирования */}
+      {editingListing && (
+        <EditListingModal
+          listing={editingListing}
+          onClose={() => setEditingListing(null)}
+          onUpdate={(data) => updateMutation.mutate({ id: editingListing.id, data })}
+          isUpdating={updateMutation.isPending}
+        />
+      )}
     </Card>
+  );
+}
+
+// Компонент модального окна для редактирования объявления в модерации
+function EditListingModal({ listing, onClose, onUpdate, isUpdating }: {
+  listing: CarListing;
+  onClose: () => void;
+  onUpdate: (data: any) => void;
+  isUpdating: boolean;
+}) {
+  const [formData, setFormData] = useState({
+    make: listing.make,
+    model: listing.model,
+    year: listing.year,
+    mileage: listing.mileage,
+    description: listing.description,
+    startingPrice: listing.startingPrice,
+    condition: listing.condition || 'good',
+    location: listing.location || '',
+    engine: listing.engine || '',
+    transmission: listing.transmission || '',
+    fuelType: listing.fuelType || '',
+    bodyType: listing.bodyType || '',
+    driveType: listing.driveType || '',
+    color: listing.color || '',
+    customsCleared: listing.customsCleared || false,
+    recycled: listing.recycled || false,
+    technicalInspectionValid: listing.technicalInspectionValid || false,
+    tinted: listing.tinted || false
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onUpdate(formData);
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+        <div className="p-6">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-xl font-semibold">Редактировать объявление</h2>
+            <Button variant="outline" size="sm" onClick={onClose}>
+              <XCircle className="h-4 w-4" />
+            </Button>
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="make">Марка</Label>
+                <Input
+                  id="make"
+                  value={formData.make}
+                  onChange={(e) => setFormData({ ...formData, make: e.target.value })}
+                  required
+                />
+              </div>
+              <div>
+                <Label htmlFor="model">Модель</Label>
+                <Input
+                  id="model"
+                  value={formData.model}
+                  onChange={(e) => setFormData({ ...formData, model: e.target.value })}
+                  required
+                />
+              </div>
+              <div>
+                <Label htmlFor="year">Год</Label>
+                <Input
+                  id="year"
+                  type="number"
+                  value={formData.year}
+                  onChange={(e) => setFormData({ ...formData, year: parseInt(e.target.value) })}
+                  required
+                />
+              </div>
+              <div>
+                <Label htmlFor="mileage">Пробег (км)</Label>
+                <Input
+                  id="mileage"
+                  type="number"
+                  value={formData.mileage}
+                  onChange={(e) => setFormData({ ...formData, mileage: parseInt(e.target.value) })}
+                  required
+                />
+              </div>
+              <div>
+                <Label htmlFor="startingPrice">Начальная цена (сомони)</Label>
+                <Input
+                  id="startingPrice"
+                  value={formData.startingPrice}
+                  onChange={(e) => setFormData({ ...formData, startingPrice: e.target.value })}
+                  required
+                />
+              </div>
+              <div>
+                <Label htmlFor="condition">Состояние</Label>
+                <Select
+                  value={formData.condition}
+                  onValueChange={(value) => setFormData({ ...formData, condition: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="excellent">Отличное</SelectItem>
+                    <SelectItem value="very_good">Очень хорошее</SelectItem>
+                    <SelectItem value="good">Хорошее</SelectItem>
+                    <SelectItem value="fair">Удовлетворительное</SelectItem>
+                    <SelectItem value="poor">Плохое</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label htmlFor="location">Местоположение</Label>
+                <Input
+                  id="location"
+                  value={formData.location}
+                  onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                />
+              </div>
+              <div>
+                <Label htmlFor="color">Цвет</Label>
+                <Input
+                  id="color"
+                  value={formData.color}
+                  onChange={(e) => setFormData({ ...formData, color: e.target.value })}
+                />
+              </div>
+            </div>
+
+            <div>
+              <Label htmlFor="description">Описание</Label>
+              <Textarea
+                id="description"
+                value={formData.description}
+                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                rows={3}
+                required
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    id="customsCleared"
+                    checked={formData.customsCleared}
+                    onChange={(e) => setFormData({ ...formData, customsCleared: e.target.checked })}
+                  />
+                  <Label htmlFor="customsCleared">Растаможен</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    id="recycled"
+                    checked={formData.recycled}
+                    onChange={(e) => setFormData({ ...formData, recycled: e.target.checked })}
+                  />
+                  <Label htmlFor="recycled">Утилизирован</Label>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    id="technicalInspectionValid"
+                    checked={formData.technicalInspectionValid}
+                    onChange={(e) => setFormData({ ...formData, technicalInspectionValid: e.target.checked })}
+                  />
+                  <Label htmlFor="technicalInspectionValid">Техосмотр пройден</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    id="tinted"
+                    checked={formData.tinted}
+                    onChange={(e) => setFormData({ ...formData, tinted: e.target.checked })}
+                  />
+                  <Label htmlFor="tinted">Тонировка</Label>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex gap-3 pt-4 border-t">
+              <Button 
+                type="submit" 
+                disabled={isUpdating}
+                className="bg-blue-600 hover:bg-blue-700"
+              >
+                {isUpdating ? 'Сохранение...' : 'Сохранить изменения'}
+              </Button>
+              <Button type="button" variant="outline" onClick={onClose}>
+                Отмена
+              </Button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
   );
 }
 
