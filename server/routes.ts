@@ -1911,6 +1911,64 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Архивирование просроченных аукционов
+  app.post('/api/archive-expired', async (req, res) => {
+    try {
+      const archivedCount = await storage.archiveExpiredListings();
+      res.json({ success: true, archivedCount });
+    } catch (error) {
+      console.error('Error archiving expired listings:', error);
+      res.status(500).json({ message: 'Failed to archive expired listings' });
+    }
+  });
+
+  // Получить архивированные аукционы
+  app.get('/api/archived-listings', async (req, res) => {
+    try {
+      const archivedListings = await storage.getArchivedListings();
+      res.json(archivedListings);
+    } catch (error) {
+      console.error('Error fetching archived listings:', error);
+      res.status(500).json({ message: 'Failed to fetch archived listings' });
+    }
+  });
+
+  // Перезапустить аукцион
+  app.post('/api/restart-listing/:id', async (req, res) => {
+    try {
+      const { id } = req.params;
+      const newListing = await storage.restartListing(parseInt(id));
+      
+      if (!newListing) {
+        return res.status(404).json({ message: 'Listing not found or not archived' });
+      }
+
+      clearCachePattern('listings');
+      res.json(newListing);
+    } catch (error) {
+      console.error('Error restarting listing:', error);
+      res.status(500).json({ message: 'Failed to restart listing' });
+    }
+  });
+
+  // Удалить архивированный аукцион навсегда
+  app.delete('/api/archived-listings/:id', async (req, res) => {
+    try {
+      const { id } = req.params;
+      const deleted = await storage.deleteArchivedListing(parseInt(id));
+      
+      if (!deleted) {
+        return res.status(404).json({ message: 'Listing not found or not archived' });
+      }
+
+      clearCachePattern('listings');
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Error deleting archived listing:', error);
+      res.status(500).json({ message: 'Failed to delete archived listing' });
+    }
+  });
+
   const httpServer = createServer(app);
   
   // Инициализируем WebSocket для real-time обновлений

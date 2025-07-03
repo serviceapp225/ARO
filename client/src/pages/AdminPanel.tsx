@@ -96,6 +96,10 @@ export default function AdminPanel() {
               <Plus className="h-4 w-4" />
               Реклама-карусель
             </TabsTrigger>
+            <TabsTrigger value="archive" className="flex items-center gap-2 w-full justify-start">
+              <Trash2 className="h-4 w-4" />
+              Архив
+            </TabsTrigger>
             <TabsTrigger value="stats" className="flex items-center gap-2 w-full justify-start">
               <Settings className="h-4 w-4" />
               Статистика
@@ -124,6 +128,10 @@ export default function AdminPanel() {
 
           <TabsContent value="ad-carousel">
             <AdvertisementCarouselManagement />
+          </TabsContent>
+
+          <TabsContent value="archive">
+            <ArchiveManagement />
           </TabsContent>
 
           <TabsContent value="stats">
@@ -1485,6 +1493,227 @@ function AdminStats() {
           <div className="text-2xl font-bold">{stats?.bannedUsers || 0}</div>
         </CardContent>
       </Card>
+    </div>
+  );
+}
+
+// Компонент для управления архивом
+function ArchiveManagement() {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  
+  // Запросы для получения данных
+  const { data: archivedListings, isLoading: isLoadingArchived } = useQuery({
+    queryKey: ['/api/archived-listings'],
+    queryFn: async () => {
+      const response = await fetch('/api/archived-listings');
+      if (!response.ok) throw new Error('Failed to fetch archived listings');
+      return response.json();
+    }
+  });
+
+  // Мутация для архивирования просроченных аукционов
+  const archiveExpiredMutation = useMutation({
+    mutationFn: async () => {
+      const response = await fetch('/api/archive-expired', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      if (!response.ok) throw new Error('Failed to archive expired listings');
+      return response.json();
+    },
+    onSuccess: (data) => {
+      toast({
+        title: "Архивирование завершено",
+        description: `Архивировано ${data.archivedCount} просроченных аукционов`,
+        variant: "default"
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/archived-listings'] });
+    },
+    onError: (error) => {
+      toast({
+        title: "Ошибка архивирования",
+        description: error.message,
+        variant: "destructive"
+      });
+    }
+  });
+
+  // Мутация для перезапуска аукциона
+  const restartListingMutation = useMutation({
+    mutationFn: async (listingId: number) => {
+      const response = await fetch(`/api/restart-listing/${listingId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      if (!response.ok) throw new Error('Failed to restart listing');
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Аукцион перезапущен",
+        description: "Создан новый аукцион с новым номером лота",
+        variant: "default"
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/archived-listings'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/listings'] });
+    },
+    onError: (error) => {
+      toast({
+        title: "Ошибка перезапуска",
+        description: error.message,
+        variant: "destructive"
+      });
+    }
+  });
+
+  // Мутация для удаления архивированного аукциона
+  const deleteArchivedMutation = useMutation({
+    mutationFn: async (listingId: number) => {
+      const response = await fetch(`/api/archived-listings/${listingId}`, {
+        method: 'DELETE'
+      });
+      if (!response.ok) throw new Error('Failed to delete archived listing');
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Аукцион удален",
+        description: "Архивированный аукцион удален навсегда",
+        variant: "default"
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/archived-listings'] });
+    },
+    onError: (error) => {
+      toast({
+        title: "Ошибка удаления",
+        description: error.message,
+        variant: "destructive"
+      });
+    }
+  });
+
+  if (isLoadingArchived) {
+    return (
+      <div className="p-6 text-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+        <p className="mt-2 text-gray-600">Загрузка архива...</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Заголовок и кнопка архивирования */}
+      <div className="flex justify-between items-center">
+        <div>
+          <h2 className="text-2xl font-bold">Архив аукционов</h2>
+          <p className="text-gray-600">Завершенные аукционы старше 24 часов</p>
+        </div>
+        <Button
+          onClick={() => archiveExpiredMutation.mutate()}
+          disabled={archiveExpiredMutation.isPending}
+          className="bg-blue-600 hover:bg-blue-700"
+        >
+          {archiveExpiredMutation.isPending ? 'Архивирую...' : 'Архивировать просроченные'}
+        </Button>
+      </div>
+
+      {/* Статистика архива */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">Статистика архива</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="text-center">
+              <div className="text-3xl font-bold text-blue-600">
+                {archivedListings?.length || 0}
+              </div>
+              <div className="text-sm text-gray-500">Архивированных аукционов</div>
+            </div>
+            <div className="text-center">
+              <div className="text-3xl font-bold text-green-600">
+                {archivedListings?.filter((l: any) => l.currentBid)?.length || 0}
+              </div>
+              <div className="text-sm text-gray-500">Со ставками</div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Список архивированных аукционов */}
+      <div className="space-y-4">
+        {archivedListings && archivedListings.length > 0 ? (
+          archivedListings.map((listing: any) => (
+            <Card key={listing.id} className="border-red-200 dark:border-red-800">
+              <CardContent className="p-4">
+                <div className="flex justify-between items-start">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-2">
+                      <h3 className="font-semibold text-lg">
+                        {listing.make} {listing.model} ({listing.year})
+                      </h3>
+                      <Badge variant="secondary" className="bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100">
+                        Архивирован
+                      </Badge>
+                    </div>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm text-gray-600 dark:text-gray-400">
+                      <div>Лот: {listing.lotNumber}</div>
+                      <div>Пробег: {listing.mileage.toLocaleString()} км</div>
+                      <div>Стартовая цена: ${listing.startingPrice}</div>
+                      <div>
+                        {listing.currentBid ? (
+                          <span className="text-green-600 font-semibold">
+                            Финальная ставка: ${listing.currentBid}
+                          </span>
+                        ) : (
+                          <span className="text-gray-500">Без ставок</span>
+                        )}
+                      </div>
+                    </div>
+                    {listing.endedAt && (
+                      <div className="mt-2 text-xs text-gray-500">
+                        Завершен: {new Date(listing.endedAt).toLocaleString('ru-RU')}
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex gap-2 ml-4">
+                    <Button
+                      size="sm"
+                      onClick={() => restartListingMutation.mutate(listing.id)}
+                      disabled={restartListingMutation.isPending}
+                      className="bg-green-600 hover:bg-green-700"
+                    >
+                      Перезапустить
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="destructive"
+                      onClick={() => deleteArchivedMutation.mutate(listing.id)}
+                      disabled={deleteArchivedMutation.isPending}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))
+        ) : (
+          <Card>
+            <CardContent className="p-8 text-center">
+              <Trash2 className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-lg font-semibold text-gray-600 mb-2">
+                Архив пуст
+              </h3>
+              <p className="text-gray-500">
+                Архивированные аукционы будут отображаться здесь
+              </p>
+            </CardContent>
+          </Card>
+        )}
+      </div>
     </div>
   );
 }

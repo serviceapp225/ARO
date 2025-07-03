@@ -94,6 +94,19 @@ app.use((req, res, next) => {
   // ALWAYS serve the app on port 5000
   // this serves both the API and the client.
   // It is the only port that is not firewalled.
+  // Запускаем автоматическое архивирование каждые 6 часов
+  setInterval(async () => {
+    try {
+      const { storage } = await import('./storage');
+      const archivedCount = await storage.archiveExpiredListings();
+      if (archivedCount > 0) {
+        console.log(`[CRON] Автоматически архивировано ${archivedCount} просроченных аукционов`);
+      }
+    } catch (error) {
+      console.error('[CRON] Ошибка автоматического архивирования:', error);
+    }
+  }, 6 * 60 * 60 * 1000); // Каждые 6 часов
+
   const port = process.env.PORT || 5000;
   server.listen({
     port: Number(port),

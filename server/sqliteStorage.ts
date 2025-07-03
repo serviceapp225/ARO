@@ -51,6 +51,7 @@ export class SQLiteStorage implements IStorage {
         status TEXT NOT NULL DEFAULT 'pending',
         auction_start_time DATETIME,
         auction_end_time DATETIME,
+        ended_at DATETIME,
         customs_cleared BOOLEAN DEFAULT 0,
         recycled BOOLEAN DEFAULT 0,
         technical_inspection_valid BOOLEAN DEFAULT 0,
@@ -528,8 +529,9 @@ export class SQLiteStorage implements IStorage {
   }
 
   async updateListingStatus(id: number, status: string): Promise<CarListing | undefined> {
-    const stmt = this.db.prepare('UPDATE car_listings SET status = ? WHERE id = ?');
-    stmt.run(status, id);
+    const currentTime = status === 'ended' ? new Date().toISOString() : null;
+    const stmt = this.db.prepare('UPDATE car_listings SET status = ?, ended_at = ? WHERE id = ?');
+    stmt.run(status, currentTime, id);
     return this.getListing(id);
   }
 
@@ -608,6 +610,7 @@ export class SQLiteStorage implements IStorage {
       status: row.status,
       auctionStartTime: row.auction_start_time ? new Date(row.auction_start_time) : null,
       auctionEndTime: row.auction_end_time ? new Date(row.auction_end_time) : null,
+      endedAt: row.ended_at ? new Date(row.ended_at) : null,
       customsCleared: Boolean(row.customs_cleared),
       recycled: Boolean(row.recycled),
       technicalInspectionValid: Boolean(row.technical_inspection_valid),
@@ -1247,6 +1250,115 @@ export class SQLiteStorage implements IStorage {
     } catch (error) {
       console.error('Error updating sell car banner:', error);
       throw error;
+    }
+  }
+
+  // Архивирование завершенных аукционов старше 24 часов
+  async archiveExpiredListings(): Promise<number> {
+    try {
+      const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+      const stmt = this.db.prepare(`
+        UPDATE car_listings 
+        SET status = 'archived' 
+        WHERE status = 'ended' 
+        AND ended_at <= ?
+      `);
+      const result = stmt.run(twentyFourHoursAgo);
+      console.log(`Archived ${result.changes} expired listings`);
+      return result.changes;
+    } catch (error) {
+      console.error('Error archiving expired listings:', error);
+      return 0;
+    }
+  }
+
+  // Получить архивированные аукционы
+  async getArchivedListings(): Promise<CarListing[]> {
+    try {
+      const stmt = this.db.prepare('SELECT * FROM car_listings WHERE status = "archived" ORDER BY ended_at DESC');
+      const rows = stmt.all();
+      return rows.map(row => this.mapListing(row));
+    } catch (error) {
+      console.error('Error fetching archived listings:', error);
+      return [];
+    }
+  }
+
+  // Перезапуск аукциона
+  async restartListing(id: number): Promise<CarListing | undefined> {
+    try {
+      const originalListing = await this.getListing(id);
+      if (!originalListing || originalListing.status !== 'archived') {
+        return undefined;
+      }
+
+      // Генерируем новый номер лота
+      const newLotNumber = Date.now().toString();
+      
+      // Создаем новый аукцион с данными оригинала
+      const listing = await this.createListing({
+        sellerId: originalListing.sellerId,
+        lotNumber: newLotNumber,
+        make: originalListing.make,
+        model: originalListing.model,
+        year: originalListing.year,
+        mileage: originalListing.mileage,
+        description: originalListing.description,
+        startingPrice: originalListing.startingPrice,
+        photos: JSON.stringify(originalListing.photos),
+        auctionDuration: originalListing.auctionDuration,
+        engine: originalListing.engine,
+        transmission: originalListing.transmission,
+        fuelType: originalListing.fuelType,
+        bodyType: originalListing.bodyType,
+        driveType: originalListing.driveType,
+        color: originalListing.color,
+        condition: originalListing.condition,
+        vin: originalListing.vin,
+        location: originalListing.location,
+        customsCleared: originalListing.customsCleared,
+        recycled: originalListing.recycled,
+        technicalInspectionValid: originalListing.technicalInspectionValid,
+        technicalInspectionDate: originalListing.technicalInspectionDate,
+        tinted: originalListing.tinted,
+        tintingDate: originalListing.tintingDate
+      });
+
+      // Устанавливаем статус 'active' отдельно
+      await this.updateListingStatus(listing.id, 'active');
+      return this.getListing(listing.id);
+    } catch (error) {
+      console.error('Error restarting listing:', error);
+      return undefined;
+    }
+  }
+
+  // Удаление архивированного аукциона навсегда
+  async deleteArchivedListing(id: number): Promise<boolean> {
+    try {
+      // Проверяем что аукцион архивирован
+      const listing = await this.getListing(id);
+      if (!listing || listing.status !== 'archived') {
+        return false;
+      }
+
+      // Удаляем связанные ставки
+      const deleteBidsStmt = this.db.prepare('DELETE FROM bids WHERE listing_id = ?');
+      deleteBidsStmt.run(id);
+
+      // Удаляем из избранного
+      const deleteFavoritesStmt = this.db.prepare('DELETE FROM favorites WHERE listing_id = ?');
+      deleteFavoritesStmt.run(id);
+
+      // Удаляем сам аукцион
+      const deleteListingStmt = this.db.prepare('DELETE FROM car_listings WHERE id = ?');
+      const result = deleteListingStmt.run(id);
+
+      console.log(`Permanently deleted archived listing ${id}`);
+      return result.changes > 0;
+    } catch (error) {
+      console.error('Error deleting archived listing:', error);
+      return false;
     }
   }
 }
