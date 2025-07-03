@@ -27,7 +27,7 @@ export const carListings = pgTable("car_listings", {
   currentBid: numeric("current_bid", { precision: 12, scale: 2 }),
   photos: jsonb("photos").notNull(), // array of photo URLs
   auctionDuration: integer("auction_duration").notNull(), // hours
-  status: text("status").notNull().default("pending"), // 'pending', 'active', 'ended', 'archived', 'rejected'
+  status: text("status").notNull().default("pending_approval"), // 'pending_approval', 'pending', 'active', 'ended', 'archived', 'rejected'
   auctionStartTime: timestamp("auction_start_time"),
   auctionEndTime: timestamp("auction_end_time"),
   endedAt: timestamp("ended_at"), // Время завершения аукциона

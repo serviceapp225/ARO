@@ -81,10 +81,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   let bidCountsCache = new Map<number, number>();
   let lastCacheUpdate = Date.now();
   
-  // Функция для обновления кэша в фоне
+  // Функция для обновления кэша в фоне - только одобренные объявления
   const updateListingsCache = async () => {
     try {
-      const listings = await storage.getListingsByStatus('active', 20);
+      // Получаем только одобренные объявления (pending, active, ended) - исключаем pending_approval
+      const pendingListings = await storage.getListingsByStatus('pending', 10);
+      const activeListings = await storage.getListingsByStatus('active', 10);
+      const endedListings = await storage.getListingsByStatus('ended', 5);
+      const listings = [...pendingListings, ...activeListings, ...endedListings];
       
       // Обновляем кэш количества ставок
       bidCountsCache.clear();
@@ -1657,6 +1661,52 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(listings);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch listings" });
+    }
+  });
+
+  // Получить объявления ожидающие одобрения
+  app.get("/api/admin/listings/pending-approval", adminAuth, async (req, res) => {
+    try {
+      const listings = await storage.getPendingApprovalListings();
+      res.json(listings);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch pending approval listings" });
+    }
+  });
+
+  // Одобрить объявление для публикации
+  app.post("/api/admin/listings/:id/approve", adminAuth, async (req, res) => {
+    try {
+      const listingId = parseInt(req.params.id);
+      const listing = await storage.approveListingForPublic(listingId);
+      if (!listing) {
+        return res.status(404).json({ error: "Listing not found" });
+      }
+      
+      // Очищаем все кэши после одобрения
+      clearAllCaches();
+      
+      res.json(listing);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to approve listing" });
+    }
+  });
+
+  // Отклонить заявку на объявление
+  app.post("/api/admin/listings/:id/reject", adminAuth, async (req, res) => {
+    try {
+      const listingId = parseInt(req.params.id);
+      const listing = await storage.rejectListingApplication(listingId);
+      if (!listing) {
+        return res.status(404).json({ error: "Listing not found" });
+      }
+      
+      // Очищаем все кэши после отклонения
+      clearAllCaches();
+      
+      res.json(listing);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to reject listing" });
     }
   });
 

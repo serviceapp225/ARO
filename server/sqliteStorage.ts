@@ -378,6 +378,28 @@ export class SQLiteStorage implements IStorage {
     return rows.map(row => this.mapListing(row));
   }
 
+  async getPendingApprovalListings(limit?: number): Promise<CarListing[]> {
+    let query = 'SELECT * FROM car_listings WHERE status = ? ORDER BY created_at DESC';
+    if (limit) {
+      query += ` LIMIT ${limit}`;
+    }
+    const stmt = this.db.prepare(query);
+    const rows = stmt.all('pending_approval');
+    return rows.map(row => this.mapListing(row));
+  }
+
+  async approveListingForPublic(id: number): Promise<CarListing | undefined> {
+    const stmt = this.db.prepare('UPDATE car_listings SET status = ? WHERE id = ?');
+    stmt.run('pending', id);
+    return this.getListing(id);
+  }
+
+  async rejectListingApplication(id: number): Promise<CarListing | undefined> {
+    const stmt = this.db.prepare('UPDATE car_listings SET status = ? WHERE id = ?');
+    stmt.run('rejected', id);
+    return this.getListing(id);
+  }
+
   async getListingsBySeller(sellerId: number): Promise<CarListing[]> {
     const stmt = this.db.prepare('SELECT * FROM car_listings WHERE seller_id = ? ORDER BY created_at DESC');
     const rows = stmt.all(sellerId);

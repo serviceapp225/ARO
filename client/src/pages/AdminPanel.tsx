@@ -76,6 +76,10 @@ export default function AdminPanel() {
               <UserIcon className="h-4 w-4" />
               Пользователи
             </TabsTrigger>
+            <TabsTrigger value="moderation" className="flex items-center gap-2 w-full justify-start">
+              <CheckCircle className="h-4 w-4" />
+              Модерация объявлений
+            </TabsTrigger>
             <TabsTrigger value="listings" className="flex items-center gap-2 w-full justify-start">
               <Car className="h-4 w-4" />
               Объявления
@@ -110,6 +114,10 @@ export default function AdminPanel() {
             <UsersManagement />
           </TabsContent>
 
+          <TabsContent value="moderation">
+            <ModerationManagement />
+          </TabsContent>
+
           <TabsContent value="listings">
             <ListingsManagement />
           </TabsContent>
@@ -140,6 +148,161 @@ export default function AdminPanel() {
         </Tabs>
       </div>
     </div>
+  );
+}
+
+// Компонент для модерации объявлений
+function ModerationManagement() {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  // Получение объявлений ожидающих одобрения
+  const { data: pendingListings = [], isLoading } = useQuery<CarListing[]>({
+    queryKey: ['/api/admin/listings/pending-approval'],
+    queryFn: async () => {
+      const response = await fetch('/api/admin/listings/pending-approval');
+      if (!response.ok) throw new Error('Failed to fetch pending listings');
+      return response.json();
+    }
+  });
+
+  // Мутация одобрения объявления
+  const approveMutation = useMutation({
+    mutationFn: async (listingId: number) => {
+      const response = await fetch(`/api/admin/listings/${listingId}/approve`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      if (!response.ok) throw new Error('Failed to approve listing');
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Объявление одобрено",
+        description: "Объявление теперь доступно в публичном каталоге",
+        variant: "default"
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/listings/pending-approval'] });
+    },
+    onError: (error) => {
+      toast({
+        title: "Ошибка одобрения",
+        description: error.message,
+        variant: "destructive"
+      });
+    }
+  });
+
+  // Мутация отклонения объявления
+  const rejectMutation = useMutation({
+    mutationFn: async (listingId: number) => {
+      const response = await fetch(`/api/admin/listings/${listingId}/reject`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      if (!response.ok) throw new Error('Failed to reject listing');
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Объявление отклонено",
+        description: "Заявка на объявление была отклонена",
+        variant: "default"
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/listings/pending-approval'] });
+    },
+    onError: (error) => {
+      toast({
+        title: "Ошибка отклонения",
+        description: error.message,
+        variant: "destructive"
+      });
+    }
+  });
+
+  if (isLoading) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Модерация объявлений</CardTitle>
+          <CardDescription>Загрузка объявлений ожидающих одобрения...</CardDescription>
+        </CardHeader>
+      </Card>
+    );
+  }
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Модерация объявлений</CardTitle>
+        <CardDescription>
+          Объявления ожидающие одобрения: {pendingListings.length}
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        {pendingListings.length === 0 ? (
+          <div className="text-center py-8">
+            <p className="text-gray-500">Нет объявлений ожидающих модерации</p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {pendingListings.map((listing) => (
+              <div key={listing.id} className="border rounded-lg p-4 bg-white">
+                <div className="flex justify-between items-start">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Badge variant="outline" className="bg-yellow-50 text-yellow-700">
+                        Ожидает одобрения
+                      </Badge>
+                      <span className="text-sm text-gray-500">Лот #{listing.lotNumber}</span>
+                    </div>
+                    <h3 className="font-semibold text-lg">
+                      {listing.make} {listing.model} {listing.year}
+                    </h3>
+                    <p className="text-gray-600 mb-2">{listing.description}</p>
+                    <div className="grid grid-cols-2 gap-4 text-sm">
+                      <div>
+                        <span className="text-gray-500">Пробег:</span> {listing.mileage.toLocaleString()} км
+                      </div>
+                      <div>
+                        <span className="text-gray-500">Начальная цена:</span> {listing.startingPrice} сомони
+                      </div>
+                      <div>
+                        <span className="text-gray-500">Состояние:</span> {listing.condition}
+                      </div>
+                      <div>
+                        <span className="text-gray-500">Местоположение:</span> {listing.location}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex gap-2 ml-4">
+                    <Button
+                      size="sm"
+                      variant="default"
+                      className="bg-green-600 hover:bg-green-700"
+                      onClick={() => approveMutation.mutate(listing.id)}
+                      disabled={approveMutation.isPending || rejectMutation.isPending}
+                    >
+                      <CheckCircle className="h-4 w-4 mr-1" />
+                      Одобрить
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="destructive"
+                      onClick={() => rejectMutation.mutate(listing.id)}
+                      disabled={approveMutation.isPending || rejectMutation.isPending}
+                    >
+                      <XCircle className="h-4 w-4 mr-1" />
+                      Отклонить
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 }
 
