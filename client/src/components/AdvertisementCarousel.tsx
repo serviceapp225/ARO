@@ -77,23 +77,22 @@ export function AdvertisementCarousel() {
       onMouseLeave={() => setIsPaused(false)}
       onClick={handleClick}
       style={{
-        background: 'linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%)',
+        background: 'transparent',
       }}
     >
-      {/* Background Image with Overlay */}
+      {/* Background Image */}
       <div 
         className="absolute inset-0 rounded-2xl bg-cover bg-center bg-no-repeat"
         style={{
           backgroundImage: `url('${currentAd.imageUrl}')`,
-          opacity: 0.3,
         }}
       />
       
-      {/* Gradient Overlay */}
+      {/* Minimal dark overlay for text readability */}
       <div 
         className="absolute inset-0 rounded-2xl"
         style={{
-          background: 'linear-gradient(135deg, #3B82F6CC 0%, #1D4ED8CC 100%)',
+          background: 'linear-gradient(135deg, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.2) 100%)',
         }}
       />
       

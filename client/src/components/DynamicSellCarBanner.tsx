@@ -27,26 +27,25 @@ export function DynamicSellCarBanner() {
       onClick={handleClick}
       className="relative h-44 rounded-2xl p-6 text-white overflow-hidden shadow-2xl cursor-pointer hover:shadow-3xl transition-all duration-300 transform hover:scale-[1.02]"
       style={{
-        background: `linear-gradient(135deg, ${banner.gradientFrom || '#059669'} 0%, ${banner.gradientTo || '#047857'} 100%)`,
+        background: 'transparent',
         color: banner.textColor || '#ffffff',
       }}
     >
-      {/* Background Image with Overlay */}
+      {/* Background Image */}
       {banner.backgroundImageUrl && (
         <div 
           className="absolute inset-0 rounded-2xl bg-cover bg-center bg-no-repeat"
           style={{
             backgroundImage: `url('${banner.backgroundImageUrl}')`,
-            opacity: (banner.overlayOpacity ?? 60) / 100,
           }}
         />
       )}
       
-      {/* Gradient Overlay */}
+      {/* Minimal dark overlay for text readability */}
       <div 
         className="absolute inset-0 rounded-2xl"
         style={{
-          background: `linear-gradient(135deg, ${banner.gradientFrom}CC 0%, ${banner.gradientTo}CC 100%)`,
+          background: 'linear-gradient(135deg, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.2) 100%)',
         }}
       />
       
