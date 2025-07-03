@@ -2,8 +2,6 @@ import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { Link } from 'wouter';
 
 interface AdvertisementItem {
   id: number;
@@ -54,15 +52,15 @@ export function AdvertisementCarousel() {
     setCurrentSlide((prev) => (prev - 1 + activeAds.length) % activeAds.length);
   };
 
+  const handleClick = () => {
+    if (currentAd?.linkUrl) {
+      window.location.href = currentAd.linkUrl;
+    }
+  };
+
   if (isLoading) {
     return (
-      <div className="w-full max-w-6xl mx-auto px-4 py-8">
-        <Card className="h-64 animate-pulse">
-          <CardContent className="p-6">
-            <div className="h-full bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
-          </CardContent>
-        </Card>
-      </div>
+      <div className="h-44 rounded-2xl animate-pulse bg-gray-200 dark:bg-gray-700"></div>
     );
   }
 
@@ -73,85 +71,102 @@ export function AdvertisementCarousel() {
   const currentAd = activeAds[currentSlide];
 
   return (
-    <div className="w-full max-w-6xl mx-auto px-4 py-8">
-      <Card 
-        className="relative overflow-hidden group"
-        onMouseEnter={() => setIsPaused(true)}
-        onMouseLeave={() => setIsPaused(false)}
-      >
-        <CardContent className="p-0">
-          <div className="relative h-64 md:h-80 lg:h-96">
-            {/* Фоновое изображение */}
-            <div 
-              className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-              style={{ backgroundImage: `url(${currentAd.imageUrl})` }}
+    <div 
+      className="relative h-44 rounded-2xl p-6 text-white overflow-hidden shadow-2xl cursor-pointer hover:shadow-3xl transition-all duration-300 transform hover:scale-[1.02]"
+      onMouseEnter={() => setIsPaused(true)}
+      onMouseLeave={() => setIsPaused(false)}
+      onClick={handleClick}
+      style={{
+        background: 'linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%)',
+      }}
+    >
+      {/* Background Image with Overlay */}
+      <div 
+        className="absolute inset-0 rounded-2xl bg-cover bg-center bg-no-repeat"
+        style={{
+          backgroundImage: `url('${currentAd.imageUrl}')`,
+          opacity: 0.3,
+        }}
+      />
+      
+      {/* Gradient Overlay */}
+      <div 
+        className="absolute inset-0 rounded-2xl"
+        style={{
+          background: 'linear-gradient(135deg, #3B82F6CC 0%, #1D4ED8CC 100%)',
+        }}
+      />
+      
+      {/* Content */}
+      <div className="relative z-10 h-full flex flex-col justify-center items-center text-center space-y-3">
+        <h2 className="text-2xl font-bold drop-shadow-lg text-white">
+          {currentAd.title}
+        </h2>
+        <p className="text-base leading-relaxed opacity-95 drop-shadow-md max-w-md text-white">
+          {currentAd.description}
+        </p>
+        {currentAd.linkUrl && (
+          <div className="mt-4">
+            <span 
+              className="px-6 py-3 rounded-full text-sm font-bold hover:opacity-90 transition-all duration-300 cursor-pointer inline-flex items-center gap-2 shadow-lg hover:shadow-xl transform hover:scale-105 bg-white text-blue-600"
             >
-              <div className="absolute inset-0 bg-black bg-opacity-40"></div>
-            </div>
-
-            {/* Контент */}
-            <div className="relative z-10 flex items-center justify-between h-full p-6 md:p-8">
-              <div className="flex-1 text-white">
-                <h3 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-4">
-                  {currentAd.title}
-                </h3>
-                <p className="text-lg md:text-xl mb-6 max-w-2xl">
-                  {currentAd.description}
-                </p>
-                {currentAd.linkUrl && (
-                  <Link to={currentAd.linkUrl}>
-                    <Button 
-                      size="lg" 
-                      className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-8 py-3 text-lg"
-                    >
-                      {currentAd.buttonText}
-                    </Button>
-                  </Link>
-                )}
-              </div>
-            </div>
-
-            {/* Кнопки навигации */}
-            {activeAds.length > 1 && (
-              <>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white/20 hover:bg-white/30 border-white/30 text-white opacity-0 group-hover:opacity-100 transition-opacity"
-                  onClick={prevSlide}
-                >
-                  <ChevronLeft className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white/20 hover:bg-white/30 border-white/30 text-white opacity-0 group-hover:opacity-100 transition-opacity"
-                  onClick={nextSlide}
-                >
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
-              </>
-            )}
+              {currentAd.buttonText}
+            </span>
           </div>
+        )}
+      </div>
+      
+      {/* Кнопки навигации */}
+      {activeAds.length > 1 && (
+        <>
+          <Button
+            variant="outline"
+            size="icon"
+            className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white/20 hover:bg-white/30 border-white/30 text-white opacity-0 hover:opacity-100 transition-opacity"
+            onClick={(e) => {
+              e.stopPropagation();
+              prevSlide();
+            }}
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="outline"
+            size="icon"
+            className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white/20 hover:bg-white/30 border-white/30 text-white opacity-0 hover:opacity-100 transition-opacity"
+            onClick={(e) => {
+              e.stopPropagation();
+              nextSlide();
+            }}
+          >
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+        </>
+      )}
 
-          {/* Индикаторы слайдов */}
-          {activeAds.length > 1 && (
-            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
-              {activeAds.map((_, index) => (
-                <button
-                  key={index}
-                  className={`w-3 h-3 rounded-full transition-colors ${
-                    index === currentSlide 
-                      ? 'bg-white' 
-                      : 'bg-white/50 hover:bg-white/70'
-                  }`}
-                  onClick={() => goToSlide(index)}
-                />
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+      {/* Индикаторы слайдов */}
+      {activeAds.length > 1 && (
+        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
+          {activeAds.map((_, index) => (
+            <button
+              key={index}
+              className={`w-3 h-3 rounded-full transition-colors ${
+                index === currentSlide 
+                  ? 'bg-white' 
+                  : 'bg-white/50 hover:bg-white/70'
+              }`}
+              onClick={(e) => {
+                e.stopPropagation();
+                goToSlide(index);
+              }}
+            />
+          ))}
+        </div>
+      )}
+      
+      {/* Decorative Elements */}
+      <div className="absolute top-4 right-4 w-12 h-12 rounded-full bg-white/10 blur-xl"></div>
+      <div className="absolute bottom-6 left-6 w-8 h-8 rounded-full bg-white/5 blur-lg"></div>
     </div>
   );
 }
