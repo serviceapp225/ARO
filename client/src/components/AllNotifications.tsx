@@ -95,8 +95,21 @@ export function AllNotifications({ userId }: AllNotificationsProps) {
         return newSet;
       });
       
+      // Принудительно удаляем из всех возможных кэшей
       queryClient.removeQueries({ queryKey: ['/api/notifications', userId] });
-      await queryClient.invalidateQueries({ queryKey: ['/api/notifications', userId] });
+      queryClient.removeQueries({ queryKey: [`/api/notifications/${userId}`] });
+      queryClient.removeQueries({ queryKey: ['/api/notifications'] });
+      
+      // Очищаем localStorage от удаленных уведомлений
+      try {
+        localStorage.removeItem('deletedNotificationIds');
+      } catch (error) {
+        console.warn('Failed to clear localStorage:', error);
+      }
+      
+      // Принудительно обновляем данные
+      await queryClient.refetchQueries({ queryKey: ['/api/notifications', userId] });
+      await queryClient.refetchQueries({ queryKey: [`/api/notifications/${userId}`] });
       
       toast({
         title: "Уведомление удалено",
@@ -109,12 +122,6 @@ export function AllNotifications({ userId }: AllNotificationsProps) {
         newSet.delete(notificationId);
         return newSet;
       });
-      
-      queryClient.removeQueries({ queryKey: ['/api/notifications', userId] });
-      
-      setTimeout(() => {
-        queryClient.removeQueries({ queryKey: ['/api/notifications', userId] });
-      }, 100);
     }
   });
 

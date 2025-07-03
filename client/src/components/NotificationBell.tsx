@@ -61,10 +61,10 @@ export function NotificationBell({ userId }: NotificationBellProps) {
       return data;
     },
     enabled: true,
-    refetchInterval: false, // НЕ обновляем автоматически - это может восстанавливать удаленные уведомления
-    staleTime: 5 * 60 * 1000, // Считать данные свежими 5 минут
-    refetchOnWindowFocus: false, // НЕ обновлять при фокусе - это вызывает лишние запросы
-    refetchOnMount: false, // НЕ обновлять при каждом монтировании
+    refetchInterval: false, // НЕ обновляем автоматически 
+    staleTime: 0, // Данные сразу устаревают для немедленного обновления после удаления
+    refetchOnWindowFocus: false, // НЕ обновлять при фокусе
+    refetchOnMount: true, // Обновлять при монтировании для свежих данных
   });
 
   // НЕ очищаем удаленные уведомления автоматически
@@ -106,8 +106,10 @@ export function NotificationBell({ userId }: NotificationBellProps) {
       updateDeletedNotifications(newSet);
     },
     onSuccess: (notificationId) => {
-      // Уведомление уже скрыто через onMutate, просто инвалидируем кэш
-      queryClient.invalidateQueries({ queryKey: [`/api/notifications/${userId}`] });
+      // Принудительно удаляем из кэша и перезагружаем
+      queryClient.removeQueries({ queryKey: ['/api/notifications', userId] });
+      queryClient.removeQueries({ queryKey: [`/api/notifications/${userId}`] });
+      queryClient.refetchQueries({ queryKey: ['/api/notifications', userId] });
     },
     onError: (error, notificationId) => {
       console.error('Failed to delete notification:', error);
