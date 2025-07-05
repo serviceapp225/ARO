@@ -31,6 +31,8 @@ export function SecondTripleCarousel() {
     gcTime: 10 * 60 * 1000, // 10 минут
   });
 
+  console.log('SecondTripleCarousel rendering, isLoading:', isLoading, 'data:', carouselData);
+
   // Дефолтные данные для каждой карусели
   const defaultCarousels: DefaultCarouselData[] = [
     {
@@ -115,8 +117,8 @@ export function SecondTripleCarousel() {
   }
 
   return (
-    <div className="space-y-4">
-      <h2 className="text-2xl font-bold text-gray-800 mb-4">Специальные предложения</h2>
+    <div className="space-y-4 bg-red-100 border-4 border-red-500 p-4">
+      <h2 className="text-2xl font-bold text-red-800 mb-4">🔴 ВТОРОЙ БАННЕР - Специальные предложения</h2>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {[0, 1, 2].map((carouselIndex) => {
           const group = carouselGroups[carouselIndex] || [];
