@@ -1415,13 +1415,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.put("/api/admin/advertisement-carousel/:id", async (req, res) => {
     try {
       const id = parseInt(req.params.id);
+      console.log(`🔄 Обновление рекламной карусели ID: ${id}`);
+      console.log(`📝 Данные для обновления:`, req.body);
+      
       const item = await storage.updateAdvertisementCarouselItem(id, req.body);
       if (!item) {
+        console.log(`❌ Элемент карусели с ID ${id} не найден`);
         return res.status(404).json({ error: "Carousel item not found" });
       }
+      
+      console.log(`✅ Элемент карусели обновлен:`, item);
       clearCachePattern('advertisement_carousel');
       res.json(item);
     } catch (error) {
+      console.error(`💥 Ошибка обновления карусели:`, error);
       res.status(500).json({ error: "Failed to update carousel item" });
     }
   });
