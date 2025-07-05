@@ -1412,6 +1412,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/admin/advertisement-carousel/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const item = await storage.getAdvertisementCarouselItem(id);
+      if (!item) {
+        return res.status(404).json({ error: "Carousel item not found" });
+      }
+      res.json(item);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to get carousel item" });
+    }
+  });
+
   app.put("/api/admin/advertisement-carousel/:id", async (req, res) => {
     try {
       const id = parseInt(req.params.id);

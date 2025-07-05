@@ -1532,24 +1532,7 @@ function AdvertisementCarouselManagement() {
     refetchInterval: 5000, // Обновляем каждые 5 секунд
   });
 
-  // Синхронизируем форму с обновленными данными
-  useEffect(() => {
-    if (editingItem && carouselItems.length > 0) {
-      const updatedItem = carouselItems.find(item => item.id === editingItem.id);
-      if (updatedItem) {
-        setFormData({
-          title: updatedItem.title,
-          description: updatedItem.description || '',
-          imageUrl: updatedItem.imageUrl,
-          linkUrl: updatedItem.linkUrl || '',
-          buttonText: updatedItem.buttonText || 'Узнать больше',
-          order: updatedItem.order || 1,
-          isActive: updatedItem.isActive,
-        });
-        setEditingItem(updatedItem);
-      }
-    }
-  }, [carouselItems, editingItem?.id]);
+
 
   const createItemMutation = useMutation({
     mutationFn: async (data: any) => {
@@ -1606,19 +1589,8 @@ function AdvertisementCarouselManagement() {
       // Принудительно перезагружаем данные
       await queryClient.refetchQueries({ queryKey: ['/api/admin/advertisement-carousel'] });
       
-      // Обновляем форму с новыми данными вместо сброса
-      if (updatedItem) {
-        setFormData({
-          title: updatedItem.title,
-          description: updatedItem.description || '',
-          imageUrl: updatedItem.imageUrl,
-          linkUrl: updatedItem.linkUrl || '',
-          buttonText: updatedItem.buttonText || 'Узнать больше',
-          order: updatedItem.order || 1,
-          isActive: updatedItem.isActive,
-        });
-        setEditingItem(updatedItem);
-      }
+      // Просто закрываем форму после успешного обновления
+      handleCancel();
       
       toast({
         title: "Успешно",
@@ -1674,19 +1646,34 @@ function AdvertisementCarouselManagement() {
     }
   };
 
-  const handleEdit = (item: AdvertisementCarousel) => {
-    setEditingItem(item);
-    setFormData({
-      title: item.title,
-      description: item.description || '',
-      imageUrl: item.imageUrl,
-      linkUrl: item.linkUrl || '',
-      buttonText: item.buttonText || 'Узнать больше',
-      order: item.order || 1,
-      isActive: item.isActive,
-    });
-    // Принудительно обновляем данные при начале редактирования
-    queryClient.refetchQueries({ queryKey: ['/api/admin/advertisement-carousel'] });
+  const handleEdit = async (item: AdvertisementCarousel) => {
+    // Сначала получаем свежие данные с сервера
+    const response = await fetch(`/api/admin/advertisement-carousel/${item.id}`);
+    if (response.ok) {
+      const freshItem = await response.json();
+      setEditingItem(freshItem);
+      setFormData({
+        title: freshItem.title,
+        description: freshItem.description || '',
+        imageUrl: freshItem.imageUrl,
+        linkUrl: freshItem.linkUrl || '',
+        buttonText: freshItem.buttonText || 'Узнать больше',
+        order: freshItem.order || 1,
+        isActive: freshItem.isActive,
+      });
+    } else {
+      // Fallback к кэшированным данным
+      setEditingItem(item);
+      setFormData({
+        title: item.title,
+        description: item.description || '',
+        imageUrl: item.imageUrl,
+        linkUrl: item.linkUrl || '',
+        buttonText: item.buttonText || 'Узнать больше',
+        order: item.order || 1,
+        isActive: item.isActive,
+      });
+    }
   };
 
   const handleCancel = () => {
