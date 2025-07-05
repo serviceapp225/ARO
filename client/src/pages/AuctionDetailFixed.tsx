@@ -10,6 +10,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useAuctions } from '@/contexts/AuctionContext';
 import { useFavorites } from '@/contexts/FavoritesContext';
 import { useAuth } from '@/contexts/AuthContext';
+import { useAuctionWebSocket } from '@/hooks/useAuctionWebSocket';
 import { AutoImageCarousel } from '@/components/AutoImageCarousel';
 import { 
   ArrowLeft, Car, Heart, Clock, TrendingUp, 
@@ -47,6 +48,17 @@ export default function AuctionDetail() {
   
   const { toast } = useToast();
   const queryClient = useQueryClient();
+
+  // WebSocket для real-time обновлений
+  const { 
+    isConnected: wsConnected, 
+    connectionQuality, 
+    joinAuction, 
+    leaveAuction, 
+    lastBidUpdate,
+    participantCount,
+    isHotAuction 
+  } = useAuctionWebSocket();
 
   // Translation functions for car characteristics
   const translateTransmission = (transmission: string) => {
@@ -220,6 +232,40 @@ export default function AuctionDetail() {
       setIsTimerReady(true);
     }
   }, [auction, auctionEndTime]);
+
+  // WebSocket подключение к аукциону
+  useEffect(() => {
+    if (auction?.id) {
+      joinAuction(parseInt(auction.id));
+      
+      return () => {
+        leaveAuction();
+      };
+    }
+  }, [auction?.id, joinAuction, leaveAuction]);
+
+  // Обработка real-time обновлений ставок через WebSocket
+  useEffect(() => {
+    if (lastBidUpdate && lastBidUpdate.listingId === parseInt(id || '0')) {
+      console.log('🔥 Real-time обновление ставки:', lastBidUpdate);
+      
+      // Принудительно обновляем кэш TanStack Query
+      queryClient.invalidateQueries({ queryKey: [`/api/listings/${id}/bids`] });
+      queryClient.invalidateQueries({ queryKey: [`/api/listings/${id}`] });
+      
+      // Обновляем цену без перезагрузки
+      if (lastBidUpdate.data?.bid?.amount) {
+        setCurrentPrice(parseFloat(lastBidUpdate.data.bid.amount));
+        
+        // Показываем уведомление о новой ставке
+        toast({
+          title: "🔥 Новая ставка!",
+          description: `₽${parseFloat(lastBidUpdate.data.bid.amount).toLocaleString()}`,
+          duration: 3000,
+        });
+      }
+    }
+  }, [lastBidUpdate, id, queryClient, toast]);
 
   useEffect(() => {
     const calculateTimeLeft = () => {

@@ -259,6 +259,10 @@ export default function AuctionDetail() {
     if (lastBidUpdate && lastBidUpdate.listingId === parseInt(id || '0')) {
       console.log('🔥 Real-time обновление ставки:', lastBidUpdate);
       
+      // Принудительно обновляем кэш TanStack Query
+      queryClient.invalidateQueries({ queryKey: [`/api/listings/${id}/bids`] });
+      queryClient.invalidateQueries({ queryKey: [`/api/listings/${id}`] });
+      
       // Обновляем цену без перезагрузки
       if (lastBidUpdate.data?.bid?.amount) {
         setCurrentPrice(parseFloat(lastBidUpdate.data.bid.amount));
