@@ -271,6 +271,69 @@ export class SQLiteStorage implements IStorage {
       VALUES (?, ?, ?, ?)
     `);
     insertSellSection.run('Продайте свой автомобиль', 'Получите лучшую цену за ваш автомобиль на нашем аукционе', 'Начать продажу', 'https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=400');
+
+    // Insert second carousel items
+    const insertSecondCarousel = this.db.prepare(`
+      INSERT INTO second_carousel (title, description, image_url, link_url, button_text, carousel_number, is_active, "order") 
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    `);
+    
+    // Карусель 1: Приведи друга
+    insertSecondCarousel.run(
+      'Приведи друга и получи бонус',
+      'За каждого приведенного друга получайте 500 сомони на свой счет',
+      'https://images.unsplash.com/photo-1573164713714-d95e436ab8d6?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+      '/referral',
+      'Пригласить',
+      1, 1, 0
+    );
+    
+    insertSecondCarousel.run(
+      'Программа лояльности',
+      'Накапливайте баллы за каждую покупку и получайте скидки',
+      'https://images.unsplash.com/photo-1556742049-0ca65d6fa6c9?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+      '/loyalty',
+      'Узнать больше',
+      1, 1, 1
+    );
+
+    // Карусель 2: Горячие аукционы
+    insertSecondCarousel.run(
+      'Горячие торги сегодня',
+      'Не пропустите самые популярные аукционы дня',
+      'https://images.unsplash.com/photo-1581092335397-9583eb92d232?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+      '/hot-auctions',
+      'Смотреть',
+      2, 1, 0
+    );
+    
+    insertSecondCarousel.run(
+      'Последние минуты торгов',
+      'Аукционы, которые заканчиваются в ближайший час',
+      'https://images.unsplash.com/photo-1544636331-e26879cd4d9b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+      '/ending-soon',
+      'Участвовать',
+      2, 1, 1
+    );
+
+    // Карусель 3: Стань экспертом
+    insertSecondCarousel.run(
+      'Обучение для продавцов',
+      'Изучите секреты успешных продаж автомобилей',
+      'https://images.unsplash.com/photo-1556742049-0ca65d6fa6c9?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+      '/seller-training',
+      'Начать обучение',
+      3, 1, 0
+    );
+    
+    insertSecondCarousel.run(
+      'Станьте оценщиком',
+      'Получите сертификат оценщика автомобилей',
+      'https://images.unsplash.com/photo-1573164713714-d95e436ab8d6?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+      '/appraiser-course',
+      'Записаться',
+      3, 1, 1
+    );
   }
 
   // Implement all IStorage methods with SQLite queries...

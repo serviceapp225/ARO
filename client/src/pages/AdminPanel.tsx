@@ -4,12 +4,12 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Trash2, User as UserIcon, Car, Bell, Settings, CheckCircle, XCircle, AlertCircle, Edit, Search, Image, Plus, Eye, ChevronUp } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Trash2, User as UserIcon, Car, Bell, Settings, CheckCircle, XCircle, AlertCircle, Edit, Edit2, Search, Image, Plus, Eye, ChevronUp } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { Link } from 'wouter';
@@ -28,210 +28,221 @@ export default function AdminPanel() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600 dark:text-gray-300">Загрузка...</p>
-        </div>
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
       </div>
     );
   }
 
-  if (!user || !hasAdminAccess) {
+  if (!hasAdminAccess) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
-        <Card className="w-full max-w-md">
-          <CardHeader className="text-center">
-            <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
-            <CardTitle className="text-red-600">Доступ запрещен</CardTitle>
-            <CardDescription>
-              У вас нет прав доступа к админ панели
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="text-center">
-            <Link href="/">
-              <Button variant="outline">На главную</Button>
-            </Link>
-          </CardContent>
-        </Card>
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <h1 className="text-3xl font-bold text-red-600 mb-4">Доступ запрещен</h1>
+          <p className="text-gray-600">У вас нет прав для доступа к админ панели</p>
+          <Link href="/">
+            <Button className="mt-4">Вернуться на главную</Button>
+          </Link>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 page-content">
-      <div className="container mx-auto px-4 py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-            Админ панель
-          </h1>
-          <p className="text-gray-600 dark:text-gray-300">
-            Управление платформой автоаукциона
-          </p>
+    <div className="min-h-screen bg-gray-50 p-4">
+      <div className="max-w-7xl mx-auto space-y-6">
+        <div className="flex justify-between items-center">
+          <h1 className="text-3xl font-bold text-gray-900">Админ панель</h1>
+          <Link href="/">
+            <Button variant="outline">
+              Вернуться на главную
+            </Button>
+          </Link>
         </div>
 
         <Tabs defaultValue="users" className="w-full">
-          <TabsList className="flex flex-col w-full h-auto">
-            <TabsTrigger value="users" className="flex items-center gap-2 w-full justify-start">
-              <UserIcon className="h-4 w-4" />
-              Пользователи
-            </TabsTrigger>
-            <TabsTrigger value="moderation" className="flex items-center gap-2 w-full justify-start">
-              <CheckCircle className="h-4 w-4" />
-              Модерация объявлений
-            </TabsTrigger>
-            <TabsTrigger value="listings" className="flex items-center gap-2 w-full justify-start">
-              <Car className="h-4 w-4" />
-              Объявления
-            </TabsTrigger>
-            <TabsTrigger value="notifications" className="flex items-center gap-2 w-full justify-start">
-              <Bell className="h-4 w-4" />
-              Уведомления
-            </TabsTrigger>
-            <TabsTrigger value="sell-banner" className="flex items-center gap-2 w-full justify-start">
-              <Plus className="h-4 w-4" />
-              Баннер "Продай авто"
-            </TabsTrigger>
-            <TabsTrigger value="banners" className="flex items-center gap-2 w-full justify-start">
-              <Settings className="h-4 w-4" />
-              Баннеры
-            </TabsTrigger>
-            <TabsTrigger value="second-carousel" className="flex items-center gap-2 w-full justify-start">
-              <Image className="h-4 w-4" />
-              Вторая карусель
-            </TabsTrigger>
-
-            <TabsTrigger value="archive" className="flex items-center gap-2 w-full justify-start">
-              <Trash2 className="h-4 w-4" />
-              Архив
-            </TabsTrigger>
-            <TabsTrigger value="stats" className="flex items-center gap-2 w-full justify-start">
-              <Settings className="h-4 w-4" />
-              Статистика
-            </TabsTrigger>
+          <TabsList className="grid w-full grid-cols-7">
+            <TabsTrigger value="users">Пользователи</TabsTrigger>
+            <TabsTrigger value="listings">Объявления</TabsTrigger>
+            <TabsTrigger value="notifications">Уведомления</TabsTrigger>
+            <TabsTrigger value="banners">Баннеры</TabsTrigger>
+            <TabsTrigger value="second-carousel">Вторая карусель</TabsTrigger>
+            <TabsTrigger value="archive">Архив</TabsTrigger>
+            <TabsTrigger value="stats">Статистика</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="users">
+          <TabsContent value="users" className="space-y-4">
             <UsersManagement />
           </TabsContent>
 
-          <TabsContent value="moderation">
-            <ModerationManagement />
-          </TabsContent>
-
-          <TabsContent value="listings">
+          <TabsContent value="listings" className="space-y-4">
             <ListingsManagement />
           </TabsContent>
 
-          <TabsContent value="notifications">
+          <TabsContent value="notifications" className="space-y-4">
             <NotificationsManagement />
           </TabsContent>
 
-          <TabsContent value="sell-banner">
-            <SellBannerManagement />
-          </TabsContent>
-
-          <TabsContent value="banners">
+          <TabsContent value="banners" className="space-y-4">
             <BannersManagement />
           </TabsContent>
 
-          <TabsContent value="second-carousel">
+          <TabsContent value="second-carousel" className="space-y-4">
             <SecondCarouselManagement />
           </TabsContent>
 
-          <TabsContent value="archive">
+          <TabsContent value="archive" className="space-y-4">
             <ArchiveManagement />
           </TabsContent>
 
-          <TabsContent value="stats">
+          <TabsContent value="stats" className="space-y-4">
             <AdminStats />
           </TabsContent>
         </Tabs>
       </div>
-      
-      {/* Кнопка прокрутки наверх */}
       <ScrollToTopButton />
     </div>
   );
 }
 
-// Компонент для модерации объявлений
-function ModerationManagement() {
+// Управление пользователями
+function UsersManagement() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [editingListing, setEditingListing] = useState<CarListing | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [showUserModal, setShowUserModal] = useState(false);
 
-  // Получение объявлений ожидающих одобрения
-  const { data: pendingListings = [], isLoading } = useQuery<CarListing[]>({
-    queryKey: ['/api/admin/listings/pending-approval'],
-    queryFn: async () => {
-      const response = await fetch('/api/admin/listings/pending-approval');
-      if (!response.ok) throw new Error('Failed to fetch pending listings');
-      return response.json();
-    }
+  const { data: users, isLoading } = useQuery({
+    queryKey: ['/api/admin/users'],
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
   });
 
-  // Мутация одобрения объявления
-  const approveMutation = useMutation({
-    mutationFn: async (listingId: number) => {
-      const response = await fetch(`/api/admin/listings/${listingId}/approve`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' }
-      });
-      if (!response.ok) throw new Error('Failed to approve listing');
-      return response.json();
-    },
-    onSuccess: () => {
-      toast({
-        title: "Объявление одобрено",
-        description: "Объявление теперь доступно в публичном каталоге",
-        variant: "default"
-      });
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/listings/pending-approval'] });
-    },
-    onError: (error) => {
-      toast({
-        title: "Ошибка одобрения",
-        description: error.message,
-        variant: "destructive"
-      });
-    }
-  });
-
-  // Мутация отклонения объявления
-  const rejectMutation = useMutation({
-    mutationFn: async (listingId: number) => {
-      const response = await fetch(`/api/admin/listings/${listingId}/reject`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' }
-      });
-      if (!response.ok) throw new Error('Failed to reject listing');
-      return response.json();
-    },
-    onSuccess: () => {
-      toast({
-        title: "Объявление отклонено",
-        description: "Заявка на объявление была отклонена",
-        variant: "default"
-      });
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/listings/pending-approval'] });
-    },
-    onError: (error) => {
-      toast({
-        title: "Ошибка отклонения",
-        description: error.message,
-        variant: "destructive"
-      });
-    }
-  });
-
-  // Мутация обновления объявления
-  const updateMutation = useMutation({
-    mutationFn: async ({ id, data }: { id: number, data: any }) => {
-      const response = await fetch(`/api/listings/${id}`, {
+  const updateUserMutation = useMutation({
+    mutationFn: async ({ id, isActive }: { id: number; isActive: boolean }) => {
+      const response = await fetch(`/api/admin/users/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
+        body: JSON.stringify({ isActive }),
+      });
+      if (!response.ok) throw new Error('Failed to update user');
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Пользователь обновлен",
+        description: "Статус пользователя изменен успешно",
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/users'] });
+    },
+  });
+
+  const filteredUsers = users?.filter((user: User) =>
+    user.fullName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    user.phoneNumber?.includes(searchTerm) ||
+    user.email?.toLowerCase().includes(searchTerm.toLowerCase())
+  ) || [];
+
+  if (isLoading) {
+    return <div className="text-center py-8">Загрузка пользователей...</div>;
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <h2 className="text-2xl font-bold">Управление пользователями</h2>
+        <div className="flex items-center space-x-4">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+            <Input
+              placeholder="Поиск пользователей..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10 w-64"
+            />
+          </div>
+        </div>
+      </div>
+
+      <div className="grid gap-4">
+        {filteredUsers.map((user: User) => (
+          <Card key={user.id} className="hover:shadow-lg transition-shadow">
+            <CardHeader className="pb-3">
+              <div className="flex justify-between items-start">
+                <div className="flex items-center space-x-3">
+                  <UserIcon className="w-10 h-10 text-gray-400" />
+                  <div>
+                    <CardTitle className="text-lg">{user.fullName}</CardTitle>
+                    <CardDescription>{user.phoneNumber}</CardDescription>
+                  </div>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Badge variant={user.isActive ? "default" : "secondary"}>
+                    {user.isActive ? "Активен" : "Заблокирован"}
+                  </Badge>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => {
+                      setSelectedUser(user);
+                      setShowUserModal(true);
+                    }}
+                  >
+                    <Eye className="w-4 h-4" />
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant={user.isActive ? "destructive" : "default"}
+                    onClick={() => updateUserMutation.mutate({ 
+                      id: user.id, 
+                      isActive: !user.isActive 
+                    })}
+                    disabled={updateUserMutation.isPending}
+                  >
+                    {user.isActive ? "Заблокировать" : "Разблокировать"}
+                  </Button>
+                </div>
+              </div>
+            </CardHeader>
+          </Card>
+        ))}
+      </div>
+
+      {selectedUser && (
+        <UserDetailModal
+          user={selectedUser}
+          isOpen={showUserModal}
+          onClose={() => {
+            setShowUserModal(false);
+            setSelectedUser(null);
+          }}
+        />
+      )}
+    </div>
+  );
+}
+
+// Управление объявлениями
+function ListingsManagement() {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedListing, setSelectedListing] = useState<CarListing | null>(null);
+  const [showEditModal, setShowEditModal] = useState(false);
+
+  const { data: listings, isLoading } = useQuery({
+    queryKey: ['/api/admin/listings'],
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+  });
+
+  const updateListingMutation = useMutation({
+    mutationFn: async ({ id, status }: { id: number; status: string }) => {
+      const response = await fetch(`/api/admin/listings/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status }),
       });
       if (!response.ok) throw new Error('Failed to update listing');
       return response.json();
@@ -239,1596 +250,198 @@ function ModerationManagement() {
     onSuccess: () => {
       toast({
         title: "Объявление обновлено",
-        description: "Изменения сохранены успешно",
-        variant: "default"
+        description: "Статус объявления изменен успешно",
       });
-      setEditingListing(null);
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/listings/pending-approval'] });
-    },
-    onError: (error) => {
-      toast({
-        title: "Ошибка обновления",
-        description: error.message,
-        variant: "destructive"
-      });
-    }
-  });
-
-  if (isLoading) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Модерация объявлений</CardTitle>
-          <CardDescription>Загрузка объявлений ожидающих одобрения...</CardDescription>
-        </CardHeader>
-      </Card>
-    );
-  }
-
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Модерация объявлений</CardTitle>
-        <CardDescription>
-          Объявления ожидающие одобрения: {pendingListings.length}
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        {pendingListings.length === 0 ? (
-          <div className="text-center py-8">
-            <p className="text-gray-500">Нет объявлений ожидающих модерации</p>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {pendingListings.map((listing) => (
-              <div key={listing.id} className="border rounded-lg p-4 bg-white">
-                <div className="flex justify-between items-start">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Badge variant="outline" className="bg-yellow-50 text-yellow-700">
-                        Ожидает одобрения
-                      </Badge>
-                      <span className="text-sm text-gray-500">Лот #{listing.lotNumber}</span>
-                    </div>
-                    <h3 className="font-semibold text-lg">
-                      {listing.make} {listing.model} {listing.year}
-                    </h3>
-                    <p className="text-gray-600 mb-2">{listing.description}</p>
-                    <div className="grid grid-cols-2 gap-4 text-sm">
-                      <div>
-                        <span className="text-gray-500">Пробег:</span> {listing.mileage.toLocaleString()} км
-                      </div>
-                      <div>
-                        <span className="text-gray-500">Начальная цена:</span> {listing.startingPrice} сомони
-                      </div>
-                      <div>
-                        <span className="text-gray-500">Состояние:</span> {listing.condition}
-                      </div>
-                      <div>
-                        <span className="text-gray-500">Местоположение:</span> {listing.location}
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex gap-2 ml-4">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => setEditingListing(listing)}
-                      disabled={approveMutation.isPending || rejectMutation.isPending || updateMutation.isPending}
-                    >
-                      <Edit className="h-4 w-4 mr-1" />
-                      Редактировать
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="default"
-                      className="bg-green-600 hover:bg-green-700"
-                      onClick={() => approveMutation.mutate(listing.id)}
-                      disabled={approveMutation.isPending || rejectMutation.isPending || updateMutation.isPending}
-                    >
-                      <CheckCircle className="h-4 w-4 mr-1" />
-                      Одобрить
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="destructive"
-                      onClick={() => rejectMutation.mutate(listing.id)}
-                      disabled={approveMutation.isPending || rejectMutation.isPending || updateMutation.isPending}
-                    >
-                      <XCircle className="h-4 w-4 mr-1" />
-                      Отклонить
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </CardContent>
-      
-      {/* Модальное окно редактирования */}
-      {editingListing && (
-        <EditListingModal
-          listing={editingListing}
-          onClose={() => setEditingListing(null)}
-          onUpdate={(data) => updateMutation.mutate({ id: editingListing.id, data })}
-          isUpdating={updateMutation.isPending}
-        />
-      )}
-    </Card>
-  );
-}
-
-// Компонент модального окна для редактирования объявления в модерации
-function EditListingModal({ listing, onClose, onUpdate, isUpdating }: {
-  listing: CarListing;
-  onClose: () => void;
-  onUpdate: (data: any) => void;
-  isUpdating: boolean;
-}) {
-  const [formData, setFormData] = useState({
-    make: listing.make,
-    model: listing.model,
-    year: listing.year,
-    mileage: listing.mileage,
-    description: listing.description,
-    startingPrice: listing.startingPrice,
-    condition: listing.condition || 'good',
-    location: listing.location || '',
-    engine: listing.engine || '',
-    transmission: listing.transmission || '',
-    fuelType: listing.fuelType || '',
-    bodyType: listing.bodyType || '',
-    driveType: listing.driveType || '',
-    color: listing.color || '',
-    customsCleared: listing.customsCleared || false,
-    recycled: listing.recycled || false,
-    technicalInspectionValid: listing.technicalInspectionValid || false,
-    tinted: listing.tinted || false
-  });
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    onUpdate(formData);
-  };
-
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-        <div className="p-6">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-xl font-semibold">Редактировать объявление</h2>
-            <Button variant="outline" size="sm" onClick={onClose}>
-              <XCircle className="h-4 w-4" />
-            </Button>
-          </div>
-
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="make">Марка</Label>
-                <Input
-                  id="make"
-                  value={formData.make}
-                  onChange={(e) => setFormData({ ...formData, make: e.target.value })}
-                  required
-                />
-              </div>
-              <div>
-                <Label htmlFor="model">Модель</Label>
-                <Input
-                  id="model"
-                  value={formData.model}
-                  onChange={(e) => setFormData({ ...formData, model: e.target.value })}
-                  required
-                />
-              </div>
-              <div>
-                <Label htmlFor="year">Год</Label>
-                <Input
-                  id="year"
-                  type="number"
-                  value={formData.year}
-                  onChange={(e) => setFormData({ ...formData, year: parseInt(e.target.value) })}
-                  required
-                />
-              </div>
-              <div>
-                <Label htmlFor="mileage">Пробег (км)</Label>
-                <Input
-                  id="mileage"
-                  type="number"
-                  value={formData.mileage}
-                  onChange={(e) => setFormData({ ...formData, mileage: parseInt(e.target.value) })}
-                  required
-                />
-              </div>
-              <div>
-                <Label htmlFor="startingPrice">Начальная цена (сомони)</Label>
-                <Input
-                  id="startingPrice"
-                  value={formData.startingPrice}
-                  onChange={(e) => setFormData({ ...formData, startingPrice: e.target.value })}
-                  required
-                />
-              </div>
-              <div>
-                <Label htmlFor="condition">Состояние</Label>
-                <Select
-                  value={formData.condition}
-                  onValueChange={(value) => setFormData({ ...formData, condition: value })}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="excellent">Отличное</SelectItem>
-                    <SelectItem value="very_good">Очень хорошее</SelectItem>
-                    <SelectItem value="good">Хорошее</SelectItem>
-                    <SelectItem value="fair">Удовлетворительное</SelectItem>
-                    <SelectItem value="poor">Плохое</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label htmlFor="location">Местоположение</Label>
-                <Input
-                  id="location"
-                  value={formData.location}
-                  onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                />
-              </div>
-              <div>
-                <Label htmlFor="color">Цвет</Label>
-                <Input
-                  id="color"
-                  value={formData.color}
-                  onChange={(e) => setFormData({ ...formData, color: e.target.value })}
-                />
-              </div>
-            </div>
-
-            <div>
-              <Label htmlFor="description">Описание</Label>
-              <Textarea
-                id="description"
-                value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                rows={3}
-                required
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <div className="flex items-center space-x-2">
-                  <input
-                    type="checkbox"
-                    id="customsCleared"
-                    checked={formData.customsCleared}
-                    onChange={(e) => setFormData({ ...formData, customsCleared: e.target.checked })}
-                  />
-                  <Label htmlFor="customsCleared">Растаможен</Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <input
-                    type="checkbox"
-                    id="recycled"
-                    checked={formData.recycled}
-                    onChange={(e) => setFormData({ ...formData, recycled: e.target.checked })}
-                  />
-                  <Label htmlFor="recycled">Утилизирован</Label>
-                </div>
-              </div>
-              <div className="space-y-2">
-                <div className="flex items-center space-x-2">
-                  <input
-                    type="checkbox"
-                    id="technicalInspectionValid"
-                    checked={formData.technicalInspectionValid}
-                    onChange={(e) => setFormData({ ...formData, technicalInspectionValid: e.target.checked })}
-                  />
-                  <Label htmlFor="technicalInspectionValid">Техосмотр пройден</Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <input
-                    type="checkbox"
-                    id="tinted"
-                    checked={formData.tinted}
-                    onChange={(e) => setFormData({ ...formData, tinted: e.target.checked })}
-                  />
-                  <Label htmlFor="tinted">Тонировка</Label>
-                </div>
-              </div>
-            </div>
-
-            <div className="flex gap-3 pt-4 border-t">
-              <Button 
-                type="submit" 
-                disabled={isUpdating}
-                className="bg-blue-600 hover:bg-blue-700"
-              >
-                {isUpdating ? 'Сохранение...' : 'Сохранить изменения'}
-              </Button>
-              <Button type="button" variant="outline" onClick={onClose}>
-                Отмена
-              </Button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// Компонент управления пользователями
-function UsersManagement() {
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
-  const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
-
-  const { data: users = [], isLoading } = useQuery<User[]>({
-    queryKey: ['/api/admin/users'],
-  });
-
-
-
-  if (isLoading) {
-    return <div className="text-center py-8">Загрузка пользователей...</div>;
-  }
-
-  return (
-    <div className="space-y-4">
-      <Card>
-        <CardHeader>
-          <CardTitle>Управление пользователями</CardTitle>
-          <CardDescription>
-            Активация и деактивация пользователей системы
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {users.map((user) => (
-              <div key={user.id} className="flex items-center justify-between p-4 border rounded-lg">
-                <div className="flex-1">
-                  <div className="flex items-center gap-3">
-                    <div>
-                      <p className="font-medium">{user.fullName || 'Имя не указано'}</p>
-                      <p className="text-sm text-gray-600 dark:text-gray-300">
-                        {user.phoneNumber} • {user.role}
-                      </p>
-                    </div>
-                    <Badge variant={(user.isActive || false) ? 'default' : 'secondary'}>
-                      {(user.isActive || false) ? 'Активен' : 'Неактивен'}
-                    </Badge>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => setSelectedUserId(user.id)}
-                    className="flex items-center gap-1"
-                  >
-                    <Edit className="w-4 h-4" />
-                    Редактировать
-                  </Button>
-                </div>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-
-      <UserDetailModal
-        userId={selectedUserId}
-        isOpen={!!selectedUserId}
-        onClose={() => setSelectedUserId(null)}
-      />
-    </div>
-  );
-}
-
-// Компонент управления объявлениями
-function ListingsManagement() {
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
-  const [selectedListingId, setSelectedListingId] = useState<number | null>(null);
-  const [searchLotNumber, setSearchLotNumber] = useState('');
-
-  const { data: allListings = [], isLoading } = useQuery<CarListing[]>({
-    queryKey: ['/api/admin/listings'],
-  });
-
-  // Фильтрация объявлений по номеру лота
-  const listings = allListings.filter(listing => 
-    searchLotNumber === '' || 
-    listing.lotNumber?.toLowerCase().includes(searchLotNumber.toLowerCase())
-  );
-
-  const updateListingStatusMutation = useMutation({
-    mutationFn: async ({ listingId, status }: { listingId: number; status: string }) => {
-      const response = await fetch(`/api/admin/listings/${listingId}/status`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status }),
-      });
-      if (!response.ok) throw new Error('Failed to update listing status');
-      return response.json();
-    },
-    onSuccess: () => {
-      toast({ title: 'Статус объявления обновлен' });
       queryClient.invalidateQueries({ queryKey: ['/api/admin/listings'] });
     },
-    onError: () => {
-      toast({ title: 'Ошибка', description: 'Не удалось обновить статус', variant: 'destructive' });
-    },
   });
+
+  const filteredListings = listings?.filter((listing: CarListing) =>
+    listing.make?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    listing.model?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    listing.lotNumber?.includes(searchTerm)
+  ) || [];
 
   if (isLoading) {
     return <div className="text-center py-8">Загрузка объявлений...</div>;
   }
 
   return (
-    <div className="space-y-4">
-      <Card>
-        <CardHeader>
-          <CardTitle>Управление объявлениями</CardTitle>
-          <CardDescription>
-            Модерация объявлений и управление статусами аукционов
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {/* Поиск по номеру лота */}
-          <div className="mb-6">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-              <Input
-                type="text"
-                placeholder="Поиск по номеру лота..."
-                value={searchLotNumber}
-                onChange={(e) => setSearchLotNumber(e.target.value)}
-                className="pl-10"
-              />
-            </div>
-            {searchLotNumber && (
-              <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
-                Найдено объявлений: {listings.length}
-              </p>
-            )}
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <h2 className="text-2xl font-bold">Управление объявлениями</h2>
+        <div className="flex items-center space-x-4">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+            <Input
+              placeholder="Поиск по марке, модели или номеру лота..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10 w-80"
+            />
           </div>
+        </div>
+      </div>
 
-          <div className="space-y-4">
-            {listings.length === 0 ? (
-              <div className="text-center py-8 text-gray-500">
-                {searchLotNumber ? 'Объявления с таким номером лота не найдены' : 'Нет объявлений'}
-              </div>
-            ) : (
-              listings.map((listing) => (
-                <div key={listing.id} className="flex items-center justify-between p-4 border rounded-lg">
-                <div className="flex-1">
-                  <div className="flex items-center gap-3">
-                    <div className="w-16 h-16 bg-gray-200 dark:bg-gray-700 rounded-lg flex-shrink-0">
-                      {listing.photos && Array.isArray(listing.photos) && listing.photos.length > 0 ? (
-                        <img 
-                          src={listing.photos[0]} 
-                          alt={`${listing.make} ${listing.model}`}
-                          className="w-full h-full object-cover rounded-lg"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center">
-                          <Car className="h-6 w-6 text-gray-400" />
-                        </div>
-                      )}
-                    </div>
-                    <div>
-                      <p className="font-medium">
-                        {listing.make} {listing.model} {listing.year}
-                      </p>
-                      <p className="text-sm text-gray-600 dark:text-gray-300">
-                        Лот #{listing.lotNumber} • {listing.currentBid} Сомони
-                      </p>
-                      <Badge variant={
-                        listing.status === 'pending' ? 'secondary' :
-                        listing.status === 'active' ? 'default' :
-                        listing.status === 'ended' ? 'outline' : 'destructive'
-                      }>
-                        {listing.status === 'pending' ? 'На модерации' :
-                         listing.status === 'active' ? 'Активен' :
-                         listing.status === 'ended' ? 'Завершен' : 'Отклонен'}
-                      </Badge>
-                    </div>
+      <div className="grid gap-4">
+        {filteredListings.map((listing: CarListing) => (
+          <Card key={listing.id} className="hover:shadow-lg transition-shadow">
+            <CardHeader className="pb-3">
+              <div className="flex justify-between items-start">
+                <div className="flex items-center space-x-3">
+                  <Car className="w-10 h-10 text-gray-400" />
+                  <div>
+                    <CardTitle className="text-lg">{listing.make} {listing.model}</CardTitle>
+                    <CardDescription>
+                      Лот #{listing.lotNumber} • {listing.year} • ${listing.startingPrice}
+                    </CardDescription>
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center space-x-2">
+                  <Badge variant={
+                    listing.status === 'active' ? 'default' :
+                    listing.status === 'pending' ? 'secondary' :
+                    listing.status === 'ended' ? 'outline' : 'destructive'
+                  }>
+                    {listing.status === 'active' ? 'Активно' :
+                     listing.status === 'pending' ? 'Ожидает' :
+                     listing.status === 'ended' ? 'Завершено' : 'Отклонено'}
+                  </Badge>
                   <Button
                     size="sm"
                     variant="outline"
-                    onClick={() => setSelectedListingId(listing.id)}
-                    className="flex items-center gap-1"
+                    onClick={() => {
+                      setSelectedListing(listing);
+                      setShowEditModal(true);
+                    }}
                   >
                     <Edit className="w-4 h-4" />
-                    Редактировать
                   </Button>
-                  <Select
-                    value={listing.status}
-                    onValueChange={(status) => 
-                      updateListingStatusMutation.mutate({ listingId: listing.id, status })
-                    }
-                    disabled={updateListingStatusMutation.isPending}
-                  >
-                    <SelectTrigger className="w-40">
-                      <SelectValue />
+                  <Select onValueChange={(value) => 
+                    updateListingMutation.mutate({ id: listing.id, status: value })
+                  }>
+                    <SelectTrigger className="w-32">
+                      <SelectValue placeholder="Статус" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="pending">На модерации</SelectItem>
-                      <SelectItem value="active">Активен</SelectItem>
-                      <SelectItem value="ended">Завершен</SelectItem>
-                      <SelectItem value="rejected">Отклонен</SelectItem>
+                      <SelectItem value="pending">Ожидает</SelectItem>
+                      <SelectItem value="active">Активно</SelectItem>
+                      <SelectItem value="ended">Завершено</SelectItem>
+                      <SelectItem value="rejected">Отклонено</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
-                </div>
-              ))
-            )}
-          </div>
-        </CardContent>
-      </Card>
-      
-      <ListingEditModal
-        listingId={selectedListingId}
-        isOpen={!!selectedListingId}
-        onClose={() => setSelectedListingId(null)}
-      />
-    </div>
-  );
-}
-
-// Компонент управления уведомлениями
-function NotificationsManagement() {
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Управление уведомлениями</CardTitle>
-        <CardDescription>
-          Системные уведомления и их настройки
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <p className="text-gray-600 dark:text-gray-300">
-          Раздел в разработке. Здесь будет управление системными уведомлениями.
-        </p>
-      </CardContent>
-    </Card>
-  );
-}
-
-
-
-// Интерфейс для статистики
-interface AdminStatsData {
-  totalUsers: number;
-  activeAuctions: number;
-  pendingListings: number;
-  bannedUsers: number;
-}
-
-// Компонент управления баннером "Продай свое авто"
-function SellBannerManagement() {
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
-  const [isEditing, setIsEditing] = useState(false);
-
-  // Состояние формы
-  const [formData, setFormData] = useState({
-    title: '',
-    description: '',
-    buttonText: '',
-    linkUrl: '',
-    backgroundImageUrl: '',
-    gradientFrom: '',
-    gradientTo: '',
-    textColor: '',
-    isActive: true,
-    overlayOpacity: 60
-  });
-
-  // Получение данных баннера
-  const { data: banner, isLoading: bannerLoading } = useQuery({
-    queryKey: ['/api/sell-car-banner'],
-    staleTime: 30000,
-  });
-
-  // Заполняем форму данными баннера при загрузке
-  useEffect(() => {
-    if (banner && typeof banner === 'object') {
-      setFormData({
-        title: (banner as any).title || '',
-        description: (banner as any).description || '',
-        buttonText: (banner as any).buttonText || '',
-        linkUrl: (banner as any).linkUrl || '',
-        backgroundImageUrl: (banner as any).backgroundImageUrl || '',
-        gradientFrom: (banner as any).gradientFrom || '',
-        gradientTo: (banner as any).gradientTo || '',
-        textColor: (banner as any).textColor || '',
-        isActive: (banner as any).isActive !== false,
-        overlayOpacity: (banner as any).overlayOpacity || 60
-      });
-    }
-  }, [banner]);
-
-  // Мутация для обновления баннера
-  const updateBannerMutation = useMutation({
-    mutationFn: async (bannerData: any) => {
-      const response = await fetch('/api/admin/sell-car-banner', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(bannerData),
-      });
-      if (!response.ok) throw new Error('Ошибка обновления баннера');
-      return response.json();
-    },
-    onSuccess: () => {
-      toast({
-        title: "Успешно",
-        description: "Баннер обновлен успешно",
-      });
-      queryClient.invalidateQueries({ queryKey: ['/api/sell-car-banner'] });
-      setIsEditing(false);
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Ошибка",
-        description: error.message || "Не удалось обновить баннер",
-        variant: "destructive",
-      });
-    },
-  });
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    updateBannerMutation.mutate(formData);
-  };
-
-  const handleCancel = () => {
-    if (banner && typeof banner === 'object') {
-      setFormData({
-        title: (banner as any).title || '',
-        description: (banner as any).description || '',
-        buttonText: (banner as any).buttonText || '',
-        linkUrl: (banner as any).linkUrl || '',
-        backgroundImageUrl: (banner as any).backgroundImageUrl || '',
-        gradientFrom: (banner as any).gradientFrom || '',
-        gradientTo: (banner as any).gradientTo || '',
-        textColor: (banner as any).textColor || '',
-        isActive: (banner as any).isActive !== false,
-        overlayOpacity: (banner as any).overlayOpacity || 60
-      });
-    }
-    setIsEditing(false);
-  };
-
-  if (bannerLoading) {
-    return (
-      <div className="flex items-center justify-center py-8">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+              </div>
+            </CardHeader>
+          </Card>
+        ))}
       </div>
-    );
-  }
 
-  return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Управление баннером "Продай свое авто"</h2>
-        <Button
-          onClick={() => {
-            if (isEditing) {
-              handleCancel();
-            } else {
-              setIsEditing(true);
-            }
+      {selectedListing && (
+        <ListingEditModal
+          listing={selectedListing}
+          isOpen={showEditModal}
+          onClose={() => {
+            setShowEditModal(false);
+            setSelectedListing(null);
           }}
-          variant={isEditing ? "outline" : "default"}
-          className="flex items-center gap-2"
-        >
-          <Edit className="w-4 h-4" />
-          {isEditing ? 'Отменить' : 'Редактировать'}
-        </Button>
-      </div>
-
-      {/* Предварительный просмотр */}
-      {banner && !isEditing && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Предварительный просмотр</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div 
-              className="relative h-44 rounded-2xl p-6 text-white overflow-hidden shadow-2xl"
-              style={{
-                background: `linear-gradient(135deg, ${(banner as any).gradientFrom || '#059669'} 0%, ${(banner as any).gradientTo || '#047857'} 100%)`,
-              }}
-            >
-              {(banner as any).backgroundImageUrl && (
-                <div 
-                  className="absolute inset-0 rounded-2xl bg-cover bg-center bg-no-repeat"
-                  style={{
-                    backgroundImage: `url('${(banner as any).backgroundImageUrl}')`,
-                    opacity: ((banner as any).overlayOpacity || 60) / 100,
-                  }}
-                />
-              )}
-              
-              <div 
-                className="absolute inset-0 rounded-2xl"
-                style={{
-                  background: `linear-gradient(135deg, ${(banner as any).gradientFrom || '#059669'}CC 0%, ${(banner as any).gradientTo || '#047857'}CC 100%)`,
-                }}
-              />
-              
-              <div className="relative z-10 h-full flex flex-col justify-center items-center text-center space-y-3">
-                <h2 className="text-2xl font-bold drop-shadow-lg text-white">
-                  {(banner as any).title}
-                </h2>
-                <p className="text-base leading-relaxed opacity-95 drop-shadow-md max-w-md text-white">
-                  {(banner as any).description}
-                </p>
-                <div className="mt-4">
-                  <span className="px-6 py-3 rounded-full text-sm font-bold bg-white text-green-600 shadow-lg inline-flex items-center gap-2">
-                    <Plus className="w-4 h-4" />
-                    {(banner as any).buttonText}
-                  </span>
-                </div>
-              </div>
-            </div>
-            
-            <div className="mt-4 grid grid-cols-2 gap-4 text-sm">
-              <div>
-                <span className="font-medium">Статус:</span>
-                <Badge variant={(banner as any).isActive ? 'default' : 'secondary'} className="ml-2">
-                  {(banner as any).isActive ? 'Активный' : 'Неактивный'}
-                </Badge>
-              </div>
-              <div>
-                <span className="font-medium">Ссылка:</span>
-                <span className="ml-2 text-blue-600">{(banner as any).linkUrl}</span>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Форма редактирования */}
-      {isEditing && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Редактировать баннер</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="title">Заголовок</Label>
-                  <Input
-                    id="title"
-                    value={formData.title}
-                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                    placeholder="Продай свое авто"
-                    required
-                  />
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="buttonText">Текст кнопки</Label>
-                  <Input
-                    id="buttonText"
-                    value={formData.buttonText}
-                    onChange={(e) => setFormData({ ...formData, buttonText: e.target.value })}
-                    placeholder="Начать продажу"
-                    required
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="description">Описание</Label>
-                <Textarea
-                  id="description"
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  placeholder="Получи максимальную цену за свой автомобиль на нашем аукционе"
-                  rows={3}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="linkUrl">Ссылка (относительный путь)</Label>
-                <Input
-                  id="linkUrl"
-                  value={formData.linkUrl}
-                  onChange={(e) => setFormData({ ...formData, linkUrl: e.target.value })}
-                  placeholder="/sell"
-                />
-                <p className="text-xs text-gray-500">Введите относительный путь, например: /sell или /create-listing</p>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="backgroundImageUrl">URL фонового изображения</Label>
-                <Input
-                  id="backgroundImageUrl"
-                  value={formData.backgroundImageUrl}
-                  onChange={(e) => setFormData({ ...formData, backgroundImageUrl: e.target.value })}
-                  placeholder="https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?w=800&h=300&fit=crop"
-                  type="url"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="gradientFrom">Цвет начала</Label>
-                  <Input
-                    id="gradientFrom"
-                    type="color"
-                    value={formData.gradientFrom}
-                    onChange={(e) => setFormData({ ...formData, gradientFrom: e.target.value })}
-                    className="h-10"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="gradientTo">Цвет конца</Label>
-                  <Input
-                    id="gradientTo"
-                    type="color"
-                    value={formData.gradientTo}
-                    onChange={(e) => setFormData({ ...formData, gradientTo: e.target.value })}
-                    className="h-10"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="overlayOpacity">Прозрачность (%)</Label>
-                  <Input
-                    id="overlayOpacity"
-                    type="number"
-                    min="0"
-                    max="100"
-                    value={formData.overlayOpacity}
-                    onChange={(e) => setFormData({ ...formData, overlayOpacity: parseInt(e.target.value) || 60 })}
-                    className="h-10"
-                  />
-                </div>
-
-                <div className="flex items-center space-x-2 pt-6">
-                  <input
-                    type="checkbox"
-                    id="isActive"
-                    checked={formData.isActive}
-                    onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
-                    className="rounded border-gray-300"
-                  />
-                  <Label htmlFor="isActive">Активный</Label>
-                </div>
-              </div>
-
-              {/* Кнопки управления */}
-              <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700 flex gap-3">
-                <Button
-                  type="submit"
-                  disabled={updateBannerMutation.isPending}
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 text-base font-medium"
-                >
-                  {updateBannerMutation.isPending ? 'Сохранение...' : 'Сохранить изменения'}
-                </Button>
-                <Button 
-                  type="button" 
-                  variant="outline" 
-                  onClick={handleCancel}
-                  className="px-6 py-2 text-base"
-                >
-                  Отмена
-                </Button>
-              </div>
-            </form>
-          </CardContent>
-        </Card>
+          onUpdate={() => {
+            queryClient.invalidateQueries({ queryKey: ['/api/admin/listings'] });
+          }}
+        />
       )}
     </div>
   );
 }
 
-// Компонент управления баннерами
-function BannersManagement() {
+// Управление уведомлениями
+function NotificationsManagement() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [editingBanner, setEditingBanner] = useState<any>(null);
-  const [isCreating, setIsCreating] = useState(false);
 
-  // Состояние формы
-  const [formData, setFormData] = useState({
-    title: '',
-    description: '',
-    imageUrl: '',
-    linkUrl: '',
-    position: 'main',
-    isActive: true,
-    order: 1
+  const { data: notifications, isLoading } = useQuery({
+    queryKey: ['/api/admin/notifications'],
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
   });
 
-  // Получение баннеров
-  const { data: banners, isLoading: bannersLoading } = useQuery({
-    queryKey: ['/api/admin/banners'],
-    staleTime: 30000,
-  });
-
-  // Мутация для создания баннера
-  const createBannerMutation = useMutation({
-    mutationFn: async (bannerData: any) => {
-      const response = await fetch('/api/admin/banners', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(bannerData),
-      });
-      if (!response.ok) throw new Error('Ошибка создания баннера');
-      return response.json();
-    },
-    onSuccess: () => {
-      toast({
-        title: "Успешно",
-        description: "Баннер создан успешно",
-      });
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/banners'] });
-      setIsCreating(false);
-      resetForm();
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Ошибка",
-        description: error.message || "Не удалось создать баннер",
-        variant: "destructive",
-      });
-    },
-  });
-
-  // Мутация для обновления баннера
-  const updateBannerMutation = useMutation({
-    mutationFn: async ({ id, data }: { id: number; data: any }) => {
-      const response = await fetch(`/api/admin/banners/${id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-      });
-      if (!response.ok) throw new Error('Ошибка обновления баннера');
-      return response.json();
-    },
-    onSuccess: () => {
-      toast({
-        title: "Успешно",
-        description: "Баннер обновлен успешно",
-      });
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/banners'] });
-      setEditingBanner(null);
-      resetForm();
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Ошибка",
-        description: error.message || "Не удалось обновить баннер",
-        variant: "destructive",
-      });
-    },
-  });
-
-  // Мутация для удаления баннера
-  const deleteBannerMutation = useMutation({
+  const deleteNotificationMutation = useMutation({
     mutationFn: async (id: number) => {
-      const response = await fetch(`/api/admin/banners/${id}`, {
+      const response = await fetch(`/api/admin/notifications/${id}`, {
         method: 'DELETE',
       });
-      if (!response.ok) throw new Error('Ошибка удаления баннера');
+      if (!response.ok) throw new Error('Failed to delete notification');
       return response.json();
     },
     onSuccess: () => {
       toast({
-        title: "Успешно",
-        description: "Баннер удален успешно",
+        title: "Уведомление удалено",
+        description: "Уведомление успешно удалено",
       });
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/banners'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/notifications'] });
     },
-    onError: (error: any) => {
-      toast({
-        title: "Ошибка",
-        description: error.message || "Не удалось удалить баннер",
-        variant: "destructive",
-      });
-    },
-  });
-
-  const resetForm = () => {
-    setFormData({
-      title: '',
-      description: '',
-      imageUrl: '',
-      linkUrl: '',
-      position: 'main',
-      isActive: true,
-      order: 1
-    });
-  };
-
-  const handleEdit = (banner: any) => {
-    setEditingBanner(banner);
-    setFormData({
-      title: banner.title || '',
-      description: banner.description || '',
-      imageUrl: banner.imageUrl || '',
-      linkUrl: banner.linkUrl || '',
-      position: banner.position || 'main',
-      isActive: banner.isActive !== false,
-      order: banner.order || 1
-    });
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (editingBanner) {
-      updateBannerMutation.mutate({ id: editingBanner.id, data: formData });
-    } else {
-      createBannerMutation.mutate(formData);
-    }
-  };
-
-  const handleCancel = () => {
-    setEditingBanner(null);
-    setIsCreating(false);
-    resetForm();
-  };
-
-  if (bannersLoading) {
-    return (
-      <div className="flex items-center justify-center py-8">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Управление баннерами</h2>
-        <Button
-          onClick={() => setIsCreating(true)}
-          className="flex items-center gap-2"
-          disabled={isCreating || editingBanner}
-        >
-          <Plus className="w-4 h-4" />
-          Создать баннер
-        </Button>
-      </div>
-
-      {/* Форма создания/редактирования */}
-      {(isCreating || editingBanner) && (
-        <Card>
-          <CardHeader>
-            <CardTitle>
-              {editingBanner ? 'Редактировать баннер' : 'Создать новый баннер'}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="title">Заголовок</Label>
-                  <Input
-                    id="title"
-                    value={formData.title}
-                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                    placeholder="Заголовок баннера"
-                    required
-                  />
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="position">Позиция</Label>
-                  <Select 
-                    value={formData.position} 
-                    onValueChange={(value) => setFormData({ ...formData, position: value })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Выберите позицию" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="main">Главная страница</SelectItem>
-                      <SelectItem value="sidebar">Боковая панель</SelectItem>
-                      <SelectItem value="footer">Подвал</SelectItem>
-                      <SelectItem value="header">Заголовок</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="description">Описание</Label>
-                <Textarea
-                  id="description"
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  placeholder="Описание баннера"
-                  rows={3}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="imageUrl">URL изображения</Label>
-                <Input
-                  id="imageUrl"
-                  value={formData.imageUrl}
-                  onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
-                  placeholder="https://example.com/image.jpg"
-                  type="url"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="linkUrl">Ссылка (необязательно)</Label>
-                <Input
-                  id="linkUrl"
-                  value={formData.linkUrl}
-                  onChange={(e) => setFormData({ ...formData, linkUrl: e.target.value })}
-                  placeholder="https://example.com"
-                  type="url"
-                />
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="order">Порядок отображения</Label>
-                  <Input
-                    id="order"
-                    type="number"
-                    value={formData.order}
-                    onChange={(e) => setFormData({ ...formData, order: parseInt(e.target.value) || 1 })}
-                    min="1"
-                  />
-                </div>
-
-                <div className="flex items-center space-x-2 pt-6">
-                  <input
-                    type="checkbox"
-                    id="isActive"
-                    checked={formData.isActive}
-                    onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
-                    className="rounded border-gray-300"
-                  />
-                  <Label htmlFor="isActive">Активный баннер</Label>
-                </div>
-              </div>
-
-              <div className="flex gap-2 pt-4">
-                <Button
-                  type="submit"
-                  disabled={createBannerMutation.isPending || updateBannerMutation.isPending}
-                >
-                  {createBannerMutation.isPending || updateBannerMutation.isPending
-                    ? 'Сохранение...'
-                    : editingBanner
-                    ? 'Обновить'
-                    : 'Создать'}
-                </Button>
-                <Button type="button" variant="outline" onClick={handleCancel}>
-                  Отмена
-                </Button>
-              </div>
-            </form>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Список баннеров */}
-      <div className="grid gap-4">
-        {banners && banners.length > 0 ? (
-          banners.map((banner: any) => (
-            <Card key={banner.id} className="overflow-hidden">
-              <CardContent className="p-6">
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
-                      <h3 className="text-lg font-semibold">{banner.title}</h3>
-                      <Badge variant={banner.isActive ? 'default' : 'secondary'}>
-                        {banner.isActive ? 'Активный' : 'Неактивный'}
-                      </Badge>
-                      <Badge variant="outline">{banner.position}</Badge>
-                    </div>
-                    
-                    {banner.description && (
-                      <p className="text-gray-600 dark:text-gray-400 mb-3">{banner.description}</p>
-                    )}
-                    
-                    <div className="flex items-center gap-4 text-sm text-gray-500">
-                      {banner.imageUrl && (
-                        <span className="flex items-center gap-1">
-                          <Image className="w-4 h-4" />
-                          Изображение
-                        </span>
-                      )}
-                      {banner.linkUrl && (
-                        <span className="flex items-center gap-1">
-                          <Eye className="w-4 h-4" />
-                          Ссылка
-                        </span>
-                      )}
-                      <span>Порядок: {banner.order}</span>
-                    </div>
-                  </div>
-                  
-                  <div className="flex gap-2">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => handleEdit(banner)}
-                      disabled={isCreating || editingBanner}
-                    >
-                      <Edit className="w-4 h-4" />
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => deleteBannerMutation.mutate(banner.id)}
-                      disabled={deleteBannerMutation.isPending}
-                      className="text-red-600 hover:text-red-700"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
-                  </div>
-                </div>
-
-                {banner.imageUrl && (
-                  <div className="mt-4 pt-4 border-t">
-                    <img
-                      src={banner.imageUrl}
-                      alt={banner.title}
-                      className="max-w-xs h-20 object-cover rounded border"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).style.display = 'none';
-                      }}
-                    />
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          ))
-        ) : (
-          <Card>
-            <CardContent className="text-center py-8">
-              <Image className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-              <p className="text-gray-500">Баннеры не найдены</p>
-              <p className="text-sm text-gray-400 mt-1">Создайте первый баннер</p>
-            </CardContent>
-          </Card>
-        )}
-      </div>
-    </div>
-  );
-}
-
-
-// Компонент статистики
-function AdminStats() {
-  const { data: stats, isLoading } = useQuery<AdminStatsData>({
-    queryKey: ['/api/admin/stats'],
   });
 
   if (isLoading) {
-    return <div className="text-center py-8">Загрузка статистики...</div>;
-  }
-
-  return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Всего пользователей</CardTitle>
-          <UserIcon className="h-4 w-4 text-muted-foreground" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">{stats?.totalUsers || 0}</div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Активные аукционы</CardTitle>
-          <Car className="h-4 w-4 text-muted-foreground" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">{stats?.activeAuctions || 0}</div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">На модерации</CardTitle>
-          <AlertCircle className="h-4 w-4 text-muted-foreground" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">{stats?.pendingListings || 0}</div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Заблокированных</CardTitle>
-          <XCircle className="h-4 w-4 text-muted-foreground" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">{stats?.bannedUsers || 0}</div>
-        </CardContent>
-      </Card>
-    </div>
-  );
-}
-
-// Компонент для управления архивом
-function ArchiveManagement() {
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
-  
-  // Запросы для получения данных
-  const { data: archivedListings, isLoading: isLoadingArchived } = useQuery({
-    queryKey: ['/api/archived-listings'],
-    queryFn: async () => {
-      const response = await fetch('/api/archived-listings');
-      if (!response.ok) throw new Error('Failed to fetch archived listings');
-      return response.json();
-    }
-  });
-
-  // Мутация для архивирования просроченных аукционов
-  const archiveExpiredMutation = useMutation({
-    mutationFn: async () => {
-      const response = await fetch('/api/archive-expired', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' }
-      });
-      if (!response.ok) throw new Error('Failed to archive expired listings');
-      return response.json();
-    },
-    onSuccess: (data) => {
-      toast({
-        title: "Архивирование завершено",
-        description: `Архивировано ${data.archivedCount} просроченных аукционов`,
-        variant: "default"
-      });
-      queryClient.invalidateQueries({ queryKey: ['/api/archived-listings'] });
-    },
-    onError: (error) => {
-      toast({
-        title: "Ошибка архивирования",
-        description: error.message,
-        variant: "destructive"
-      });
-    }
-  });
-
-  // Мутация для перезапуска аукциона
-  const restartListingMutation = useMutation({
-    mutationFn: async (listingId: number) => {
-      const response = await fetch(`/api/restart-listing/${listingId}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' }
-      });
-      if (!response.ok) throw new Error('Failed to restart listing');
-      return response.json();
-    },
-    onSuccess: () => {
-      toast({
-        title: "Аукцион перезапущен",
-        description: "Создан новый аукцион с новым номером лота",
-        variant: "default"
-      });
-      queryClient.invalidateQueries({ queryKey: ['/api/archived-listings'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/listings'] });
-    },
-    onError: (error) => {
-      toast({
-        title: "Ошибка перезапуска",
-        description: error.message,
-        variant: "destructive"
-      });
-    }
-  });
-
-  // Мутация для удаления архивированного аукциона
-  const deleteArchivedMutation = useMutation({
-    mutationFn: async (listingId: number) => {
-      const response = await fetch(`/api/archived-listings/${listingId}`, {
-        method: 'DELETE'
-      });
-      if (!response.ok) throw new Error('Failed to delete archived listing');
-      return response.json();
-    },
-    onSuccess: () => {
-      toast({
-        title: "Аукцион удален",
-        description: "Архивированный аукцион удален навсегда",
-        variant: "default"
-      });
-      queryClient.invalidateQueries({ queryKey: ['/api/archived-listings'] });
-    },
-    onError: (error) => {
-      toast({
-        title: "Ошибка удаления",
-        description: error.message,
-        variant: "destructive"
-      });
-    }
-  });
-
-  if (isLoadingArchived) {
-    return (
-      <div className="p-6 text-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-        <p className="mt-2 text-gray-600">Загрузка архива...</p>
-      </div>
-    );
+    return <div className="text-center py-8">Загрузка уведомлений...</div>;
   }
 
   return (
     <div className="space-y-6">
-      {/* Заголовок и кнопка архивирования */}
-      <div className="flex justify-between items-center">
-        <div>
-          <h2 className="text-2xl font-bold">Архив аукционов</h2>
-          <p className="text-gray-600">Завершенные аукционы старше 24 часов</p>
-        </div>
-        <Button
-          onClick={() => archiveExpiredMutation.mutate()}
-          disabled={archiveExpiredMutation.isPending}
-          className="bg-blue-600 hover:bg-blue-700"
-        >
-          {archiveExpiredMutation.isPending ? 'Архивирую...' : 'Архивировать просроченные'}
-        </Button>
-      </div>
-
-      {/* Статистика архива */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">Статистика архива</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="text-center">
-              <div className="text-3xl font-bold text-blue-600">
-                {archivedListings?.length || 0}
-              </div>
-              <div className="text-sm text-gray-500">Архивированных аукционов</div>
-            </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-green-600">
-                {archivedListings?.filter((l: any) => l.currentBid)?.length || 0}
-              </div>
-              <div className="text-sm text-gray-500">Со ставками</div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Список архивированных аукционов */}
-      <div className="space-y-4">
-        {archivedListings && archivedListings.length > 0 ? (
-          archivedListings.map((listing: any) => (
-            <Card key={listing.id} className="border-red-200 dark:border-red-800">
-              <CardContent className="p-4">
-                <div className="flex justify-between items-start">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-2">
-                      <h3 className="font-semibold text-lg">
-                        {listing.make} {listing.model} ({listing.year})
-                      </h3>
-                      <Badge variant="secondary" className="bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100">
-                        Архивирован
-                      </Badge>
-                    </div>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm text-gray-600 dark:text-gray-400">
-                      <div>Лот: {listing.lotNumber}</div>
-                      <div>Пробег: {listing.mileage.toLocaleString()} км</div>
-                      <div>Стартовая цена: ${listing.startingPrice}</div>
-                      <div>
-                        {listing.currentBid ? (
-                          <span className="text-green-600 font-semibold">
-                            Финальная ставка: ${listing.currentBid}
-                          </span>
-                        ) : (
-                          <span className="text-gray-500">Без ставок</span>
-                        )}
-                      </div>
-                    </div>
-                    {listing.endedAt && (
-                      <div className="mt-2 text-xs text-gray-500">
-                        Завершен: {new Date(listing.endedAt).toLocaleString('ru-RU')}
-                      </div>
-                    )}
-                  </div>
-                  <div className="flex gap-2 ml-4">
-                    <Button
-                      size="sm"
-                      onClick={() => restartListingMutation.mutate(listing.id)}
-                      disabled={restartListingMutation.isPending}
-                      className="bg-green-600 hover:bg-green-700"
-                    >
-                      Перезапустить
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="destructive"
-                      onClick={() => deleteArchivedMutation.mutate(listing.id)}
-                      disabled={deleteArchivedMutation.isPending}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+      <h2 className="text-2xl font-bold">Управление уведомлениями</h2>
+      
+      <div className="grid gap-4">
+        {notifications?.map((notification: Notification) => (
+          <Card key={notification.id} className="hover:shadow-lg transition-shadow">
+            <CardHeader className="pb-3">
+              <div className="flex justify-between items-start">
+                <div className="flex items-center space-x-3">
+                  <Bell className="w-8 h-8 text-blue-500" />
+                  <div>
+                    <CardTitle className="text-lg">{notification.title}</CardTitle>
+                    <CardDescription>{notification.message}</CardDescription>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
-          ))
-        ) : (
-          <Card>
-            <CardContent className="p-8 text-center">
-              <Trash2 className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-gray-600 mb-2">
-                Архив пуст
-              </h3>
-              <p className="text-gray-500">
-                Архивированные аукционы будут отображаться здесь
-              </p>
-            </CardContent>
+                <div className="flex items-center space-x-2">
+                  <Badge variant={notification.isRead ? "outline" : "default"}>
+                    {notification.isRead ? "Прочитано" : "Не прочитано"}
+                  </Badge>
+                  <Button
+                    size="sm"
+                    variant="destructive"
+                    onClick={() => deleteNotificationMutation.mutate(notification.id)}
+                    disabled={deleteNotificationMutation.isPending}
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
+                </div>
+              </div>
+            </CardHeader>
           </Card>
-        )}
+        ))}
       </div>
     </div>
   );
 }
 
-// Компонент кнопки прокрутки наверх
-function ScrollToTopButton() {
-  const [isVisible, setIsVisible] = useState(false);
-
-  useEffect(() => {
-    const toggleVisibility = () => {
-      if (window.pageYOffset > 300) {
-        setIsVisible(true);
-      } else {
-        setIsVisible(false);
-      }
-    };
-
-    window.addEventListener('scroll', toggleVisibility);
-    return () => window.removeEventListener('scroll', toggleVisibility);
-  }, []);
-
-  const scrollToTop = () => {
-    window.scrollTo({
-      top: 0,
-      behavior: 'smooth'
-    });
-  };
-
+// Управление баннерами
+function BannersManagement() {
   return (
-    <>
-      {isVisible && (
-        <Button
-          onClick={scrollToTop}
-          className="fixed bottom-24 right-6 z-50 w-12 h-12 rounded-full shadow-lg bg-blue-600 hover:bg-blue-700 text-white p-0"
-          size="sm"
-        >
-          <ChevronUp className="h-6 w-6" />
-        </Button>
-      )}
-    </>
+    <div className="space-y-6">
+      <h2 className="text-2xl font-bold">Управление баннерами</h2>
+      <Card>
+        <CardHeader>
+          <CardTitle>Функция временно недоступна</CardTitle>
+          <CardDescription>
+            Управление баннерами будет доступно в следующих версиях
+          </CardDescription>
+        </CardHeader>
+      </Card>
+    </div>
   );
 }
 
-// Компонент для управления второй каруселью
+// Управление второй каруселью
 function SecondCarouselManagement() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -1836,7 +449,6 @@ function SecondCarouselManagement() {
   const [editingItem, setEditingItem] = useState<any>(null);
   const [selectedCarousel, setSelectedCarousel] = useState<number>(1);
 
-  // Формы для создания/редактирования
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -1848,14 +460,12 @@ function SecondCarouselManagement() {
     order: 0
   });
 
-  // Загрузка данных карусели
   const { data: carouselItems, isLoading } = useQuery({
     queryKey: ['/api/admin/second-carousel'],
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
   });
 
-  // Мутации
   const createItemMutation = useMutation({
     mutationFn: async (data: any) => {
       const response = await fetch('/api/admin/second-carousel', {
@@ -1945,72 +555,131 @@ function SecondCarouselManagement() {
       imageUrl: '',
       linkUrl: '',
       buttonText: 'Подробнее',
-      carouselNumber: selectedCarousel,
+      carouselNumber: 1,
       isActive: true,
       order: 0
     });
-    setIsCreating(false);
     setEditingItem(null);
+    setIsCreating(false);
   };
 
-  const handleEdit = (item: any) => {
-    setFormData({
-      title: item.title,
-      description: item.description || '',
-      imageUrl: item.imageUrl,
-      linkUrl: item.linkUrl || '',
-      buttonText: item.buttonText || 'Подробнее',
-      carouselNumber: item.carouselNumber,
-      isActive: item.isActive,
-      order: item.order || 0
-    });
-    setEditingItem(item);
-    setIsCreating(true);
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (editingItem) {
-      updateItemMutation.mutate({ id: editingItem.id, data: formData });
+      await updateItemMutation.mutateAsync({ id: editingItem.id, data: formData });
     } else {
-      createItemMutation.mutate(formData);
+      await createItemMutation.mutateAsync(formData);
     }
   };
 
-  const filteredItems = Array.isArray(carouselItems) ? carouselItems.filter((item: any) => item.carouselNumber === selectedCarousel) : [];
+  const handleEdit = (item: any) => {
+    setEditingItem(item);
+    setFormData({
+      title: item.title || '',
+      description: item.description || '',
+      imageUrl: item.imageUrl || '',
+      linkUrl: item.linkUrl || '',
+      buttonText: item.buttonText || 'Подробнее',
+      carouselNumber: item.carouselNumber || 1,
+      isActive: item.isActive || true,
+      order: item.order || 0
+    });
+    setIsCreating(true);
+  };
+
+  const handleDelete = async (id: number) => {
+    if (window.confirm('Вы уверены, что хотите удалить этот элемент?')) {
+      await deleteItemMutation.mutateAsync(id);
+    }
+  };
+
+  const filteredItems = carouselItems?.filter((item: any) => 
+    item.carouselNumber === selectedCarousel
+  ) || [];
 
   if (isLoading) {
-    return (
-      <div className="p-6 text-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-        <p className="mt-2 text-gray-600">Загрузка карусели...</p>
-      </div>
-    );
+    return <div>Загрузка...</div>;
   }
 
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <div>
-          <h2 className="text-2xl font-bold">Управление второй каруселью</h2>
-          <p className="text-gray-600">Три карусели: Приведи друга, Горячие аукционы, Стань экспертом</p>
-        </div>
-        <Button
+        <h2 className="text-2xl font-bold">Управление второй каруселью</h2>
+        <Button 
           onClick={() => setIsCreating(true)}
-          disabled={isCreating || editingItem}
           className="bg-blue-600 hover:bg-blue-700"
         >
-          <Plus className="h-4 w-4 mr-2" />
+          <Plus className="w-4 h-4 mr-2" />
           Добавить элемент
         </Button>
       </div>
 
-      {/* Форма создания/редактирования */}
-      {(isCreating || editingItem) && (
-        <Card>
+      <div className="flex gap-4 mb-6">
+        <Button
+          variant={selectedCarousel === 1 ? "default" : "outline"}
+          onClick={() => setSelectedCarousel(1)}
+        >
+          Карусель 1: Приведи друга
+        </Button>
+        <Button
+          variant={selectedCarousel === 2 ? "default" : "outline"}
+          onClick={() => setSelectedCarousel(2)}
+        >
+          Карусель 2: Горячие аукционы
+        </Button>
+        <Button
+          variant={selectedCarousel === 3 ? "default" : "outline"}
+          onClick={() => setSelectedCarousel(3)}
+        >
+          Карусель 3: Стань экспертом
+        </Button>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {filteredItems.map((item: any) => (
+          <Card key={item.id} className="hover:shadow-lg transition-shadow">
+            <CardHeader className="pb-2">
+              <div className="flex justify-between items-start">
+                <CardTitle className="text-lg">{item.title}</CardTitle>
+                <Badge variant={item.isActive ? "default" : "secondary"}>
+                  {item.isActive ? "Активный" : "Неактивный"}
+                </Badge>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                <p className="text-sm text-gray-600">{item.description}</p>
+                <div className="flex justify-between items-center">
+                  <span className="text-xs text-gray-500">
+                    Порядок: {item.order}
+                  </span>
+                  <div className="flex gap-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handleEdit(item)}
+                    >
+                      <Edit className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handleDelete(item.id)}
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      {isCreating && (
+        <Card className="mt-6">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Image className="h-5 w-5" />
+            <CardTitle>
               {editingItem ? 'Редактировать элемент' : 'Создать новый элемент'}
             </CardTitle>
           </CardHeader>
@@ -2018,69 +687,23 @@ function SecondCarouselManagement() {
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="title">Заголовок *</Label>
+                  <Label htmlFor="title">Заголовок</Label>
                   <Input
                     id="title"
                     value={formData.title}
-                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                    onChange={(e) => setFormData({...formData, title: e.target.value})}
+                    placeholder="Введите заголовок"
                     required
                   />
                 </div>
-                
-                <div>
-                  <Label htmlFor="carouselNumber">Номер карусели *</Label>
-                  <Select
-                    value={formData.carouselNumber.toString()}
-                    onValueChange={(value) => setFormData({ ...formData, carouselNumber: parseInt(value) })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="1">1 - Приведи друга</SelectItem>
-                      <SelectItem value="2">2 - Горячие аукционы</SelectItem>
-                      <SelectItem value="3">3 - Стань экспертом</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div>
-                  <Label htmlFor="imageUrl">URL изображения *</Label>
-                  <Input
-                    id="imageUrl"
-                    type="url"
-                    value={formData.imageUrl}
-                    onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
-                    required
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="linkUrl">Ссылка</Label>
-                  <Input
-                    id="linkUrl"
-                    type="url"
-                    value={formData.linkUrl}
-                    onChange={(e) => setFormData({ ...formData, linkUrl: e.target.value })}
-                  />
-                </div>
-
                 <div>
                   <Label htmlFor="buttonText">Текст кнопки</Label>
                   <Input
                     id="buttonText"
                     value={formData.buttonText}
-                    onChange={(e) => setFormData({ ...formData, buttonText: e.target.value })}
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="order">Порядок</Label>
-                  <Input
-                    id="order"
-                    type="number"
-                    value={formData.order}
-                    onChange={(e) => setFormData({ ...formData, order: parseInt(e.target.value) })}
+                    onChange={(e) => setFormData({...formData, buttonText: e.target.value})}
+                    placeholder="Текст кнопки"
+                    required
                   />
                 </div>
               </div>
@@ -2090,116 +713,210 @@ function SecondCarouselManagement() {
                 <Textarea
                   id="description"
                   value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  rows={3}
+                  onChange={(e) => setFormData({...formData, description: e.target.value})}
+                  placeholder="Введите описание"
+                  required
                 />
               </div>
 
-              <div className="flex items-center space-x-2">
-                <input
-                  type="checkbox"
-                  id="isActive"
-                  checked={formData.isActive}
-                  onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
-                />
-                <Label htmlFor="isActive">Активный</Label>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="imageUrl">URL изображения</Label>
+                  <Input
+                    id="imageUrl"
+                    value={formData.imageUrl}
+                    onChange={(e) => setFormData({...formData, imageUrl: e.target.value})}
+                    placeholder="https://example.com/image.jpg"
+                    required
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="linkUrl">URL ссылки</Label>
+                  <Input
+                    id="linkUrl"
+                    value={formData.linkUrl}
+                    onChange={(e) => setFormData({...formData, linkUrl: e.target.value})}
+                    placeholder="/page-url"
+                    required
+                  />
+                </div>
               </div>
 
-              <div className="flex gap-2">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <Label htmlFor="carouselNumber">Номер карусели</Label>
+                  <Select
+                    value={formData.carouselNumber.toString()}
+                    onValueChange={(value) => setFormData({...formData, carouselNumber: parseInt(value)})}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Выберите карусель" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="1">Карусель 1</SelectItem>
+                      <SelectItem value="2">Карусель 2</SelectItem>
+                      <SelectItem value="3">Карусель 3</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label htmlFor="order">Порядок</Label>
+                  <Input
+                    id="order"
+                    type="number"
+                    value={formData.order}
+                    onChange={(e) => setFormData({...formData, order: parseInt(e.target.value)})}
+                    min="0"
+                    max="10"
+                  />
+                </div>
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    id="isActive"
+                    checked={formData.isActive}
+                    onChange={(e) => setFormData({...formData, isActive: e.target.checked})}
+                  />
+                  <Label htmlFor="isActive">Активный</Label>
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={resetForm}
+                >
+                  Отмена
+                </Button>
                 <Button
                   type="submit"
                   disabled={createItemMutation.isPending || updateItemMutation.isPending}
                 >
-                  {createItemMutation.isPending || updateItemMutation.isPending
-                    ? 'Сохранение...'
-                    : editingItem
-                    ? 'Сохранить изменения'
-                    : 'Создать элемент'
-                  }
-                </Button>
-                <Button type="button" variant="outline" onClick={resetForm}>
-                  Отмена
+                  {createItemMutation.isPending || updateItemMutation.isPending ? 'Сохранение...' : 'Сохранить'}
                 </Button>
               </div>
             </form>
           </CardContent>
         </Card>
       )}
+    </div>
+  );
+}
 
-      {/* Выбор карусели */}
-      <div className="flex gap-2">
-        {[1, 2, 3].map(num => (
-          <Button
-            key={num}
-            variant={selectedCarousel === num ? "default" : "outline"}
-            onClick={() => setSelectedCarousel(num)}
-            className="flex items-center gap-2"
-          >
-            Карусель {num}
-            <Badge variant="secondary">
-              {Array.isArray(carouselItems) ? carouselItems.filter((item: any) => item.carouselNumber === num).length : 0}
-            </Badge>
-          </Button>
-        ))}
-      </div>
+// Архив
+function ArchiveManagement() {
+  return (
+    <div className="space-y-6">
+      <h2 className="text-2xl font-bold">Управление архивом</h2>
+      <Card>
+        <CardHeader>
+          <CardTitle>Архив завершенных аукционов</CardTitle>
+          <CardDescription>
+            Здесь отображаются завершенные и архивные аукционы
+          </CardDescription>
+        </CardHeader>
+      </Card>
+    </div>
+  );
+}
 
-      {/* Список элементов */}
-      <div className="space-y-4">
-        {filteredItems.length > 0 ? (
-          filteredItems.map((item: any) => (
-            <Card key={item.id}>
-              <CardContent className="p-4">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-2">
-                      <h3 className="font-semibold text-lg">{item.title}</h3>
-                      <Badge variant={item.isActive ? "default" : "secondary"}>
-                        {item.isActive ? "Активный" : "Неактивный"}
-                      </Badge>
-                      <Badge variant="outline">
-                        Порядок: {item.order}
-                      </Badge>
-                    </div>
-                    {item.description && (
-                      <p className="text-gray-600 text-sm mb-2">{item.description}</p>
-                    )}
-                    <div className="grid grid-cols-2 gap-2 text-sm text-gray-500">
-                      <div>Кнопка: {item.buttonText}</div>
-                      <div>Ссылка: {item.linkUrl || 'Не указана'}</div>
-                    </div>
-                  </div>
-                  <div className="flex gap-2 ml-4">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => handleEdit(item)}
-                      disabled={isCreating || editingItem}
-                    >
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="destructive"
-                      onClick={() => deleteItemMutation.mutate(item.id)}
-                      disabled={deleteItemMutation.isPending}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))
-        ) : (
-          <Card>
-            <CardContent className="text-center py-8">
-              <Image className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-              <p className="text-gray-500">Нет элементов в карусели {selectedCarousel}</p>
-              <p className="text-sm text-gray-400 mt-1">Создайте первый элемент</p>
-            </CardContent>
-          </Card>
-        )}
+// Статистика
+function AdminStats() {
+  const { data: stats, isLoading } = useQuery({
+    queryKey: ['/api/admin/stats'],
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+  });
+
+  if (isLoading) {
+    return <div className="text-center py-8">Загрузка статистики...</div>;
+  }
+
+  return (
+    <div className="space-y-6">
+      <h2 className="text-2xl font-bold">Статистика платформы</h2>
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Всего пользователей</CardTitle>
+            <UserIcon className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats?.totalUsers || 0}</div>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Активные аукционы</CardTitle>
+            <Car className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats?.activeAuctions || 0}</div>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Ожидающие модерации</CardTitle>
+            <AlertCircle className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats?.pendingListings || 0}</div>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Заблокированные</CardTitle>
+            <XCircle className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats?.bannedUsers || 0}</div>
+          </CardContent>
+        </Card>
       </div>
     </div>
+  );
+}
+
+// Кнопка прокрутки вверх
+function ScrollToTopButton() {
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    const toggleVisibility = () => {
+      if (window.pageYOffset > 300) {
+        setIsVisible(true);
+      } else {
+        setIsVisible(false);
+      }
+    };
+
+    window.addEventListener('scroll', toggleVisibility);
+    return () => window.removeEventListener('scroll', toggleVisibility);
+  }, []);
+
+  const scrollToTop = () => {
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
+  };
+
+  return (
+    <>
+      {isVisible && (
+        <Button
+          className="fixed bottom-4 right-4 z-50 rounded-full p-3 shadow-lg"
+          onClick={scrollToTop}
+          size="sm"
+        >
+          <ChevronUp className="h-6 w-6" />
+        </Button>
+      )}
+    </>
   );
 }
