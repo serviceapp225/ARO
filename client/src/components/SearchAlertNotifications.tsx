@@ -296,6 +296,8 @@ export function SearchAlertNotifications({ userId }: SearchAlertNotificationsPro
           </div>
         ))}
       </CardContent>
+      {/* Дополнительный отступ снизу для нижних кнопок */}
+      <div className="h-20"></div>
     </Card>
   );
 }
