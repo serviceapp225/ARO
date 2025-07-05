@@ -1532,6 +1532,25 @@ function AdvertisementCarouselManagement() {
     refetchInterval: 5000, // Обновляем каждые 5 секунд
   });
 
+  // Синхронизируем форму с обновленными данными
+  useEffect(() => {
+    if (editingItem && carouselItems.length > 0) {
+      const updatedItem = carouselItems.find(item => item.id === editingItem.id);
+      if (updatedItem) {
+        setFormData({
+          title: updatedItem.title,
+          description: updatedItem.description || '',
+          imageUrl: updatedItem.imageUrl,
+          linkUrl: updatedItem.linkUrl || '',
+          buttonText: updatedItem.buttonText || 'Узнать больше',
+          order: updatedItem.order || 1,
+          isActive: updatedItem.isActive,
+        });
+        setEditingItem(updatedItem);
+      }
+    }
+  }, [carouselItems, editingItem?.id]);
+
   const createItemMutation = useMutation({
     mutationFn: async (data: any) => {
       const response = await fetch('/api/admin/advertisement-carousel', {
@@ -1577,7 +1596,7 @@ function AdvertisementCarouselManagement() {
       if (!response.ok) throw new Error('Failed to update item');
       return response.json();
     },
-    onSuccess: () => {
+    onSuccess: async (updatedItem) => {
       // Принудительно очищаем все кэши
       queryClient.removeQueries({ queryKey: ['/api/admin/advertisement-carousel'] });
       queryClient.removeQueries({ queryKey: ['/api/advertisement-carousel'] });
@@ -1585,9 +1604,22 @@ function AdvertisementCarouselManagement() {
       queryClient.invalidateQueries({ queryKey: ['/api/advertisement-carousel'] });
       
       // Принудительно перезагружаем данные
-      queryClient.refetchQueries({ queryKey: ['/api/admin/advertisement-carousel'] });
+      await queryClient.refetchQueries({ queryKey: ['/api/admin/advertisement-carousel'] });
       
-      handleCancel();
+      // Обновляем форму с новыми данными вместо сброса
+      if (updatedItem) {
+        setFormData({
+          title: updatedItem.title,
+          description: updatedItem.description || '',
+          imageUrl: updatedItem.imageUrl,
+          linkUrl: updatedItem.linkUrl || '',
+          buttonText: updatedItem.buttonText || 'Узнать больше',
+          order: updatedItem.order || 1,
+          isActive: updatedItem.isActive,
+        });
+        setEditingItem(updatedItem);
+      }
+      
       toast({
         title: "Успешно",
         description: "Рекламное объявление обновлено",
