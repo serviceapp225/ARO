@@ -115,15 +115,21 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* Second Triple Carousel */}
-        <SecondTripleCarousel />
-
         {/* Active Auctions Section */}
         <section>
           <h2 className="text-xl font-bold text-gray-900 mb-4">
             Активные аукционы
           </h2>
           <ActiveAuctions searchQuery={searchQuery} />
+        </section>
+
+        {/* Bottom Banner with Three Carousels */}
+        <section className="bg-gradient-to-br from-blue-600 to-purple-700 rounded-2xl p-6 text-white">
+          <div className="mb-6">
+            <h2 className="text-2xl font-bold mb-2">Специальные предложения</h2>
+            <p className="text-blue-100">Узнайте больше о наших услугах</p>
+          </div>
+          <SecondTripleCarousel />
         </section>
         
         {/* Дополнительный отступ для нижних кнопок навигации */}
