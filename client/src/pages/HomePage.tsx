@@ -4,6 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { ActiveAuctions } from "@/components/ActiveAuctions";
 import { DynamicSellCarBanner } from "@/components/DynamicSellCarBanner";
+import { SecondTripleCarousel } from "@/components/SecondTripleCarousel";
 
 import { TopHeader } from "@/components/TopHeader";
 import { Link } from "wouter";
@@ -113,6 +114,9 @@ export default function HomePage() {
             </div>
           </div>
         </div>
+
+        {/* Second Triple Carousel */}
+        <SecondTripleCarousel />
 
         {/* Active Auctions Section */}
         <section>
