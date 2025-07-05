@@ -50,16 +50,16 @@ export function DynamicSellCarBanner() {
       />
       
       {/* Content */}
-      <div className="relative z-10 h-full flex flex-col justify-center items-center text-center space-y-3">
-        <h2 className="text-2xl font-bold drop-shadow-lg text-white">
+      <div className="relative z-10 h-full flex flex-col justify-center items-center text-center space-y-2">
+        <h2 className="text-2xl font-bold drop-shadow-lg text-white h-8 flex items-center">
           {banner.title}
         </h2>
-        <p className="text-base leading-relaxed opacity-95 drop-shadow-md max-w-md text-white">
+        <p className="text-base leading-relaxed opacity-95 drop-shadow-md max-w-md text-white h-12 flex items-center">
           {banner.description}
         </p>
         <div className="mt-4">
           <span 
-            className="px-6 py-3 rounded-full text-sm font-bold hover:opacity-90 transition-all duration-300 cursor-pointer inline-flex items-center gap-2 shadow-lg hover:shadow-xl transform hover:scale-105"
+            className="px-4 py-2 rounded-full text-sm font-bold hover:opacity-90 transition-all duration-300 cursor-pointer inline-flex items-center gap-1 min-w-[180px] justify-center shadow-lg hover:shadow-xl transform hover:scale-105"
             style={{ 
               backgroundColor: banner.textColor === '#ffffff' ? '#059669' : '#ffffff',
               color: banner.textColor === '#ffffff' ? '#ffffff' : '#059669',
