@@ -23,8 +23,6 @@ interface DefaultCarouselData {
 }
 
 export function SecondTripleCarousel() {
-  console.log('SecondTripleCarousel компонент рендерится');
-  
   const [currentSlides, setCurrentSlides] = useState([0, 0, 0]);
 
   const { data: carouselData, isLoading } = useQuery<SecondCarouselItem[]>({
@@ -117,9 +115,8 @@ export function SecondTripleCarousel() {
   }
 
   return (
-    <div className="space-y-4 bg-red-100 p-4 border-4 border-red-500">
-      <h2 className="text-2xl font-bold text-red-800 mb-4">🚨 ТЕСТ: Специальные предложения</h2>
-      <div className="text-red-600 font-bold">Компонент SecondTripleCarousel загружен!</div>
+    <div className="space-y-4">
+      <h2 className="text-2xl font-bold text-gray-800 mb-4">Специальные предложения</h2>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {[0, 1, 2].map((carouselIndex) => {
           const group = carouselGroups[carouselIndex] || [];
