@@ -61,6 +61,7 @@ export function useAuctionWebSocket(): AuctionWebSocketHook {
       wsRef.current.onmessage = (event) => {
         try {
           const message: WebSocketMessage = JSON.parse(event.data);
+          console.log('📩 Получено WebSocket сообщение:', message);
           handleWebSocketMessage(message);
         } catch (error) {
           console.error('Ошибка парсинга WebSocket сообщения:', error);
@@ -101,8 +102,9 @@ export function useAuctionWebSocket(): AuctionWebSocketHook {
         break;
         
       case 'bid_update':
+        console.log('🔥 Получено WebSocket сообщение bid_update:', message);
         setLastBidUpdate({
-          ...message.data,
+          ...message,
           receivedAt: Date.now()
         });
         console.log(`💰 Новая ставка в real-time: ${message.data?.bid?.amount} сомони`);
@@ -129,14 +131,18 @@ export function useAuctionWebSocket(): AuctionWebSocketHook {
   
   const joinAuction = useCallback((listingId: number) => {
     currentListingRef.current = listingId;
+    console.log(`🎯 Попытка подключения к аукциону ${listingId}, пользователь:`, (user as any)?.userId);
     
     if (wsRef.current?.readyState === WebSocket.OPEN) {
-      wsRef.current.send(JSON.stringify({
+      const message = {
         type: 'join_auction',
         listingId,
         userId: (user as any)?.userId
-      }));
+      };
+      console.log('📤 Отправляем сообщение join_auction:', message);
+      wsRef.current.send(JSON.stringify(message));
     } else {
+      console.log('⚠️ WebSocket не подключен, подключаемся...');
       // Если WebSocket не подключен, подключаемся
       connect();
     }

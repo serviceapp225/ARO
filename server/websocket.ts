@@ -73,11 +73,15 @@ class AuctionWebSocketManager {
   }
 
   private handleMessage(client: WebSocketClient, message: any) {
+    console.log('📨 WebSocket сообщение от клиента:', message);
+    
     switch (message.type) {
       case 'join_auction':
+        console.log(`🎯 Клиент присоединяется к аукциону ${message.listingId}, пользователь ${message.userId}`);
         this.joinAuction(client, message.listingId, message.userId);
         break;
       case 'leave_auction':
+        console.log('🚪 Клиент покидает аукцион');
         this.leaveAuction(client);
         break;
       case 'ping':
