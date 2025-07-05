@@ -33,7 +33,8 @@ export function SpecialOffersBanner() {
   return (
     <div 
       onClick={handleClick}
-      className="relative h-44 rounded-2xl p-6 text-white overflow-hidden shadow-2xl cursor-pointer hover:shadow-3xl transition-all duration-300"
+      className="relative rounded-2xl p-6 text-white overflow-hidden shadow-2xl cursor-pointer hover:shadow-3xl transition-all duration-300"
+      style={{ height: '176px' }}
     >
       {/* Background with Rotating Car Photos */}
       <div 
@@ -49,7 +50,7 @@ export function SpecialOffersBanner() {
           Специальные предложения
         </h2>
         <p className="text-base leading-relaxed opacity-90 text-white">
-          Лучшие автомобили с особыми условиями сделки
+          Лучшие автомобили с особыми условиями
         </p>
         <div className="mt-4">
           <span 
