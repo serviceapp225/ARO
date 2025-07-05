@@ -31,8 +31,8 @@ export function SearchAlertNotifications({ userId }: SearchAlertNotificationsPro
       if (!response.ok) throw new Error('Failed to fetch car alerts');
       return response.json();
     },
-    staleTime: 0, // Всегда считать данные устаревшими для немедленного обновления
-    gcTime: 60000, // Сократить кэш до 1 минуты для более частой очистки
+    staleTime: 30000, // 30 секунд кэш
+    gcTime: 300000, // 5 минут в памяти
     refetchOnWindowFocus: true, // Обновлять при фокусе окна
     refetchOnMount: true, // Всегда перезапрашивать при монтировании
     refetchInterval: false, // Отключить автообновление по таймеру
@@ -119,16 +119,26 @@ export function SearchAlertNotifications({ userId }: SearchAlertNotificationsPro
         return newSet;
       });
       
-      // Полностью очищаем кэш и принудительно перезагружаем данные
-      queryClient.removeQueries({ queryKey: ['/api/car-alerts', userId] });
-      await queryClient.invalidateQueries({ queryKey: ['/api/car-alerts', userId] });
+      // Агрессивная очистка всех связанных кэшей
+      queryClient.removeQueries({ queryKey: ['/api/car-alerts'] });
+      queryClient.removeQueries({ queryKey: ['/api/notifications'] });
       
-      // Принудительно обновляем компонент через изменение ключа
+      // Принудительная инвалидация
+      await queryClient.invalidateQueries({ 
+        queryKey: ['/api/car-alerts', userId], 
+        exact: false,
+        refetchType: 'all'
+      });
+      
+      // Сброс всех кэшей TanStack Query для этих данных
+      queryClient.setQueryData(['/api/car-alerts', userId, forceRefreshKey], []);
+      
+      // Принудительно обновляем компонент
       setForceRefreshKey(prev => prev + 1);
       
       toast({
         title: "Поисковый запрос удален",
-        duration: 1000, // Автоматически исчезает через 1 секунду
+        duration: 1000,
       });
     },
     onSettled: async (data, error, alertId) => {

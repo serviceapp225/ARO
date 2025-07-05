@@ -1256,9 +1256,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const alertId = parseInt(req.params.id);
       
-      // Сначала получаем alert, чтобы знать userId для очистки кэша
-      const alertToDelete = await storage.getCarAlertsByUser(alertId); // Need to find userId first
-      
+      // Просто удаляем alert напрямую
       const success = await storage.deleteCarAlert(alertId);
       
       if (!success) {
