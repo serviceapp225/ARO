@@ -122,6 +122,9 @@ export default function HomePage() {
           </h2>
           <ActiveAuctions searchQuery={searchQuery} />
         </section>
+        
+        {/* Дополнительный отступ для нижних кнопок навигации */}
+        <div className="h-24"></div>
       </main>
     </div>
   );
