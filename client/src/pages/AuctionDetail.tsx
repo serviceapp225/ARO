@@ -259,9 +259,15 @@ export default function AuctionDetail() {
     if (lastBidUpdate && lastBidUpdate.listingId === parseInt(id || '0')) {
       console.log('🔥 Real-time обновление ставки:', lastBidUpdate);
       
-      // Принудительно обновляем кэш TanStack Query
+      // Агрессивное принудительное обновление кэша
+      queryClient.removeQueries({ queryKey: [`/api/listings/${id}/bids`] });
+      queryClient.removeQueries({ queryKey: [`/api/listings/${id}`] });
       queryClient.invalidateQueries({ queryKey: [`/api/listings/${id}/bids`] });
       queryClient.invalidateQueries({ queryKey: [`/api/listings/${id}`] });
+      
+      // Принудительно запрашиваем свежие данные
+      queryClient.refetchQueries({ queryKey: [`/api/listings/${id}/bids`], type: 'all' });
+      queryClient.refetchQueries({ queryKey: [`/api/listings/${id}`], type: 'all' });
       
       // Обновляем цену без перезагрузки
       if (lastBidUpdate.data?.bid?.amount) {
@@ -274,10 +280,6 @@ export default function AuctionDetail() {
           duration: 2000,
         });
       }
-      
-      // Инвалидируем кэш для обновления интерфейса
-      queryClient.invalidateQueries({ queryKey: [`/api/listings/${id}/bids`] });
-      queryClient.invalidateQueries({ queryKey: [`/api/listings/${id}`] });
     }
   }, [lastBidUpdate, id, queryClient, toast]);
 
