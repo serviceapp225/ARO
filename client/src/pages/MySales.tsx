@@ -20,7 +20,7 @@ export default function MySales() {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center pb-20">
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center main-content">
         <div className="bg-white rounded-2xl p-8 shadow-lg text-center max-w-md mx-4">
           <Car className="w-16 h-16 text-gray-400 mx-auto mb-4" />
           <h2 className="text-xl font-semibold text-gray-700 mb-2">
@@ -38,7 +38,7 @@ export default function MySales() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20">
+    <div className="min-h-screen bg-gray-50 main-content">
       {/* Header */}
       <header className="bg-white shadow-sm border-b border-gray-200">
         <div className="container mx-auto px-4 py-4">

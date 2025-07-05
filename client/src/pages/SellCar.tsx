@@ -505,7 +505,7 @@ export default function SellCar() {
   };
 
   return (
-    <div className="min-h-screen bg-neutral-50 pb-20">
+    <div className="min-h-screen bg-neutral-50 main-content">
       {/* Header */}
       <header className="bg-white shadow-sm border-b border-neutral-200">
         <div className="container mx-auto px-4 py-4">

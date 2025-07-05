@@ -545,7 +545,7 @@ export default function AuctionDetail() {
   }, [isGalleryOpen]);
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20">
+    <div className="min-h-screen bg-gray-50 main-content">
       {/* Confetti Effect */}
       <ConfettiEffect 
         isActive={showConfetti} 
