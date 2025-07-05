@@ -72,17 +72,14 @@ export function AdvertisementCarousel() {
 
   return (
     <div 
-      className="relative h-44 w-full p-6 text-white overflow-hidden cursor-pointer transition-all duration-300"
+      className="relative h-44 rounded-2xl p-6 text-white overflow-hidden cursor-pointer transition-all duration-300"
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
       onClick={handleClick}
-      style={{
-        background: 'transparent',
-      }}
     >
       {/* Background Image */}
       <div 
-        className="absolute inset-0 w-full h-full bg-cover bg-center bg-no-repeat"
+        className="absolute inset-0 rounded-2xl bg-cover bg-center bg-no-repeat"
         style={{
           backgroundImage: `url('${currentAd.imageUrl}')`,
         }}
@@ -114,6 +111,10 @@ export function AdvertisementCarousel() {
           </div>
         )}
       </div>
+      
+      {/* Decorative Elements */}
+      <div className="absolute top-4 right-4 w-12 h-12 rounded-full bg-white/10 blur-xl"></div>
+      <div className="absolute bottom-6 left-6 w-8 h-8 rounded-full bg-white/5 blur-lg"></div>
       
       {/* Кнопки навигации */}
       {activeAds.length > 1 && (
