@@ -1,11 +1,12 @@
 import { Sparkles } from "lucide-react";
 import { useLocation } from "wouter";
+import carBannerSvg from "@/assets/car-banner.svg";
 import { useState, useEffect } from "react";
 
 export function SpecialOffersBanner() {
   const [, setLocation] = useLocation();
   
-  // Красивые фотографии премиум автомобилей для ротации
+  // Красивые фотографии автомобилей для ротации
   const carImages = [
     'https://images.unsplash.com/photo-1580414068983-d3e8c8f7f5f3?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80', // Luxury BMW
     'https://images.unsplash.com/photo-1603584173870-7f23fdae1b7a?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80', // Mercedes luxury
@@ -36,9 +37,9 @@ export function SpecialOffersBanner() {
     >
       {/* Background with Rotating Car Photos */}
       <div 
-        className="absolute inset-0 rounded-2xl bg-gradient-to-br from-purple-800 to-indigo-900 bg-cover bg-center bg-no-repeat transition-all duration-1000 ease-in-out"
+        className="absolute inset-0 rounded-2xl bg-gradient-to-br from-slate-800 to-slate-900 bg-cover bg-center bg-no-repeat transition-all duration-1000 ease-in-out"
         style={{
-          backgroundImage: `linear-gradient(135deg, rgba(76,29,149,0.6) 0%, rgba(67,56,202,0.4) 100%), url('${carImages[currentImageIndex]}')`
+          backgroundImage: `linear-gradient(135deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.4) 100%), url('${carImages[currentImageIndex]}'), url('${carBannerSvg}')`
         }}
       ></div>
       
@@ -55,7 +56,7 @@ export function SpecialOffersBanner() {
             className="px-4 py-2 rounded-full text-sm font-bold hover:opacity-90 transition-all duration-300 cursor-pointer inline-flex items-center gap-1"
             style={{ 
               backgroundColor: '#ffffff',
-              color: '#7c3aed' 
+              color: '#059669' 
             }}
           >
             <Sparkles className="w-4 h-4" />
