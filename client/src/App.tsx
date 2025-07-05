@@ -36,12 +36,35 @@ function Router() {
   
   // Предзагружаем критически важные данные для мгновенной загрузки
   useEffect(() => {
+    // Предзагружаем рекламную карусель
     queryClient.prefetchQuery({
       queryKey: ['/api/advertisement-carousel'],
       queryFn: async () => {
         const response = await fetch('/api/advertisement-carousel');
         if (response.ok) return response.json();
         return [];
+      },
+      staleTime: Infinity,
+    });
+    
+    // Предзагружаем основные аукционы для быстрого переключения
+    queryClient.prefetchQuery({
+      queryKey: ['/api/listings'],
+      queryFn: async () => {
+        const response = await fetch('/api/listings');
+        if (response.ok) return response.json();
+        return [];
+      },
+      staleTime: 300000, // 5 минут
+    });
+    
+    // Предзагружаем секцию продажи авто
+    queryClient.prefetchQuery({
+      queryKey: ['/api/sell-car-section'],
+      queryFn: async () => {
+        const response = await fetch('/api/sell-car-section');
+        if (response.ok) return response.json();
+        return {};
       },
       staleTime: Infinity,
     });

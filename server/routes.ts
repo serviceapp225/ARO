@@ -136,8 +136,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Предзагружаем кэш при старте
   await updateListingsCache();
   
-  // Обновляем кэш каждые 60 секунд для экономии ресурсов
-  setInterval(updateListingsCache, 60000);
+  // Обновляем кэш каждые 300 секунд (5 минут) для максимальной скорости
+  setInterval(updateListingsCache, 300000);
   
   // Clear all caches when listings change
   function clearAllCaches() {
@@ -175,8 +175,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       // console.log("Listings endpoint called, cache size:", cachedListings.length); // Убрано для производительности
       
-      // Агрессивное HTTP кэширование - 10 секунд
-      res.setHeader('Cache-Control', 'public, max-age=10, s-maxage=10');
+      // Агрессивное HTTP кэширование - 5 минут
+      res.setHeader('Cache-Control', 'public, max-age=300, s-maxage=300');
       res.setHeader('ETag', `"listings-${lastCacheUpdate}"`);
       
       // Оптимизируем данные для скорости но сохраняем важные поля
