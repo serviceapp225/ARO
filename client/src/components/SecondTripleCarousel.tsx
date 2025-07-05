@@ -49,43 +49,32 @@ export function SecondTripleCarousel() {
     },
     {
       title: "Стань экспертом",
-      description: "Изучи курс оценщика автомобилей и зарабатывай 5000+ сомони в месяц",
+      description: "Пройди курс оценки автомобилей и зарабатывай на экспертизе до 200$ в месяц",
       buttonText: "Начать обучение",
       gradient: "from-blue-600 to-indigo-600",
       icon: Award
     }
   ];
 
-  // Группируем данные по номеру карусели
-  const carouselGroups = [[], [], []] as SecondCarouselItem[][];
-  
-  if (carouselData) {
-    carouselData.forEach(item => {
-      if (item.isActive && item.carouselNumber >= 1 && item.carouselNumber <= 3) {
-        carouselGroups[item.carouselNumber - 1].push(item);
-      }
-    });
-    
-    // Сортируем каждую группу по order
-    carouselGroups.forEach(group => {
-      group.sort((a, b) => a.order - b.order);
-    });
-  }
+  // Группировка данных по каруселям
+  const carouselGroups = [
+    carouselData?.filter(item => item.carouselNumber === 1 && item.isActive) || [],
+    carouselData?.filter(item => item.carouselNumber === 2 && item.isActive) || [],
+    carouselData?.filter(item => item.carouselNumber === 3 && item.isActive) || []
+  ];
 
-  // Автоматическое переключение для каждой карусели
+  // Автоматическое переключение слайдов
   useEffect(() => {
-    const intervals = carouselGroups.map((group, index) => {
-      if (group.length > 1) {
-        const interval = (4 + index) * 1000; // 4s, 5s, 6s для каждой карусели
-        return setInterval(() => {
-          setCurrentSlides(prev => {
-            const newSlides = [...prev];
-            newSlides[index] = (newSlides[index] + 1) % group.length;
-            return newSlides;
-          });
-        }, interval);
-      }
-      return null;
+    const intervals = carouselGroups.map((group, carouselIndex) => {
+      if (group.length <= 1) return null;
+      
+      return setInterval(() => {
+        setCurrentSlides(prev => {
+          const newSlides = [...prev];
+          newSlides[carouselIndex] = (newSlides[carouselIndex] + 1) % group.length;
+          return newSlides;
+        });
+      }, 5000 + carouselIndex * 1500);
     });
 
     return () => {
@@ -93,7 +82,24 @@ export function SecondTripleCarousel() {
         if (interval) clearInterval(interval);
       });
     };
-  }, [carouselData]);
+  }, [carouselGroups]);
+
+  const handleCarouselClick = (carouselIndex: number) => {
+    const currentGroup = carouselGroups[carouselIndex];
+    const currentItem = currentGroup[currentSlides[carouselIndex]];
+    
+    if (currentItem?.linkUrl) {
+      if (currentItem.linkUrl.startsWith('http')) {
+        window.open(currentItem.linkUrl, '_blank');
+      } else {
+        window.location.href = currentItem.linkUrl;
+      }
+    } else {
+      // Дефолтные ссылки для каждой карусели
+      const defaultUrls = ['/invite', '/', '/expert'];
+      window.location.href = defaultUrls[carouselIndex];
+    }
+  };
 
   if (isLoading) {
     return (
@@ -109,53 +115,90 @@ export function SecondTripleCarousel() {
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-      {[0, 1, 2].map((carouselIndex) => {
-        const group = carouselGroups[carouselIndex] || [];
-        const currentItem = group[currentSlides[carouselIndex]];
-        const defaultData = defaultCarousels[carouselIndex];
-        const IconComponent = defaultData.icon;
-      
-        // Используем кастомные данные если есть, иначе дефолтные
-        const displayData = currentItem || {
-          title: defaultData.title,
-          description: defaultData.description,
-          buttonText: defaultData.buttonText,
-          imageUrl: `https://images.unsplash.com/photo-${carouselIndex === 0 ? '1573164713714-d95e436ab8d6' : carouselIndex === 1 ? '1581092335397-9583eb92d232' : '1556742049-0ca65d6fa6c9'}?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80`
-        };
+    <div className="space-y-4">
+      <h2 className="text-2xl font-bold text-gray-800 mb-4">Специальные предложения</h2>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {[0, 1, 2].map((carouselIndex) => {
+          const group = carouselGroups[carouselIndex] || [];
+          const currentItem = group[currentSlides[carouselIndex]];
+          const defaultData = defaultCarousels[carouselIndex];
+          const IconComponent = defaultData.icon;
+        
+          // Используем кастомные данные если есть, иначе дефолтные
+          const displayData = currentItem || {
+            title: defaultData.title,
+            description: defaultData.description,
+            buttonText: defaultData.buttonText,
+            imageUrl: `https://images.unsplash.com/photo-${carouselIndex === 0 ? '1573164713714-d95e436ab8d6' : carouselIndex === 1 ? '1581092335397-9583eb92d232' : '1556742049-0ca65d6fa6c9'}?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80`
+          };
 
-        return (
-          <div
-            key={carouselIndex}
-            className="relative bg-white/10 backdrop-blur-sm rounded-2xl h-32 overflow-hidden group cursor-pointer hover:scale-105 transition-all duration-300"
-            style={{
-              backgroundImage: `linear-gradient(135deg, rgba(0,0,0,0.7), rgba(0,0,0,0.5)), url(${displayData.imageUrl})`,
-              backgroundSize: 'cover',
-              backgroundPosition: 'center'
-            }}
-            onClick={() => {
-              if (currentItem && currentItem.linkUrl) {
-                window.location.href = currentItem.linkUrl;
-              }
-            }}
-          >
-            <div className="absolute inset-0 bg-gradient-to-r from-black/50 to-transparent">
-              <div className="h-full flex items-center justify-between p-4">
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-1">
-                    <IconComponent className="w-4 h-4 text-white/90" />
-                    <h3 className="text-sm font-bold text-white">{displayData.title}</h3>
+          return (
+            <div
+              key={carouselIndex}
+              onClick={() => handleCarouselClick(carouselIndex)}
+              className="relative h-44 rounded-2xl p-6 text-white overflow-hidden shadow-2xl cursor-pointer hover:shadow-3xl transition-all duration-300"
+              style={{ height: '176px' }}
+            >
+              <div 
+                className={`absolute inset-0 rounded-2xl bg-gradient-to-br ${defaultData.gradient} bg-cover bg-center bg-no-repeat transition-all duration-1000 ease-in-out`}
+                style={{
+                  backgroundImage: `linear-gradient(135deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.4) 100%), url('${displayData.imageUrl}')`
+                }}
+              />
+              
+              {/* Навигационные кнопки */}
+              {group.length > 1 && (
+                <>
+                  <button
+                    className="absolute left-2 top-1/2 transform -translate-y-1/2 w-6 h-6 bg-black/50 text-white rounded-full flex items-center justify-center hover:bg-black/70 transition-colors z-20"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setCurrentSlides(prev => {
+                        const newSlides = [...prev];
+                        newSlides[carouselIndex] = newSlides[carouselIndex] === 0 ? group.length - 1 : newSlides[carouselIndex] - 1;
+                        return newSlides;
+                      });
+                    }}
+                  >
+                    <ChevronLeft className="w-3 h-3" />
+                  </button>
+                  <button
+                    className="absolute right-2 top-1/2 transform -translate-y-1/2 w-6 h-6 bg-black/50 text-white rounded-full flex items-center justify-center hover:bg-black/70 transition-colors z-20"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setCurrentSlides(prev => {
+                        const newSlides = [...prev];
+                        newSlides[carouselIndex] = (newSlides[carouselIndex] + 1) % group.length;
+                        return newSlides;
+                      });
+                    }}
+                  >
+                    <ChevronRight className="w-3 h-3" />
+                  </button>
+                </>
+              )}
+              
+              {/* Контент */}
+              <div className="relative z-10 flex flex-col h-full">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
+                    <IconComponent className="w-5 h-5 text-white" />
                   </div>
-                  <p className="text-xs text-white/90 leading-tight line-clamp-2">
-                    {displayData.description}
-                  </p>
+                  <h3 className="text-xl font-bold text-white">
+                    {displayData.title}
+                  </h3>
                 </div>
                 
-                <div className="flex flex-col items-end gap-2">
-                  <button className="bg-white/20 backdrop-blur-sm text-white text-xs px-3 py-1 rounded-full hover:bg-white/30 transition-colors whitespace-nowrap">
+                <p className="text-white/90 text-sm mb-4 flex-1">
+                  {displayData.description}
+                </p>
+                
+                <div className="flex items-center justify-between">
+                  <span className="text-white/80 text-xs bg-white/10 px-2 py-1 rounded">
                     {displayData.buttonText}
-                  </button>
+                  </span>
                   
+                  {/* Индикаторы слайдов */}
                   {group.length > 1 && (
                     <div className="flex gap-1">
                       {group.map((_, index) => (
@@ -179,9 +222,9 @@ export function SecondTripleCarousel() {
                 </div>
               </div>
             </div>
-          </div>
-        );
-      })}
+          );
+        })}
+      </div>
     </div>
   );
 }

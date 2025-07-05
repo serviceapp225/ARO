@@ -101,16 +101,9 @@ export default function HomePage() {
         <DynamicSellCarBanner />
       </main>
 
-      <main className="container mx-auto px-4 py-6 space-y-6">
 
-        {/* Second Banner with Three Carousels */}
-        <section className="bg-gradient-to-br from-blue-600 to-purple-700 rounded-2xl p-6 text-white">
-          <div className="mb-6">
-            <h2 className="text-2xl font-bold mb-2">Специальные предложения</h2>
-            <p className="text-blue-100">Узнайте больше о наших услугах</p>
-          </div>
-          <SecondTripleCarousel />
-        </section>
+      
+      <main className="container mx-auto px-4 py-6 space-y-6">
 
         {/* Security Banner */}
         <div className="bg-green-50 border border-green-200 rounded-xl p-4">
@@ -121,6 +114,9 @@ export default function HomePage() {
             </div>
           </div>
         </div>
+
+        {/* Second Triple Carousel */}
+        <SecondTripleCarousel />
 
         {/* Active Auctions Section */}
         <section>
