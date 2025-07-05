@@ -1,4 +1,4 @@
-import { Star, Sparkles } from "lucide-react";
+import { Sparkles } from "lucide-react";
 import { useLocation } from "wouter";
 import { useState, useEffect } from "react";
 
