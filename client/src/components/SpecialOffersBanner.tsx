@@ -45,15 +45,15 @@ export function SpecialOffersBanner() {
       
       {/* Content */}
       <div className="relative z-10 h-full flex flex-col justify-center items-center text-center space-y-2">
-        <h2 className="text-2xl font-bold text-white">
+        <h2 className="text-2xl font-bold text-white h-8 flex items-center">
           Специальные предложения
         </h2>
-        <p className="text-base leading-relaxed opacity-90 text-white">
+        <p className="text-base leading-relaxed opacity-90 text-white h-12 flex items-center">
           Лучшие автомобили с особыми условиями сделки
         </p>
         <div className="mt-4">
           <span 
-            className="px-4 py-2 rounded-full text-sm font-bold hover:opacity-90 transition-all duration-300 cursor-pointer inline-flex items-center gap-1"
+            className="px-4 py-2 rounded-full text-sm font-bold hover:opacity-90 transition-all duration-300 cursor-pointer inline-flex items-center gap-1 min-w-[180px] justify-center"
             style={{ 
               backgroundColor: '#ffffff',
               color: '#059669' 
