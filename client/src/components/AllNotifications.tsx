@@ -43,6 +43,10 @@ export function AllNotifications({ userId }: AllNotificationsProps) {
     mutationFn: async (notificationId: number) => {
       const response = await fetch(`/api/notifications/${notificationId}`, {
         method: 'DELETE',
+        headers: {
+          'Cache-Control': 'no-cache',
+          'Pragma': 'no-cache',
+        },
       });
       if (!response.ok) throw new Error('Failed to delete notification');
       return {};
