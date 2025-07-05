@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Trash2, User as UserIcon, Car, Bell, Settings, CheckCircle, XCircle, AlertCircle, Edit, Search, Image, Plus, Eye, ChevronUp } from 'lucide-react';
+import { Trash2, User as UserIcon, Car, Bell, Settings, CheckCircle, XCircle, AlertCircle, Edit, Search, Image, Plus, Eye, ChevronUp, Star } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { Link } from 'wouter';
@@ -96,7 +96,10 @@ export default function AdminPanel() {
               <Settings className="h-4 w-4" />
               Баннеры
             </TabsTrigger>
-
+            <TabsTrigger value="special-offers" className="flex items-center gap-2 w-full justify-start">
+              <Star className="h-4 w-4" />
+              Специальные предложения
+            </TabsTrigger>
 
             <TabsTrigger value="archive" className="flex items-center gap-2 w-full justify-start">
               <Trash2 className="h-4 w-4" />
@@ -132,7 +135,9 @@ export default function AdminPanel() {
             <BannersManagement />
           </TabsContent>
 
-
+          <TabsContent value="special-offers">
+            <SpecialOffersManagement />
+          </TabsContent>
 
           <TabsContent value="archive">
             <ArchiveManagement />
@@ -1820,5 +1825,398 @@ function ScrollToTopButton() {
         </Button>
       )}
     </>
+  );
+}
+
+// Компонент для управления специальными предложениями
+function SpecialOffersManagement() {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const [isCreating, setIsCreating] = useState(false);
+  const [editingOffer, setEditingOffer] = useState<any>(null);
+
+  const [formData, setFormData] = useState({
+    title: '',
+    description: '',
+    imageUrl: '',
+    linkUrl: '',
+    buttonText: 'Подробнее',
+    offerType: 1,
+    isActive: true,
+    order: 0
+  });
+
+  // Загрузка специальных предложений
+  const { data: offers = [], isLoading } = useQuery({
+    queryKey: ['/api/admin/special-offers'],
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+  });
+
+  // Мутации
+  const createOfferMutation = useMutation({
+    mutationFn: async (data: any) => {
+      const response = await fetch('/api/admin/special-offers', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      if (!response.ok) throw new Error('Failed to create offer');
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Предложение создано",
+        description: "Новое специальное предложение добавлено успешно",
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/special-offers'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/special-offers'] });
+      resetForm();
+    },
+    onError: (error) => {
+      toast({
+        title: "Ошибка",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  });
+
+  const updateOfferMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: number; data: any }) => {
+      const response = await fetch(`/api/admin/special-offers/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      if (!response.ok) throw new Error('Failed to update offer');
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Предложение обновлено",
+        description: "Изменения сохранены успешно",
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/special-offers'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/special-offers'] });
+      setEditingOffer(null);
+      resetForm();
+    },
+    onError: (error) => {
+      toast({
+        title: "Ошибка",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  });
+
+  const deleteOfferMutation = useMutation({
+    mutationFn: async (id: number) => {
+      const response = await fetch(`/api/admin/special-offers/${id}`, {
+        method: 'DELETE'
+      });
+      if (!response.ok) throw new Error('Failed to delete offer');
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Предложение удалено",
+        description: "Специальное предложение удалено успешно",
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/special-offers'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/special-offers'] });
+    },
+    onError: (error) => {
+      toast({
+        title: "Ошибка",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  });
+
+  const resetForm = () => {
+    setFormData({
+      title: '',
+      description: '',
+      imageUrl: '',
+      linkUrl: '',
+      buttonText: 'Подробнее',
+      offerType: 1,
+      isActive: true,
+      order: 0
+    });
+    setIsCreating(false);
+    setEditingOffer(null);
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!formData.title || !formData.description) {
+      toast({
+        title: "Ошибка",
+        description: "Заполните обязательные поля",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (editingOffer) {
+      updateOfferMutation.mutate({ id: editingOffer.id, data: formData });
+    } else {
+      createOfferMutation.mutate(formData);
+    }
+  };
+
+  const handleEdit = (offer: any) => {
+    setEditingOffer(offer);
+    setFormData({
+      title: offer.title,
+      description: offer.description,
+      imageUrl: offer.imageUrl || '',
+      linkUrl: offer.linkUrl || '',
+      buttonText: offer.buttonText,
+      offerType: offer.offerType,
+      isActive: offer.isActive,
+      order: offer.order
+    });
+    setIsCreating(true);
+  };
+
+  const getOfferTypeName = (type: number) => {
+    switch (type) {
+      case 1: return 'Скидки';
+      case 2: return 'Акции';
+      case 3: return 'Премиум услуги';
+      default: return 'Неизвестно';
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex justify-center items-center py-8">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Заголовок и кнопка создания */}
+      <Card>
+        <CardContent className="p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-semibold">Управление специальными предложениями</h3>
+            <Button
+              onClick={() => setIsCreating(true)}
+              disabled={isCreating || editingOffer}
+              className="gap-2"
+            >
+              <Plus className="h-4 w-4" />
+              Создать предложение
+            </Button>
+          </div>
+          
+          <p className="text-sm text-gray-600">
+            Создавайте и управляйте специальными предложениями для трех типов карусели.
+          </p>
+        </CardContent>
+      </Card>
+
+      {/* Форма создания/редактирования */}
+      {isCreating && (
+        <Card>
+          <CardHeader>
+            <CardTitle>
+              {editingOffer ? 'Редактировать предложение' : 'Создать новое предложение'}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="title">Заголовок *</Label>
+                  <Input
+                    id="title"
+                    value={formData.title}
+                    onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
+                    placeholder="Введите заголовок"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="offerType">Тип предложения *</Label>
+                  <Select 
+                    value={formData.offerType.toString()} 
+                    onValueChange={(value) => setFormData(prev => ({ ...prev, offerType: parseInt(value) }))}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Выберите тип" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="1">Скидки</SelectItem>
+                      <SelectItem value="2">Акции</SelectItem>
+                      <SelectItem value="3">Премиум услуги</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div>
+                <Label htmlFor="description">Описание *</Label>
+                <Textarea
+                  id="description"
+                  value={formData.description}
+                  onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                  placeholder="Введите описание предложения"
+                  rows={3}
+                  required
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="buttonText">Текст кнопки</Label>
+                  <Input
+                    id="buttonText"
+                    value={formData.buttonText}
+                    onChange={(e) => setFormData(prev => ({ ...prev, buttonText: e.target.value }))}
+                    placeholder="Подробнее"
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="order">Порядок отображения</Label>
+                  <Input
+                    id="order"
+                    type="number"
+                    min="0"
+                    value={formData.order}
+                    onChange={(e) => setFormData(prev => ({ ...prev, order: parseInt(e.target.value) || 0 }))}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <Label htmlFor="linkUrl">Ссылка (URL)</Label>
+                <Input
+                  id="linkUrl"
+                  value={formData.linkUrl}
+                  onChange={(e) => setFormData(prev => ({ ...prev, linkUrl: e.target.value }))}
+                  placeholder="https://example.com"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="imageUrl">URL изображения</Label>
+                <Input
+                  id="imageUrl"
+                  value={formData.imageUrl}
+                  onChange={(e) => setFormData(prev => ({ ...prev, imageUrl: e.target.value }))}
+                  placeholder="https://example.com/image.jpg"
+                />
+              </div>
+
+              <div className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  id="isActive"
+                  checked={formData.isActive}
+                  onChange={(e) => setFormData(prev => ({ ...prev, isActive: e.target.checked }))}
+                  className="rounded border-gray-300"
+                />
+                <Label htmlFor="isActive">Активное предложение</Label>
+              </div>
+
+              <div className="flex gap-2 pt-4">
+                <Button
+                  type="submit"
+                  disabled={createOfferMutation.isPending || updateOfferMutation.isPending}
+                >
+                  {createOfferMutation.isPending || updateOfferMutation.isPending
+                    ? 'Сохранение...'
+                    : editingOffer
+                    ? 'Обновить'
+                    : 'Создать'}
+                </Button>
+                <Button type="button" variant="outline" onClick={resetForm}>
+                  Отмена
+                </Button>
+              </div>
+            </form>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Список предложений */}
+      <div className="space-y-4">
+        <h3 className="text-lg font-semibold">
+          Специальные предложения ({offers.length})
+        </h3>
+        
+        {offers.length > 0 ? (
+          offers.map((offer: any) => (
+            <Card key={offer.id} className="overflow-hidden">
+              <CardContent className="p-6">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3 mb-2">
+                      <h3 className="font-semibold text-lg">{offer.title}</h3>
+                      <Badge variant={offer.isActive ? "default" : "secondary"}>
+                        {offer.isActive ? "Активный" : "Неактивный"}
+                      </Badge>
+                      <Badge variant="outline">
+                        {getOfferTypeName(offer.offerType)}
+                      </Badge>
+                      <Badge variant="outline">
+                        Порядок: {offer.order}
+                      </Badge>
+                    </div>
+                    {offer.description && (
+                      <p className="text-gray-600 text-sm mb-2">{offer.description}</p>
+                    )}
+                    <div className="grid grid-cols-2 gap-2 text-sm text-gray-500">
+                      <div>Кнопка: {offer.buttonText}</div>
+                      <div>Ссылка: {offer.linkUrl || 'Не указана'}</div>
+                    </div>
+                  </div>
+                  <div className="flex gap-2 ml-4">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handleEdit(offer)}
+                      disabled={isCreating || editingOffer}
+                    >
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="destructive"
+                      onClick={() => deleteOfferMutation.mutate(offer.id)}
+                      disabled={deleteOfferMutation.isPending}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))
+        ) : (
+          <Card>
+            <CardContent className="text-center py-8">
+              <Star className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+              <p className="text-gray-500">Нет специальных предложений</p>
+              <p className="text-sm text-gray-400 mt-1">Создайте первое предложение</p>
+            </CardContent>
+          </Card>
+        )}
+      </div>
+    </div>
   );
 }

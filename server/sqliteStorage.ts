@@ -2,10 +2,10 @@ import Database from 'better-sqlite3';
 import { IStorage } from './storage';
 import type {
   User, CarListing, Bid, Favorite, Notification, CarAlert,
-  Banner, SellCarSection, AdvertisementCarousel, Document, AlertView, SecondCarousel,
+  Banner, SellCarSection, AdvertisementCarousel, Document, AlertView, SecondCarousel, SpecialOffer,
   InsertUser, InsertCarListing, InsertBid, InsertFavorite, InsertNotification,
   InsertCarAlert, InsertBanner, InsertSellCarSection, InsertAdvertisementCarousel,
-  InsertDocument, InsertAlertView, InsertSecondCarousel
+  InsertDocument, InsertAlertView, InsertSecondCarousel, InsertSpecialOffer
 } from '@shared/schema';
 
 export class SQLiteStorage implements IStorage {
@@ -200,6 +200,23 @@ export class SQLiteStorage implements IStorage {
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
       )
     `);
+
+    // Create special_offers table
+    this.db.exec(`
+      CREATE TABLE IF NOT EXISTS special_offers (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        title TEXT NOT NULL,
+        description TEXT NOT NULL,
+        image_url TEXT,
+        link_url TEXT,
+        button_text TEXT DEFAULT 'Подробнее',
+        offer_type INTEGER NOT NULL,
+        is_active BOOLEAN DEFAULT 1,
+        "order" INTEGER DEFAULT 0,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
   }
 
   private initializeSampleData() {
@@ -271,6 +288,71 @@ export class SQLiteStorage implements IStorage {
       VALUES (?, ?, ?, ?)
     `);
     insertSellSection.run('Продайте свой автомобиль', 'Получите лучшую цену за ваш автомобиль на нашем аукционе', 'Начать продажу', 'https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=400');
+
+    // Insert special offers
+    const insertSpecialOffer = this.db.prepare(`
+      INSERT INTO special_offers (title, description, image_url, link_url, button_text, offer_type, is_active, "order") 
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    `);
+    
+    // Скидки (offer_type = 1)
+    insertSpecialOffer.run(
+      'Скидка 15% на все автомобили',
+      'Специальная акция для новых клиентов - скидка 15% на участие в любом аукционе',
+      'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=200',
+      '/auctions',
+      'Получить скидку',
+      1, 1, 1
+    );
+    
+    insertSpecialOffer.run(
+      'Льготные условия для молодых семей',
+      'Специальная программа автокредитования с пониженной процентной ставкой',
+      null,
+      '/credit-program',
+      'Узнать больше',
+      1, 1, 2
+    );
+
+    // Акции (offer_type = 2)
+    insertSpecialOffer.run(
+      'Приведи друга - получи бонус',
+      'За каждого приведенного друга получите 1000 сомони на счет для участия в аукционах',
+      'https://images.unsplash.com/photo-1521791136064-7986c2920216?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=200',
+      '/referral',
+      'Пригласить друга',
+      2, 1, 1
+    );
+    
+    insertSpecialOffer.run(
+      'Горячие аукционы выходного дня',
+      'Каждые выходные - специальные аукционы с премиум автомобилями по сниженным стартовым ценам',
+      'https://images.unsplash.com/photo-1503376780353-7e6692767b70?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=200',
+      '/weekend-auctions',
+      'Смотреть аукционы',
+      2, 1, 2
+    );
+
+    // Премиум услуги (offer_type = 3)
+    insertSpecialOffer.run(
+      'VIP-сопровождение сделки',
+      'Персональный менеджер поможет с оформлением документов, доставкой и техосмотром',
+      'https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=200',
+      '/vip-service',
+      'Заказать VIP',
+      3, 1, 1
+    );
+    
+    insertSpecialOffer.run(
+      'Экспертная оценка автомобиля',
+      'Профессиональная техническая экспертиза и оценка рыночной стоимости вашего автомобиля',
+      null,
+      '/expert-evaluation',
+      'Заказать оценку',
+      3, 1, 2
+    );
+
+    console.log('✅ Демонстрационные данные для специальных предложений добавлены');
   }
 
   // Implement all IStorage methods with SQLite queries...
@@ -1584,6 +1666,165 @@ export class SQLiteStorage implements IStorage {
     } catch (error) {
       console.error('Error deleting archived listing:', error);
       return false;
+    }
+  }
+
+  // ============= СПЕЦИАЛЬНЫЕ ПРЕДЛОЖЕНИЯ =============
+
+  async getSpecialOffers(): Promise<SpecialOffer[]> {
+    try {
+      const stmt = this.db.prepare(`
+        SELECT * FROM special_offers 
+        ORDER BY "order" ASC, created_at DESC
+      `);
+      const rows = stmt.all();
+      return rows.map(row => ({
+        id: row.id,
+        title: row.title,
+        description: row.description,
+        imageUrl: row.image_url,
+        linkUrl: row.link_url,
+        buttonText: row.button_text,
+        offerType: row.offer_type,
+        isActive: Boolean(row.is_active),
+        order: row.order,
+        createdAt: new Date(row.created_at),
+        updatedAt: new Date(row.updated_at)
+      })) as SpecialOffer[];
+    } catch (error) {
+      console.error('Error getting special offers:', error);
+      return [];
+    }
+  }
+
+  async createSpecialOffer(offer: InsertSpecialOffer): Promise<SpecialOffer> {
+    try {
+      const stmt = this.db.prepare(`
+        INSERT INTO special_offers (
+          title, description, image_url, link_url, button_text, 
+          offer_type, is_active, "order"
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      `);
+      
+      const result = stmt.run(
+        offer.title,
+        offer.description,
+        offer.imageUrl || null,
+        offer.linkUrl || null,
+        offer.buttonText || 'Подробнее',
+        offer.offerType,
+        offer.isActive ? 1 : 0,
+        offer.order || 0
+      );
+      
+      const newOffer = this.db.prepare('SELECT * FROM special_offers WHERE id = ?').get(result.lastInsertRowid);
+      return {
+        id: newOffer.id,
+        title: newOffer.title,
+        description: newOffer.description,
+        imageUrl: newOffer.image_url,
+        linkUrl: newOffer.link_url,
+        buttonText: newOffer.button_text,
+        offerType: newOffer.offer_type,
+        isActive: Boolean(newOffer.is_active),
+        order: newOffer.order,
+        createdAt: new Date(newOffer.created_at),
+        updatedAt: new Date(newOffer.updated_at)
+      } as SpecialOffer;
+    } catch (error) {
+      console.error('Error creating special offer:', error);
+      throw error;
+    }
+  }
+
+  async updateSpecialOffer(id: number, offer: Partial<InsertSpecialOffer>): Promise<SpecialOffer | undefined> {
+    try {
+      const updates = [];
+      const params = [];
+      
+      if (offer.title !== undefined) {
+        updates.push('title = ?');
+        params.push(offer.title);
+      }
+      if (offer.description !== undefined) {
+        updates.push('description = ?');
+        params.push(offer.description);
+      }
+      if (offer.imageUrl !== undefined) {
+        updates.push('image_url = ?');
+        params.push(offer.imageUrl);
+      }
+      if (offer.linkUrl !== undefined) {
+        updates.push('link_url = ?');
+        params.push(offer.linkUrl);
+      }
+      if (offer.buttonText !== undefined) {
+        updates.push('button_text = ?');
+        params.push(offer.buttonText);
+      }
+      if (offer.offerType !== undefined) {
+        updates.push('offer_type = ?');
+        params.push(offer.offerType);
+      }
+      if (offer.isActive !== undefined) {
+        updates.push('is_active = ?');
+        params.push(offer.isActive ? 1 : 0);
+      }
+      if (offer.order !== undefined) {
+        updates.push('"order" = ?');
+        params.push(offer.order);
+      }
+      
+      if (updates.length === 0) {
+        return this.getSpecialOfferById(id);
+      }
+      
+      updates.push('updated_at = CURRENT_TIMESTAMP');
+      params.push(id);
+      
+      const stmt = this.db.prepare(`UPDATE special_offers SET ${updates.join(', ')} WHERE id = ?`);
+      stmt.run(...params);
+      
+      return this.getSpecialOfferById(id);
+    } catch (error) {
+      console.error('Error updating special offer:', error);
+      return undefined;
+    }
+  }
+
+  async deleteSpecialOffer(id: number): Promise<boolean> {
+    try {
+      const stmt = this.db.prepare('DELETE FROM special_offers WHERE id = ?');
+      const result = stmt.run(id);
+      return result.changes > 0;
+    } catch (error) {
+      console.error('Error deleting special offer:', error);
+      return false;
+    }
+  }
+
+  private async getSpecialOfferById(id: number): Promise<SpecialOffer | undefined> {
+    try {
+      const stmt = this.db.prepare('SELECT * FROM special_offers WHERE id = ?');
+      const row = stmt.get(id);
+      if (!row) return undefined;
+      
+      return {
+        id: row.id,
+        title: row.title,
+        description: row.description,
+        imageUrl: row.image_url,
+        linkUrl: row.link_url,
+        buttonText: row.button_text,
+        offerType: row.offer_type,
+        isActive: Boolean(row.is_active),
+        order: row.order,
+        createdAt: new Date(row.created_at),
+        updatedAt: new Date(row.updated_at)
+      } as SpecialOffer;
+    } catch (error) {
+      console.error('Error getting special offer by id:', error);
+      return undefined;
     }
   }
 }

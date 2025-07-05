@@ -4,6 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { ActiveAuctions } from "@/components/ActiveAuctions";
 import { DynamicSellCarBanner } from "@/components/DynamicSellCarBanner";
+import SpecialOffersCarousel from "@/components/SpecialOffersCarousel";
 
 import { TopHeader } from "@/components/TopHeader";
 import { Link } from "wouter";
@@ -98,6 +99,9 @@ export default function HomePage() {
 
         {/* Dynamic Sell Car Banner */}
         <DynamicSellCarBanner />
+
+        {/* Специальные предложения 3 в одном */}
+        <SpecialOffersCarousel />
       </main>
 
 

@@ -520,6 +520,68 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ============= СПЕЦИАЛЬНЫЕ ПРЕДЛОЖЕНИЯ =============
+  
+  // Получить все специальные предложения
+  app.get('/api/special-offers', async (req, res) => {
+    try {
+      const offers = await storage.getSpecialOffers();
+      res.json(offers);
+    } catch (error) {
+      console.error('Ошибка получения специальных предложений:', error);
+      res.status(500).json({ error: 'Ошибка получения данных' });
+    }
+  });
+
+  // Админ роуты для специальных предложений
+  app.get('/api/admin/special-offers', async (req, res) => {
+    try {
+      const offers = await storage.getSpecialOffers();
+      res.json(offers);
+    } catch (error) {
+      console.error('Ошибка получения специальных предложений:', error);
+      res.status(500).json({ error: 'Ошибка получения данных' });
+    }
+  });
+
+  app.post('/api/admin/special-offers', async (req, res) => {
+    try {
+      const offer = await storage.createSpecialOffer(req.body);
+      res.json(offer);
+    } catch (error) {
+      console.error('Ошибка создания специального предложения:', error);
+      res.status(500).json({ error: 'Ошибка создания предложения' });
+    }
+  });
+
+  app.put('/api/admin/special-offers/:id', async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const offer = await storage.updateSpecialOffer(id, req.body);
+      if (!offer) {
+        return res.status(404).json({ error: 'Предложение не найдено' });
+      }
+      res.json(offer);
+    } catch (error) {
+      console.error('Ошибка обновления специального предложения:', error);
+      res.status(500).json({ error: 'Ошибка обновления предложения' });
+    }
+  });
+
+  app.delete('/api/admin/special-offers/:id', async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const success = await storage.deleteSpecialOffer(id);
+      if (!success) {
+        return res.status(404).json({ error: 'Предложение не найдено' });
+      }
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Ошибка удаления специального предложения:', error);
+      res.status(500).json({ error: 'Ошибка удаления предложения' });
+    }
+  });
+
   app.post("/api/listings", async (req, res) => {
     try {
       const validatedData = insertCarListingSchema.parse(req.body);
@@ -2114,6 +2176,83 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Error deleting archived listing:', error);
       res.status(500).json({ message: 'Failed to delete archived listing' });
+    }
+  });
+
+  // Special Offers API Routes
+  // Получить все специальные предложения (для главной страницы)
+  app.get('/api/special-offers', async (req, res) => {
+    try {
+      const cachedData = getCached('special-offers');
+      if (cachedData) {
+        res.set('Cache-Control', 'public, max-age=120');
+        return res.json(cachedData);
+      }
+
+      const offers = await storage.getSpecialOffers();
+      setCache('special-offers', offers);
+      
+      res.set('Cache-Control', 'public, max-age=120');
+      res.json(offers);
+    } catch (error) {
+      console.error('Error fetching special offers:', error);
+      res.status(500).json({ error: 'Failed to fetch special offers' });
+    }
+  });
+
+  // Admin API для специальных предложений
+  app.get('/api/admin/special-offers', requireAdmin, async (req, res) => {
+    try {
+      const offers = await storage.getSpecialOffers();
+      res.json(offers);
+    } catch (error) {
+      console.error('Error fetching admin special offers:', error);
+      res.status(500).json({ error: 'Failed to fetch special offers' });
+    }
+  });
+
+  app.post('/api/admin/special-offers', requireAdmin, async (req, res) => {
+    try {
+      const newOffer = await storage.createSpecialOffer(req.body);
+      clearCachePattern('special-offers');
+      res.status(201).json(newOffer);
+    } catch (error) {
+      console.error('Error creating special offer:', error);
+      res.status(500).json({ error: 'Failed to create special offer' });
+    }
+  });
+
+  app.put('/api/admin/special-offers/:id', requireAdmin, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const updatedOffer = await storage.updateSpecialOffer(parseInt(id), req.body);
+      
+      if (!updatedOffer) {
+        return res.status(404).json({ error: 'Special offer not found' });
+      }
+      
+      clearCachePattern('special-offers');
+      res.json(updatedOffer);
+    } catch (error) {
+      console.error('Error updating special offer:', error);
+      res.status(500).json({ error: 'Failed to update special offer' });
+    }
+  });
+
+  app.delete('/api/admin/special-offers/:id', requireAdmin, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const deleted = await storage.deleteSpecialOffer(parseInt(id));
+      
+      if (!deleted) {
+        return res.status(404).json({ error: 'Special offer not found' });
+      }
+      
+      clearCachePattern('special-offers');
+      res.status(204).send();
+    } catch (error) {
+      console.error('Error deleting special offer:', error);
+      res.status(500).json({ error: 'Failed to delete special offer' });
     }
   });
 
