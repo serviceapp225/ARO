@@ -34,11 +34,11 @@ export function SpecialOffersBanner() {
       onClick={handleClick}
       className="relative h-44 rounded-2xl p-6 text-white overflow-hidden shadow-2xl cursor-pointer hover:shadow-3xl transition-all duration-300"
     >
-      {/* Background with Rotating Premium Car Photos */}
+      {/* Background with Rotating Car Photos */}
       <div 
         className="absolute inset-0 rounded-2xl bg-gradient-to-br from-purple-800 to-indigo-900 bg-cover bg-center bg-no-repeat transition-all duration-1000 ease-in-out"
         style={{
-          backgroundImage: `linear-gradient(135deg, rgba(76,29,149,0.7) 0%, rgba(67,56,202,0.5) 100%), url('${carImages[currentImageIndex]}')`
+          backgroundImage: `linear-gradient(135deg, rgba(76,29,149,0.6) 0%, rgba(67,56,202,0.4) 100%), url('${carImages[currentImageIndex]}')`
         }}
       ></div>
       
