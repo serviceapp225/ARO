@@ -1516,6 +1516,7 @@ function AdvertisementCarouselManagement() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const [editingItem, setEditingItem] = useState<AdvertisementCarousel | null>(null);
+  const [formKey, setFormKey] = useState(0); // Для принудительного обновления формы
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -1589,8 +1590,24 @@ function AdvertisementCarouselManagement() {
       // Принудительно перезагружаем данные
       await queryClient.refetchQueries({ queryKey: ['/api/admin/advertisement-carousel'] });
       
-      // Просто закрываем форму после успешного обновления
-      handleCancel();
+      // Получаем свежие данные с сервера и обновляем форму
+      if (editingItem) {
+        const response = await fetch(`/api/admin/advertisement-carousel/${editingItem.id}`);
+        if (response.ok) {
+          const freshItem = await response.json();
+          setEditingItem(freshItem);
+          setFormData({
+            title: freshItem.title,
+            description: freshItem.description || '',
+            imageUrl: freshItem.imageUrl,
+            linkUrl: freshItem.linkUrl || '',
+            buttonText: freshItem.buttonText || 'Узнать больше',
+            order: freshItem.order || 1,
+            isActive: freshItem.isActive,
+          });
+          setFormKey(prev => prev + 1); // Принудительно обновляем форму
+        }
+      }
       
       toast({
         title: "Успешно",
@@ -1715,7 +1732,7 @@ function AdvertisementCarouselManagement() {
 
       {/* Форма редактирования */}
       {editingItem && (
-        <Card>
+        <Card key={formKey}>
           <CardHeader>
             <CardTitle>
               {editingItem.id ? 'Редактировать объявление' : 'Новое объявление'}
