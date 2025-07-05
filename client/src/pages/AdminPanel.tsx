@@ -96,6 +96,10 @@ export default function AdminPanel() {
               <Settings className="h-4 w-4" />
               Баннеры
             </TabsTrigger>
+            <TabsTrigger value="second-carousel" className="flex items-center gap-2 w-full justify-start">
+              <Image className="h-4 w-4" />
+              Вторая карусель
+            </TabsTrigger>
 
             <TabsTrigger value="archive" className="flex items-center gap-2 w-full justify-start">
               <Trash2 className="h-4 w-4" />
@@ -131,7 +135,9 @@ export default function AdminPanel() {
             <BannersManagement />
           </TabsContent>
 
-
+          <TabsContent value="second-carousel">
+            <SecondCarouselManagement />
+          </TabsContent>
 
           <TabsContent value="archive">
             <ArchiveManagement />
@@ -1819,5 +1825,381 @@ function ScrollToTopButton() {
         </Button>
       )}
     </>
+  );
+}
+
+// Компонент для управления второй каруселью
+function SecondCarouselManagement() {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const [isCreating, setIsCreating] = useState(false);
+  const [editingItem, setEditingItem] = useState<any>(null);
+  const [selectedCarousel, setSelectedCarousel] = useState<number>(1);
+
+  // Формы для создания/редактирования
+  const [formData, setFormData] = useState({
+    title: '',
+    description: '',
+    imageUrl: '',
+    linkUrl: '',
+    buttonText: 'Подробнее',
+    carouselNumber: 1,
+    isActive: true,
+    order: 0
+  });
+
+  // Загрузка данных карусели
+  const { data: carouselItems, isLoading } = useQuery({
+    queryKey: ['/api/admin/second-carousel'],
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+  });
+
+  // Мутации
+  const createItemMutation = useMutation({
+    mutationFn: async (data: any) => {
+      const response = await fetch('/api/admin/second-carousel', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      if (!response.ok) throw new Error('Failed to create item');
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Элемент создан",
+        description: "Новый элемент карусели добавлен успешно",
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/second-carousel'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/second-carousel'] });
+      resetForm();
+    },
+    onError: (error) => {
+      toast({
+        title: "Ошибка",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  });
+
+  const updateItemMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: number; data: any }) => {
+      const response = await fetch(`/api/admin/second-carousel/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      if (!response.ok) throw new Error('Failed to update item');
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Элемент обновлен",
+        description: "Изменения сохранены успешно",
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/second-carousel'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/second-carousel'] });
+      setEditingItem(null);
+      resetForm();
+    },
+    onError: (error) => {
+      toast({
+        title: "Ошибка",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  });
+
+  const deleteItemMutation = useMutation({
+    mutationFn: async (id: number) => {
+      const response = await fetch(`/api/admin/second-carousel/${id}`, {
+        method: 'DELETE'
+      });
+      if (!response.ok) throw new Error('Failed to delete item');
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Элемент удален",
+        description: "Элемент карусели удален успешно",
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/second-carousel'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/second-carousel'] });
+    },
+    onError: (error) => {
+      toast({
+        title: "Ошибка",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  });
+
+  const resetForm = () => {
+    setFormData({
+      title: '',
+      description: '',
+      imageUrl: '',
+      linkUrl: '',
+      buttonText: 'Подробнее',
+      carouselNumber: selectedCarousel,
+      isActive: true,
+      order: 0
+    });
+    setIsCreating(false);
+    setEditingItem(null);
+  };
+
+  const handleEdit = (item: any) => {
+    setFormData({
+      title: item.title,
+      description: item.description || '',
+      imageUrl: item.imageUrl,
+      linkUrl: item.linkUrl || '',
+      buttonText: item.buttonText || 'Подробнее',
+      carouselNumber: item.carouselNumber,
+      isActive: item.isActive,
+      order: item.order || 0
+    });
+    setEditingItem(item);
+    setIsCreating(true);
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (editingItem) {
+      updateItemMutation.mutate({ id: editingItem.id, data: formData });
+    } else {
+      createItemMutation.mutate(formData);
+    }
+  };
+
+  const filteredItems = Array.isArray(carouselItems) ? carouselItems.filter((item: any) => item.carouselNumber === selectedCarousel) : [];
+
+  if (isLoading) {
+    return (
+      <div className="p-6 text-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+        <p className="mt-2 text-gray-600">Загрузка карусели...</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <div>
+          <h2 className="text-2xl font-bold">Управление второй каруселью</h2>
+          <p className="text-gray-600">Три карусели: Приведи друга, Горячие аукционы, Стань экспертом</p>
+        </div>
+        <Button
+          onClick={() => setIsCreating(true)}
+          disabled={isCreating || editingItem}
+          className="bg-blue-600 hover:bg-blue-700"
+        >
+          <Plus className="h-4 w-4 mr-2" />
+          Добавить элемент
+        </Button>
+      </div>
+
+      {/* Форма создания/редактирования */}
+      {(isCreating || editingItem) && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Image className="h-5 w-5" />
+              {editingItem ? 'Редактировать элемент' : 'Создать новый элемент'}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="title">Заголовок *</Label>
+                  <Input
+                    id="title"
+                    value={formData.title}
+                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                    required
+                  />
+                </div>
+                
+                <div>
+                  <Label htmlFor="carouselNumber">Номер карусели *</Label>
+                  <Select
+                    value={formData.carouselNumber.toString()}
+                    onValueChange={(value) => setFormData({ ...formData, carouselNumber: parseInt(value) })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="1">1 - Приведи друга</SelectItem>
+                      <SelectItem value="2">2 - Горячие аукционы</SelectItem>
+                      <SelectItem value="3">3 - Стань экспертом</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <Label htmlFor="imageUrl">URL изображения *</Label>
+                  <Input
+                    id="imageUrl"
+                    type="url"
+                    value={formData.imageUrl}
+                    onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
+                    required
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="linkUrl">Ссылка</Label>
+                  <Input
+                    id="linkUrl"
+                    type="url"
+                    value={formData.linkUrl}
+                    onChange={(e) => setFormData({ ...formData, linkUrl: e.target.value })}
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="buttonText">Текст кнопки</Label>
+                  <Input
+                    id="buttonText"
+                    value={formData.buttonText}
+                    onChange={(e) => setFormData({ ...formData, buttonText: e.target.value })}
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="order">Порядок</Label>
+                  <Input
+                    id="order"
+                    type="number"
+                    value={formData.order}
+                    onChange={(e) => setFormData({ ...formData, order: parseInt(e.target.value) })}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <Label htmlFor="description">Описание</Label>
+                <Textarea
+                  id="description"
+                  value={formData.description}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  rows={3}
+                />
+              </div>
+
+              <div className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  id="isActive"
+                  checked={formData.isActive}
+                  onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
+                />
+                <Label htmlFor="isActive">Активный</Label>
+              </div>
+
+              <div className="flex gap-2">
+                <Button
+                  type="submit"
+                  disabled={createItemMutation.isPending || updateItemMutation.isPending}
+                >
+                  {createItemMutation.isPending || updateItemMutation.isPending
+                    ? 'Сохранение...'
+                    : editingItem
+                    ? 'Сохранить изменения'
+                    : 'Создать элемент'
+                  }
+                </Button>
+                <Button type="button" variant="outline" onClick={resetForm}>
+                  Отмена
+                </Button>
+              </div>
+            </form>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Выбор карусели */}
+      <div className="flex gap-2">
+        {[1, 2, 3].map(num => (
+          <Button
+            key={num}
+            variant={selectedCarousel === num ? "default" : "outline"}
+            onClick={() => setSelectedCarousel(num)}
+            className="flex items-center gap-2"
+          >
+            Карусель {num}
+            <Badge variant="secondary">
+              {Array.isArray(carouselItems) ? carouselItems.filter((item: any) => item.carouselNumber === num).length : 0}
+            </Badge>
+          </Button>
+        ))}
+      </div>
+
+      {/* Список элементов */}
+      <div className="space-y-4">
+        {filteredItems.length > 0 ? (
+          filteredItems.map((item: any) => (
+            <Card key={item.id}>
+              <CardContent className="p-4">
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-2">
+                      <h3 className="font-semibold text-lg">{item.title}</h3>
+                      <Badge variant={item.isActive ? "default" : "secondary"}>
+                        {item.isActive ? "Активный" : "Неактивный"}
+                      </Badge>
+                      <Badge variant="outline">
+                        Порядок: {item.order}
+                      </Badge>
+                    </div>
+                    {item.description && (
+                      <p className="text-gray-600 text-sm mb-2">{item.description}</p>
+                    )}
+                    <div className="grid grid-cols-2 gap-2 text-sm text-gray-500">
+                      <div>Кнопка: {item.buttonText}</div>
+                      <div>Ссылка: {item.linkUrl || 'Не указана'}</div>
+                    </div>
+                  </div>
+                  <div className="flex gap-2 ml-4">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handleEdit(item)}
+                      disabled={isCreating || editingItem}
+                    >
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="destructive"
+                      onClick={() => deleteItemMutation.mutate(item.id)}
+                      disabled={deleteItemMutation.isPending}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))
+        ) : (
+          <Card>
+            <CardContent className="text-center py-8">
+              <Image className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+              <p className="text-gray-500">Нет элементов в карусели {selectedCarousel}</p>
+              <p className="text-sm text-gray-400 mt-1">Создайте первый элемент</p>
+            </CardContent>
+          </Card>
+        )}
+      </div>
+    </div>
   );
 }

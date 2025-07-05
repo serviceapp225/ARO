@@ -4,6 +4,7 @@ import { HeroSection } from '@/components/HeroSection';
 import { BrandCarousel } from '@/components/BrandCarousel';
 import { ActiveAuctions } from '@/components/ActiveAuctions';
 import { SellCarTripleCarousel } from '@/components/SellCarTripleCarousel';
+import { SecondTripleCarousel } from '@/components/SecondTripleCarousel';
 import { SellYourCar } from '@/components/SellYourCar';
 import { Footer } from '@/components/Footer';
 import { AuctionDetailModal } from '@/components/AuctionDetailModal';
@@ -23,7 +24,8 @@ export default function Home() {
           {/* Main content */}
           <div className="lg:col-span-3 space-y-8">
             <BrandCarousel />
-            <SellCarBanner />
+            <SellCarTripleCarousel />
+            <SecondTripleCarousel />
             <ActiveAuctions searchQuery={searchQuery} />
             <SellYourCar />
           </div>

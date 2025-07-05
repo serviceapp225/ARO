@@ -1440,6 +1440,70 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Second Carousel routes
+  app.get("/api/second-carousel", async (req, res) => {
+    try {
+      const cacheKey = 'second_carousel';
+      const cached = getCached(cacheKey);
+      if (cached) {
+        return res.json(cached);
+      }
+      
+      const carousel = await storage.getSecondCarousel();
+      setCache(cacheKey, carousel);
+      res.json(carousel);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch second carousel" });
+    }
+  });
+
+  app.get("/api/admin/second-carousel", async (req, res) => {
+    try {
+      const carousel = await storage.getSecondCarousel();
+      res.json(carousel);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch second carousel" });
+    }
+  });
+
+  app.post("/api/admin/second-carousel", async (req, res) => {
+    try {
+      const item = await storage.createSecondCarouselItem(req.body);
+      clearCachePattern('second_carousel');
+      res.status(201).json(item);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to create second carousel item" });
+    }
+  });
+
+  app.put("/api/admin/second-carousel/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const item = await storage.updateSecondCarouselItem(id, req.body);
+      if (!item) {
+        return res.status(404).json({ error: "Second carousel item not found" });
+      }
+      clearCachePattern('second_carousel');
+      res.json(item);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to update second carousel item" });
+    }
+  });
+
+  app.delete("/api/admin/second-carousel/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const deleted = await storage.deleteSecondCarouselItem(id);
+      if (!deleted) {
+        return res.status(404).json({ error: "Second carousel item not found" });
+      }
+      clearCachePattern('second_carousel');
+      res.status(204).send();
+    } catch (error) {
+      res.status(500).json({ error: "Failed to delete second carousel item" });
+    }
+  });
+
   // Sell Car Banner API routes
   app.get("/api/sell-car-banner", async (req, res) => {
     try {

@@ -2,10 +2,10 @@ import Database from 'better-sqlite3';
 import { IStorage } from './storage';
 import type {
   User, CarListing, Bid, Favorite, Notification, CarAlert,
-  Banner, SellCarSection, AdvertisementCarousel, Document, AlertView,
+  Banner, SellCarSection, AdvertisementCarousel, Document, AlertView, SecondCarousel,
   InsertUser, InsertCarListing, InsertBid, InsertFavorite, InsertNotification,
   InsertCarAlert, InsertBanner, InsertSellCarSection, InsertAdvertisementCarousel,
-  InsertDocument, InsertAlertView
+  InsertDocument, InsertAlertView, InsertSecondCarousel
 } from '@shared/schema';
 
 export class SQLiteStorage implements IStorage {
@@ -182,6 +182,22 @@ export class SQLiteStorage implements IStorage {
         alert_id INTEGER NOT NULL,
         listing_id INTEGER NOT NULL,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    this.db.exec(`
+      CREATE TABLE IF NOT EXISTS second_carousel (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        title TEXT NOT NULL,
+        description TEXT,
+        image_url TEXT NOT NULL,
+        link_url TEXT,
+        button_text TEXT DEFAULT 'Подробнее',
+        carousel_number INTEGER NOT NULL,
+        is_active BOOLEAN DEFAULT 1,
+        "order" INTEGER DEFAULT 0,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
       )
     `);
   }
@@ -1229,6 +1245,90 @@ export class SQLiteStorage implements IStorage {
     const stmt = this.db.prepare('DELETE FROM advertisement_carousel WHERE id = ?');
     const result = stmt.run(id);
     return result.changes > 0;
+  }
+
+  // Second Carousel operations
+  async getSecondCarousel(): Promise<SecondCarousel[]> {
+    const stmt = this.db.prepare(`
+      SELECT * FROM second_carousel 
+      WHERE is_active = 1 
+      ORDER BY carousel_number, "order", created_at
+    `);
+    const rows = stmt.all();
+    return rows.map(row => this.mapSecondCarouselRow(row));
+  }
+
+  async getSecondCarouselItem(id: number): Promise<SecondCarousel | undefined> {
+    const stmt = this.db.prepare('SELECT * FROM second_carousel WHERE id = ?');
+    const row = stmt.get(id);
+    return row ? this.mapSecondCarouselRow(row) : undefined;
+  }
+
+  async createSecondCarouselItem(item: InsertSecondCarousel): Promise<SecondCarousel> {
+    const stmt = this.db.prepare(`
+      INSERT INTO second_carousel (title, description, image_url, link_url, button_text, carousel_number, is_active, "order")
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    `);
+    const result = stmt.run(
+      item.title,
+      item.description || null,
+      item.imageUrl,
+      item.linkUrl || null,
+      item.buttonText || 'Подробнее',
+      item.carouselNumber,
+      item.isActive !== undefined ? item.isActive : true,
+      item.order || 0
+    );
+    const created = await this.getSecondCarouselItem(result.lastInsertRowid as number);
+    if (!created) throw new Error('Failed to create second carousel item');
+    return created;
+  }
+
+  async updateSecondCarouselItem(id: number, item: Partial<InsertSecondCarousel>): Promise<SecondCarousel | undefined> {
+    const fields = [];
+    const values = [];
+    
+    if (item.title !== undefined) { fields.push('title = ?'); values.push(item.title); }
+    if (item.description !== undefined) { fields.push('description = ?'); values.push(item.description); }
+    if (item.imageUrl !== undefined) { fields.push('image_url = ?'); values.push(item.imageUrl); }
+    if (item.linkUrl !== undefined) { fields.push('link_url = ?'); values.push(item.linkUrl); }
+    if (item.buttonText !== undefined) { fields.push('button_text = ?'); values.push(item.buttonText); }
+    if (item.carouselNumber !== undefined) { fields.push('carousel_number = ?'); values.push(item.carouselNumber); }
+    if (item.isActive !== undefined) { fields.push('is_active = ?'); values.push(item.isActive); }
+    if (item.order !== undefined) { fields.push('"order" = ?'); values.push(item.order); }
+    
+    if (fields.length === 0) return this.getSecondCarouselItem(id);
+    
+    fields.push('updated_at = ?');
+    values.push(new Date().toISOString());
+    values.push(id);
+    
+    const stmt = this.db.prepare(`UPDATE second_carousel SET ${fields.join(', ')} WHERE id = ?`);
+    const result = stmt.run(...values);
+    
+    return result.changes > 0 ? this.getSecondCarouselItem(id) : undefined;
+  }
+
+  async deleteSecondCarouselItem(id: number): Promise<boolean> {
+    const stmt = this.db.prepare('DELETE FROM second_carousel WHERE id = ?');
+    const result = stmt.run(id);
+    return result.changes > 0;
+  }
+
+  private mapSecondCarouselRow(row: any): SecondCarousel {
+    return {
+      id: row.id,
+      title: row.title,
+      description: row.description,
+      imageUrl: row.image_url,
+      linkUrl: row.link_url,
+      buttonText: row.button_text,
+      carouselNumber: row.carousel_number,
+      isActive: Boolean(row.is_active),
+      order: row.order,
+      createdAt: new Date(row.created_at),
+      updatedAt: row.updated_at ? new Date(row.updated_at) : null
+    };
   }
   async getDocuments(type?: string): Promise<Document[]> { return []; }
   async getDocument(id: number): Promise<Document | undefined> { return undefined; }
