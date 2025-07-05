@@ -1,7 +1,6 @@
-import { useState, useEffect } from "react";
-import { Gift, Star, Award, ChevronLeft, ChevronRight } from "lucide-react";
-import { useLocation } from "wouter";
-import { useQuery } from "@tanstack/react-query";
+import { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { Users, TrendingUp, Award, ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface SecondCarouselItem {
   id: number;
@@ -15,50 +14,53 @@ interface SecondCarouselItem {
   carouselNumber: number; // 1, 2, или 3
 }
 
+interface DefaultCarouselData {
+  title: string;
+  description: string;
+  buttonText: string;
+  gradient: string;
+  icon: typeof Users;
+}
+
 export function SecondTripleCarousel() {
-  const [, setLocation] = useLocation();
   const [currentSlides, setCurrentSlides] = useState([0, 0, 0]);
-  
-  // Загружаем данные каруселей
-  const { data: carouselItems = [], isLoading } = useQuery<SecondCarouselItem[]>({
+
+  const { data: carouselData, isLoading } = useQuery<SecondCarouselItem[]>({
     queryKey: ['/api/second-carousel'],
-    staleTime: 5 * 60 * 1000,
-    gcTime: 10 * 60 * 1000,
+    staleTime: 5 * 60 * 1000, // 5 минут
+    gcTime: 10 * 60 * 1000, // 10 минут
   });
 
-  // Группируем элементы по номеру карусели
-  const carouselGroups = [
-    carouselItems.filter(item => item.carouselNumber === 1 && item.isActive).sort((a, b) => a.order - b.order),
-    carouselItems.filter(item => item.carouselNumber === 2 && item.isActive).sort((a, b) => a.order - b.order),
-    carouselItems.filter(item => item.carouselNumber === 3 && item.isActive).sort((a, b) => a.order - b.order),
-  ];
-
-  // Дефолтные данные для каруселей
-  const defaultCarousels = [
+  // Дефолтные данные для каждой карусели
+  const defaultCarousels: DefaultCarouselData[] = [
     {
       title: "Приведи друга",
-      description: "Получи бонус за каждого друга",
+      description: "Получи бонус 500 сомони за каждого друга, который купит автомобиль через платформу",
       buttonText: "Пригласить друга",
-      gradient: "from-green-600 to-emerald-700",
-      icon: Gift,
-      linkUrl: "/referral"
+      gradient: "from-purple-600 to-pink-600",
+      icon: Users
     },
     {
-      title: "Горячие аукционы", 
-      description: "Эксклюзивные автомобили",
+      title: "Горячие аукционы",
+      description: "Не упусти последние часы торгов! Самые популярные автомобили со скидкой до 30%",
       buttonText: "Смотреть аукционы",
-      gradient: "from-red-600 to-orange-700",
-      icon: Star,
-      linkUrl: "/hot-auctions"
+      gradient: "from-orange-500 to-red-600",
+      icon: TrendingUp
     },
     {
       title: "Стань экспертом",
-      description: "Оценивай авто и зарабатывай",
-      buttonText: "Начать экспертизу",
-      gradient: "from-blue-600 to-indigo-700", 
-      icon: Award,
-      linkUrl: "/expert"
+      description: "Пройди курс оценки автомобилей и зарабатывай на экспертизе до 200$ в месяц",
+      buttonText: "Начать обучение",
+      gradient: "from-blue-600 to-indigo-600",
+      icon: Award
     }
+  ];
+
+  // Группировка данных по каруселям
+  const carouselGroups = [
+    carouselData?.filter(item => item.carouselNumber === 1 && item.isActive) || [],
+    carouselData?.filter(item => item.carouselNumber === 2 && item.isActive) || [],
+    carouselData?.filter(item => item.carouselNumber === 3 && item.isActive) || []
   ];
 
   // Автоматическое переключение слайдов
@@ -90,139 +92,139 @@ export function SecondTripleCarousel() {
       if (currentItem.linkUrl.startsWith('http')) {
         window.open(currentItem.linkUrl, '_blank');
       } else {
-        setLocation(currentItem.linkUrl);
+        window.location.href = currentItem.linkUrl;
       }
     } else {
-      // Дефолтная ссылка
-      setLocation(defaultCarousels[carouselIndex].linkUrl);
+      // Дефолтные ссылки для каждой карусели
+      const defaultUrls = ['/invite', '/auctions', '/expert'];
+      window.location.href = defaultUrls[carouselIndex];
     }
-  };
-
-  const navigateSlide = (carouselIndex: number, direction: 'prev' | 'next') => {
-    const groupLength = carouselGroups[carouselIndex].length;
-    if (groupLength <= 1) return;
-
-    setCurrentSlides(prev => {
-      const newSlides = [...prev];
-      if (direction === 'next') {
-        newSlides[carouselIndex] = (newSlides[carouselIndex] + 1) % groupLength;
-      } else {
-        newSlides[carouselIndex] = (newSlides[carouselIndex] - 1 + groupLength) % groupLength;
-      }
-      return newSlides;
-    });
   };
 
   if (isLoading) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {[0, 1, 2].map(i => (
-          <div key={i} className="h-44 rounded-2xl animate-pulse bg-gray-200" />
-        ))}
+      <div className="space-y-4">
+        <h2 className="text-2xl font-bold text-gray-800 mb-4">Специальные предложения</h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="h-44 rounded-2xl animate-pulse bg-gray-200" />
+          ))}
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-      {carouselGroups.map((group, carouselIndex) => {
-        const currentItem = group[currentSlides[carouselIndex]];
-        const defaultData = defaultCarousels[carouselIndex];
-        const IconComponent = defaultData.icon;
+    <div className="space-y-4">
+      <h2 className="text-2xl font-bold text-gray-800 mb-4">Специальные предложения</h2>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {[0, 1, 2].map((carouselIndex) => {
+          const group = carouselGroups[carouselIndex] || [];
+          const currentItem = group[currentSlides[carouselIndex]];
+          const defaultData = defaultCarousels[carouselIndex];
+          const IconComponent = defaultData.icon;
         
-        // Используем кастомные данные если есть, иначе дефолтные
-        const displayData = currentItem || {
-          title: defaultData.title,
-          description: defaultData.description,
-          buttonText: defaultData.buttonText,
-          imageUrl: `https://images.unsplash.com/photo-${carouselIndex === 0 ? '1573164713714-d95e436ab8d6' : carouselIndex === 1 ? '1581092335397-9583eb92d232' : '1556742049-0ca65d6fa6c9'}?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80`
-        };
+          // Используем кастомные данные если есть, иначе дефолтные
+          const displayData = currentItem || {
+            title: defaultData.title,
+            description: defaultData.description,
+            buttonText: defaultData.buttonText,
+            imageUrl: `https://images.unsplash.com/photo-${carouselIndex === 0 ? '1573164713714-d95e436ab8d6' : carouselIndex === 1 ? '1581092335397-9583eb92d232' : '1556742049-0ca65d6fa6c9'}?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80`
+          };
 
-        return (
-          <div
-            key={carouselIndex}
-            onClick={() => handleCarouselClick(carouselIndex)}
-            className="relative h-44 rounded-2xl p-6 text-white overflow-hidden shadow-2xl cursor-pointer hover:shadow-3xl transition-all duration-300"
-            style={{ height: '176px' }}
-          >
-            <div 
-              className={`absolute inset-0 rounded-2xl bg-gradient-to-br ${defaultData.gradient} bg-cover bg-center bg-no-repeat transition-all duration-1000 ease-in-out`}
-              style={{
-                backgroundImage: `linear-gradient(135deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.4) 100%), url('${displayData.imageUrl}')`
-              }}
-            />
-            
-            {/* Навигационные кнопки */}
-            {group.length > 1 && (
-              <>
-                <button
-                  className="absolute left-2 top-1/2 transform -translate-y-1/2 w-6 h-6 bg-black/50 text-white rounded-full flex items-center justify-center hover:bg-black/70 transition-colors z-20"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    navigateSlide(carouselIndex, 'prev');
-                  }}
-                >
-                  <ChevronLeft className="h-3 w-3" />
-                </button>
-                <button
-                  className="absolute right-2 top-1/2 transform -translate-y-1/2 w-6 h-6 bg-black/50 text-white rounded-full flex items-center justify-center hover:bg-black/70 transition-colors z-20"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    navigateSlide(carouselIndex, 'next');
-                  }}
-                >
-                  <ChevronRight className="h-3 w-3" />
-                </button>
-              </>
-            )}
-            
-            <div className="relative z-10 h-full flex flex-col justify-center items-center text-center space-y-2">
-              <h2 className="text-xl font-bold text-white">
-                {displayData.title}
-              </h2>
-              <p className="text-sm leading-relaxed opacity-90 text-white">
-                {displayData.description}
-              </p>
-              <div className="mt-2">
-                <span 
-                  className="px-3 py-2 rounded-full text-xs font-bold hover:opacity-90 transition-all duration-300 cursor-pointer inline-flex items-center gap-1"
-                  style={{ 
-                    backgroundColor: '#ffffff',
-                    color: carouselIndex === 0 ? '#059669' : carouselIndex === 1 ? '#dc2626' : '#2563eb'
-                  }}
-                >
-                  <IconComponent className="w-3 h-3" />
-                  {displayData.buttonText} →
-                </span>
-              </div>
-            </div>
-
-            {/* Индикаторы слайдов */}
-            {group.length > 1 && (
-              <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex space-x-1">
-                {group.map((_, index) => (
+          return (
+            <div
+              key={carouselIndex}
+              onClick={() => handleCarouselClick(carouselIndex)}
+              className="relative h-44 rounded-2xl p-6 text-white overflow-hidden shadow-2xl cursor-pointer hover:shadow-3xl transition-all duration-300"
+              style={{ height: '176px' }}
+            >
+              <div 
+                className={`absolute inset-0 rounded-2xl bg-gradient-to-br ${defaultData.gradient} bg-cover bg-center bg-no-repeat transition-all duration-1000 ease-in-out`}
+                style={{
+                  backgroundImage: `linear-gradient(135deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.4) 100%), url('${displayData.imageUrl}')`
+                }}
+              />
+              
+              {/* Навигационные кнопки */}
+              {group.length > 1 && (
+                <>
                   <button
-                    key={index}
-                    className={`w-2 h-2 rounded-full transition-colors ${
-                      index === currentSlides[carouselIndex] 
-                        ? 'bg-white' 
-                        : 'bg-white/50 hover:bg-white/70'
-                    }`}
+                    className="absolute left-2 top-1/2 transform -translate-y-1/2 w-6 h-6 bg-black/50 text-white rounded-full flex items-center justify-center hover:bg-black/70 transition-colors z-20"
                     onClick={(e) => {
                       e.stopPropagation();
                       setCurrentSlides(prev => {
                         const newSlides = [...prev];
-                        newSlides[carouselIndex] = index;
+                        newSlides[carouselIndex] = newSlides[carouselIndex] === 0 ? group.length - 1 : newSlides[carouselIndex] - 1;
                         return newSlides;
                       });
                     }}
-                  />
-                ))}
+                  >
+                    <ChevronLeft className="w-3 h-3" />
+                  </button>
+                  <button
+                    className="absolute right-2 top-1/2 transform -translate-y-1/2 w-6 h-6 bg-black/50 text-white rounded-full flex items-center justify-center hover:bg-black/70 transition-colors z-20"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setCurrentSlides(prev => {
+                        const newSlides = [...prev];
+                        newSlides[carouselIndex] = (newSlides[carouselIndex] + 1) % group.length;
+                        return newSlides;
+                      });
+                    }}
+                  >
+                    <ChevronRight className="w-3 h-3" />
+                  </button>
+                </>
+              )}
+              
+              {/* Контент */}
+              <div className="relative z-10 flex flex-col h-full">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
+                    <IconComponent className="w-5 h-5 text-white" />
+                  </div>
+                  <h3 className="text-xl font-bold text-white">
+                    {displayData.title}
+                  </h3>
+                </div>
+                
+                <p className="text-white/90 text-sm mb-4 flex-1">
+                  {displayData.description}
+                </p>
+                
+                <div className="flex items-center justify-between">
+                  <span className="text-white/80 text-xs bg-white/10 px-2 py-1 rounded">
+                    {displayData.buttonText}
+                  </span>
+                  
+                  {/* Индикаторы слайдов */}
+                  {group.length > 1 && (
+                    <div className="flex gap-1">
+                      {group.map((_, index) => (
+                        <div
+                          key={index}
+                          className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                            index === currentSlides[carouselIndex] ? 'bg-white' : 'bg-white/40'
+                          }`}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setCurrentSlides(prev => {
+                              const newSlides = [...prev];
+                              newSlides[carouselIndex] = index;
+                              return newSlides;
+                            });
+                          }}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
-            )}
-          </div>
-        );
-      })}
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }
