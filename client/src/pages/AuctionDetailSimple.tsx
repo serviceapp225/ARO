@@ -403,7 +403,7 @@ export default function AuctionDetail() {
   const condition = getConditionByMileage(auction.mileage);
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background page-content">
       {showConfetti && <ConfettiEffect isActive={showConfetti} />}
       
       {/* Header */}
