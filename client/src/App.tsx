@@ -76,6 +76,21 @@ function Router() {
   
   return (
     <>
+      <div style={{
+        position: 'fixed',
+        top: '0',
+        left: '0',
+        right: '0',
+        background: 'red',
+        color: 'white',
+        padding: '10px',
+        textAlign: 'center',
+        zIndex: 9999,
+        fontSize: '16px',
+        fontWeight: 'bold'
+      }}>
+        🚨 ТЕСТ БАННЕРА - КОМПОНЕНТЫ РАБОТАЮТ!
+      </div>
       <ScrollToTop />
       <Switch>
         <Route path="/" component={HomePage} />
