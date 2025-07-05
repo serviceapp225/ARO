@@ -1603,7 +1603,7 @@ function AdvertisementCarouselManagement() {
             linkUrl: freshItem.linkUrl || '',
             buttonText: freshItem.buttonText || 'Узнать больше',
             order: freshItem.order || 1,
-            isActive: freshItem.isActive,
+            isActive: freshItem.isActive || true,
           });
           setFormKey(prev => prev + 1); // Принудительно обновляем форму
         }
@@ -1688,7 +1688,7 @@ function AdvertisementCarouselManagement() {
         linkUrl: item.linkUrl || '',
         buttonText: item.buttonText || 'Узнать больше',
         order: item.order || 1,
-        isActive: item.isActive,
+        isActive: item.isActive || true,
       });
     }
   };

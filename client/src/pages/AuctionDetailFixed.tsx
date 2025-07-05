@@ -130,7 +130,7 @@ export default function AuctionDetail() {
   const { data: currentAuction, refetch: refetchAuction } = useQuery({
     queryKey: [`/api/listings/${id}`],
     enabled: !!id,
-    refetchInterval: 60000, // Refresh every minute for speed
+    refetchInterval: 5000, // Refresh every 5 seconds for real-time updates
     refetchIntervalInBackground: true,
   });
 
@@ -138,7 +138,7 @@ export default function AuctionDetail() {
   const { data: bidsData } = useQuery({
     queryKey: [`/api/listings/${id}/bids`],
     enabled: !!id,
-    refetchInterval: 30000, // Refresh every 30 seconds for speed
+    refetchInterval: 2000, // Refresh every 2 seconds for real-time updates
     refetchIntervalInBackground: true,
   });
 

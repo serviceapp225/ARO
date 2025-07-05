@@ -4,7 +4,7 @@ import type { Bid } from "@shared/schema";
 export function useBidUpdates(listingId: number) {
   return useQuery<Bid[]>({
     queryKey: ['/api/listings', listingId, 'bids'],
-    refetchInterval: 10000, // Обновление каждые 10 секунд для скорости
+    refetchInterval: 2000, // Обновление каждые 2 секунды для реального времени
     staleTime: 0, // Данные всегда считаются устаревшими
     refetchOnWindowFocus: true,
     refetchOnMount: true,
