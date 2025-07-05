@@ -1366,12 +1366,19 @@ export class SQLiteStorage implements IStorage {
   async archiveExpiredListings(): Promise<number> {
     try {
       const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-      // Сначала проверим есть ли колонка ended_at
+      // Безопасно добавляем колонку ended_at если её нет
       try {
-        this.db.prepare("SELECT ended_at FROM car_listings LIMIT 1").get();
-      } catch {
-        // Если колонки нет, добавляем её
-        this.db.prepare("ALTER TABLE car_listings ADD COLUMN ended_at DATETIME").run();
+        const columnExists = this.db.prepare(`
+          SELECT COUNT(*) as count 
+          FROM pragma_table_info('car_listings') 
+          WHERE name = 'ended_at'
+        `).get() as { count: number };
+        
+        if (columnExists.count === 0) {
+          this.db.prepare("ALTER TABLE car_listings ADD COLUMN ended_at DATETIME").run();
+        }
+      } catch (error) {
+        console.error('Error checking/adding ended_at column:', error);
       }
       
       const stmt = this.db.prepare(`

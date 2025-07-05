@@ -28,7 +28,7 @@ const queryParamsSchema = z.object({
 
 // Simple in-memory cache
 const cache = new Map();
-const CACHE_TTL = 60000; // 60 seconds for maximum performance
+const CACHE_TTL = 300000; // 5 minutes for ultra performance
 
 function getCached(key: string) {
   const cached = cache.get(key);
@@ -176,7 +176,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // console.log("Listings endpoint called, cache size:", cachedListings.length); // Убрано для производительности
       
       // Агрессивное HTTP кэширование - 5 минут
-      res.setHeader('Cache-Control', 'public, max-age=300, s-maxage=300');
+      res.setHeader('Cache-Control', 'public, max-age=900, s-maxage=900'); // 15 минут кэш
       res.setHeader('ETag', `"listings-${lastCacheUpdate}"`);
       
       // Оптимизируем данные для скорости но сохраняем важные поля
@@ -230,7 +230,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const mimeType = photoCacheTypes.get(cacheKey) || 'image/jpeg';
         
         res.set('Content-Type', mimeType);
-        res.set('Cache-Control', 'public, max-age=86400');
+        res.set('Cache-Control', 'public, max-age=604800'); // 7 дней кэш для фото
         res.send(buffer);
         return;
       }
@@ -326,7 +326,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             photoCacheTypes.set(cacheKey, outputMimeType);
             
             res.set('Content-Type', outputMimeType);
-            res.set('Cache-Control', 'public, max-age=86400');
+            res.set('Cache-Control', 'public, max-age=604800'); // 7 дней кэш для фото
             res.send(compressedBuffer);
             return;
           }

@@ -49,8 +49,8 @@ export const queryClient = new QueryClient({
       refetchOnWindowFocus: false,
       refetchOnMount: false,
       refetchOnReconnect: false,
-      staleTime: 600000, // 10 минут кэш для максимальной скорости
-      gcTime: 1200000, // 20 минут в памяти
+      staleTime: 900000, // 15 минут кэш для ультра скорости
+      gcTime: 1800000, // 30 минут в памяти
       retry: 1,
     },
     mutations: {
