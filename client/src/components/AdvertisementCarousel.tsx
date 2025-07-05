@@ -72,7 +72,7 @@ export function AdvertisementCarousel() {
 
   return (
     <div 
-      className="relative h-44 rounded-2xl p-6 text-white overflow-hidden shadow-2xl cursor-pointer hover:shadow-3xl transition-all duration-300 transform hover:scale-[1.02] mb-8"
+      className="relative h-44 w-full p-6 text-white overflow-hidden cursor-pointer transition-all duration-300"
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
       onClick={handleClick}
@@ -82,7 +82,7 @@ export function AdvertisementCarousel() {
     >
       {/* Background Image */}
       <div 
-        className="absolute inset-0 rounded-2xl bg-cover bg-center bg-no-repeat"
+        className="absolute inset-0 w-full h-full bg-cover bg-center bg-no-repeat"
         style={{
           backgroundImage: `url('${currentAd.imageUrl}')`,
         }}

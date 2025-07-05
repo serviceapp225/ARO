@@ -101,9 +101,14 @@ export default function HomePage() {
 
         {/* Dynamic Sell Car Banner */}
         <DynamicSellCarBanner />
+      </main>
 
-        {/* Advertisement Carousel */}
+      {/* Advertisement Carousel - на всю ширину экрана */}
+      <div className="w-full">
         <AdvertisementCarousel />
+      </div>
+      
+      <main className="container mx-auto px-4 py-6 space-y-6">
 
         {/* Security Banner */}
         <div className="bg-green-50 border border-green-200 rounded-xl p-4">
