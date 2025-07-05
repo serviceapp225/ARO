@@ -260,7 +260,7 @@ export default function AuctionDetail() {
         // Показываем уведомление о новой ставке
         toast({
           title: "🔥 Новая ставка!",
-          description: `₽${parseFloat(lastBidUpdate.data.bid.amount).toLocaleString()}`,
+          description: `${parseFloat(lastBidUpdate.data.bid.amount).toLocaleString()} Сомони`,
           duration: 3000,
         });
       }
