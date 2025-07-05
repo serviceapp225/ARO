@@ -3,7 +3,7 @@ import { Header } from '@/components/Header';
 import { HeroSection } from '@/components/HeroSection';
 import { BrandCarousel } from '@/components/BrandCarousel';
 import { ActiveAuctions } from '@/components/ActiveAuctions';
-import { SellCarBanner } from '@/components/SellCarBanner';
+import { SellCarTripleCarousel } from '@/components/SellCarTripleCarousel';
 import { SellYourCar } from '@/components/SellYourCar';
 import { Footer } from '@/components/Footer';
 import { AuctionDetailModal } from '@/components/AuctionDetailModal';
