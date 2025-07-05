@@ -1528,7 +1528,8 @@ function AdvertisementCarouselManagement() {
 
   const { data: carouselItems = [], isLoading } = useQuery<AdvertisementCarousel[]>({
     queryKey: ['/api/admin/advertisement-carousel'],
-    staleTime: 30000,
+    staleTime: 1000, // 1 секунда - мгновенное обновление для админа
+    refetchInterval: 5000, // Обновляем каждые 5 секунд
   });
 
   const createItemMutation = useMutation({
@@ -1652,6 +1653,8 @@ function AdvertisementCarouselManagement() {
       order: item.order || 1,
       isActive: item.isActive,
     });
+    // Принудительно обновляем данные при начале редактирования
+    queryClient.refetchQueries({ queryKey: ['/api/admin/advertisement-carousel'] });
   };
 
   const handleCancel = () => {
@@ -1665,6 +1668,8 @@ function AdvertisementCarouselManagement() {
       order: 1,
       isActive: true,
     });
+    // Принудительно обновляем данные
+    queryClient.refetchQueries({ queryKey: ['/api/admin/advertisement-carousel'] });
   };
 
   const handleDelete = (id: number) => {
