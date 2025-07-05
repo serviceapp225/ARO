@@ -209,21 +209,6 @@ export const advertisementCarousel = pgTable("advertisement_carousel", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
-// Специальные предложения 3 в одном
-export const specialOffers = pgTable("special_offers", {
-  id: serial("id").primaryKey(),
-  title: text("title").notNull(),
-  description: text("description").notNull(),
-  imageUrl: text("image_url"),
-  linkUrl: text("link_url"),
-  buttonText: text("button_text").default("Подробнее"),
-  offerType: integer("offer_type").notNull(), // 1 = Скидки, 2 = Акции, 3 = Премиум услуги
-  isActive: boolean("is_active").default(true),
-  order: integer("order").default(0),
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
-});
-
 export const insertAdvertisementCarouselSchema = createInsertSchema(advertisementCarousel).omit({
   id: true,
   createdAt: true,
@@ -232,15 +217,6 @@ export const insertAdvertisementCarouselSchema = createInsertSchema(advertisemen
 
 export type InsertAdvertisementCarousel = z.infer<typeof insertAdvertisementCarouselSchema>;
 export type AdvertisementCarousel = typeof advertisementCarousel.$inferSelect;
-
-export const insertSpecialOfferSchema = createInsertSchema(specialOffers).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-});
-
-export type InsertSpecialOffer = z.infer<typeof insertSpecialOfferSchema>;
-export type SpecialOffer = typeof specialOffers.$inferSelect;
 
 // Documents table for policies and rules
 export const documents = pgTable("documents", {
@@ -266,30 +242,6 @@ export const insertDocumentSchema = createInsertSchema(documents).omit({
 
 export type InsertDocument = z.infer<typeof insertDocumentSchema>;
 export type Document = typeof documents.$inferSelect;
-
-// Second Triple Carousel table for the second banner
-export const secondCarousel = pgTable("second_carousel", {
-  id: serial("id").primaryKey(),
-  title: text("title").notNull(),
-  description: text("description"),
-  imageUrl: text("image_url").notNull(),
-  linkUrl: text("link_url"),
-  buttonText: text("button_text").default("Подробнее"),
-  carouselNumber: integer("carousel_number").notNull(), // 1, 2, или 3
-  isActive: boolean("is_active").default(true),
-  order: integer("order").default(0),
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
-});
-
-export const insertSecondCarouselSchema = createInsertSchema(secondCarousel).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-});
-
-export type InsertSecondCarousel = z.infer<typeof insertSecondCarouselSchema>;
-export type SecondCarousel = typeof secondCarousel.$inferSelect;
 
 // Sell Car Banner table for the main homepage banner
 export const sellCarBanner = pgTable("sell_car_banner", {

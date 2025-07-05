@@ -28,40 +28,8 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
 
   // Загружаем данные из localStorage при инициализации
   useEffect(() => {
-    // Очищаем старые глобальные данные пользователя и возможные большие файлы
-    try {
-      // Проверяем общий размер localStorage
-      let totalSize = 0;
-      for (let key in localStorage) {
-        if (localStorage.hasOwnProperty(key)) {
-          totalSize += localStorage[key].length;
-        }
-      }
-      
-      // Если localStorage слишком большой (>4MB), очищаем все userData
-      if (totalSize > 4000000) {
-        console.warn('LocalStorage too large, clearing user data');
-        Object.keys(localStorage).forEach(key => {
-          if (key.startsWith('userData_')) {
-            localStorage.removeItem(key);
-          }
-        });
-      }
-      
-      localStorage.removeItem('userData');
-    } catch (error) {
-      console.error('Error checking localStorage size:', error);
-      // В случае ошибки просто очищаем все userData
-      Object.keys(localStorage).forEach(key => {
-        if (key.startsWith('userData_')) {
-          try {
-            localStorage.removeItem(key);
-          } catch (e) {
-            // Игнорируем ошибки удаления
-          }
-        }
-      });
-    }
+    // Очищаем старые глобальные данные пользователя
+    localStorage.removeItem('userData');
     
     const demoUserData = localStorage.getItem('demo-user');
     let currentPhoneNumber = "";
@@ -124,26 +92,7 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
           accountType: newData.accountType,
           profilePhoto: newData.profilePhoto,
         };
-        try {
-          // Проверяем размер данных перед сохранением
-          const dataString = JSON.stringify(dataToSave);
-          if (dataString.length > 100000) { // Если данные больше 100KB
-            console.warn('User data too large, removing profile photo');
-            dataToSave.profilePhoto = null;
-          }
-          localStorage.setItem(userDataKey, JSON.stringify(dataToSave));
-        } catch (error) {
-          console.error('LocalStorage quota exceeded, clearing old data');
-          // Очищаем старые данные пользователей
-          Object.keys(localStorage).forEach(key => {
-            if (key.startsWith('userData_') && key !== userDataKey) {
-              localStorage.removeItem(key);
-            }
-          });
-          // Сохраняем без фото
-          dataToSave.profilePhoto = null;
-          localStorage.setItem(userDataKey, JSON.stringify(dataToSave));
-        }
+        localStorage.setItem(userDataKey, JSON.stringify(dataToSave));
       }
       
       return newData;

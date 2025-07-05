@@ -4,8 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { ActiveAuctions } from "@/components/ActiveAuctions";
 import { DynamicSellCarBanner } from "@/components/DynamicSellCarBanner";
-
-
+import { AdvertisementCarousel } from "@/components/AdvertisementCarousel";
 import { TopHeader } from "@/components/TopHeader";
 import { Link } from "wouter";
 import { useState } from "react";
@@ -26,7 +25,10 @@ export default function HomePage() {
     staleTime: 5 * 60 * 1000,
   });
 
-
+  const { data: carouselData, isLoading: carouselLoading } = useQuery({
+    queryKey: ['/api/advertisement-carousel'],
+    staleTime: 5 * 60 * 1000,
+  });
 
   const { data: listingsData, isLoading: listingsLoading } = useQuery({
     queryKey: ['/api/listings'],
@@ -34,7 +36,7 @@ export default function HomePage() {
   });
 
   // Показываем скелетон пока не загрузятся все критические данные
-  const isPageLoading = bannerLoading || listingsLoading;
+  const isPageLoading = bannerLoading || carouselLoading || listingsLoading;
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -99,12 +101,12 @@ export default function HomePage() {
 
         {/* Dynamic Sell Car Banner */}
         <DynamicSellCarBanner />
-
-        {/* Специальные предложения 3 в одном */}
-
       </main>
 
-
+      {/* Advertisement Carousel - на всю ширину экрана */}
+      <div className="w-full">
+        <AdvertisementCarousel />
+      </div>
       
       <main className="container mx-auto px-4 py-6 space-y-6">
 

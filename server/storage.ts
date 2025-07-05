@@ -1,4 +1,4 @@
-import { users, carListings, bids, favorites, notifications, carAlerts, banners, sellCarSection, advertisementCarousel, documents, alertViews, secondCarousel, specialOffers, type User, type InsertUser, type CarListing, type InsertCarListing, type Bid, type InsertBid, type Favorite, type InsertFavorite, type Notification, type InsertNotification, type CarAlert, type InsertCarAlert, type Banner, type InsertBanner, type SellCarSection, type InsertSellCarSection, type AdvertisementCarousel, type InsertAdvertisementCarousel, type Document, type InsertDocument, type AlertView, type InsertAlertView, type SecondCarousel, type InsertSecondCarousel, type SpecialOffer, type InsertSpecialOffer } from "@shared/schema";
+import { users, carListings, bids, favorites, notifications, carAlerts, banners, sellCarSection, advertisementCarousel, documents, alertViews, type User, type InsertUser, type CarListing, type InsertCarListing, type Bid, type InsertBid, type Favorite, type InsertFavorite, type Notification, type InsertNotification, type CarAlert, type InsertCarAlert, type Banner, type InsertBanner, type SellCarSection, type InsertSellCarSection, type AdvertisementCarousel, type InsertAdvertisementCarousel, type Document, type InsertDocument, type AlertView, type InsertAlertView } from "@shared/schema";
 import { db, pool } from "./db";
 import { eq, and, desc, sql, or, ilike, inArray, isNull } from "drizzle-orm";
 
@@ -74,25 +74,12 @@ export interface IStorage {
   updateAdvertisementCarouselItem(id: number, item: Partial<InsertAdvertisementCarousel>): Promise<AdvertisementCarousel | undefined>;
   deleteAdvertisementCarouselItem(id: number): Promise<boolean>;
 
-  // Second Carousel operations
-  getSecondCarousel(): Promise<SecondCarousel[]>;
-  getSecondCarouselItem(id: number): Promise<SecondCarousel | undefined>;
-  createSecondCarouselItem(item: InsertSecondCarousel): Promise<SecondCarousel>;
-  updateSecondCarouselItem(id: number, item: Partial<InsertSecondCarousel>): Promise<SecondCarousel | undefined>;
-  deleteSecondCarouselItem(id: number): Promise<boolean>;
-
   // Documents operations
   getDocuments(type?: string): Promise<Document[]>;
   getDocument(id: number): Promise<Document | undefined>;
   createDocument(document: InsertDocument): Promise<Document>;
   updateDocument(id: number, document: Partial<InsertDocument>): Promise<Document | undefined>;
   deleteDocument(id: number): Promise<boolean>;
-
-  // Special Offers operations
-  getSpecialOffers(): Promise<SpecialOffer[]>;
-  createSpecialOffer(offer: InsertSpecialOffer): Promise<SpecialOffer>;
-  updateSpecialOffer(id: number, offer: Partial<InsertSpecialOffer>): Promise<SpecialOffer | undefined>;
-  deleteSpecialOffer(id: number): Promise<boolean>;
 
   // Alert Views operations
   createAlertView(view: InsertAlertView): Promise<AlertView>;
@@ -773,44 +760,6 @@ export class DatabaseStorage implements IStorage {
     return result.rowCount !== null && result.rowCount > 0;
   }
 
-  // Second Carousel operations
-  async getSecondCarousel(): Promise<SecondCarousel[]> {
-    return await db
-      .select()
-      .from(secondCarousel)
-      .where(eq(secondCarousel.isActive, true))
-      .orderBy(secondCarousel.carouselNumber, secondCarousel.order, secondCarousel.createdAt);
-  }
-
-  async getSecondCarouselItem(id: number): Promise<SecondCarousel | undefined> {
-    const [item] = await db.select().from(secondCarousel).where(eq(secondCarousel.id, id));
-    return item || undefined;
-  }
-
-  async createSecondCarouselItem(item: InsertSecondCarousel): Promise<SecondCarousel> {
-    const [created] = await db
-      .insert(secondCarousel)
-      .values(item)
-      .returning();
-    return created;
-  }
-
-  async updateSecondCarouselItem(id: number, item: Partial<InsertSecondCarousel>): Promise<SecondCarousel | undefined> {
-    const [updated] = await db
-      .update(secondCarousel)
-      .set({ ...item, updatedAt: new Date() })
-      .where(eq(secondCarousel.id, id))
-      .returning();
-    return updated || undefined;
-  }
-
-  async deleteSecondCarouselItem(id: number): Promise<boolean> {
-    const result = await db
-      .delete(secondCarousel)
-      .where(eq(secondCarousel.id, id));
-    return result.rowCount !== null && result.rowCount > 0;
-  }
-
   // Documents operations
   async getDocuments(type?: string): Promise<Document[]> {
     const query = db.select().from(documents).orderBy(documents.order, documents.createdAt);
@@ -862,38 +811,6 @@ export class DatabaseStorage implements IStorage {
       console.error('Error checking alert view:', error);
       return false;
     }
-  }
-
-  async getSpecialOffers(): Promise<SpecialOffer[]> {
-    return await db
-      .select()
-      .from(specialOffers)
-      .where(eq(specialOffers.isActive, true))
-      .orderBy(specialOffers.order, specialOffers.createdAt);
-  }
-
-  async createSpecialOffer(offer: InsertSpecialOffer): Promise<SpecialOffer> {
-    const [newOffer] = await db
-      .insert(specialOffers)
-      .values(offer)
-      .returning();
-    return newOffer;
-  }
-
-  async updateSpecialOffer(id: number, offer: Partial<InsertSpecialOffer>): Promise<SpecialOffer | undefined> {
-    const [updatedOffer] = await db
-      .update(specialOffers)
-      .set({ ...offer, updatedAt: new Date() })
-      .where(eq(specialOffers.id, id))
-      .returning();
-    return updatedOffer;
-  }
-
-  async deleteSpecialOffer(id: number): Promise<boolean> {
-    const result = await db
-      .delete(specialOffers)
-      .where(eq(specialOffers.id, id));
-    return result.rowCount > 0;
   }
 }
 
