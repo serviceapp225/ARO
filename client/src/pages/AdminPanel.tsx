@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Trash2, User as UserIcon, Car, Bell, Settings, CheckCircle, XCircle, AlertCircle, Edit, Search, Image, Plus, Eye } from 'lucide-react';
+import { Trash2, User as UserIcon, Car, Bell, Settings, CheckCircle, XCircle, AlertCircle, Edit, Search, Image, Plus, Eye, ChevronUp } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { Link } from 'wouter';
@@ -147,6 +147,9 @@ export default function AdminPanel() {
           </TabsContent>
         </Tabs>
       </div>
+      
+      {/* Кнопка прокрутки наверх */}
+      <ScrollToTopButton />
     </div>
   );
 }
@@ -2129,5 +2132,44 @@ function ArchiveManagement() {
         )}
       </div>
     </div>
+  );
+}
+
+// Компонент кнопки прокрутки наверх
+function ScrollToTopButton() {
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    const toggleVisibility = () => {
+      if (window.pageYOffset > 300) {
+        setIsVisible(true);
+      } else {
+        setIsVisible(false);
+      }
+    };
+
+    window.addEventListener('scroll', toggleVisibility);
+    return () => window.removeEventListener('scroll', toggleVisibility);
+  }, []);
+
+  const scrollToTop = () => {
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
+  };
+
+  return (
+    <>
+      {isVisible && (
+        <Button
+          onClick={scrollToTop}
+          className="fixed bottom-24 right-6 z-50 w-12 h-12 rounded-full shadow-lg bg-blue-600 hover:bg-blue-700 text-white p-0"
+          size="sm"
+        >
+          <ChevronUp className="h-6 w-6" />
+        </Button>
+      )}
+    </>
   );
 }
