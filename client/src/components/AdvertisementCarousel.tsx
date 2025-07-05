@@ -98,16 +98,16 @@ export function AdvertisementCarousel() {
       
       {/* Content */}
       <div className="relative z-10 h-full flex flex-col justify-center items-center text-center space-y-2">
-        <h2 className="text-lg font-bold drop-shadow-lg text-white">
+        <h2 className="text-2xl font-bold drop-shadow-lg text-white h-8 flex items-center">
           {currentAd.title}
         </h2>
-        <p className="text-sm leading-tight opacity-95 drop-shadow-md max-w-sm text-white">
+        <p className="text-base leading-relaxed opacity-95 drop-shadow-md max-w-md text-white h-12 flex items-center">
           {currentAd.description}
         </p>
         {currentAd.linkUrl && (
-          <div className="mt-2">
+          <div className="mt-4">
             <span 
-              className="px-4 py-2 rounded-full text-xs font-bold hover:opacity-90 transition-all duration-300 cursor-pointer inline-flex items-center gap-1 shadow-lg hover:shadow-xl transform hover:scale-105 bg-white text-blue-600"
+              className="px-4 py-2 rounded-full text-sm font-bold hover:opacity-90 transition-all duration-300 cursor-pointer inline-flex items-center gap-1 min-w-[180px] justify-center shadow-lg hover:shadow-xl transform hover:scale-105 bg-white text-blue-600"
             >
               {currentAd.buttonText}
             </span>
