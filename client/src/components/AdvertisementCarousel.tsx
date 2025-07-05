@@ -20,7 +20,8 @@ export function AdvertisementCarousel() {
 
   const { data: advertisements = [], isLoading } = useQuery<AdvertisementItem[]>({
     queryKey: ['/api/advertisement-carousel'],
-    staleTime: 5 * 60 * 1000, // 5 минут
+    staleTime: 10 * 1000, // 10 секунд - быстрое обновление для админ изменений
+    refetchInterval: 30 * 1000, // Обновляем каждые 30 секунд
   });
 
   // Фильтруем только активные объявления и сортируем по порядку

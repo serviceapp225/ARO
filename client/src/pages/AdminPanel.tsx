@@ -1542,8 +1542,15 @@ function AdvertisementCarouselManagement() {
       return response.json();
     },
     onSuccess: () => {
+      // Принудительно очищаем все кэши
+      queryClient.removeQueries({ queryKey: ['/api/admin/advertisement-carousel'] });
+      queryClient.removeQueries({ queryKey: ['/api/advertisement-carousel'] });
       queryClient.invalidateQueries({ queryKey: ['/api/admin/advertisement-carousel'] });
       queryClient.invalidateQueries({ queryKey: ['/api/advertisement-carousel'] });
+      
+      // Принудительно перезагружаем данные
+      queryClient.refetchQueries({ queryKey: ['/api/admin/advertisement-carousel'] });
+      
       handleCancel();
       toast({
         title: "Успешно",
@@ -1570,8 +1577,15 @@ function AdvertisementCarouselManagement() {
       return response.json();
     },
     onSuccess: () => {
+      // Принудительно очищаем все кэши
+      queryClient.removeQueries({ queryKey: ['/api/admin/advertisement-carousel'] });
+      queryClient.removeQueries({ queryKey: ['/api/advertisement-carousel'] });
       queryClient.invalidateQueries({ queryKey: ['/api/admin/advertisement-carousel'] });
       queryClient.invalidateQueries({ queryKey: ['/api/advertisement-carousel'] });
+      
+      // Принудительно перезагружаем данные
+      queryClient.refetchQueries({ queryKey: ['/api/admin/advertisement-carousel'] });
+      
       handleCancel();
       toast({
         title: "Успешно",
@@ -1595,8 +1609,15 @@ function AdvertisementCarouselManagement() {
       if (!response.ok) throw new Error('Failed to delete item');
     },
     onSuccess: () => {
+      // Принудительно очищаем все кэши
+      queryClient.removeQueries({ queryKey: ['/api/admin/advertisement-carousel'] });
+      queryClient.removeQueries({ queryKey: ['/api/advertisement-carousel'] });
       queryClient.invalidateQueries({ queryKey: ['/api/admin/advertisement-carousel'] });
       queryClient.invalidateQueries({ queryKey: ['/api/advertisement-carousel'] });
+      
+      // Принудительно перезагружаем данные
+      queryClient.refetchQueries({ queryKey: ['/api/admin/advertisement-carousel'] });
+      
       toast({
         title: "Успешно",
         description: "Рекламное объявление удалено",
