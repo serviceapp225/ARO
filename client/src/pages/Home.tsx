@@ -4,6 +4,7 @@ import { HeroSection } from '@/components/HeroSection';
 import { BrandCarousel } from '@/components/BrandCarousel';
 import { ActiveAuctions } from '@/components/ActiveAuctions';
 import { SellCarBanner } from '@/components/SellCarBanner';
+import { SpecialOffersBanner } from '@/components/SpecialOffersBanner';
 import { SellYourCar } from '@/components/SellYourCar';
 import { Footer } from '@/components/Footer';
 import { AuctionDetailModal } from '@/components/AuctionDetailModal';
@@ -24,6 +25,7 @@ export default function Home() {
           <div className="lg:col-span-3 space-y-8">
             <BrandCarousel />
             <SellCarBanner />
+            <SpecialOffersBanner />
             <ActiveAuctions searchQuery={searchQuery} />
             <SellYourCar />
           </div>
