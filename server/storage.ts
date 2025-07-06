@@ -146,7 +146,37 @@ export class DatabaseStorage implements IStorage {
 
   async deleteUser(id: number): Promise<boolean> {
     try {
+      console.log(`Starting deletion of user ${id} and related data`);
+      
+      // Каскадное удаление связанных данных
+      // 1. Удаляем ставки пользователя
+      await db.delete(bids).where(eq(bids.bidderId, id));
+      console.log(`Deleted bids for user ${id}`);
+      
+      // 2. Удаляем избранное пользователя
+      await db.delete(favorites).where(eq(favorites.userId, id));
+      console.log(`Deleted favorites for user ${id}`);
+      
+      // 3. Удаляем уведомления пользователя
+      await db.delete(notifications).where(eq(notifications.userId, id));
+      console.log(`Deleted notifications for user ${id}`);
+      
+      // 4. Удаляем оповещения пользователя
+      await db.delete(carAlerts).where(eq(carAlerts.userId, id));
+      console.log(`Deleted car alerts for user ${id}`);
+      
+      // 5. Удаляем документы пользователя
+      await db.delete(documents).where(eq(documents.userId, id));
+      console.log(`Deleted documents for user ${id}`);
+      
+      // 6. Удаляем объявления пользователя
+      await db.delete(carListings).where(eq(carListings.sellerId, id));
+      console.log(`Deleted listings for user ${id}`);
+      
+      // 7. Наконец, удаляем самого пользователя
       await db.delete(users).where(eq(users.id, id));
+      console.log(`Deleted user ${id}`);
+      
       return true;
     } catch (error) {
       console.error("Failed to delete user:", error);

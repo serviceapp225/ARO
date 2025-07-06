@@ -1672,13 +1672,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.delete("/api/admin/users/:id", adminAuth, async (req, res) => {
     try {
       const userId = parseInt(req.params.id);
+      console.log(`Attempting to delete user ${userId}`);
+      
       const deleted = await storage.deleteUser(userId);
       if (!deleted) {
+        console.log(`User ${userId} not found for deletion`);
         return res.status(404).json({ error: "User not found" });
       }
+      
+      console.log(`User ${userId} deleted successfully`);
       res.status(204).send();
     } catch (error) {
-      res.status(500).json({ error: "Failed to delete user" });
+      console.error("Error deleting user:", error);
+      res.status(500).json({ error: "Failed to delete user: " + error.message });
     }
   });
 
