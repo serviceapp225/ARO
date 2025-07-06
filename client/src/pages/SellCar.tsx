@@ -147,8 +147,6 @@ export default function SellCar() {
           setUploadedImages(prev => [...prev, ...newImages]);
         }
       }
-      
-      setUploadedImages(prev => [...prev, ...newImages]);
     }
   };
 
