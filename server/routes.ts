@@ -1779,6 +1779,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Очищаем все кэши после одобрения
       clearAllCaches();
       
+      // Принудительно обновляем кэш листингов для главной страницы
+      await updateListingsCache();
+      
       res.json(listing);
     } catch (error) {
       res.status(500).json({ error: "Failed to approve listing" });
@@ -1796,6 +1799,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Очищаем все кэши после отклонения
       clearAllCaches();
+      
+      // Принудительно обновляем кэш листингов для главной страницы
+      await updateListingsCache();
       
       res.json(listing);
     } catch (error) {
