@@ -344,7 +344,8 @@ export default function AuctionDetail() {
     }
 
     const highestBid = bidsArray[0];
-    const isWinner = currentUser && highestBid.bidderId === 3; // Demo user ID
+    const userId = (currentUser as any)?.userId || (currentUser as any)?.id;
+    const isWinner = currentUser && userId && highestBid.bidderId === userId;
 
     if (isWinner) {
       setShowConfetti(true);
