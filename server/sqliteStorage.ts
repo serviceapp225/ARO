@@ -1486,27 +1486,27 @@ export class SQLiteStorage implements IStorage {
         console.error('Error checking/adding ended_at column:', error);
       }
       
+      // Считаем архивированные аукционы (ended со старым ended_at)
       const stmt = this.db.prepare(`
-        UPDATE car_listings 
-        SET status = 'archived' 
+        SELECT COUNT(*) as count FROM car_listings 
         WHERE status = 'ended' 
         AND ended_at IS NOT NULL 
         AND ended_at <= ?
       `);
-      const result = stmt.run(twentyFourHoursAgo);
-      console.log(`Archived ${result.changes} expired listings`);
-      return result.changes;
+      const result = stmt.get(twentyFourHoursAgo) as { count: number };
+      console.log(`Found ${result.count} archived listings`);
+      return result.count;
     } catch (error) {
       console.error('Error archiving expired listings:', error);
       return 0;
     }
   }
 
-  // Получить архивированные аукционы
+  // Получить архивированные аукционы (завершенные с ended_at)
   async getArchivedListings(): Promise<CarListing[]> {
     try {
-      const stmt = this.db.prepare('SELECT * FROM car_listings WHERE status = "archived" ORDER BY ended_at DESC');
-      const rows = stmt.all();
+      const stmt = this.db.prepare(`SELECT * FROM car_listings WHERE status = ? AND ended_at IS NOT NULL ORDER BY ended_at DESC`);
+      const rows = stmt.all('ended');
       return rows.map(row => this.mapListing(row));
     } catch (error) {
       console.error('Error fetching archived listings:', error);

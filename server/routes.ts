@@ -1874,7 +1874,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const bids = await storage.getBidsForListing(listingId);
       
       if (bids.length === 0) {
-        // Нет ставок - просто завершаем аукцион
+        // Нет ставок - завершаем аукцион (с ended_at для архива)
         await storage.updateListingStatus(listingId, "ended");
         return res.json({ message: "Auction ended without bids" });
       }
@@ -1884,7 +1884,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         parseFloat(current.amount) > parseFloat(highest.amount) ? current : highest
       );
 
-      // Обновляем статус аукциона
+      // Обновляем статус аукциона и устанавливаем ended_at
       await storage.updateListingStatus(listingId, "ended");
       
       // Создаем запись о выигрыше
@@ -1904,11 +1904,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         isRead: false
       });
 
+      // Аукцион уже завершен с ended_at, он автоматически попадет в архив
+
       clearCachePattern("/api/listings");
       clearCachePattern("/api/users");
 
       res.json({ 
-        message: "Auction ended successfully", 
+        message: "Auction ended successfully and archived", 
         winner: winningBid.bidderId,
         winningAmount: winningBid.amount,
         win 
