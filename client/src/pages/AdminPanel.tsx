@@ -320,7 +320,7 @@ function ModerationManagement() {
                       {listing.make} {listing.model} {listing.year}
                     </h3>
                     <p className="text-gray-600 mb-2">{listing.description}</p>
-                    <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div className="grid grid-cols-2 gap-4 text-sm mb-3">
                       <div>
                         <span className="text-gray-500">Пробег:</span> {listing.mileage.toLocaleString()} км
                       </div>
@@ -333,7 +333,38 @@ function ModerationManagement() {
                       <div>
                         <span className="text-gray-500">Местоположение:</span> {listing.location}
                       </div>
+                      <div>
+                        <span className="text-gray-500">Резервная цена:</span> {listing.reservePrice || 'Не указана'} сомони
+                      </div>
+                      <div>
+                        <span className="text-gray-500">Продолжительность:</span> {listing.auctionDuration || 7} дней
+                      </div>
+                      <div>
+                        <span className="text-gray-500">Фотографии:</span> {listing.photos ? listing.photos.length : 0} шт.
+                      </div>
                     </div>
+                    
+                    {/* Превью фотографий */}
+                    {listing.photos && listing.photos.length > 0 && (
+                      <div className="mb-3">
+                        <span className="text-sm text-gray-500 mb-2 block">Превью фотографий:</span>
+                        <div className="flex gap-2 overflow-x-auto">
+                          {listing.photos.slice(0, 4).map((photo, index) => (
+                            <img
+                              key={index}
+                              src={photo}
+                              alt={`Фото ${index + 1}`}
+                              className="w-16 h-16 object-cover rounded-lg border flex-shrink-0"
+                            />
+                          ))}
+                          {listing.photos.length > 4 && (
+                            <div className="w-16 h-16 bg-gray-100 rounded-lg border flex items-center justify-center text-xs text-gray-500">
+                              +{listing.photos.length - 4}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
                   </div>
                   <div className="flex gap-2 ml-4">
                     <Button
