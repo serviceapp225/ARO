@@ -43,14 +43,14 @@ export function useAuctionWebSocket(): AuctionWebSocketHook {
       wsRef.current.onopen = () => {
         setIsConnected(true);
         setConnectionQuality('excellent');
-        console.log('🔌 WebSocket подключен для real-time аукционов');
+        // console.log('🔌 WebSocket подключен для real-time аукционов');
         
-        // Отправляем пинг каждые 30 секунд
+        // Отправляем пинг каждые 60 секунд для экономии ресурсов
         pingIntervalRef.current = setInterval(() => {
           if (wsRef.current?.readyState === WebSocket.OPEN) {
             wsRef.current.send(JSON.stringify({ type: 'ping' }));
           }
-        }, 30000);
+        }, 60000);
         
         // Повторно подключаемся к аукциону если был активен
         if (currentListingRef.current) {
@@ -61,7 +61,7 @@ export function useAuctionWebSocket(): AuctionWebSocketHook {
       wsRef.current.onmessage = (event) => {
         try {
           const message: WebSocketMessage = JSON.parse(event.data);
-          console.log('📩 Получено WebSocket сообщение:', message);
+          // console.log('📩 Получено WebSocket сообщение:', message);
           handleWebSocketMessage(message);
         } catch (error) {
           console.error('Ошибка парсинга WebSocket сообщения:', error);
@@ -71,12 +71,12 @@ export function useAuctionWebSocket(): AuctionWebSocketHook {
       wsRef.current.onclose = () => {
         setIsConnected(false);
         setConnectionQuality('disconnected');
-        console.log('🔌 WebSocket отключен, попытка переподключения...');
+        // console.log('🔌 WebSocket отключен, попытка переподключения...');
         
-        // Автоматическое переподключение через 3 секунды
+        // Автоматическое переподключение через 10 секунд для стабильности
         reconnectTimeoutRef.current = setTimeout(() => {
           connect();
-        }, 3000);
+        }, 10000);
       };
       
       wsRef.current.onerror = (error) => {
@@ -93,21 +93,21 @@ export function useAuctionWebSocket(): AuctionWebSocketHook {
   const handleWebSocketMessage = (message: WebSocketMessage) => {
     switch (message.type) {
       case 'connected':
-        console.log('✅ WebSocket соединение установлено');
+        // console.log('✅ WebSocket соединение установлено');
         break;
         
       case 'joined_auction':
         setParticipantCount(message.data?.participantCount || 0);
-        console.log(`👥 Подключен к аукциону ${message.listingId}, участников: ${message.data?.participantCount}`);
+        // console.log(`👥 Подключен к аукциону ${message.listingId}, участников: ${message.data?.participantCount}`);
         break;
         
       case 'bid_update':
-        console.log('🔥 Получено WebSocket сообщение bid_update:', message);
+        // console.log('🔥 Получено WebSocket сообщение bid_update:', message);
         setLastBidUpdate({
           ...message,
           receivedAt: Date.now()
         });
-        console.log(`💰 Новая ставка в real-time: ${message.data?.bid?.amount} сомони`);
+        // console.log(`💰 Новая ставка в real-time: ${message.data?.bid?.amount} сомони`);
         break;
         
       case 'hot_auction_mode':
