@@ -1792,8 +1792,11 @@ function AdvertisementCarouselManagement() {
                   id="linkUrl"
                   value={formData.linkUrl}
                   onChange={(e) => setFormData({ ...formData, linkUrl: e.target.value })}
-                  placeholder="/referral или https://example.com"
+                  placeholder="home, sell, favorites (автоматически добавляется /)"
                 />
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  Примеры: home → /home, sell → /sell, favorites → /favorites
+                </p>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

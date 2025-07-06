@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useLocation } from 'wouter';
 
 interface AdvertisementItem {
   id: number;
@@ -17,6 +18,7 @@ interface AdvertisementItem {
 export function AdvertisementCarousel() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
+  const [, setLocation] = useLocation();
 
   const { data: advertisements = [], isLoading } = useQuery<AdvertisementItem[]>({
     queryKey: ['/api/advertisement-carousel'],
@@ -55,7 +57,16 @@ export function AdvertisementCarousel() {
 
   const handleClick = () => {
     if (currentAd?.linkUrl) {
-      window.location.href = currentAd.linkUrl;
+      // Нормализуем URL для корректной навигации
+      let normalizedUrl = currentAd.linkUrl.trim();
+      
+      // Если URL не начинается с /, добавляем его
+      if (!normalizedUrl.startsWith('/') && !normalizedUrl.startsWith('http')) {
+        normalizedUrl = `/${normalizedUrl}`;
+      }
+      
+      console.log('🔗 Навигация по ссылке карусели:', normalizedUrl);
+      setLocation(normalizedUrl);
     }
   };
 
