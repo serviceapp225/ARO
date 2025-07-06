@@ -732,6 +732,32 @@ function ListingsManagement() {
     },
   });
 
+  const deleteListingMutation = useMutation({
+    mutationFn: async (listingId: number) => {
+      const response = await fetch(`/api/admin/listings/${listingId}`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      if (!response.ok) throw new Error('Failed to delete listing');
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Объявление удалено",
+        description: "Объявление было успешно удалено из системы",
+        variant: "default"
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/listings'] });
+    },
+    onError: (error) => {
+      toast({
+        title: "Ошибка удаления",
+        description: error.message,
+        variant: "destructive"
+      });
+    }
+  });
+
   if (isLoading) {
     return <div className="text-center py-8">Загрузка объявлений...</div>;
   }
@@ -816,6 +842,20 @@ function ListingsManagement() {
                   >
                     <Edit className="w-4 h-4" />
                     Редактировать
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="destructive"
+                    onClick={() => {
+                      if (confirm(`Вы уверены, что хотите удалить объявление "${listing.make} ${listing.model}"? Это действие нельзя отменить.`)) {
+                        deleteListingMutation.mutate(listing.id);
+                      }
+                    }}
+                    disabled={deleteListingMutation.isPending}
+                    className="flex items-center gap-1"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                    Удалить
                   </Button>
                   <Select
                     value={listing.status}
