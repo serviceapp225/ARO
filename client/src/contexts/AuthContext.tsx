@@ -95,26 +95,52 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             demoUser.isActive = false;
             demoUser.userId = null;
             
-            // Асинхронная проверка в фоне
+            // Асинхронная проверка и создание пользователя в фоне
             setTimeout(async () => {
               try {
                 const emailFromPhone = phoneDigits + '@autoauction.tj';
-                const response = await fetch(`/api/users/by-email/${encodeURIComponent(emailFromPhone)}`);
+                let response = await fetch(`/api/users/by-email/${encodeURIComponent(emailFromPhone)}`);
                 
+                let dbUser;
                 if (response.ok) {
-                  const dbUser = await response.json();
-                  demoUser.isActive = dbUser.isActive;
-                  demoUser.userId = dbUser.id;
-                  
-                  // Обновляем пользователя после получения данных
-                  setUser({...demoUser});
-                  
-                  // Кэшируем для будущих входов
-                  preCacheUserData(demoUser.phoneNumber, {
-                    isActive: dbUser.isActive,
-                    userId: dbUser.id
+                  // Пользователь существует
+                  dbUser = await response.json();
+                } else {
+                  // Пользователь не существует - создаем его
+                  console.log(`Creating new user for phone: ${demoUser.phoneNumber}`);
+                  const createResponse = await fetch('/api/users', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                      email: emailFromPhone,
+                      username: demoUser.phoneNumber,
+                      fullName: null,
+                      isActive: false, // Новые пользователи неактивны по умолчанию
+                      role: 'buyer'
+                    })
                   });
+                  
+                  if (createResponse.ok) {
+                    dbUser = await createResponse.json();
+                    console.log(`Created new user with ID: ${dbUser.id}`);
+                  } else {
+                    console.error('Failed to create user');
+                    return;
+                  }
                 }
+                
+                demoUser.isActive = dbUser.isActive;
+                demoUser.userId = dbUser.id;
+                demoUser.fullName = dbUser.fullName;
+                
+                // Обновляем пользователя после получения данных
+                setUser({...demoUser});
+                
+                // Кэшируем для будущих входов
+                preCacheUserData(demoUser.phoneNumber, {
+                  isActive: dbUser.isActive,
+                  userId: dbUser.id
+                });
               } catch (error) {
                 console.error('Background user check failed:', error);
               }

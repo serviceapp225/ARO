@@ -879,6 +879,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Create new user
+  app.post("/api/users", async (req, res) => {
+    try {
+      const { email, username, fullName, isActive, role } = req.body;
+      
+      if (!email || !username) {
+        return res.status(400).json({ error: "Email and username are required" });
+      }
+      
+      // Check if user already exists
+      const existingUser = await storage.getUserByEmail(email);
+      if (existingUser) {
+        return res.status(409).json({ error: "User already exists" });
+      }
+      
+      const user = await storage.createUser({
+        email,
+        username,
+        fullName: fullName || null,
+        isActive: isActive || false,
+        role: role || 'buyer'
+      });
+      
+      console.log(`Created new user: ${user.id} (${user.email})`);
+      res.status(201).json(user);
+    } catch (error) {
+      console.error("Failed to create user:", error);
+      res.status(500).json({ error: "Failed to create user" });
+    }
+  });
+
   app.patch("/api/users/:id", async (req, res) => {
     try {
       const userId = parseInt(req.params.id);
