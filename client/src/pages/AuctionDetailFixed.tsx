@@ -258,6 +258,7 @@ export default function AuctionDetail() {
       // Немедленно обновляем состояние без перерисовки
       if (lastBidUpdate.data?.bid?.amount) {
         const newAmount = parseFloat(lastBidUpdate.data.bid.amount);
+        console.log('💰 Обновляю цену с', currentPrice, 'на', newAmount);
         setCurrentPrice(newAmount);
         setBidAmount((newAmount + 1000).toString());
         
@@ -270,13 +271,11 @@ export default function AuctionDetail() {
       }
       
       // Дебаунс обновления кэша для предотвращения моргания
-      const timeoutId = setTimeout(() => {
+      setTimeout(() => {
         queryClient.invalidateQueries({ queryKey: [`/api/listings/${id}/bids`] });
         queryClient.invalidateQueries({ queryKey: [`/api/listings/${id}`] });
         queryClient.invalidateQueries({ queryKey: ['/api/listings'] });
       }, 300);
-      
-      return () => clearTimeout(timeoutId);
     }
   }, [lastBidUpdate, id, queryClient, toast]);
 
