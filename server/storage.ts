@@ -22,6 +22,7 @@ export interface IStorage {
   updateListing(id: number, data: Partial<InsertCarListing>): Promise<CarListing | undefined>;
   updateListingStatus(id: number, status: string): Promise<CarListing | undefined>;
   updateListingCurrentBid(id: number, amount: string): Promise<CarListing | undefined>;
+  deleteListing(id: number): Promise<boolean>;
   searchListings(filters: {
     query?: string;
     make?: string;

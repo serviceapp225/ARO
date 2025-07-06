@@ -1802,6 +1802,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Удалить объявление полностью
+  app.delete("/api/admin/listings/:id", adminAuth, async (req, res) => {
+    try {
+      const listingId = parseInt(req.params.id);
+      const success = await storage.deleteListing(listingId);
+      if (!success) {
+        return res.status(404).json({ error: "Listing not found" });
+      }
+      
+      // Очищаем все кэши после удаления
+      clearAllCaches();
+      
+      res.json({ success: true, message: "Listing deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting listing:", error);
+      res.status(500).json({ error: "Failed to delete listing" });
+    }
+  });
+
   app.put("/api/admin/listings/:id/status", adminAuth, async (req, res) => {
     try {
       const listingId = parseInt(req.params.id);

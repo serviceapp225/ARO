@@ -680,6 +680,34 @@ export class SQLiteStorage implements IStorage {
     return this.getListing(id);
   }
 
+  async deleteListing(id: number): Promise<boolean> {
+    try {
+      // Удаляем связанные данные из таблиц
+      const deleteBids = this.db.prepare('DELETE FROM bids WHERE listing_id = ?');
+      const deleteFavorites = this.db.prepare('DELETE FROM favorites WHERE listing_id = ?');
+      const deleteNotifications = this.db.prepare('DELETE FROM notifications WHERE listing_id = ?');
+      const deleteAlertViews = this.db.prepare('DELETE FROM alert_views WHERE listing_id = ?');
+      
+      // Удаляем основное объявление
+      const deleteListing = this.db.prepare('DELETE FROM car_listings WHERE id = ?');
+      
+      // Выполняем в транзакции
+      const transaction = this.db.transaction(() => {
+        deleteBids.run(id);
+        deleteFavorites.run(id);
+        deleteNotifications.run(id);
+        deleteAlertViews.run(id);
+        const result = deleteListing.run(id);
+        return result.changes > 0;
+      });
+      
+      return transaction();
+    } catch (error) {
+      console.error('Error deleting listing:', error);
+      return false;
+    }
+  }
+
   async updateListingStatus(id: number, status: string): Promise<CarListing | undefined> {
     const currentTime = status === 'ended' ? new Date().toISOString() : null;
     const stmt = this.db.prepare('UPDATE car_listings SET status = ?, ended_at = ? WHERE id = ?');

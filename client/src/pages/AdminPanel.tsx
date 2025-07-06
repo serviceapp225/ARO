@@ -253,6 +253,33 @@ function ModerationManagement() {
     }
   });
 
+  // Мутация удаления объявления
+  const deleteMutation = useMutation({
+    mutationFn: async (listingId: number) => {
+      const response = await fetch(`/api/admin/listings/${listingId}`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      if (!response.ok) throw new Error('Failed to delete listing');
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Объявление удалено",
+        description: "Объявление было успешно удалено из системы",
+        variant: "default"
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/listings/pending-approval'] });
+    },
+    onError: (error) => {
+      toast({
+        title: "Ошибка удаления",
+        description: error.message,
+        variant: "destructive"
+      });
+    }
+  });
+
   if (isLoading) {
     return (
       <Card>
@@ -332,10 +359,24 @@ function ModerationManagement() {
                       size="sm"
                       variant="destructive"
                       onClick={() => rejectMutation.mutate(listing.id)}
-                      disabled={approveMutation.isPending || rejectMutation.isPending || updateMutation.isPending}
+                      disabled={approveMutation.isPending || rejectMutation.isPending || updateMutation.isPending || deleteMutation.isPending}
                     >
                       <XCircle className="h-4 w-4 mr-1" />
                       Отклонить
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="destructive"
+                      className="bg-red-600 hover:bg-red-700"
+                      onClick={() => {
+                        if (confirm(`Вы уверены, что хотите удалить объявление "${listing.make} ${listing.model}"? Это действие нельзя отменить.`)) {
+                          deleteMutation.mutate(listing.id);
+                        }
+                      }}
+                      disabled={approveMutation.isPending || rejectMutation.isPending || updateMutation.isPending || deleteMutation.isPending}
+                    >
+                      <Trash2 className="h-4 w-4 mr-1" />
+                      Удалить
                     </Button>
                   </div>
                 </div>
