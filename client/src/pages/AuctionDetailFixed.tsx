@@ -449,8 +449,9 @@ export default function AuctionDetail() {
     const userId = (currentUser as any)?.userId || (currentUser as any)?.id;
     const userIsCurrentLeader = sortedBids && sortedBids.length > 0 && sortedBids[0].bidderId === userId;
     
-    // Показываем эффекты только если пользователь НЕ лидирует сейчас
-    const shouldShowEffects = !userIsCurrentLeader;
+    // Всегда показываем эффекты при ставке, независимо от лидерства
+    // (можно позже доработать логику)
+    const shouldShowEffects = true;
     
     if (shouldShowEffects) {
       // Play celebration sound and show confetti only for non-leaders
@@ -576,22 +577,12 @@ export default function AuctionDetail() {
       
       // Ставка размещена успешно, данные обновятся автоматически
       
-      // Показываем соответствующее уведомление
-      if (userIsCurrentLeader) {
-        // Пользователь уже лидирует - тихое уведомление
-        toast({
-          title: "Вы лидируете",
-          description: `Ваша ставка ${bidValue.toLocaleString()} Сомони принята.`,
-          duration: 2000,
-        });
-      } else {
-        // Обычная ставка - стандартное уведомление
-        toast({
-          title: "Ставка принята",
-          description: `Ваша ставка ${bidValue.toLocaleString()} Сомони принята.`,
-          duration: 2000,
-        });
-      }
+      // Всегда показываем стандартное уведомление о принятой ставке
+      toast({
+        title: "Ставка принята",
+        description: `Ваша ставка ${bidValue.toLocaleString()} Сомони принята.`,
+        duration: 2000,
+      });
       
       // Автоматически добавляем в избранное при размещении ставки
       if (!isFavorite(id!)) {
