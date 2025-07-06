@@ -81,14 +81,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   let bidCountsCache = new Map<number, number>();
   let lastCacheUpdate = Date.now();
   
-  // Функция для обновления кэша в фоне - только одобренные объявления
+  // Функция для обновления кэша в фоне - только одобренные объявления для пользователей
   const updateListingsCache = async () => {
     try {
-      // Получаем только одобренные объявления (pending, active, ended) - исключаем pending_approval
-      const pendingListings = await storage.getListingsByStatus('pending', 10);
-      const activeListings = await storage.getListingsByStatus('active', 10);
+      // Для главной страницы показываем только активные и завершенные объявления
+      // Pending объявления теперь видны только в админ панели
+      const activeListings = await storage.getListingsByStatus('active', 15);
       const endedListings = await storage.getListingsByStatus('ended', 5);
-      const listings = [...pendingListings, ...activeListings, ...endedListings];
+      const listings = [...activeListings, ...endedListings];
       
       // Обновляем кэш количества ставок
       bidCountsCache.clear();
@@ -533,14 +533,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         lotNumber = generateUniqueLotNumber(existingLotNumbers);
       }
       
-      // Set new listings to active status so they appear immediately
-      const listingWithActiveStatus = {
+      // Set new listings to pending status for moderation
+      const listingWithPendingStatus = {
         ...validatedData,
         lotNumber,
-        status: 'active'
+        status: 'pending'
       };
       
-      const listing = await storage.createListing(listingWithActiveStatus);
+      const listing = await storage.createListing(listingWithPendingStatus);
       
       // Clear all caches to force refresh
       clearAllCaches();
@@ -1759,7 +1759,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Получить объявления ожидающие одобрения
   app.get("/api/admin/listings/pending-approval", adminAuth, async (req, res) => {
     try {
-      const listings = await storage.getPendingApprovalListings();
+      const listings = await storage.getListingsByStatus('pending');
       res.json(listings);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch pending approval listings" });
@@ -1770,7 +1770,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/admin/listings/:id/approve", adminAuth, async (req, res) => {
     try {
       const listingId = parseInt(req.params.id);
-      const listing = await storage.approveListingForPublic(listingId);
+      const listing = await storage.updateListingStatus(listingId, 'active');
       if (!listing) {
         return res.status(404).json({ error: "Listing not found" });
       }
@@ -1788,7 +1788,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/admin/listings/:id/reject", adminAuth, async (req, res) => {
     try {
       const listingId = parseInt(req.params.id);
-      const listing = await storage.rejectListingApplication(listingId);
+      const listing = await storage.updateListingStatus(listingId, 'rejected');
       if (!listing) {
         return res.status(404).json({ error: "Listing not found" });
       }
