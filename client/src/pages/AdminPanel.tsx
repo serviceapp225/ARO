@@ -269,7 +269,10 @@ function ModerationManagement() {
         description: "Объявление было успешно удалено из системы",
         variant: "default"
       });
+      // Обновляем все кэши объявлений
       queryClient.invalidateQueries({ queryKey: ['/api/admin/listings/pending-approval'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/listings'] });
+      queryClient.refetchQueries({ queryKey: ['/api/listings'] });
     },
     onError: (error) => {
       toast({
@@ -815,7 +818,10 @@ function ListingsManagement() {
         description: "Объявление было успешно удалено из системы",
         variant: "default"
       });
+      // Обновляем все кэши объявлений
       queryClient.invalidateQueries({ queryKey: ['/api/admin/listings'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/listings'] });
+      queryClient.refetchQueries({ queryKey: ['/api/listings'] });
     },
     onError: (error) => {
       toast({

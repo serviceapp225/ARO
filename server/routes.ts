@@ -141,9 +141,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Clear all caches when listings change
   function clearAllCaches() {
+    // Сброс всех кэшей и обновление времени
+    cachedListings = [];
+    bidCountsCache.clear();
+    sellerListingsCache.clear();
+    lastCacheUpdate = Date.now();
+    
     // Принудительно обновляем кэш при изменении данных
     updateListingsCache();
-    sellerListingsCache.clear();
   }
   
   // Test endpoint для проверки скорости
@@ -175,8 +180,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       // console.log("Listings endpoint called, cache size:", cachedListings.length); // Убрано для производительности
       
-      // Агрессивное HTTP кэширование - 5 минут
-      res.setHeader('Cache-Control', 'public, max-age=900, s-maxage=900'); // 15 минут кэш
+      // HTTP кэширование с ETag для обновления при изменениях
+      res.setHeader('Cache-Control', 'public, max-age=300, s-maxage=300'); // 5 минут кэш
       res.setHeader('ETag', `"listings-${lastCacheUpdate}"`);
       
       // Оптимизируем данные для скорости но сохраняем важные поля
@@ -1830,6 +1835,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Очищаем все кэши после удаления
       clearAllCaches();
+      
+      // Принудительно обновляем кэш листингов для главной страницы
+      await updateListingsCache();
       
       res.json({ success: true, message: "Listing deleted successfully" });
     } catch (error) {
