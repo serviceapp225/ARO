@@ -39,6 +39,7 @@ export function ReservePriceIndicator({
     lg: "text-base px-4 py-2"
   };
 
+  // Для покупателей показываем только базовый статус без процентов и прогресса
   if (showProgress && !isReserveMet) {
     return (
       <div className="space-y-2">
@@ -49,14 +50,7 @@ export function ReservePriceIndicator({
               Резервная цена не достигнута
             </span>
           </div>
-          <span className="text-xs text-gray-500">
-            {progressPercentage.toFixed(0)}%
-          </span>
         </div>
-        <Progress 
-          value={progressPercentage} 
-          className="h-2"
-        />
         <p className="text-xs text-gray-500">
           Продолжайте торги для достижения резерва
         </p>

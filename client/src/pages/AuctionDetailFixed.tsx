@@ -980,7 +980,7 @@ export default function AuctionDetail() {
                     currentBid={currentBid.toString()}
                     startingPrice={auction.startingPrice}
                     size="md"
-                    showProgress={true}
+                    showProgress={false}
                   />
                 </div>
               </div>
