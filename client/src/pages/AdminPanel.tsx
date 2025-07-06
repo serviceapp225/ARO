@@ -307,37 +307,43 @@ function ModerationManagement() {
         ) : (
           <div className="space-y-4">
             {pendingListings.map((listing) => (
-              <div key={listing.id} className="border rounded-lg p-4 bg-white">
-                <div className="flex justify-between items-start">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Badge variant="outline" className="bg-yellow-50 text-yellow-700">
+              <div key={listing.id} className="border border-gray-200 dark:border-gray-700 rounded-xl p-6 bg-white dark:bg-gray-800 shadow-sm hover:shadow-md transition-shadow">
+                <div className="space-y-4">
+                  {/* Заголовок */}
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-3">
+                      <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200 dark:bg-yellow-900/20 dark:text-yellow-300 dark:border-yellow-800">
                         Ожидает одобрения
                       </Badge>
-                      <span className="text-sm text-gray-500">Лот #{listing.lotNumber}</span>
+                      <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                        Лот #{listing.lotNumber}
+                      </span>
                     </div>
-                    <h3 className="font-semibold text-lg">
+                    <h3 className="text-xl font-bold text-gray-900 dark:text-white">
                       {listing.make} {listing.model} {listing.year}
                     </h3>
                   </div>
-                  <div className="flex gap-2 ml-4">
+                  
+                  {/* Кнопки управления */}
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                     <Button
                       size="sm"
                       variant="outline"
                       onClick={() => setEditingListing(listing)}
                       disabled={approveMutation.isPending || rejectMutation.isPending || updateMutation.isPending}
+                      className="flex items-center justify-center gap-2 h-10 font-medium border-gray-300 hover:border-gray-400 hover:bg-gray-50 dark:border-gray-600 dark:hover:border-gray-500 dark:hover:bg-gray-700"
                     >
-                      <Edit className="h-4 w-4 mr-1" />
+                      <Edit className="h-4 w-4" />
                       Редактировать
                     </Button>
                     <Button
                       size="sm"
                       variant="default"
-                      className="bg-green-600 hover:bg-green-700"
                       onClick={() => approveMutation.mutate(listing.id)}
                       disabled={approveMutation.isPending || rejectMutation.isPending || updateMutation.isPending}
+                      className="flex items-center justify-center gap-2 h-10 font-medium bg-green-600 hover:bg-green-700 border-green-600 hover:border-green-700"
                     >
-                      <CheckCircle className="h-4 w-4 mr-1" />
+                      <CheckCircle className="h-4 w-4" />
                       Одобрить
                     </Button>
                     <Button
@@ -345,22 +351,23 @@ function ModerationManagement() {
                       variant="destructive"
                       onClick={() => rejectMutation.mutate(listing.id)}
                       disabled={approveMutation.isPending || rejectMutation.isPending || updateMutation.isPending || deleteMutation.isPending}
+                      className="flex items-center justify-center gap-2 h-10 font-medium bg-orange-600 hover:bg-orange-700 border-orange-600 hover:border-orange-700"
                     >
-                      <XCircle className="h-4 w-4 mr-1" />
+                      <XCircle className="h-4 w-4" />
                       Отклонить
                     </Button>
                     <Button
                       size="sm"
                       variant="destructive"
-                      className="bg-red-600 hover:bg-red-700"
                       onClick={() => {
                         if (confirm(`Вы уверены, что хотите удалить объявление "${listing.make} ${listing.model}"? Это действие нельзя отменить.`)) {
                           deleteMutation.mutate(listing.id);
                         }
                       }}
                       disabled={approveMutation.isPending || rejectMutation.isPending || updateMutation.isPending || deleteMutation.isPending}
+                      className="flex items-center justify-center gap-2 h-10 font-medium bg-red-600 hover:bg-red-700 border-red-600 hover:border-red-700"
                     >
-                      <Trash2 className="h-4 w-4 mr-1" />
+                      <Trash2 className="h-4 w-4" />
                       Удалить
                     </Button>
                   </div>
