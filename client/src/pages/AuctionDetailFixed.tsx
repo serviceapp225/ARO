@@ -255,18 +255,7 @@ export default function AuctionDetail() {
     if (lastBidUpdate && lastBidUpdate.listingId === parseInt(id || '0')) {
       console.log('🔥 Real-time обновление ставки:', lastBidUpdate);
       
-      // Агрессивное принудительное обновление кэша
-      queryClient.removeQueries({ queryKey: [`/api/listings/${id}/bids`] });
-      queryClient.removeQueries({ queryKey: [`/api/listings/${id}`] });
-      queryClient.invalidateQueries({ queryKey: [`/api/listings/${id}/bids`] });
-      queryClient.invalidateQueries({ queryKey: [`/api/listings/${id}`] });
-      queryClient.refetchQueries({ queryKey: [`/api/listings/${id}/bids`] });
-      queryClient.refetchQueries({ queryKey: [`/api/listings/${id}`] });
-      
-      // Также обновляем список аукционов на главной странице
-      queryClient.invalidateQueries({ queryKey: ['/api/listings'] });
-      
-      // Немедленно обновляем цену и поле ставки
+      // Немедленно обновляем состояние без перерисовки
       if (lastBidUpdate.data?.bid?.amount) {
         const newAmount = parseFloat(lastBidUpdate.data.bid.amount);
         setCurrentPrice(newAmount);
@@ -279,6 +268,15 @@ export default function AuctionDetail() {
           duration: 2000,
         });
       }
+      
+      // Дебаунс обновления кэша для предотвращения моргания
+      const timeoutId = setTimeout(() => {
+        queryClient.invalidateQueries({ queryKey: [`/api/listings/${id}/bids`] });
+        queryClient.invalidateQueries({ queryKey: [`/api/listings/${id}`] });
+        queryClient.invalidateQueries({ queryKey: ['/api/listings'] });
+      }, 300);
+      
+      return () => clearTimeout(timeoutId);
     }
   }, [lastBidUpdate, id, queryClient, toast]);
 
