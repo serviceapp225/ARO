@@ -833,30 +833,32 @@ function ListingsManagement() {
                     </div>
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => setSelectedListingId(listing.id)}
-                    className="flex items-center gap-1"
-                  >
-                    <Edit className="w-4 h-4" />
-                    Редактировать
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="destructive"
-                    onClick={() => {
-                      if (confirm(`Вы уверены, что хотите удалить объявление "${listing.make} ${listing.model}"? Это действие нельзя отменить.`)) {
-                        deleteListingMutation.mutate(listing.id);
-                      }
-                    }}
-                    disabled={deleteListingMutation.isPending}
-                    className="flex items-center gap-1"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                    Удалить
-                  </Button>
+                <div className="flex flex-col items-end gap-2">
+                  <div className="flex flex-col gap-1 w-full">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => setSelectedListingId(listing.id)}
+                      className="flex items-center justify-center gap-1 w-full"
+                    >
+                      <Edit className="w-4 h-4" />
+                      Редактировать
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="destructive"
+                      onClick={() => {
+                        if (confirm(`Вы уверены, что хотите удалить объявление "${listing.make} ${listing.model}"? Это действие нельзя отменить.`)) {
+                          deleteListingMutation.mutate(listing.id);
+                        }
+                      }}
+                      disabled={deleteListingMutation.isPending}
+                      className="flex items-center justify-center gap-1 w-full"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                      Удалить
+                    </Button>
+                  </div>
                   <Select
                     value={listing.status}
                     onValueChange={(status) => 
