@@ -549,20 +549,23 @@ export class SQLiteStorage implements IStorage {
   }
 
   async createListing(insertListing: InsertCarListing): Promise<CarListing> {
-    const stmt = this.db.prepare(`
-      INSERT INTO car_listings (
-        seller_id, lot_number, make, model, year, mileage, description, starting_price, reserve_price,
-        photos, auction_duration, status, auction_start_time, auction_end_time,
-        customs_cleared, recycled, technical_inspection_valid, technical_inspection_date,
-        tinted, tinting_date, engine, transmission, fuel_type, body_type, drive_type,
-        color, condition, vin, location
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `);
-    
-    // Calculate auction end time
-    const now = new Date();
-    const auctionStartTime = now.toISOString();
-    const auctionEndTime = new Date(now.getTime() + (insertListing.auctionDuration * 60 * 60 * 1000)).toISOString();
+    try {
+      console.log('Creating listing with data:', insertListing);
+      
+      const stmt = this.db.prepare(`
+        INSERT INTO car_listings (
+          seller_id, lot_number, make, model, year, mileage, description, starting_price, reserve_price,
+          photos, auction_duration, status, auction_start_time, auction_end_time,
+          customs_cleared, recycled, technical_inspection_valid, technical_inspection_date,
+          tinted, tinting_date, engine, transmission, fuel_type, body_type, drive_type,
+          color, condition, vin, location
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `);
+      
+      // Calculate auction end time
+      const now = new Date();
+      const auctionStartTime = now.toISOString();
+      const auctionEndTime = new Date(now.getTime() + (insertListing.auctionDuration * 60 * 60 * 1000)).toISOString();
     
     const result = stmt.run(
       insertListing.sellerId, insertListing.lotNumber, insertListing.make, insertListing.model,
@@ -582,7 +585,13 @@ export class SQLiteStorage implements IStorage {
       insertListing.location || null
     );
     
+    console.log('Listing created successfully with ID:', result.lastInsertRowid);
     return this.getListing(result.lastInsertRowid as number) as Promise<CarListing>;
+    
+    } catch (error) {
+      console.error('Error in SQLite createListing:', error);
+      throw error;
+    }
   }
 
   async updateListing(id: number, data: Partial<any>): Promise<CarListing | undefined> {

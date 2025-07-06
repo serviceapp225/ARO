@@ -596,10 +596,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       res.status(201).json(listing);
     } catch (error) {
+      console.error('Error creating listing:', error);
       if (error instanceof z.ZodError) {
         return res.status(400).json({ error: "Invalid listing data", details: error.errors });
       }
-      res.status(500).json({ error: "Failed to create listing" });
+      res.status(500).json({ error: "Failed to create listing", details: error.message });
     }
   });
 
