@@ -441,6 +441,8 @@ export default function AuctionDetail() {
     setShowBidConfirmation(false);
     setIsPlacingBid(true);
     
+    const bidValue = parseFloat(pendingBidAmount);
+    
     // Play celebration sound immediately when button is clicked
     setShowConfetti(true);
     
@@ -510,11 +512,12 @@ export default function AuctionDetail() {
     
     try {
       // Get current user ID from auth context
-      const userId = (currentUser as any)?.userId;
+      const userId = (currentUser as any)?.userId || (currentUser as any)?.id;
       if (!userId) {
+        console.error('User ID not found in auth context:', currentUser);
         toast({
           title: "Ошибка",
-          description: "Не удается определить пользователя",
+          description: "Не удается определить пользователя. Попробуйте перезагрузить страницу.",
           variant: "destructive",
         });
         return;
@@ -612,7 +615,7 @@ export default function AuctionDetail() {
       console.error('Error placing bid:', error);
       toast({
         title: "Ошибка",
-        description: "Не удалось разместить ставку. Попробуйте еще раз.",
+        description: error instanceof Error ? error.message : "Не удалось разместить ставку. Попробуйте еще раз.",
         variant: "destructive",
         duration: 3000,
       });
