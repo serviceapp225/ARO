@@ -154,8 +154,10 @@ export default function AuctionDetail() {
   const { data: bidsData } = useQuery({
     queryKey: [`/api/listings/${id}/bids`],
     enabled: !!id,
-    refetchInterval: 10000, // Refresh every 10 seconds for good performance
+    refetchInterval: 3000, // Refresh every 3 seconds for real-time feel
     refetchIntervalInBackground: true,
+    staleTime: 1000, // Данные устаревают через 1 секунду
+    gcTime: 5000, // В кэше только 5 секунд
   });
 
   // Get unique bidder IDs to fetch user data
@@ -253,27 +255,28 @@ export default function AuctionDetail() {
     if (lastBidUpdate && lastBidUpdate.listingId === parseInt(id || '0')) {
       console.log('🔥 Real-time обновление ставки:', lastBidUpdate);
       
-      // Агрессивное принудительное обновление кэша
-      queryClient.removeQueries({ queryKey: [`/api/listings/${id}/bids`] });
-      queryClient.removeQueries({ queryKey: [`/api/listings/${id}`] });
-      queryClient.invalidateQueries({ queryKey: [`/api/listings/${id}/bids`] });
-      queryClient.invalidateQueries({ queryKey: [`/api/listings/${id}`] });
+      // ЭКСТРЕННОЕ принудительное очищение всего кэша
+      queryClient.clear();
       
-      // Принудительно запрашиваем свежие данные
-      queryClient.refetchQueries({ queryKey: [`/api/listings/${id}/bids`], type: 'all' });
-      queryClient.refetchQueries({ queryKey: [`/api/listings/${id}`], type: 'all' });
-      
-      // Обновляем цену без перезагрузки
+      // Немедленно обновляем цену
       if (lastBidUpdate.data?.bid?.amount) {
-        setCurrentPrice(parseFloat(lastBidUpdate.data.bid.amount));
+        const newAmount = parseFloat(lastBidUpdate.data.bid.amount);
+        setCurrentPrice(newAmount);
+        setBidAmount((newAmount + 1000).toString());
         
         // Показываем уведомление о новой ставке
         toast({
           title: "🔥 Новая ставка!",
-          description: `${parseFloat(lastBidUpdate.data.bid.amount).toLocaleString()} Сомони`,
+          description: `${newAmount.toLocaleString()} Сомони`,
           duration: 2000,
         });
       }
+      
+      // Принудительно перезагружаем данные
+      setTimeout(() => {
+        queryClient.refetchQueries({ queryKey: [`/api/listings/${id}/bids`] });
+        queryClient.refetchQueries({ queryKey: [`/api/listings/${id}`] });
+      }, 100);
     }
   }, [lastBidUpdate, id, queryClient, toast]);
 
