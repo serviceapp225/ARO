@@ -566,6 +566,20 @@ function UsersManagement() {
   const queryClient = useQueryClient();
   const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
 
+  const handleRefreshUsers = () => {
+    console.log('Обновление списка пользователей...');
+    // Принудительное обновление кэша
+    queryClient.removeQueries({ queryKey: ['/api/admin/users'] });
+    queryClient.invalidateQueries({ queryKey: ['/api/admin/users'] });
+    queryClient.refetchQueries({ queryKey: ['/api/admin/users'] });
+    
+    toast({
+      title: "Список обновлен",
+      description: "Данные пользователей обновлены",
+      duration: 1000
+    });
+  };
+
   const { data: users = [], isLoading } = useQuery<User[]>({
     queryKey: ['/api/admin/users'],
     refetchInterval: 3000, // Обновляем каждые 3 секунды
@@ -588,7 +602,7 @@ function UsersManagement() {
             <Button 
               variant="outline" 
               size="sm"
-              onClick={() => queryClient.invalidateQueries({ queryKey: ['/api/admin/users'] })}
+              onClick={handleRefreshUsers}
             >
               <RefreshCw className="w-4 h-4 mr-2" />
               Обновить
