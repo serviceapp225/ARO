@@ -99,19 +99,29 @@ export function UserDetailModal({ userId, isOpen, onClose }: UserDetailModalProp
       const response = await fetch(`/api/admin/users/${userId}`, {
         method: 'DELETE',
       });
-      if (!response.ok) throw new Error('Failed to delete user');
-      return response.json();
+      if (!response.ok) {
+        const errorData = await response.text();
+        throw new Error(`Ошибка удаления: ${response.status} - ${errorData}`);
+      }
+      return true; // Успешное удаление
     },
     onSuccess: () => {
       toast({ 
         title: 'Пользователь удален',
-        duration: 1000 // Автоматически исчезает через 1 секунду
+        description: 'Пользователь и все связанные данные успешно удалены',
+        duration: 2000
       });
       queryClient.invalidateQueries({ queryKey: ['/api/admin/users'] });
       onClose();
     },
-    onError: () => {
-      toast({ title: 'Ошибка при удалении пользователя', variant: 'destructive' });
+    onError: (error) => {
+      console.error('Delete user error:', error);
+      toast({ 
+        title: 'Ошибка при удалении пользователя', 
+        description: error.message,
+        variant: 'destructive',
+        duration: 5000
+      });
     },
   });
 

@@ -336,8 +336,43 @@ export class SQLiteStorage implements IStorage {
 
   async deleteUser(id: number): Promise<boolean> {
     try {
-      const stmt = this.db.prepare('DELETE FROM users WHERE id = ?');
-      stmt.run(id);
+      // Каскадное удаление всех связанных данных с безопасными запросами
+      const transaction = this.db.transaction(() => {
+        try {
+          // Удаляем ставки пользователя (если таблица существует)
+          try { this.db.prepare('DELETE FROM bids WHERE bidder_id = ?').run(id); } catch {}
+          
+          // Удаляем избранное пользователя (если таблица существует)
+          try { this.db.prepare('DELETE FROM favorites WHERE user_id = ?').run(id); } catch {}
+          
+          // Удаляем уведомления пользователя (если таблица существует)
+          try { this.db.prepare('DELETE FROM notifications WHERE user_id = ?').run(id); } catch {}
+          
+          // Удаляем алерты пользователя (если таблица существует)
+          try { this.db.prepare('DELETE FROM car_alerts WHERE user_id = ?').run(id); } catch {}
+          
+          // Удаляем просмотры алертов пользователя (если таблица существует)
+          try { this.db.prepare('DELETE FROM alert_views WHERE user_id = ?').run(id); } catch {}
+          
+          // Удаляем документы пользователя (если таблица существует)
+          try { this.db.prepare('DELETE FROM documents WHERE user_id = ?').run(id); } catch {}
+          
+          // Удаляем объявления пользователя (если он продавец)
+          try { this.db.prepare('DELETE FROM car_listings WHERE seller_id = ?').run(id); } catch {}
+          
+          // Наконец удаляем самого пользователя
+          const result = this.db.prepare('DELETE FROM users WHERE id = ?').run(id);
+          
+          if (result.changes === 0) {
+            throw new Error(`User with id ${id} not found`);
+          }
+        } catch (error) {
+          throw error; // Перебрасываем ошибку для обработки во внешнем блоке
+        }
+      });
+      
+      transaction();
+      console.log(`User ${id} and all related data deleted successfully`);
       return true;
     } catch (error) {
       console.error("Failed to delete user:", error);
