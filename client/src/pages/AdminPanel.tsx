@@ -405,6 +405,8 @@ function EditListingModal({ listing, onClose, onUpdate, isUpdating }: {
     mileage: listing.mileage,
     description: listing.description,
     startingPrice: listing.startingPrice,
+    reservePrice: listing.reservePrice || '',
+    auctionDuration: listing.auctionDuration || 7,
     condition: listing.condition || 'good',
     location: listing.location || '',
     engine: listing.engine || '',
@@ -416,7 +418,8 @@ function EditListingModal({ listing, onClose, onUpdate, isUpdating }: {
     customsCleared: listing.customsCleared || false,
     recycled: listing.recycled || false,
     technicalInspectionValid: listing.technicalInspectionValid || false,
-    tinted: listing.tinted || false
+    tinted: listing.tinted || false,
+    photos: listing.photos || []
   });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -485,6 +488,27 @@ function EditListingModal({ listing, onClose, onUpdate, isUpdating }: {
                 />
               </div>
               <div>
+                <Label htmlFor="reservePrice">Резервная цена (сомони)</Label>
+                <Input
+                  id="reservePrice"
+                  value={formData.reservePrice}
+                  onChange={(e) => setFormData({ ...formData, reservePrice: e.target.value })}
+                  placeholder="Не указана"
+                />
+              </div>
+              <div>
+                <Label htmlFor="auctionDuration">Продолжительность аукциона (дни)</Label>
+                <Input
+                  id="auctionDuration"
+                  type="number"
+                  min="1"
+                  max="30"
+                  value={formData.auctionDuration}
+                  onChange={(e) => setFormData({ ...formData, auctionDuration: parseInt(e.target.value) || 7 })}
+                  required
+                />
+              </div>
+              <div>
                 <Label htmlFor="condition">Состояние</Label>
                 <Select
                   value={formData.condition}
@@ -529,6 +553,36 @@ function EditListingModal({ listing, onClose, onUpdate, isUpdating }: {
                 rows={3}
                 required
               />
+            </div>
+
+            {/* Секция фотографий */}
+            <div>
+              <Label className="text-base font-medium">Фотографии ({formData.photos.length} шт.)</Label>
+              {formData.photos && formData.photos.length > 0 ? (
+                <div className="mt-3 grid grid-cols-2 md:grid-cols-4 gap-3">
+                  {formData.photos.map((photo, index) => (
+                    <div key={index} className="relative group">
+                      <img
+                        src={photo}
+                        alt={`Фото ${index + 1}`}
+                        className="w-full h-24 object-cover rounded-lg border"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const newPhotos = formData.photos.filter((_, i) => i !== index);
+                          setFormData({ ...formData, photos: newPhotos });
+                        }}
+                        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600 opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-gray-500 text-sm mt-2">Фотографии не загружены</p>
+              )}
             </div>
 
             <div className="grid grid-cols-2 gap-4">
