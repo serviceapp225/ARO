@@ -1566,9 +1566,9 @@ export class SQLiteStorage implements IStorage {
   // Удаление архивированного аукциона навсегда
   async deleteArchivedListing(id: number): Promise<boolean> {
     try {
-      // Проверяем что аукцион архивирован
+      // Проверяем что аукцион завершен (ended означает архивированный)
       const listing = await this.getListing(id);
-      if (!listing || listing.status !== 'archived') {
+      if (!listing || listing.status !== 'ended') {
         return false;
       }
 

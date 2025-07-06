@@ -2317,6 +2317,7 @@ function AdminStats() {
 function ArchiveManagement() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [deletingArchived, setDeletingArchived] = useState<any>(null);
   
   // Запросы для получения данных
   const { data: archivedListings, isLoading: isLoadingArchived } = useQuery({
@@ -2503,14 +2504,35 @@ function ArchiveManagement() {
                     >
                       Перезапустить
                     </Button>
-                    <Button
-                      size="sm"
-                      variant="destructive"
-                      onClick={() => deleteArchivedMutation.mutate(listing.id)}
-                      disabled={deleteArchivedMutation.isPending}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          disabled={deleteArchivedMutation.isPending}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Удалить навсегда</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Вы уверены, что хотите навсегда удалить архивированный аукцион "{listing.make} {listing.model}"? 
+                            Это действие нельзя отменить.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Отмена</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={() => deleteArchivedMutation.mutate(listing.id)}
+                            className="bg-red-600 hover:bg-red-700"
+                          >
+                            Удалить навсегда
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
                   </div>
                 </div>
               </CardContent>
