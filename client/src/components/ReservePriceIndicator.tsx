@@ -46,7 +46,7 @@ export function ReservePriceIndicator({
           <div className="flex items-center space-x-2">
             <Shield className="h-4 w-4 text-orange-500" />
             <span className="text-sm text-gray-600 dark:text-gray-400">
-              Резерв: {reserve.toLocaleString()} Сомони
+              Резервная цена не достигнута
             </span>
           </div>
           <span className="text-xs text-gray-500">
@@ -58,7 +58,7 @@ export function ReservePriceIndicator({
           className="h-2"
         />
         <p className="text-xs text-gray-500">
-          Осталось: {(reserve - current).toLocaleString()} Сомони до резерва
+          Продолжайте торги для достижения резерва
         </p>
       </div>
     );
@@ -84,7 +84,7 @@ export function ReservePriceIndicator({
       ) : (
         <>
           <Shield className="h-3 w-3" />
-          <span>РЕЗЕРВ АКТИВЕН</span>
+          <span>РЕЗЕРВ НЕ ДОСТИГНУТ</span>
         </>
       )}
     </Badge>
