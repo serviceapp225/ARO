@@ -28,10 +28,18 @@ export class SQLiteStorage implements IStorage {
         full_name TEXT,
         role TEXT NOT NULL,
         profile_photo TEXT,
+        phone_number TEXT,
         is_active BOOLEAN DEFAULT 0,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
       )
     `);
+
+    // Добавляем колонку phone_number если она не существует
+    try {
+      this.db.exec(`ALTER TABLE users ADD COLUMN phone_number TEXT`);
+    } catch (error) {
+      // Колонка уже существует, игнорируем ошибку
+    }
 
     // Create car_listings table (только если не существует)
     this.db.exec(`
@@ -279,12 +287,12 @@ export class SQLiteStorage implements IStorage {
 
   async createUser(insertUser: InsertUser): Promise<User> {
     const stmt = this.db.prepare(`
-      INSERT INTO users (username, email, role, full_name, profile_photo, is_active)
-      VALUES (?, ?, ?, ?, ?, ?)
+      INSERT INTO users (username, email, role, full_name, profile_photo, phone_number, is_active)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
     `);
     const result = stmt.run(insertUser.username, insertUser.email, insertUser.role, 
                            insertUser.fullName || null, insertUser.profilePhoto || null, 
-                           insertUser.isActive ? 1 : 0);
+                           insertUser.phoneNumber || null, insertUser.isActive ? 1 : 0);
     
     return this.getUser(result.lastInsertRowid as number) as Promise<User>;
   }

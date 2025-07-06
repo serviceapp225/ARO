@@ -882,7 +882,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Create new user
   app.post("/api/users", async (req, res) => {
     try {
-      const { email, username, fullName, isActive, role } = req.body;
+      const { email, username, fullName, isActive, role, phoneNumber } = req.body;
       
       if (!email || !username) {
         return res.status(400).json({ error: "Email and username are required" });
@@ -899,7 +899,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         username,
         fullName: fullName || null,
         isActive: isActive || false,
-        role: role || 'buyer'
+        role: role || 'buyer',
+        phoneNumber: phoneNumber || null
       });
       
       console.log(`Created new user: ${user.id} (${user.email})`);

@@ -117,7 +117,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                       username: demoUser.phoneNumber,
                       fullName: null,
                       isActive: false, // Новые пользователи неактивны по умолчанию
-                      role: 'buyer'
+                      role: 'buyer',
+                      phoneNumber: demoUser.phoneNumber // Добавляем номер телефона
                     })
                   });
                   
