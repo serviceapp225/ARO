@@ -92,12 +92,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               console.error('Failed to load user data:', error);
             }
           } else {
-            // Для остальных пользователей - быстрый запрос без блокировки UI
+            // Для остальных пользователей - синхронная проверка и создание
             demoUser.isActive = false;
             demoUser.userId = null;
             
-            // Асинхронная проверка и создание пользователя в фоне
-            setTimeout(async () => {
+            // Немедленная проверка и создание пользователя
+            (async () => {
               try {
                 const emailFromPhone = phoneDigits + '@autoauction.tj';
                 let response = await fetch(`/api/users/by-email/${encodeURIComponent(emailFromPhone)}`);
@@ -130,22 +130,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                   }
                 }
                 
-                demoUser.isActive = dbUser.isActive;
-                demoUser.userId = dbUser.id;
-                demoUser.fullName = dbUser.fullName;
+                // Обновляем данные пользователя
+                const updatedUser = {
+                  ...demoUser,
+                  isActive: dbUser.isActive,
+                  userId: dbUser.id,
+                  fullName: dbUser.fullName
+                };
                 
-                // Обновляем пользователя после получения данных
-                setUser({...demoUser});
+                setUser(updatedUser);
                 
                 // Кэшируем для будущих входов
                 preCacheUserData(demoUser.phoneNumber, {
                   isActive: dbUser.isActive,
                   userId: dbUser.id
                 });
+                
+                // Обновляем localStorage
+                localStorage.setItem('demo-user', JSON.stringify(updatedUser));
+                
               } catch (error) {
-                console.error('Background user check failed:', error);
+                console.error('User creation failed:', error);
               }
-            }, 100);
+            })();
           }
           
           setUser(demoUser);
