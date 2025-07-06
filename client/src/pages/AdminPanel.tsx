@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Trash2, User as UserIcon, Car, Bell, Settings, CheckCircle, XCircle, AlertCircle, Edit, Search, Image, Plus, Eye, ChevronUp } from 'lucide-react';
+import { Trash2, User as UserIcon, Car, Bell, Settings, CheckCircle, XCircle, AlertCircle, Edit, Search, Image, Plus, Eye, ChevronUp, RefreshCw } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { Link } from 'wouter';
@@ -568,6 +568,9 @@ function UsersManagement() {
 
   const { data: users = [], isLoading } = useQuery<User[]>({
     queryKey: ['/api/admin/users'],
+    refetchInterval: 3000, // Обновляем каждые 3 секунды
+    staleTime: 0, // Данные всегда считаются устаревшими
+    gcTime: 1000, // Очищаем кэш через 1 секунду
   });
 
 
@@ -580,7 +583,17 @@ function UsersManagement() {
     <div className="space-y-4">
       <Card>
         <CardHeader>
-          <CardTitle>Управление пользователями</CardTitle>
+          <CardTitle className="flex items-center justify-between">
+            Управление пользователями
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => queryClient.invalidateQueries({ queryKey: ['/api/admin/users'] })}
+            >
+              <RefreshCw className="w-4 h-4 mr-2" />
+              Обновить
+            </Button>
+          </CardTitle>
           <CardDescription>
             Активация и деактивация пользователей системы
           </CardDescription>
