@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Trash2, User as UserIcon, Car, Bell, Settings, CheckCircle, XCircle, AlertCircle, Edit, Search, Image, Plus, Eye, ChevronUp, RefreshCw, Award } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
@@ -359,20 +360,37 @@ function ModerationManagement() {
                       <XCircle className="h-4 w-4" />
                       Отклонить
                     </Button>
-                    <Button
-                      size="sm"
-                      variant="destructive"
-                      onClick={() => {
-                        if (confirm(`Вы уверены, что хотите удалить объявление "${listing.make} ${listing.model}"? Это действие нельзя отменить.`)) {
-                          deleteMutation.mutate(listing.id);
-                        }
-                      }}
-                      disabled={approveMutation.isPending || rejectMutation.isPending || updateMutation.isPending || deleteMutation.isPending}
-                      className="flex items-center justify-center gap-2 h-10 font-medium bg-red-600 hover:bg-red-700 border-red-600 hover:border-red-700"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                      Удалить
-                    </Button>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          disabled={approveMutation.isPending || rejectMutation.isPending || updateMutation.isPending || deleteMutation.isPending}
+                          className="flex items-center justify-center gap-2 h-10 font-medium bg-red-600 hover:bg-red-700 border-red-600 hover:border-red-700"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                          Удалить
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Подтвердите удаление</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Вы уверены, что хотите удалить объявление "{listing.make} {listing.model}"? 
+                            Это действие нельзя отменить.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Отмена</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={() => deleteMutation.mutate(listing.id)}
+                            className="bg-red-600 hover:bg-red-700"
+                          >
+                            Удалить
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
                   </div>
                 </div>
               </div>
@@ -966,37 +984,71 @@ function ListingsManagement() {
                     </Button>
                     
                     {listing.status === 'active' && (
-                      <Button
-                        size="sm"
-                        variant="default"
-                        onClick={() => {
-                          if (confirm(`Завершить аукцион "${listing.make} ${listing.model}"? Будет определен победитель по самой высокой ставке.`)) {
-                            endAuctionMutation.mutate(listing.id);
-                          }
-                        }}
-                        disabled={endAuctionMutation.isPending}
-                        className="flex-1 md:flex-none flex items-center justify-center gap-1 md:gap-2 h-8 md:h-9 text-xs md:text-sm font-medium bg-amber-600 hover:bg-amber-700 border-amber-600 hover:border-amber-700"
-                      >
-                        <Award className="w-3 h-3 md:w-4 md:h-4" />
-                        <span className="hidden sm:inline">Завершить</span>
-                        <span className="sm:hidden">Конец</span>
-                      </Button>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button
+                            size="sm"
+                            variant="default"
+                            disabled={endAuctionMutation.isPending}
+                            className="flex-1 md:flex-none flex items-center justify-center gap-1 md:gap-2 h-8 md:h-9 text-xs md:text-sm font-medium bg-amber-600 hover:bg-amber-700 border-amber-600 hover:border-amber-700"
+                          >
+                            <Award className="w-3 h-3 md:w-4 md:h-4" />
+                            <span className="hidden sm:inline">Завершить</span>
+                            <span className="sm:hidden">Конец</span>
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Завершить аукцион</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Завершить аукцион "{listing.make} {listing.model}"? 
+                              Будет определен победитель по самой высокой ставке.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Отмена</AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={() => endAuctionMutation.mutate(listing.id)}
+                              className="bg-amber-600 hover:bg-amber-700"
+                            >
+                              Завершить
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
                     )}
                     
-                    <Button
-                      size="sm"
-                      variant="destructive"
-                      onClick={() => {
-                        if (confirm(`Вы уверены, что хотите удалить объявление "${listing.make} ${listing.model}"? Это действие нельзя отменить.`)) {
-                          deleteListingMutation.mutate(listing.id);
-                        }
-                      }}
-                      disabled={deleteListingMutation.isPending}
-                      className="flex-1 md:flex-none flex items-center justify-center gap-1 md:gap-2 h-8 md:h-9 text-xs md:text-sm font-medium bg-red-600 hover:bg-red-700 border-red-600 hover:border-red-700"
-                    >
-                      <Trash2 className="w-3 h-3 md:w-4 md:h-4" />
-                      Удалить
-                    </Button>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          disabled={deleteListingMutation.isPending}
+                          className="flex-1 md:flex-none flex items-center justify-center gap-1 md:gap-2 h-8 md:h-9 text-xs md:text-sm font-medium bg-red-600 hover:bg-red-700 border-red-600 hover:border-red-700"
+                        >
+                          <Trash2 className="w-3 h-3 md:w-4 md:h-4" />
+                          Удалить
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Подтвердите удаление</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Вы уверены, что хотите удалить объявление "{listing.make} {listing.model}"? 
+                            Это действие нельзя отменить.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Отмена</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={() => deleteListingMutation.mutate(listing.id)}
+                            className="bg-red-600 hover:bg-red-700"
+                          >
+                            Удалить
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
                   </div>
                   <div className="border-t border-gray-200 dark:border-gray-600 pt-3">
                     <Label className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-2 block">
@@ -1770,6 +1822,7 @@ function AdvertisementCarouselManagement() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const [editingItem, setEditingItem] = useState<AdvertisementCarousel | null>(null);
+  const [deletingItem, setDeletingItem] = useState<AdvertisementCarousel | null>(null);
   const [formKey, setFormKey] = useState(0); // Для принудительного обновления формы
   const [formData, setFormData] = useState({
     title: '',
@@ -1962,9 +2015,14 @@ function AdvertisementCarouselManagement() {
     queryClient.refetchQueries({ queryKey: ['/api/admin/advertisement-carousel'] });
   };
 
-  const handleDelete = (id: number) => {
-    if (confirm('Вы уверены, что хотите удалить это объявление?')) {
-      deleteItemMutation.mutate(id);
+  const handleDelete = (item: AdvertisementCarousel) => {
+    setDeletingItem(item);
+  };
+
+  const confirmDelete = () => {
+    if (deletingItem) {
+      deleteItemMutation.mutate(deletingItem.id);
+      setDeletingItem(null);
     }
   };
 
@@ -2141,7 +2199,7 @@ function AdvertisementCarouselManagement() {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => handleDelete(item.id)}
+                      onClick={() => handleDelete(item)}
                       className="text-red-600 hover:text-red-700"
                     >
                       <Trash2 className="w-4 h-4" />
@@ -2174,6 +2232,28 @@ function AdvertisementCarouselManagement() {
           </Card>
         )}
       </div>
+
+      {/* Модальное окно для подтверждения удаления */}
+      <AlertDialog open={!!deletingItem} onOpenChange={() => setDeletingItem(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Подтвердите удаление</AlertDialogTitle>
+            <AlertDialogDescription>
+              Вы уверены, что хотите удалить рекламное объявление "{deletingItem?.title}"?
+              Это действие нельзя отменить.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Отмена</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDelete}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              Удалить
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
