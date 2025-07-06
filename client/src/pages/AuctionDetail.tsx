@@ -41,6 +41,7 @@ export default function AuctionDetail() {
   const [currentPrice, setCurrentPrice] = useState(0);
   const [showBidConfirmation, setShowBidConfirmation] = useState(false);
   const [pendingBidAmount, setPendingBidAmount] = useState("");
+  const [hasShownEndNotification, setHasShownEndNotification] = useState(false);
   
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -307,6 +308,11 @@ export default function AuctionDetail() {
 
   // Функция для обработки окончания аукциона
   const handleAuctionEnd = () => {
+    // Проверяем, было ли уже показано уведомление о завершении
+    if (hasShownEndNotification) {
+      return;
+    }
+
     const bidsArray = sortedBids || [];
     
     if (bidsArray.length === 0) {
@@ -314,15 +320,16 @@ export default function AuctionDetail() {
       if (isFavorite(id!)) {
         removeFromFavorites(id!);
       }
+      setHasShownEndNotification(true);
       return;
     }
 
     // Находим наивысшую ставку (первая в отсортированном массиве)
     const highestBid = bidsArray[0];
 
-    // Проверяем, является ли текущий пользователь (ID 3) победителем
-    const currentUserId = 3;
-    const isWinner = highestBid.bidderId === currentUserId;
+    // Проверяем, является ли текущий пользователь победителем
+    const currentUserId = (currentUser as any)?.userId;
+    const isWinner = currentUserId && highestBid.bidderId === currentUserId;
 
     if (isWinner) {
       // Показываем сообщение о победе
@@ -342,6 +349,9 @@ export default function AuctionDetail() {
         });
       }
     }
+    
+    // Устанавливаем флаг, что уведомление уже показано
+    setHasShownEndNotification(true);
   };
 
   useEffect(() => {

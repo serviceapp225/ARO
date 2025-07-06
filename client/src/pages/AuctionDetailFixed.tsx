@@ -49,6 +49,7 @@ export default function AuctionDetail() {
   const [showActivationDialog, setShowActivationDialog] = useState(false);
   const [showBidConfirmation, setShowBidConfirmation] = useState(false);
   const [pendingBidAmount, setPendingBidAmount] = useState("");
+  const [hasShownEndNotification, setHasShownEndNotification] = useState(false);
   
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -336,12 +337,18 @@ export default function AuctionDetail() {
 
   // Function definitions
   const handleAuctionEnd = () => {
+    // Проверяем, было ли уже показано уведомление о завершении
+    if (hasShownEndNotification) {
+      return;
+    }
+
     const bidsArray = sortedBids || [];
     
     if (bidsArray.length === 0) {
       if (isFavorite(id!)) {
         removeFromFavorites(id!);
       }
+      setHasShownEndNotification(true);
       return;
     }
 
@@ -368,6 +375,9 @@ export default function AuctionDetail() {
         });
       }
     }
+    
+    // Устанавливаем флаг, что уведомление уже показано
+    setHasShownEndNotification(true);
   };
 
   const calculateTimeLeft = (endDate: string) => {

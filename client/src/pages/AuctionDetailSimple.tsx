@@ -45,6 +45,7 @@ export default function AuctionDetail() {
   const [showConfetti, setShowConfetti] = useState(false);
   const [currentPrice, setCurrentPrice] = useState(0);
   const [showActivationDialog, setShowActivationDialog] = useState(false);
+  const [hasShownEndNotification, setHasShownEndNotification] = useState(false);
   
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -208,6 +209,11 @@ export default function AuctionDetail() {
 
   // Handle auction end callback
   const handleAuctionEnd = useCallback(() => {
+    // Проверяем, было ли уже показано уведомление о завершении
+    if (hasShownEndNotification) {
+      return;
+    }
+
     const bidsArray = sortedBids || [];
     
     if (bidsArray.length === 0) {
@@ -215,6 +221,7 @@ export default function AuctionDetail() {
       if (isFavorite(id!)) {
         removeFromFavorites(id!);
       }
+      setHasShownEndNotification(true);
       return;
     }
 
@@ -243,7 +250,10 @@ export default function AuctionDetail() {
         });
       }
     }
-  }, [sortedBids, id, isFavorite, removeFromFavorites, toast]);
+    
+    // Устанавливаем флаг, что уведомление уже показано
+    setHasShownEndNotification(true);
+  }, [sortedBids, id, isFavorite, removeFromFavorites, toast, hasShownEndNotification]);
 
   // Handle bid submission
   const handleBidSubmit = (e: React.FormEvent) => {
