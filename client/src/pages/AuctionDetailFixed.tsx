@@ -12,6 +12,7 @@ import { useFavorites } from '@/contexts/FavoritesContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAuctionWebSocket } from '@/hooks/useAuctionWebSocket';
 import { AutoImageCarousel } from '@/components/AutoImageCarousel';
+import { BidConfirmationDialog } from '@/components/BidConfirmationDialog';
 import { 
   ArrowLeft, Car, Heart, Clock, TrendingUp, 
   Users, MapPin, Calendar, Gauge, Fuel, 
@@ -45,6 +46,8 @@ export default function AuctionDetail() {
   const [isPlacingBid, setIsPlacingBid] = useState(false);
   const [imageLoadError, setImageLoadError] = useState(false);
   const [showActivationDialog, setShowActivationDialog] = useState(false);
+  const [showBidConfirmation, setShowBidConfirmation] = useState(false);
+  const [pendingBidAmount, setPendingBidAmount] = useState("");
   
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -429,6 +432,13 @@ export default function AuctionDetail() {
       return;
     }
     
+    // Показываем диалог подтверждения
+    setPendingBidAmount(bidAmount);
+    setShowBidConfirmation(true);
+  };
+
+  const handleConfirmBid = async () => {
+    setShowBidConfirmation(false);
     setIsPlacingBid(true);
     
     // Play celebration sound immediately when button is clicked
@@ -608,7 +618,14 @@ export default function AuctionDetail() {
       });
     } finally {
       setIsPlacingBid(false);
+      setBidAmount("");
+      setPendingBidAmount("");
     }
+  };
+
+  const handleCancelBid = () => {
+    setShowBidConfirmation(false);
+    setPendingBidAmount("");
   };
 
   const handleFavoriteToggle = async () => {
@@ -1255,6 +1272,16 @@ export default function AuctionDetail() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Диалог подтверждения ставки */}
+      <BidConfirmationDialog
+        isOpen={showBidConfirmation}
+        onConfirm={handleConfirmBid}
+        onCancel={handleCancelBid}
+        bidAmount={pendingBidAmount}
+        currentBid={auction.currentBid?.toString() || '0'}
+        carTitle={`${auction?.make} ${auction?.model} ${auction?.year}`}
+      />
     </div>
   );
 }

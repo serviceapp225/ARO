@@ -9,6 +9,7 @@ import { useFavorites } from "@/contexts/FavoritesContext";
 import { AutoImageCarousel } from "@/components/AutoImageCarousel";
 import { ConfettiEffect } from "@/components/ConfettiEffect";
 import { AnimatedPrice } from "@/components/AnimatedPrice";
+import { BidConfirmationDialog } from "@/components/BidConfirmationDialog";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
@@ -38,6 +39,8 @@ export default function AuctionDetail() {
   const [isDragging, setIsDragging] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
   const [currentPrice, setCurrentPrice] = useState(0);
+  const [showBidConfirmation, setShowBidConfirmation] = useState(false);
+  const [pendingBidAmount, setPendingBidAmount] = useState("");
   
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -414,19 +417,37 @@ export default function AuctionDetail() {
       return;
     }
     
+    // Показываем диалог подтверждения
+    setPendingBidAmount(bidAmount);
+    setShowBidConfirmation(true);
+  };
+
+  const handleConfirmBid = () => {
+    setShowBidConfirmation(false);
+    
     extendAuctionIfNeeded();
     
     // Place bid using real API with user ID 3 (buyer user)
     bidMutation.mutate({
       bidderId: 3,
-      amount: bidAmount
+      amount: pendingBidAmount
     });
+    
+    // Очищаем поле ввода после размещения ставки
+    setBidAmount("");
+    setPendingBidAmount("");
+  };
+
+  const handleCancelBid = () => {
+    setShowBidConfirmation(false);
+    setPendingBidAmount("");
   };
 
   const handleQuickBid = (amount: number) => {
     const newBidAmount = parseFloat(auction.currentBid || '0') + amount;
-    extendAuctionIfNeeded();
-    setBidAmount(newBidAmount.toString());
+    // Показываем диалог подтверждения для быстрых ставок
+    setPendingBidAmount(newBidAmount.toString());
+    setShowBidConfirmation(true);
   };
 
   const handleWhatsAppContact = () => {
@@ -1044,6 +1065,16 @@ export default function AuctionDetail() {
           </div>
         </div>
       )}
+
+      {/* Диалог подтверждения ставки */}
+      <BidConfirmationDialog
+        isOpen={showBidConfirmation}
+        onConfirm={handleConfirmBid}
+        onCancel={handleCancelBid}
+        bidAmount={pendingBidAmount}
+        currentBid={auction.currentBid || '0'}
+        carTitle={`${auction?.make} ${auction?.model} ${auction?.year}`}
+      />
     </div>
   );
 }
