@@ -405,7 +405,7 @@ function EditListingModal({ listing, onClose, onUpdate, isUpdating }: {
     mileage: listing.mileage,
     description: listing.description,
     startingPrice: listing.startingPrice,
-    reservePrice: listing.reservePrice || '',
+    reservePrice: listing.reservePrice ? String(listing.reservePrice) : '',
     auctionDuration: listing.auctionDuration || 7,
     condition: listing.condition || 'good',
     location: listing.location || '',

@@ -472,6 +472,14 @@ export class SQLiteStorage implements IStorage {
       fields.push('starting_price = ?');
       values.push(data.startingPrice);
     }
+    if (data.reservePrice !== undefined) {
+      fields.push('reserve_price = ?');
+      values.push(data.reservePrice || null);
+    }
+    if (data.auctionDuration !== undefined) {
+      fields.push('auction_duration = ?');
+      values.push(data.auctionDuration);
+    }
     if (data.condition !== undefined) {
       fields.push('condition = ?');
       values.push(data.condition);
@@ -520,6 +528,10 @@ export class SQLiteStorage implements IStorage {
       fields.push('tinted = ?');
       values.push(data.tinted ? 1 : 0);
     }
+    if (data.photos !== undefined) {
+      fields.push('photos = ?');
+      values.push(JSON.stringify(data.photos));
+    }
 
     if (fields.length > 0) {
       values.push(id);
@@ -539,12 +551,12 @@ export class SQLiteStorage implements IStorage {
   async createListing(insertListing: InsertCarListing): Promise<CarListing> {
     const stmt = this.db.prepare(`
       INSERT INTO car_listings (
-        seller_id, lot_number, make, model, year, mileage, description, starting_price,
+        seller_id, lot_number, make, model, year, mileage, description, starting_price, reserve_price,
         photos, auction_duration, status, auction_start_time, auction_end_time,
         customs_cleared, recycled, technical_inspection_valid, technical_inspection_date,
         tinted, tinting_date, engine, transmission, fuel_type, body_type, drive_type,
         color, condition, vin, location
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
     
     // Calculate auction end time
@@ -555,7 +567,9 @@ export class SQLiteStorage implements IStorage {
     const result = stmt.run(
       insertListing.sellerId, insertListing.lotNumber, insertListing.make, insertListing.model,
       insertListing.year, insertListing.mileage, insertListing.description, 
-      parseFloat(insertListing.startingPrice), JSON.stringify(insertListing.photos), 
+      parseFloat(insertListing.startingPrice), 
+      (insertListing as any).reservePrice ? parseFloat((insertListing as any).reservePrice) : null,
+      JSON.stringify(insertListing.photos), 
       insertListing.auctionDuration, (insertListing as any).status || 'pending',
       auctionStartTime, auctionEndTime, // Set proper auction times
       insertListing.customsCleared ? 1 : 0, insertListing.recycled ? 1 : 0,
@@ -784,6 +798,7 @@ export class SQLiteStorage implements IStorage {
       mileage: row.mileage,
       description: row.description,
       startingPrice: row.starting_price.toString(),
+      reservePrice: row.reserve_price ? row.reserve_price.toString() : null,
       currentBid: row.current_bid ? row.current_bid.toString() : null,
       photos: JSON.parse(row.photos),
       auctionDuration: row.auction_duration,
