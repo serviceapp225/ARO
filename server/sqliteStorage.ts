@@ -60,7 +60,6 @@ export class SQLiteStorage implements IStorage {
         mileage INTEGER NOT NULL,
         description TEXT NOT NULL,
         starting_price DECIMAL(12,2) NOT NULL,
-        reserve_price DECIMAL(12,2),
         current_bid DECIMAL(12,2),
         photos TEXT NOT NULL,
         auction_duration INTEGER NOT NULL,
@@ -226,17 +225,17 @@ export class SQLiteStorage implements IStorage {
     const insertListing = this.db.prepare(`
       INSERT INTO car_listings (
         seller_id, lot_number, make, model, year, mileage, vin, description,
-        starting_price, reserve_price, current_bid, photos, auction_duration, status,
+        starting_price, current_bid, photos, auction_duration, status,
         auction_start_time, auction_end_time, customs_cleared, recycled,
         technical_inspection_valid, technical_inspection_date, engine,
         transmission, fuel_type, body_type, drive_type, color, condition, location
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
 
     insertListing.run(
       2, 'LOT724583', 'Porsche', '911 Turbo S', 2020, 15000, 'WP0AB2A95LS123456',
       'Потрясающий Porsche 911 Turbo S 2020 года - шедевр автомобильной инженерии',
-      140000.00, 150000.00, 145500.00, 
+      140000.00, 145500.00, 
       JSON.stringify(["https://images.unsplash.com/photo-1544636331-e26879cd4d9b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600", "https://images.unsplash.com/photo-1563720223185-11003d516935?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"]),
       72, 'active', new Date().toISOString(), '2025-06-30T13:30:00Z', 1, 0, 1, '2025-12-31',
       '3.8L Twin-Turbo V6', 'Автомат', 'Бензин', 'Купе', 'Полный привод', 'Черный', 'Отличное', 'Душанбе'
@@ -245,7 +244,7 @@ export class SQLiteStorage implements IStorage {
     insertListing.run(
       2, 'LOT892456', 'BMW', 'M5 Competition', 2021, 8500, 'WBSJF0C59MCE12345',
       'Исключительный BMW M5 Competition 2021 года в безупречном состоянии',
-      85000.00, 95000.00, null,
+      85000.00, null,
       JSON.stringify(["https://images.unsplash.com/photo-1555215695-3004980ad54e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"]),
       72, 'active', new Date().toISOString(), '2025-07-01T18:45:00Z', 1, 0, 1, '2025-11-30',
       '4.4L Twin-Turbo V8', 'Автомат', 'Бензин', 'Седан', 'Задний привод', 'Белый', 'Отличное', 'Душанбе'
