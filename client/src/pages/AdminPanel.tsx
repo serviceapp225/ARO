@@ -798,34 +798,46 @@ function ListingsManagement() {
               </div>
             ) : (
               listings.map((listing) => (
-                <div key={listing.id} className="flex items-center justify-between p-4 border rounded-lg">
+                <div key={listing.id} className="flex items-start justify-between p-6 border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800 shadow-sm hover:shadow-md transition-shadow">
                 <div className="flex-1">
-                  <div className="flex items-center gap-3">
-                    <div className="w-16 h-16 bg-gray-200 dark:bg-gray-700 rounded-lg flex-shrink-0">
+                  <div className="flex items-start gap-4">
+                    <div className="w-20 h-20 bg-gray-100 dark:bg-gray-700 rounded-xl flex-shrink-0 overflow-hidden">
                       {listing.photos && Array.isArray(listing.photos) && listing.photos.length > 0 ? (
                         <img 
                           src={listing.photos[0]} 
                           alt={`${listing.make} ${listing.model}`}
-                          className="w-full h-full object-cover rounded-lg"
+                          className="w-full h-full object-cover"
                         />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center">
-                          <Car className="h-6 w-6 text-gray-400" />
+                          <Car className="h-8 w-8 text-gray-400" />
                         </div>
                       )}
                     </div>
-                    <div>
-                      <p className="font-medium">
-                        {listing.make} {listing.model} {listing.year}
+                    <div className="flex-1 min-w-0">
+                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">
+                        {listing.make} {listing.model}
+                      </h3>
+                      <p className="text-base text-gray-600 dark:text-gray-300 mb-2">
+                        {listing.year} год
                       </p>
-                      <p className="text-sm text-gray-600 dark:text-gray-300">
-                        Лот #{listing.lotNumber} • {listing.currentBid} Сомони
-                      </p>
-                      <Badge variant={
-                        listing.status === 'pending' ? 'secondary' :
-                        listing.status === 'active' ? 'default' :
-                        listing.status === 'ended' ? 'outline' : 'destructive'
-                      }>
+                      <div className="flex items-center gap-3 mb-2">
+                        <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                          Лот #{listing.lotNumber}
+                        </span>
+                        <span className="text-sm text-gray-500 dark:text-gray-400">•</span>
+                        <span className="text-base font-semibold text-blue-600 dark:text-blue-400">
+                          {listing.currentBid} Сомони
+                        </span>
+                      </div>
+                      <Badge 
+                        variant={
+                          listing.status === 'pending' ? 'secondary' :
+                          listing.status === 'active' ? 'default' :
+                          listing.status === 'ended' ? 'outline' : 'destructive'
+                        }
+                        className="text-xs px-3 py-1"
+                      >
                         {listing.status === 'pending' ? 'На модерации' :
                          listing.status === 'active' ? 'Активен' :
                          listing.status === 'ended' ? 'Завершен' : 'Отклонен'}
@@ -833,13 +845,13 @@ function ListingsManagement() {
                     </div>
                   </div>
                 </div>
-                <div className="flex flex-col items-end gap-2">
-                  <div className="flex flex-col gap-1 w-full">
+                <div className="flex flex-col items-stretch gap-3 w-40">
+                  <div className="flex flex-col gap-2">
                     <Button
                       size="sm"
                       variant="outline"
                       onClick={() => setSelectedListingId(listing.id)}
-                      className="flex items-center justify-center gap-1 w-full"
+                      className="flex items-center justify-center gap-2 h-9 text-sm font-medium border-gray-300 hover:border-gray-400 hover:bg-gray-50 dark:border-gray-600 dark:hover:border-gray-500 dark:hover:bg-gray-700"
                     >
                       <Edit className="w-4 h-4" />
                       Редактировать
@@ -853,29 +865,34 @@ function ListingsManagement() {
                         }
                       }}
                       disabled={deleteListingMutation.isPending}
-                      className="flex items-center justify-center gap-1 w-full"
+                      className="flex items-center justify-center gap-2 h-9 text-sm font-medium bg-red-600 hover:bg-red-700 border-red-600 hover:border-red-700"
                     >
                       <Trash2 className="w-4 h-4" />
                       Удалить
                     </Button>
                   </div>
-                  <Select
-                    value={listing.status}
-                    onValueChange={(status) => 
-                      updateListingStatusMutation.mutate({ listingId: listing.id, status })
-                    }
-                    disabled={updateListingStatusMutation.isPending}
-                  >
-                    <SelectTrigger className="w-40">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="pending">На модерации</SelectItem>
-                      <SelectItem value="active">Активен</SelectItem>
-                      <SelectItem value="ended">Завершен</SelectItem>
-                      <SelectItem value="rejected">Отклонен</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <div className="border-t border-gray-200 dark:border-gray-600 pt-3">
+                    <Label className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-2 block">
+                      Статус аукциона
+                    </Label>
+                    <Select
+                      value={listing.status}
+                      onValueChange={(status) => 
+                        updateListingStatusMutation.mutate({ listingId: listing.id, status })
+                      }
+                      disabled={updateListingStatusMutation.isPending}
+                    >
+                      <SelectTrigger className="w-full h-9 text-sm">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="pending">На модерации</SelectItem>
+                        <SelectItem value="active">Активен</SelectItem>
+                        <SelectItem value="ended">Завершен</SelectItem>
+                        <SelectItem value="rejected">Отклонен</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
                 </div>
               ))
