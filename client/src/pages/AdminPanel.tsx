@@ -798,10 +798,12 @@ function ListingsManagement() {
               </div>
             ) : (
               listings.map((listing) => (
-                <div key={listing.id} className="flex items-start justify-between p-6 border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800 shadow-sm hover:shadow-md transition-shadow">
-                <div className="flex-1">
-                  <div className="flex items-start gap-4">
-                    <div className="w-20 h-20 bg-gray-100 dark:bg-gray-700 rounded-xl flex-shrink-0 overflow-hidden">
+                <div key={listing.id} className="flex flex-col md:flex-row md:items-start md:justify-between p-4 md:p-6 border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800 shadow-sm hover:shadow-md transition-shadow">
+                
+                {/* Основная информация */}
+                <div className="flex-1 mb-4 md:mb-0">
+                  <div className="flex items-start gap-3 md:gap-4">
+                    <div className="w-16 h-16 md:w-20 md:h-20 bg-gray-100 dark:bg-gray-700 rounded-xl flex-shrink-0 overflow-hidden">
                       {listing.photos && Array.isArray(listing.photos) && listing.photos.length > 0 ? (
                         <img 
                           src={listing.photos[0]} 
@@ -810,23 +812,23 @@ function ListingsManagement() {
                         />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center">
-                          <Car className="h-8 w-8 text-gray-400" />
+                          <Car className="h-6 w-6 md:h-8 md:w-8 text-gray-400" />
                         </div>
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">
+                      <h3 className="text-base md:text-lg font-semibold text-gray-900 dark:text-white mb-1">
                         {listing.make} {listing.model}
                       </h3>
-                      <p className="text-base text-gray-600 dark:text-gray-300 mb-2">
+                      <p className="text-sm md:text-base text-gray-600 dark:text-gray-300 mb-2">
                         {listing.year} год
                       </p>
-                      <div className="flex items-center gap-3 mb-2">
-                        <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 mb-2">
+                        <span className="text-xs md:text-sm font-medium text-gray-500 dark:text-gray-400">
                           Лот #{listing.lotNumber}
                         </span>
-                        <span className="text-sm text-gray-500 dark:text-gray-400">•</span>
-                        <span className="text-base font-semibold text-blue-600 dark:text-blue-400">
+                        <span className="hidden sm:inline text-sm text-gray-500 dark:text-gray-400">•</span>
+                        <span className="text-sm md:text-base font-semibold text-blue-600 dark:text-blue-400">
                           {listing.currentBid} Сомони
                         </span>
                       </div>
@@ -836,7 +838,7 @@ function ListingsManagement() {
                           listing.status === 'active' ? 'default' :
                           listing.status === 'ended' ? 'outline' : 'destructive'
                         }
-                        className="text-xs px-3 py-1"
+                        className="text-xs px-2 md:px-3 py-1 w-fit"
                       >
                         {listing.status === 'pending' ? 'На модерации' :
                          listing.status === 'active' ? 'Активен' :
@@ -845,16 +847,19 @@ function ListingsManagement() {
                     </div>
                   </div>
                 </div>
-                <div className="flex flex-col items-stretch gap-3 w-40">
-                  <div className="flex flex-col gap-2">
+                
+                {/* Управление на мобильных */}
+                <div className="flex flex-col gap-3 w-full md:w-40">
+                  <div className="flex flex-row md:flex-col gap-2">
                     <Button
                       size="sm"
                       variant="outline"
                       onClick={() => setSelectedListingId(listing.id)}
-                      className="flex items-center justify-center gap-2 h-9 text-sm font-medium border-gray-300 hover:border-gray-400 hover:bg-gray-50 dark:border-gray-600 dark:hover:border-gray-500 dark:hover:bg-gray-700"
+                      className="flex-1 md:flex-none flex items-center justify-center gap-1 md:gap-2 h-8 md:h-9 text-xs md:text-sm font-medium border-gray-300 hover:border-gray-400 hover:bg-gray-50 dark:border-gray-600 dark:hover:border-gray-500 dark:hover:bg-gray-700"
                     >
-                      <Edit className="w-4 h-4" />
-                      Редактировать
+                      <Edit className="w-3 h-3 md:w-4 md:h-4" />
+                      <span className="hidden sm:inline">Редактировать</span>
+                      <span className="sm:hidden">Ред.</span>
                     </Button>
                     <Button
                       size="sm"
@@ -865,9 +870,9 @@ function ListingsManagement() {
                         }
                       }}
                       disabled={deleteListingMutation.isPending}
-                      className="flex items-center justify-center gap-2 h-9 text-sm font-medium bg-red-600 hover:bg-red-700 border-red-600 hover:border-red-700"
+                      className="flex-1 md:flex-none flex items-center justify-center gap-1 md:gap-2 h-8 md:h-9 text-xs md:text-sm font-medium bg-red-600 hover:bg-red-700 border-red-600 hover:border-red-700"
                     >
-                      <Trash2 className="w-4 h-4" />
+                      <Trash2 className="w-3 h-3 md:w-4 md:h-4" />
                       Удалить
                     </Button>
                   </div>
@@ -882,7 +887,7 @@ function ListingsManagement() {
                       }
                       disabled={updateListingStatusMutation.isPending}
                     >
-                      <SelectTrigger className="w-full h-9 text-sm">
+                      <SelectTrigger className="w-full h-8 md:h-9 text-xs md:text-sm">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
