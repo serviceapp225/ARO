@@ -16,10 +16,12 @@ export default function Profile() {
   const { toast } = useToast();
   
   // Загружаем актуальные данные пользователя с сервера
-  const { data: serverUser } = useQuery<User>({
+  const { data: serverUser, refetch: refetchUser } = useQuery<User>({
     queryKey: [`/api/users/${(user as any)?.userId}`],
     enabled: !!user && !!(user as any)?.userId,
-    refetchInterval: 5000, // Обновляем каждые 5 секунд
+    refetchInterval: 2000, // Обновляем каждые 2 секунды для актуальных данных
+    staleTime: 1000, // Данные свежие только 1 секунду
+    gcTime: 5000, // В кэше 5 секунд
   });
   
   // Обновляем статус пользователя при получении новых данных
@@ -97,7 +99,25 @@ export default function Profile() {
       {/* Header */}
       <header className="bg-white shadow-sm border-b border-gray-200">
         <div className="container mx-auto px-4 py-4">
-          <h1 className="text-2xl font-bold text-gray-900 text-center">Профиль</h1>
+          <div className="flex items-center justify-between">
+            <h1 className="text-2xl font-bold text-gray-900">Профиль</h1>
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => {
+                refetchUser();
+                refreshUserStatus();
+                toast({
+                  title: "Данные обновлены",
+                  description: "Информация профиля обновлена",
+                  duration: 1000
+                });
+              }}
+            >
+              <Edit className="w-4 h-4 mr-2" />
+              Обновить
+            </Button>
+          </div>
         </div>
       </header>
 
@@ -136,9 +156,9 @@ export default function Profile() {
               
               {/* Name and Phone */}
               <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                {user?.fullName || 'Не указано'}
+                {currentUser?.fullName || serverUser?.fullName || user?.fullName || 'Не указано'}
               </h2>
-              <p className="text-gray-600 text-lg mb-3">{user?.phoneNumber || userData.phoneNumber}</p>
+              <p className="text-gray-600 text-lg mb-3">{currentUser?.phoneNumber || user?.phoneNumber || userData.phoneNumber}</p>
               
               {/* Account Type and Status Badges */}
               <div className="flex items-center justify-center gap-2 flex-wrap">
