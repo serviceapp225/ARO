@@ -406,7 +406,7 @@ function EditListingModal({ listing, onClose, onUpdate, isUpdating }: {
     description: listing.description,
     startingPrice: listing.startingPrice,
     reservePrice: listing.reservePrice ? String(listing.reservePrice) : '',
-    auctionDuration: listing.auctionDuration || 7,
+    auctionDuration: Math.round((listing.auctionDuration || 168) / 24),
     condition: listing.condition || 'good',
     location: listing.location || '',
     engine: listing.engine || '',
@@ -424,7 +424,12 @@ function EditListingModal({ listing, onClose, onUpdate, isUpdating }: {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onUpdate(formData);
+    // Конвертируем дни обратно в часы для сохранения в базе данных
+    const dataToSend = {
+      ...formData,
+      auctionDuration: formData.auctionDuration * 24
+    };
+    onUpdate(dataToSend);
   };
 
   return (
@@ -497,30 +502,20 @@ function EditListingModal({ listing, onClose, onUpdate, isUpdating }: {
                 />
               </div>
               <div>
-                <Label htmlFor="auctionDuration">Продолжительность аукциона (часы)</Label>
+                <Label htmlFor="auctionDuration">Продолжительность аукциона (дни)</Label>
                 <div className="space-y-2">
                   <Input
                     id="auctionDuration"
                     type="number"
                     min="1"
-                    max="720"
+                    max="30"
                     value={formData.auctionDuration}
-                    onChange={(e) => setFormData({ ...formData, auctionDuration: parseInt(e.target.value) || 168 })}
+                    onChange={(e) => setFormData({ ...formData, auctionDuration: parseInt(e.target.value) || 7 })}
                     required
                   />
                   <div className="text-sm text-gray-500 dark:text-gray-400 space-y-1">
                     <div>
-                      {(() => {
-                        const days = Math.floor(formData.auctionDuration / 24);
-                        const hours = formData.auctionDuration % 24;
-                        if (days === 0) {
-                          return `Продавец выбрал: ${hours} ${hours === 1 ? 'час' : hours < 5 ? 'часа' : 'часов'}`;
-                        } else if (hours === 0) {
-                          return `Продавец выбрал: ${days} ${days === 1 ? 'день' : days < 5 ? 'дня' : 'дней'}`;
-                        } else {
-                          return `Продавец выбрал: ${days} ${days === 1 ? 'день' : days < 5 ? 'дня' : 'дней'} и ${hours} ${hours === 1 ? 'час' : hours < 5 ? 'часа' : 'часов'}`;
-                        }
-                      })()}
+                      Продавец выбрал: {formData.auctionDuration} {formData.auctionDuration === 1 ? 'день' : formData.auctionDuration < 5 ? 'дня' : 'дней'}
                     </div>
                     {listing.auctionStartTime && (
                       <div>
