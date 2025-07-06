@@ -497,16 +497,43 @@ function EditListingModal({ listing, onClose, onUpdate, isUpdating }: {
                 />
               </div>
               <div>
-                <Label htmlFor="auctionDuration">Продолжительность аукциона (дни)</Label>
-                <Input
-                  id="auctionDuration"
-                  type="number"
-                  min="1"
-                  max="30"
-                  value={formData.auctionDuration}
-                  onChange={(e) => setFormData({ ...formData, auctionDuration: parseInt(e.target.value) || 7 })}
-                  required
-                />
+                <Label htmlFor="auctionDuration">Продолжительность аукциона (часы)</Label>
+                <div className="space-y-2">
+                  <Input
+                    id="auctionDuration"
+                    type="number"
+                    min="1"
+                    max="720"
+                    value={formData.auctionDuration}
+                    onChange={(e) => setFormData({ ...formData, auctionDuration: parseInt(e.target.value) || 168 })}
+                    required
+                  />
+                  <div className="text-sm text-gray-500 dark:text-gray-400 space-y-1">
+                    <div>
+                      {(() => {
+                        const days = Math.floor(formData.auctionDuration / 24);
+                        const hours = formData.auctionDuration % 24;
+                        if (days === 0) {
+                          return `Продавец выбрал: ${hours} ${hours === 1 ? 'час' : hours < 5 ? 'часа' : 'часов'}`;
+                        } else if (hours === 0) {
+                          return `Продавец выбрал: ${days} ${days === 1 ? 'день' : days < 5 ? 'дня' : 'дней'}`;
+                        } else {
+                          return `Продавец выбрал: ${days} ${days === 1 ? 'день' : days < 5 ? 'дня' : 'дней'} и ${hours} ${hours === 1 ? 'час' : hours < 5 ? 'часа' : 'часов'}`;
+                        }
+                      })()}
+                    </div>
+                    {listing.auctionStartTime && (
+                      <div>
+                        Начало: {new Date(listing.auctionStartTime).toLocaleString('ru-RU')}
+                      </div>
+                    )}
+                    {listing.auctionEndTime && (
+                      <div>
+                        Окончание: {new Date(listing.auctionEndTime).toLocaleString('ru-RU')}
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
               <div>
                 <Label htmlFor="condition">Состояние</Label>
