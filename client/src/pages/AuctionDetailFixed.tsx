@@ -444,13 +444,81 @@ export default function AuctionDetail() {
     
     const bidValue = parseFloat(pendingBidAmount);
     
-    // Проверяем, будет ли пользователь лидировать после этой ставки
-    const userId = (currentUser as any)?.userId || (currentUser as any)?.id;
-    const currentBidValue = (currentAuction as any)?.currentBid ? parseFloat((currentAuction as any).currentBid) : auction.currentBid;
-    const willBecomeLeader = bidValue > currentBidValue;
-    
     // Проверяем, лидирует ли пользователь уже сейчас
+    const userId = (currentUser as any)?.userId || (currentUser as any)?.id;
     const userIsCurrentLeader = sortedBids && sortedBids.length > 0 && sortedBids[0].bidderId === userId;
+    
+    // Показываем эффекты только если пользователь НЕ лидирует сейчас
+    const shouldShowEffects = !userIsCurrentLeader;
+    
+    if (shouldShowEffects) {
+      // Play celebration sound and show confetti only for non-leaders
+      setShowConfetti(true);
+      
+      try {
+        import('@assets/celebration_1750167957407.mp3').then((audioModule) => {
+          const audio = new Audio(audioModule.default);
+          audio.volume = 0.7;
+          audio.play().catch(() => {
+            console.log('Audio playback failed, using fallback');
+            // Fallback to generated sound if custom audio fails
+            try {
+              const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+              const duration = 1.5;
+              const sampleRate = audioContext.sampleRate;
+              const buffer = audioContext.createBuffer(1, duration * sampleRate, sampleRate);
+              const data = buffer.getChannelData(0);
+              
+              for (let i = 0; i < data.length; i++) {
+                const t = i / sampleRate;
+                const envelope = Math.exp(-t * 3) * (1 - Math.exp(-t * 10));
+                const freq1 = 440 * (1 + t * 0.8);
+                const freq2 = 550 * (1 + t * 0.6); 
+                const wave = Math.sin(2 * Math.PI * freq1 * t) * 0.3 + Math.sin(2 * Math.PI * freq2 * t) * 0.2;
+                data[i] = wave * envelope * 0.15;
+              }
+              
+              const source = audioContext.createBufferSource();
+              source.buffer = buffer;
+              source.connect(audioContext.destination);
+              source.start();
+            } catch (fallbackError) {
+              console.log('Fallback audio also failed');
+            }
+          });
+        }).catch(() => {
+          console.log('Custom audio import failed, using fallback');
+          // Fallback to generated sound
+          try {
+            const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+            const duration = 1.5;
+            const sampleRate = audioContext.sampleRate;
+            const buffer = audioContext.createBuffer(1, duration * sampleRate, sampleRate);
+            const data = buffer.getChannelData(0);
+            
+            for (let i = 0; i < data.length; i++) {
+              const t = i / sampleRate;
+              const envelope = Math.exp(-t * 3) * (1 - Math.exp(-t * 10));
+              const freq1 = 440 * (1 + t * 0.8);
+              const freq2 = 550 * (1 + t * 0.6); 
+              const wave = Math.sin(2 * Math.PI * freq1 * t) * 0.3 + Math.sin(2 * Math.PI * freq2 * t) * 0.2;
+              data[i] = wave * envelope * 0.15;
+            }
+            
+            const source = audioContext.createBufferSource();
+            source.buffer = buffer;
+            source.connect(audioContext.destination);
+            source.start();
+          } catch (fallbackError) {
+            console.log('All audio options failed');
+          }
+        });
+      } catch (e) {
+        console.log('Audio system not available');
+      }
+      
+      setTimeout(() => setShowConfetti(false), 1500);
+    }
     
     try {
       if (!userId) {
@@ -507,16 +575,16 @@ export default function AuctionDetail() {
       
       // Ставка размещена успешно, данные обновятся автоматически
       
-      // Показываем соответствующее уведомление в зависимости от статуса лидерства
-      if (willBecomeLeader || userIsCurrentLeader) {
-        // Пользователь становится/остается лидером - тихое уведомление без эффектов
+      // Показываем соответствующее уведомление
+      if (userIsCurrentLeader) {
+        // Пользователь уже лидирует - тихое уведомление
         toast({
           title: "Вы лидируете",
           description: `Ваша ставка ${bidValue.toLocaleString()} Сомони принята.`,
           duration: 2000,
         });
       } else {
-        // Обычная ставка - можно с эффектами (но пока тоже без них)
+        // Обычная ставка - стандартное уведомление
         toast({
           title: "Ставка принята",
           description: `Ваша ставка ${bidValue.toLocaleString()} Сомони принята.`,
