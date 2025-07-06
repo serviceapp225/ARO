@@ -286,3 +286,23 @@ export const insertAlertViewSchema = createInsertSchema(alertViews).omit({
 
 export type InsertAlertView = z.infer<typeof insertAlertViewSchema>;
 export type AlertView = typeof alertViews.$inferSelect;
+
+// User Wins table to track auction wins
+export const userWins = pgTable("user_wins", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  listingId: integer("listing_id").notNull().references(() => carListings.id, { onDelete: "cascade" }),
+  winningBid: numeric("winning_bid", { precision: 12, scale: 2 }).notNull(),
+  wonAt: timestamp("won_at").defaultNow().notNull(),
+}, (table) => ({
+  userIdx: index("user_wins_user_idx").on(table.userId),
+  listingIdx: index("user_wins_listing_idx").on(table.listingId),
+}));
+
+export const insertUserWinSchema = createInsertSchema(userWins).omit({
+  id: true,
+  wonAt: true,
+});
+
+export type InsertUserWin = z.infer<typeof insertUserWinSchema>;
+export type UserWin = typeof userWins.$inferSelect;

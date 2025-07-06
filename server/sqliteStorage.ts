@@ -2,10 +2,10 @@ import Database from 'better-sqlite3';
 import { IStorage } from './storage';
 import type {
   User, CarListing, Bid, Favorite, Notification, CarAlert,
-  Banner, SellCarSection, AdvertisementCarousel, Document, AlertView,
+  Banner, SellCarSection, AdvertisementCarousel, Document, AlertView, UserWin,
   InsertUser, InsertCarListing, InsertBid, InsertFavorite, InsertNotification,
   InsertCarAlert, InsertBanner, InsertSellCarSection, InsertAdvertisementCarousel,
-  InsertDocument, InsertAlertView
+  InsertDocument, InsertAlertView, InsertUserWin
 } from '@shared/schema';
 
 export class SQLiteStorage implements IStorage {
@@ -190,6 +190,16 @@ export class SQLiteStorage implements IStorage {
         alert_id INTEGER NOT NULL,
         listing_id INTEGER NOT NULL,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    this.db.exec(`
+      CREATE TABLE IF NOT EXISTS user_wins (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        listing_id INTEGER NOT NULL,
+        winning_bid DECIMAL(12,2) NOT NULL,
+        won_at DATETIME DEFAULT CURRENT_TIMESTAMP
       )
     `);
   }
@@ -1579,6 +1589,89 @@ export class SQLiteStorage implements IStorage {
     } catch (error) {
       console.error('Error deleting archived listing:', error);
       return false;
+    }
+  }
+
+  // User Wins operations
+  async getUserWins(userId: number): Promise<UserWin[]> {
+    try {
+      const stmt = this.db.prepare(`
+        SELECT uw.*, cl.make, cl.model, cl.year, cl.photos, cl.lot_number
+        FROM user_wins uw
+        JOIN car_listings cl ON uw.listing_id = cl.id
+        WHERE uw.user_id = ?
+        ORDER BY uw.won_at DESC
+      `);
+      const rows: any[] = stmt.all(userId);
+      
+      return rows.map((row: any) => ({
+        id: row.id,
+        userId: row.user_id,
+        listingId: row.listing_id,
+        winningBid: row.winning_bid,
+        wonAt: new Date(row.won_at),
+        // Добавляем информацию об автомобиле для удобства
+        listing: {
+          make: row.make,
+          model: row.model,
+          year: row.year,
+          photos: JSON.parse(row.photos || '[]'),
+          lotNumber: row.lot_number
+        }
+      }));
+    } catch (error) {
+      console.error('Error fetching user wins:', userId, error);
+      return [];
+    }
+  }
+
+  async createUserWin(insertWin: InsertUserWin): Promise<UserWin> {
+    try {
+      const stmt = this.db.prepare(`
+        INSERT INTO user_wins (user_id, listing_id, winning_bid) 
+        VALUES (?, ?, ?)
+      `);
+      
+      const result = stmt.run(
+        insertWin.userId,
+        insertWin.listingId,
+        insertWin.winningBid
+      );
+      
+      // Get the created win
+      const getWinStmt = this.db.prepare('SELECT * FROM user_wins WHERE id = ?');
+      const row: any = getWinStmt.get(result.lastInsertRowid);
+      
+      return {
+        id: row.id,
+        userId: row.user_id,
+        listingId: row.listing_id,
+        winningBid: row.winning_bid,
+        wonAt: new Date(row.won_at)
+      };
+    } catch (error) {
+      console.error('Error creating user win:', error);
+      throw error;
+    }
+  }
+
+  async getWinByListingId(listingId: number): Promise<UserWin | undefined> {
+    try {
+      const stmt = this.db.prepare('SELECT * FROM user_wins WHERE listing_id = ?');
+      const row: any = stmt.get(listingId);
+      
+      if (!row) return undefined;
+      
+      return {
+        id: row.id,
+        userId: row.user_id,
+        listingId: row.listing_id,
+        winningBid: row.winning_bid,
+        wonAt: new Date(row.won_at)
+      };
+    } catch (error) {
+      console.error('Error fetching win by listing ID:', listingId, error);
+      return undefined;
     }
   }
 }

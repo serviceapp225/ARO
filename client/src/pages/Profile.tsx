@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserData } from "@/contexts/UserDataContext";
-import { User as UserIcon, Globe, Bell, Heart, HelpCircle, FileText, LogOut, Camera, Edit, ChevronRight, MessageCircle, Building2, UserCheck, Shield, ShieldX, Settings, Car } from "lucide-react";
+import { User as UserIcon, Globe, Bell, Heart, HelpCircle, FileText, LogOut, Camera, Edit, ChevronRight, MessageCircle, Building2, UserCheck, Shield, ShieldX, Settings, Car, Trophy } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { useRef, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -67,6 +67,7 @@ export default function Profile() {
   const menuItems = [
     { icon: UserIcon, label: "Мои данные", action: () => setLocation("/user-data") },
     { icon: Car, label: "Мои продажи", action: () => setLocation("/my-sales") },
+    { icon: Trophy, label: "Мои выигрыши", action: () => setLocation("/my-wins") },
     { icon: Bell, label: "Поисковые уведомления", action: () => setLocation("/notifications") },
     ...(currentUser?.role === 'admin' ? [{ icon: Settings, label: "Админ панель", action: () => setLocation("/admin") }] : []),
     { icon: Globe, label: "Поменять язык", action: () => setLocation("/language") },

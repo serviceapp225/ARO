@@ -15,6 +15,7 @@ import AuctionDetail from "@/pages/AuctionDetailFixed";
 import Favorites from "@/pages/Favorites";
 import SellCar from "@/pages/SellCar";
 import MyBids from "@/pages/MyBids";
+import MyWins from "@/pages/MyWins";
 import Profile from "@/pages/Profile";
 import Notifications from "@/pages/Notifications";
 import MyAlerts from "@/pages/MyAlerts";
@@ -85,6 +86,7 @@ function Router() {
         <Route path="/favorites" component={Favorites} />
         <Route path="/sell" component={SellCar} />
         <Route path="/bids" component={MyBids} />
+        <Route path="/my-wins" component={MyWins} />
         <Route path="/profile" component={Profile} />
         <Route path="/notifications" component={Notifications} />
         <Route path="/my-alerts" component={MyAlerts} />

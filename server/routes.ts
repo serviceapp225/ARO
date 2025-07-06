@@ -964,6 +964,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/users/:id/wins", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.id);
+      const wins = await storage.getUserWins(userId);
+      res.json(wins);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch user wins" });
+    }
+  });
+
   // Favorites routes
   app.get("/api/users/:id/favorites", async (req, res) => {
     try {
@@ -1846,6 +1856,66 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(stats);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch admin stats" });
+    }
+  });
+
+  // Завершить аукцион и создать выигрыш
+  app.post("/api/admin/listings/:id/end-auction", adminAuth, async (req, res) => {
+    try {
+      const listingId = parseInt(req.params.id);
+      
+      // Получаем аукцион
+      const listing = await storage.getListing(listingId);
+      if (!listing) {
+        return res.status(404).json({ error: "Listing not found" });
+      }
+
+      // Получаем все ставки для определения победителя
+      const bids = await storage.getBidsForListing(listingId);
+      
+      if (bids.length === 0) {
+        // Нет ставок - просто завершаем аукцион
+        await storage.updateListingStatus(listingId, "ended");
+        return res.json({ message: "Auction ended without bids" });
+      }
+
+      // Находим победителя (самая высокая ставка)
+      const winningBid = bids.reduce((highest, current) => 
+        parseFloat(current.amount) > parseFloat(highest.amount) ? current : highest
+      );
+
+      // Обновляем статус аукциона
+      await storage.updateListingStatus(listingId, "ended");
+      
+      // Создаем запись о выигрыше
+      const win = await storage.createUserWin({
+        userId: winningBid.bidderId,
+        listingId: listingId,
+        winningBid: winningBid.amount
+      });
+
+      // Отправляем уведомление победителю
+      await storage.createNotification({
+        userId: winningBid.bidderId,
+        type: "auction_won",
+        title: "🏆 Поздравляем с победой!",
+        message: `Вы выиграли аукцион ${listing.make} ${listing.model} со ставкой ${parseFloat(winningBid.amount).toLocaleString()} Сомони`,
+        listingId: listingId,
+        isRead: false
+      });
+
+      clearCachePattern("/api/listings");
+      clearCachePattern("/api/users");
+
+      res.json({ 
+        message: "Auction ended successfully", 
+        winner: winningBid.bidderId,
+        winningAmount: winningBid.amount,
+        win 
+      });
+    } catch (error) {
+      console.error("Error ending auction:", error);
+      res.status(500).json({ error: "Failed to end auction" });
     }
   });
 

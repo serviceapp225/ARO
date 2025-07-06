@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Trash2, User as UserIcon, Car, Bell, Settings, CheckCircle, XCircle, AlertCircle, Edit, Search, Image, Plus, Eye, ChevronUp, RefreshCw } from 'lucide-react';
+import { Trash2, User as UserIcon, Car, Bell, Settings, CheckCircle, XCircle, AlertCircle, Edit, Search, Image, Plus, Eye, ChevronUp, RefreshCw, Award } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { Link } from 'wouter';
@@ -826,6 +826,35 @@ function ListingsManagement() {
     }
   });
 
+  const endAuctionMutation = useMutation({
+    mutationFn: async (listingId: number) => {
+      const response = await fetch(`/api/admin/listings/${listingId}/end-auction`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      if (!response.ok) throw new Error('Failed to end auction');
+      return response.json();
+    },
+    onSuccess: (data) => {
+      toast({
+        title: "🏆 Аукцион завершен",
+        description: data.winner ? 
+          `Победитель: ID ${data.winner}, ставка: ${parseFloat(data.winningAmount).toLocaleString()} Сомони` : 
+          "Аукцион завершен без ставок",
+        variant: "default"
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/listings'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/archived-listings'] });
+    },
+    onError: (error) => {
+      toast({
+        title: "Ошибка завершения аукциона",
+        description: error.message,
+        variant: "destructive"
+      });
+    }
+  });
+
   if (isLoading) {
     return <div className="text-center py-8">Загрузка объявлений...</div>;
   }
@@ -929,6 +958,25 @@ function ListingsManagement() {
                       <span className="hidden sm:inline">Редактировать</span>
                       <span className="sm:hidden">Ред.</span>
                     </Button>
+                    
+                    {listing.status === 'active' && (
+                      <Button
+                        size="sm"
+                        variant="default"
+                        onClick={() => {
+                          if (confirm(`Завершить аукцион "${listing.make} ${listing.model}"? Будет определен победитель по самой высокой ставке.`)) {
+                            endAuctionMutation.mutate(listing.id);
+                          }
+                        }}
+                        disabled={endAuctionMutation.isPending}
+                        className="flex-1 md:flex-none flex items-center justify-center gap-1 md:gap-2 h-8 md:h-9 text-xs md:text-sm font-medium bg-amber-600 hover:bg-amber-700 border-amber-600 hover:border-amber-700"
+                      >
+                        <Award className="w-3 h-3 md:w-4 md:h-4" />
+                        <span className="hidden sm:inline">Завершить</span>
+                        <span className="sm:hidden">Конец</span>
+                      </Button>
+                    )}
+                    
                     <Button
                       size="sm"
                       variant="destructive"

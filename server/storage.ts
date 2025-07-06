@@ -1,4 +1,4 @@
-import { users, carListings, bids, favorites, notifications, carAlerts, banners, sellCarSection, advertisementCarousel, documents, alertViews, type User, type InsertUser, type CarListing, type InsertCarListing, type Bid, type InsertBid, type Favorite, type InsertFavorite, type Notification, type InsertNotification, type CarAlert, type InsertCarAlert, type Banner, type InsertBanner, type SellCarSection, type InsertSellCarSection, type AdvertisementCarousel, type InsertAdvertisementCarousel, type Document, type InsertDocument, type AlertView, type InsertAlertView } from "@shared/schema";
+import { users, carListings, bids, favorites, notifications, carAlerts, banners, sellCarSection, advertisementCarousel, documents, alertViews, userWins, type User, type InsertUser, type CarListing, type InsertCarListing, type Bid, type InsertBid, type Favorite, type InsertFavorite, type Notification, type InsertNotification, type CarAlert, type InsertCarAlert, type Banner, type InsertBanner, type SellCarSection, type InsertSellCarSection, type AdvertisementCarousel, type InsertAdvertisementCarousel, type Document, type InsertDocument, type AlertView, type InsertAlertView, type UserWin, type InsertUserWin } from "@shared/schema";
 import { db, pool } from "./db";
 import { eq, and, desc, sql, or, ilike, inArray, isNull } from "drizzle-orm";
 
@@ -85,6 +85,11 @@ export interface IStorage {
   // Alert Views operations
   createAlertView(view: InsertAlertView): Promise<AlertView>;
   hasUserViewedAlert(userId: number, alertId: number, listingId: number): Promise<boolean>;
+
+  // User Wins operations
+  getUserWins(userId: number): Promise<UserWin[]>;
+  createUserWin(win: InsertUserWin): Promise<UserWin>;
+  getWinByListingId(listingId: number): Promise<UserWin | undefined>;
 
   // Admin operations
   getAdminStats(): Promise<{
