@@ -57,16 +57,30 @@ export function AdvertisementCarousel() {
 
   const handleClick = () => {
     if (currentAd?.linkUrl) {
-      // Нормализуем URL для корректной навигации
-      let normalizedUrl = currentAd.linkUrl.trim();
+      let url = currentAd.linkUrl.trim();
       
-      // Если URL не начинается с /, добавляем его
-      if (!normalizedUrl.startsWith('/') && !normalizedUrl.startsWith('http')) {
-        normalizedUrl = `/${normalizedUrl}`;
+      // Если это внешняя ссылка (начинается с http), открываем в новой вкладке
+      if (url.startsWith('http')) {
+        console.log('🔗 Внешняя ссылка карусели:', url);
+        window.open(url, '_blank');
+        return;
       }
       
-      console.log('🔗 Навигация по ссылке карусели:', normalizedUrl);
-      setLocation(normalizedUrl);
+      // Для внутренних ссылок добавляем / если нужно
+      if (!url.startsWith('/')) {
+        url = `/${url}`;
+      }
+      
+      // Проверяем, что это валидный внутренний роут
+      const validRoutes = ['/', '/home', '/auctions', '/favorites', '/sell', '/bids', '/profile', '/notifications', '/my-alerts', '/user-data', '/my-sales', '/terms', '/privacy', '/login', '/admin', '/special-offers'];
+      
+      if (validRoutes.includes(url)) {
+        console.log('🔗 Внутренняя навигация карусели:', url);
+        setLocation(url);
+      } else {
+        console.log('❌ Неверный роут карусели:', url, 'Перенаправляем на главную');
+        setLocation('/');
+      }
     }
   };
 
