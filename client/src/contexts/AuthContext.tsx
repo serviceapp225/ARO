@@ -19,6 +19,7 @@ interface AuthContextType {
   user: DemoUser | null;
   loading: boolean;
   logout: () => Promise<void>;
+  refreshUserStatus: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -158,6 +159,35 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     loadUser();
   }, []);
 
+  const refreshUserStatus = async () => {
+    if (!user || !user.userId) return;
+    
+    try {
+      const response = await fetch(`/api/users/${user.userId}`);
+      if (response.ok) {
+        const userData = await response.json();
+        const updatedUser = {
+          ...user,
+          isActive: userData.isActive,
+          fullName: userData.fullName,
+          username: userData.username
+        };
+        setUser(updatedUser);
+        
+        // Обновляем кэш
+        preCacheUserData(user.phoneNumber, {
+          isActive: userData.isActive,
+          userId: userData.id
+        });
+        
+        // Обновляем localStorage
+        localStorage.setItem('demo-user', JSON.stringify(updatedUser));
+      }
+    } catch (error) {
+      console.error('Failed to refresh user status:', error);
+    }
+  };
+
   const logout = async () => {
     try {
       localStorage.removeItem('demo-user');
@@ -168,7 +198,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, logout }}>
+    <AuthContext.Provider value={{ user, loading, logout, refreshUserStatus }}>
       {children}
     </AuthContext.Provider>
   );

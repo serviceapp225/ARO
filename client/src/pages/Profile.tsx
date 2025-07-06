@@ -3,21 +3,31 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useUserData } from "@/contexts/UserDataContext";
 import { User as UserIcon, Globe, Bell, Heart, HelpCircle, FileText, LogOut, Camera, Edit, ChevronRight, MessageCircle, Building2, UserCheck, Shield, ShieldX, Settings, Car } from "lucide-react";
 import { Link, useLocation } from "wouter";
-import { useRef } from "react";
+import { useRef, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import type { User } from "@shared/schema";
+import { useToast } from "@/hooks/use-toast";
 
 export default function Profile() {
-  const { user, logout } = useAuth();
+  const { user, logout, refreshUserStatus } = useAuth();
   const { userData, updateUserData } = useUserData();
   const [, setLocation] = useLocation();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { toast } = useToast();
   
   // Загружаем актуальные данные пользователя с сервера
   const { data: serverUser } = useQuery<User>({
     queryKey: [`/api/users/${(user as any)?.userId}`],
     enabled: !!user && !!(user as any)?.userId,
+    refetchInterval: 5000, // Обновляем каждые 5 секунд
   });
+  
+  // Обновляем статус пользователя при получении новых данных
+  useEffect(() => {
+    if (serverUser && user && serverUser.isActive !== user.isActive) {
+      refreshUserStatus();
+    }
+  }, [serverUser, user, refreshUserStatus]);
   
   // Используем данные с сервера, если они доступны, иначе данные из контекста
   const currentUser = serverUser || user;
@@ -172,12 +182,27 @@ export default function Profile() {
                 <p className="text-sm text-yellow-700 mb-4">
                   Для активации аккаунта необходимо пройти верификацию. Обратитесь в службу поддержки через WhatsApp или по номеру 9000000.
                 </p>
-                <button
-                  onClick={() => window.open("https://wa.me/992000000000?text=Здравствуйте! Мне нужно активировать аккаунт на AUTOBID.TJ", "_blank")}
-                  className="bg-yellow-600 text-white px-6 py-2 rounded-lg text-sm font-medium hover:bg-yellow-700 transition-colors"
-                >
-                  Связаться с поддержкой
-                </button>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => window.open("https://wa.me/992000000000?text=Здравствуйте! Мне нужно активировать аккаунт на AUTOBID.TJ", "_blank")}
+                    className="bg-yellow-600 text-white px-6 py-2 rounded-lg text-sm font-medium hover:bg-yellow-700 transition-colors"
+                  >
+                    Связаться с поддержкой
+                  </button>
+                  <button
+                    onClick={async () => {
+                      await refreshUserStatus();
+                      toast({
+                        title: "Статус обновлен",
+                        description: "Проверили актуальный статус вашего аккаунта",
+                        duration: 2000
+                      });
+                    }}
+                    className="bg-blue-600 text-white px-6 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
+                  >
+                    Проверить статус
+                  </button>
+                </div>
               </div>
             </div>
           )}
