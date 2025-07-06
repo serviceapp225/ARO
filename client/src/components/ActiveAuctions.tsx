@@ -77,10 +77,16 @@ export function ActiveAuctions({ searchQuery = "", customListings }: ActiveAucti
 
   // Fast navigation with preloading
   const handleCardClick = async (auctionId: number) => {
+    // Принудительно обновляем кэш перед переходом
+    queryClient.removeQueries({ queryKey: [`/api/listings/${auctionId}`] });
+    queryClient.removeQueries({ queryKey: ['/api/listings'] });
+    queryClient.invalidateQueries({ queryKey: [`/api/listings/${auctionId}`] });
+    queryClient.invalidateQueries({ queryKey: ['/api/listings'] });
+    
     // Preload auction data and bids immediately
     queryClient.prefetchQuery({
       queryKey: [`/api/listings/${auctionId}`],
-      staleTime: 30000, // Keep fresh for 30 seconds
+      staleTime: 1000, // Force fresh data
     });
     
     queryClient.prefetchQuery({
