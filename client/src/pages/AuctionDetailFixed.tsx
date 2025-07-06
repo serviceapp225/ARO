@@ -13,6 +13,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useAuctionWebSocket } from '@/hooks/useAuctionWebSocket';
 import { AutoImageCarousel } from '@/components/AutoImageCarousel';
 import { BidConfirmationDialog } from '@/components/BidConfirmationDialog';
+import { ReservePriceIndicator } from '@/components/ReservePriceIndicator';
 import { 
   ArrowLeft, Car, Heart, Clock, TrendingUp, 
   Users, MapPin, Calendar, Gauge, Fuel, 
@@ -943,6 +944,17 @@ export default function AuctionDetail() {
                 <p className="text-sm text-gray-600 mt-1">
                   Стартовая цена: {parseFloat(auction.startingPrice).toLocaleString()} Сомони
                 </p>
+                
+                {/* Reserve Price Indicator */}
+                <div className="mt-3">
+                  <ReservePriceIndicator
+                    reservePrice={auction.reservePrice}
+                    currentBid={currentBid.toString()}
+                    startingPrice={auction.startingPrice}
+                    size="md"
+                    showProgress={true}
+                  />
+                </div>
               </div>
 
               {/* Auction Timer */}

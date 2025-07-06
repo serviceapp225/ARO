@@ -4,6 +4,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { CountdownTimer } from './CountdownTimer';
 import { LazyCarImage } from './LazyCarImage';
+import { ReservePriceIndicator } from './ReservePriceIndicator';
 
 import { useAuctions } from '@/contexts/AuctionContext';
 import { useFavorites } from '@/contexts/FavoritesContext';
@@ -281,6 +282,16 @@ export function ActiveAuctions({ searchQuery = "", customListings }: ActiveAucti
                 <span className="text-xs text-gray-500">
                   {auction.bidCount} ставок
                 </span>
+              </div>
+              
+              {/* Reserve Price Indicator */}
+              <div className="mt-2">
+                <ReservePriceIndicator
+                  reservePrice={auction.reservePrice}
+                  currentBid={auction.currentBid}
+                  startingPrice={auction.startingPrice}
+                  size="sm"
+                />
               </div>
             </CardContent>
           </Card>

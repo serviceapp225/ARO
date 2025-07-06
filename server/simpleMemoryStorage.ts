@@ -18,6 +18,7 @@ export class SimpleMemoryStorage {
         vin: "WP0AB2A95LS123456",
         description: "Stunning 2020 Porsche 911 Turbo S - masterpiece of automotive engineering",
         startingPrice: "140000.00",
+        reservePrice: "170000.00",
         currentBid: "145500.00",
         photos: [
           "https://images.unsplash.com/photo-1544636331-e26879cd4d9b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
@@ -54,6 +55,7 @@ export class SimpleMemoryStorage {
         vin: "WBSJF0C59MCE12345",
         description: "Exceptional 2021 BMW M5 Competition in pristine condition",
         startingPrice: "85000.00",
+        reservePrice: "95000.00",
         currentBid: null,
         photos: [
           "https://images.unsplash.com/photo-1555215695-3004980ad54e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"

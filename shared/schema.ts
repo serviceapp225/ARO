@@ -24,6 +24,7 @@ export const carListings = pgTable("car_listings", {
   mileage: integer("mileage").notNull(),
   description: text("description").notNull(),
   startingPrice: numeric("starting_price", { precision: 12, scale: 2 }).notNull(),
+  reservePrice: numeric("reserve_price", { precision: 12, scale: 2 }), // Резервная цена
   currentBid: numeric("current_bid", { precision: 12, scale: 2 }),
   photos: jsonb("photos").notNull(), // array of photo URLs
   auctionDuration: integer("auction_duration").notNull(), // hours

@@ -394,6 +394,7 @@ export default function SellCar() {
         mileage: parseInt(formData.mileage) || 0,
         description: formData.description,
         startingPrice: formData.price,
+        reservePrice: formData.reservePrice || null,
         photos: uploadedImages, // Array of photo URLs
         auctionDuration: parseInt(formData.auctionDuration) * 24, // Convert days to hours
         customsCleared: formData.customsCleared === 'yes',
