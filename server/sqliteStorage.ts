@@ -743,6 +743,15 @@ export class SQLiteStorage implements IStorage {
 
   async updateListingStatus(id: number, status: string): Promise<CarListing | undefined> {
     const currentTime = status === 'ended' ? new Date().toISOString() : null;
+    
+    // Если завершаем аукцион, проверяем нужен ли автоперезапуск
+    if (status === 'ended') {
+      const needsRestart = await this.checkIfNeedsAutoRestart(id);
+      if (needsRestart) {
+        return await this.autoRestartListing(id);
+      }
+    }
+    
     const stmt = this.db.prepare('UPDATE car_listings SET status = ?, ended_at = ? WHERE id = ?');
     stmt.run(status, currentTime, id);
     return this.getListing(id);
@@ -752,6 +761,109 @@ export class SQLiteStorage implements IStorage {
     const stmt = this.db.prepare('UPDATE car_listings SET current_bid = ? WHERE id = ?');
     stmt.run(parseFloat(amount), id);
     return this.getListing(id);
+  }
+
+  // Проверяем нужен ли автоматический перезапуск аукциона
+  async checkIfNeedsAutoRestart(listingId: number): Promise<boolean> {
+    try {
+      const listing = await this.getListing(listingId);
+      if (!listing) return false;
+
+      // Получаем количество ставок на этот аукцион
+      const bidCountStmt = this.db.prepare('SELECT COUNT(*) as count FROM bids WHERE listing_id = ?');
+      const bidCountResult = bidCountStmt.get(listingId) as { count: number };
+      const bidCount = bidCountResult.count;
+
+      // Условие 1: Нет ставок вообще
+      if (bidCount === 0) {
+        console.log(`Аукцион ${listingId} перезапускается: нет ставок`);
+        return true;
+      }
+
+      // Условие 2: Есть ставки, но максимальная меньше резервной цены
+      if (listing.reserve_price && listing.current_bid && listing.current_bid < listing.reserve_price) {
+        console.log(`Аукцион ${listingId} перезапускается: не достигли резервной цены (${listing.current_bid} < ${listing.reserve_price})`);
+        return true;
+      }
+
+      return false;
+    } catch (error) {
+      console.error('Ошибка при проверке перезапуска:', error);
+      return false;
+    }
+  }
+
+  // Автоматический перезапуск аукциона
+  async autoRestartListing(listingId: number): Promise<CarListing | undefined> {
+    try {
+      console.log(`Автоматический перезапуск аукциона ${listingId}`);
+      
+      // Новая дата окончания - через 7 дней
+      const newEndTime = new Date();
+      newEndTime.setDate(newEndTime.getDate() + 7);
+      
+      const transaction = this.db.transaction(() => {
+        // 1. Удаляем все старые ставки
+        const deleteBidsStmt = this.db.prepare('DELETE FROM bids WHERE listing_id = ?');
+        deleteBidsStmt.run(listingId);
+        
+        // 2. Сбрасываем текущую ставку на стартовую цену
+        const listing = this.getListing(listingId);
+        if (!listing) throw new Error('Listing not found');
+        
+        const updateListingStmt = this.db.prepare(`
+          UPDATE car_listings 
+          SET current_bid = starting_price, 
+              end_time = ?, 
+              status = 'active',
+              ended_at = NULL
+          WHERE id = ?
+        `);
+        updateListingStmt.run(newEndTime.toISOString(), listingId);
+        
+        // 3. Удаляем старые уведомления об окончании
+        const deleteNotificationsStmt = this.db.prepare(
+          'DELETE FROM notifications WHERE listing_id = ? AND message LIKE "%завершен%"'
+        );
+        deleteNotificationsStmt.run(listingId);
+        
+        // 4. Уведомляем продавца о перезапуске
+        const insertNotificationStmt = this.db.prepare(`
+          INSERT INTO notifications (user_id, listing_id, message, created_at)
+          VALUES (?, ?, ?, ?)
+        `);
+        insertNotificationStmt.run(
+          listing.sellerId,
+          listingId,
+          `Ваш аукцион "${listing.make} ${listing.model}" был автоматически перезапущен на 7 дней`,
+          new Date().toISOString()
+        );
+        
+        // 5. Уведомляем пользователей, добавивших в избранное
+        const favoriteUsersStmt = this.db.prepare('SELECT user_id FROM favorites WHERE listing_id = ?');
+        const favoriteUsers = favoriteUsersStmt.all(listingId) as { user_id: number }[];
+        
+        for (const { user_id } of favoriteUsers) {
+          if (user_id !== listing.sellerId) { // Не дублируем уведомление продавцу
+            insertNotificationStmt.run(
+              user_id,
+              listingId,
+              `Аукцион "${listing.make} ${listing.model}" из ваших избранных был перезапущен`,
+              new Date().toISOString()
+            );
+          }
+        }
+      });
+      
+      transaction();
+      
+      console.log(`Аукцион ${listingId} успешно перезапущен на 7 дней с уведомлениями`);
+      return await this.getListing(listingId);
+      
+    } catch (error) {
+      console.error('Ошибка при автоперезапуске аукциона:', error);
+      return undefined;
+    }
   }
 
   async searchListings(filters: any): Promise<CarListing[]> {
@@ -1470,7 +1582,11 @@ export class SQLiteStorage implements IStorage {
   // Архивирование завершенных аукционов старше 24 часов
   async archiveExpiredListings(): Promise<number> {
     try {
+      // Сначала завершаем все просроченные аукционы с автоперезапуском
+      const processedCount = await this.processExpiredListings();
+      
       const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+      
       // Безопасно добавляем колонку ended_at если её нет
       try {
         const columnExists = this.db.prepare(`
@@ -1494,10 +1610,42 @@ export class SQLiteStorage implements IStorage {
         AND ended_at <= ?
       `);
       const result = stmt.get(twentyFourHoursAgo) as { count: number };
-      console.log(`Found ${result.count} archived listings`);
+      console.log(`Found ${result.count} archived listings, processed ${processedCount} expired listings`);
       return result.count;
     } catch (error) {
       console.error('Error archiving expired listings:', error);
+      return 0;
+    }
+  }
+
+  // Обрабатываем все просроченные аукционы (завершение + автоперезапуск)
+  async processExpiredListings(): Promise<number> {
+    try {
+      const now = new Date().toISOString();
+      
+      // Находим все активные аукционы, которые просрочены
+      const findExpiredStmt = this.db.prepare(`
+        SELECT * FROM car_listings 
+        WHERE status = 'active' AND end_time <= ?
+      `);
+      const expiredListings = findExpiredStmt.all(now).map(row => this.mapListing(row));
+      
+      console.log(`Найдено ${expiredListings.length} просроченных аукционов`);
+      
+      let processedCount = 0;
+      for (const listing of expiredListings) {
+        try {
+          // Завершаем аукцион (это автоматически проверит и перезапустит если нужно)
+          await this.updateListingStatus(listing.id, 'ended');
+          processedCount++;
+        } catch (error) {
+          console.error(`Ошибка при обработке аукциона ${listing.id}:`, error);
+        }
+      }
+      
+      return processedCount;
+    } catch (error) {
+      console.error('Error processing expired listings:', error);
       return 0;
     }
   }
