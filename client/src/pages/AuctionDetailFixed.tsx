@@ -271,12 +271,13 @@ export default function AuctionDetail() {
         });
       }
       
-      // Дебаунс обновления кэша для предотвращения моргания
-      setTimeout(() => {
-        queryClient.invalidateQueries({ queryKey: [`/api/listings/${id}/bids`] });
-        queryClient.invalidateQueries({ queryKey: [`/api/listings/${id}`] });
-        queryClient.invalidateQueries({ queryKey: ['/api/listings'] });
-      }, 300);
+      // Мгновенное обновление кэша для максимальной скорости
+      queryClient.removeQueries({ queryKey: [`/api/listings/${id}/bids`] });
+      queryClient.removeQueries({ queryKey: [`/api/listings/${id}`] });
+      queryClient.removeQueries({ queryKey: ['/api/listings'] });
+      queryClient.invalidateQueries({ queryKey: [`/api/listings/${id}/bids`] });
+      queryClient.invalidateQueries({ queryKey: [`/api/listings/${id}`] });
+      queryClient.invalidateQueries({ queryKey: ['/api/listings'] });
     }
   }, [lastBidUpdate, id, queryClient, toast]);
 
