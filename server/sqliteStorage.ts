@@ -1743,6 +1743,7 @@ export class SQLiteStorage implements IStorage {
   // User Wins operations
   async getUserWins(userId: number): Promise<UserWin[]> {
     try {
+      console.log(`🏆 Получение выигрышей для пользователя ${userId}`);
       const stmt = this.db.prepare(`
         SELECT uw.*, cl.make, cl.model, cl.year, cl.photos, cl.lot_number
         FROM user_wins uw
@@ -1751,6 +1752,7 @@ export class SQLiteStorage implements IStorage {
         ORDER BY uw.won_at DESC
       `);
       const rows: any[] = stmt.all(userId);
+      console.log(`🏆 Найдено ${rows.length} выигрышей для пользователя ${userId}`);
       
       return rows.map((row: any) => ({
         id: row.id,

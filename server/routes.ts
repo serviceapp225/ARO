@@ -1921,7 +1921,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         isRead: false
       });
 
-      // Аукцион уже завершен с ended_at, он автоматически попадет в архив
+      // Принудительно архивируем аукцион
+      await storage.updateListingStatus(listingId, "archived");
 
       clearCachePattern("/api/listings");
       clearCachePattern("/api/users");
