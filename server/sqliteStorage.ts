@@ -1824,4 +1824,51 @@ export class SQLiteStorage implements IStorage {
       return undefined;
     }
   }
+
+  // Получить все выигрыши для админ панели
+  async getAllWins(): Promise<any[]> {
+    try {
+      const stmt = this.db.prepare(`
+        SELECT 
+          uw.id,
+          uw.user_id,
+          uw.listing_id,
+          uw.winning_bid,
+          uw.won_at,
+          u.full_name as winner_name,
+          u.phone_number as winner_phone,
+          cl.make,
+          cl.model,
+          cl.year,
+          cl.lot_number,
+          cl.photos
+        FROM user_wins uw
+        JOIN users u ON uw.user_id = u.id
+        JOIN car_listings cl ON uw.listing_id = cl.id
+        ORDER BY uw.won_at DESC
+      `);
+      
+      const rows: any[] = stmt.all();
+      
+      return rows.map((row: any) => ({
+        id: row.id,
+        userId: row.user_id,
+        listingId: row.listing_id,
+        winningBid: row.winning_bid,
+        wonAt: new Date(row.won_at),
+        winnerName: row.winner_name || `Пользователь ${row.user_id}`,
+        winnerPhone: row.winner_phone,
+        listing: {
+          make: row.make,
+          model: row.model,
+          year: row.year,
+          lotNumber: row.lot_number,
+          photos: JSON.parse(row.photos || '[]')
+        }
+      }));
+    } catch (error) {
+      console.error('Error fetching all wins:', error);
+      return [];
+    }
+  }
 }

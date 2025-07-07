@@ -105,6 +105,10 @@ export default function AdminPanel() {
               <Trash2 className="h-4 w-4" />
               Архив
             </TabsTrigger>
+            <TabsTrigger value="wins" className="flex items-center gap-2 w-full justify-start">
+              <Award className="h-4 w-4" />
+              Выигрыши
+            </TabsTrigger>
             <TabsTrigger value="stats" className="flex items-center gap-2 w-full justify-start">
               <Settings className="h-4 w-4" />
               Статистика
@@ -141,6 +145,10 @@ export default function AdminPanel() {
 
           <TabsContent value="archive">
             <ArchiveManagement />
+          </TabsContent>
+
+          <TabsContent value="wins">
+            <WinsSection />
           </TabsContent>
 
           <TabsContent value="stats">
@@ -2586,6 +2594,149 @@ function ArchiveManagement() {
 }
 
 // Компонент кнопки прокрутки наверх
+// Раздел "Выигрыши"
+function WinsSection() {
+  const { data: wins = [], isLoading, refetch } = useQuery({
+    queryKey: ['/api/admin/wins'],
+    staleTime: 1000, // 1 секунда
+    refetchInterval: 3000, // Автообновление каждые 3 секунды
+  });
+
+  const formatDate = (date: string | Date) => {
+    return new Date(date).toLocaleString('ru-RU', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  const formatPrice = (price: number | string) => {
+    return `${Number(price).toLocaleString()} сомони`;
+  };
+
+  if (isLoading) {
+    return (
+      <div className="space-y-4">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Award className="h-5 w-5" />
+              Все выигрыши аукционов
+            </CardTitle>
+            <CardDescription>
+              Полный список побед с информацией о победителях
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="text-center py-8">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+              <p className="text-gray-600">Загрузка выигрышей...</p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="flex items-center gap-2">
+                <Award className="h-5 w-5" />
+                Все выигрыши аукционов ({wins.length})
+              </CardTitle>
+              <CardDescription>
+                Полный список побед с информацией о победителях
+              </CardDescription>
+            </div>
+            <Button onClick={() => refetch()} size="sm" variant="outline">
+              <RefreshCw className="h-4 w-4 mr-2" />
+              Обновить
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {wins.length === 0 ? (
+            <div className="text-center py-8">
+              <Award className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+              <p className="text-gray-600">Пока нет завершенных аукционов с победителями</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {wins.map((win: any) => (
+                <div key={win.id} className="border rounded-lg p-4 bg-gradient-to-r from-yellow-50 to-orange-50 border-yellow-200">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">
+                          🏆 ПОБЕДА
+                        </Badge>
+                        <span className="text-sm text-gray-600">
+                          Лот #{win.listing.lotNumber}
+                        </span>
+                      </div>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                          <h3 className="font-semibold text-lg">
+                            {win.listing.make} {win.listing.model}
+                          </h3>
+                          <p className="text-gray-600">
+                            {win.listing.year} год
+                          </p>
+                        </div>
+                        
+                        <div>
+                          <p className="font-semibold text-green-600">
+                            Победитель: {win.winnerName}
+                          </p>
+                          {win.winnerPhone && (
+                            <p className="text-sm text-gray-600">
+                              📞 {win.winnerPhone}
+                            </p>
+                          )}
+                        </div>
+                        
+                        <div>
+                          <p className="font-bold text-lg text-green-600">
+                            {formatPrice(win.winningBid)}
+                          </p>
+                          <p className="text-sm text-gray-600">
+                            {formatDate(win.wonAt)}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="flex-shrink-0">
+                      {win.listing.photos && win.listing.photos.length > 0 ? (
+                        <img 
+                          src={win.listing.photos[0]} 
+                          alt={`${win.listing.make} ${win.listing.model}`}
+                          className="w-20 h-16 object-cover rounded-lg border-2 border-yellow-300"
+                        />
+                      ) : (
+                        <div className="w-20 h-16 bg-gray-200 rounded-lg flex items-center justify-center border-2 border-yellow-300">
+                          <Car className="h-8 w-8 text-gray-400" />
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
 function ScrollToTopButton() {
   const [isVisible, setIsVisible] = useState(false);
 

@@ -2169,6 +2169,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Админ выигрыши - все победы с именами
+  app.get("/api/admin/wins", requireAdmin, async (req, res) => {
+    try {
+      const wins = await storage.getAllWins();
+      res.json(wins);
+    } catch (error) {
+      console.error("Failed to fetch admin wins:", error);
+      res.status(500).json({ error: "Failed to fetch wins" });
+    }
+  });
+
   // Архивирование просроченных аукционов
   app.post('/api/archive-expired', async (req, res) => {
     try {
