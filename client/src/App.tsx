@@ -9,6 +9,7 @@ import { AuctionProvider } from "@/contexts/AuctionContext";
 import { UserDataProvider } from "@/contexts/UserDataContext";
 import { AlertsProvider } from "@/contexts/AlertsContext";
 import { FavoritesProvider } from "@/contexts/FavoritesContext";
+import { useAuctionWebSocket } from "@/hooks/useAuctionWebSocket";
 import HomePage from "@/pages/HomePage";
 import AuctionFeed from "@/pages/AuctionFeed";
 import AuctionDetail from "@/pages/AuctionDetailFixed";
@@ -35,6 +36,9 @@ import { ScrollToTop } from "@/components/ScrollToTop";
 
 function Router() {
   const [location] = useLocation();
+  
+  // Глобальный WebSocket для мгновенного обновления карточек на всех страницах
+  useAuctionWebSocket();
   
   // Предзагружаем критически важные данные для мгновенной загрузки
   useEffect(() => {
