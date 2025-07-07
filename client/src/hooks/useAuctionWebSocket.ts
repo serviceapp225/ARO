@@ -110,8 +110,9 @@ export function useAuctionWebSocket(): AuctionWebSocketHook {
           receivedAt: Date.now()
         });
         
-        // Мягко обновляем кэш списка аукционов для отображения новых ставок в карточках  
+        // Быстро обновляем кэш списка аукционов для отображения новых ставок в карточках
         queryClient.invalidateQueries({ queryKey: ['/api/listings'] });
+        queryClient.refetchQueries({ queryKey: ['/api/listings'] });
         
         // console.log(`💰 Новая ставка в real-time: ${message.data?.bid?.amount} сомони`);
         break;
