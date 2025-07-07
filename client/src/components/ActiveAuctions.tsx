@@ -279,11 +279,11 @@ export function ActiveAuctions({ searchQuery = "", customListings }: ActiveAucti
                 <div>
                   {(auction.currentBid && auction.currentBid !== '0' && auction.currentBid !== '' && !isNaN(parseFloat(auction.currentBid))) ? (
                     <span className="text-blue-600 font-bold">
-                      от {parseFloat(auction.currentBid).toLocaleString()} с.
+                      {parseFloat(auction.currentBid).toLocaleString()} с.
                     </span>
                   ) : (
                     <span className="text-blue-600 font-bold">
-                      от {parseFloat(auction.startingPrice || '0').toLocaleString()} с.
+                      {parseFloat(auction.startingPrice || '0').toLocaleString()} с.
                     </span>
                   )}
                 </div>
