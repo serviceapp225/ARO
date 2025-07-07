@@ -31,6 +31,13 @@ export function ActiveAuctions({ searchQuery = "", customListings }: ActiveAucti
 
   const ITEMS_PER_PAGE = 20;
 
+  // Принудительно обновляем данные при монтировании для отображения актуальных цен
+  useEffect(() => {
+    queryClient.removeQueries({ queryKey: ['/api/listings'] });
+    queryClient.invalidateQueries({ queryKey: ['/api/listings'] });
+    queryClient.refetchQueries({ queryKey: ['/api/listings'] });
+  }, [queryClient]);
+
 
 
   // Use custom listings if provided, otherwise use filtered auctions

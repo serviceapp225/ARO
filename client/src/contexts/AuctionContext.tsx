@@ -39,8 +39,8 @@ export function AuctionProvider({ children }: { children: ReactNode }) {
   // Use TanStack Query for data fetching with optimized caching
   const { data: listings = [], isLoading, refetch } = useQuery<any[]>({
     queryKey: ['/api/listings'],
-    refetchInterval: 10000, // Обновление каждые 10 секунд для новых объявлений
-    staleTime: 5000, // Данные свежие 5 секунд для быстрого отображения новых авто
+    refetchInterval: 3000, // Обновление каждые 3 секунды для актуальности
+    staleTime: 1000, // Данные свежие 1 секунду для быстрого отображения изменений
     gcTime: 60000, // В кэше 1 минута
     refetchOnWindowFocus: true, // Обновлять при фокусе для актуальности
     refetchOnMount: true, // Обновлять при монтировании для свежих данных
@@ -56,7 +56,7 @@ export function AuctionProvider({ children }: { children: ReactNode }) {
     year: listing.year || new Date().getFullYear(),
     mileage: listing.mileage || 0,
     photos: Array.isArray(listing.photos) ? listing.photos : [],
-    currentBid: parseFloat(listing.currentBid) || 0,
+    currentBid: parseFloat(listing.currentBid) || parseFloat(listing.startingPrice) || 0,
     startingPrice: listing.startingPrice || '0',
     bidCount: listing.bidCount || 0,
     endTime: new Date(listing.auctionEndTime || Date.now() + 86400000),
