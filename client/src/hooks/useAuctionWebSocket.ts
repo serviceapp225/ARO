@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useQueryClient } from '@tanstack/react-query';
 
 interface WebSocketMessage {
   type: string;
@@ -32,6 +33,7 @@ export function useAuctionWebSocket(): AuctionWebSocketHook {
   const currentListingRef = useRef<number | null>(null);
   
   const { user } = useAuth();
+  const queryClient = useQueryClient();
   
   const connect = useCallback(() => {
     if (wsRef.current?.readyState === WebSocket.OPEN) return;
@@ -107,6 +109,12 @@ export function useAuctionWebSocket(): AuctionWebSocketHook {
           ...message,
           receivedAt: Date.now()
         });
+        
+        // Принудительно обновляем кэш списка аукционов для отображения новых ставок в карточках
+        queryClient.removeQueries({ queryKey: ['/api/listings'] });
+        queryClient.invalidateQueries({ queryKey: ['/api/listings'] });
+        queryClient.refetchQueries({ queryKey: ['/api/listings'] });
+        
         // console.log(`💰 Новая ставка в real-time: ${message.data?.bid?.amount} сомони`);
         break;
         
