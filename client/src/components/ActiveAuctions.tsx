@@ -11,6 +11,7 @@ import { useFavorites } from '@/contexts/FavoritesContext';
 import { useLocation } from 'wouter';
 import { useState, useEffect, useMemo, memo } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
+import { useAuctionWebSocket } from '@/hooks/useAuctionWebSocket';
 
 
 interface ActiveAuctionsProps {
@@ -22,6 +23,9 @@ export function ActiveAuctions({ searchQuery = "", customListings }: ActiveAucti
   const { auctions, loading } = useAuctions();
   const { isFavorite, addToFavorites, removeFromFavorites } = useFavorites();
   const queryClient = useQueryClient();
+  
+  // WebSocket для мгновенного обновления карточек
+  const { lastBidUpdate } = useAuctionWebSocket();
 
   const [, setLocation] = useLocation();
   const [page, setPage] = useState(1);
@@ -30,6 +34,16 @@ export function ActiveAuctions({ searchQuery = "", customListings }: ActiveAucti
   const [sortBy, setSortBy] = useState("recent");
 
   const ITEMS_PER_PAGE = 20;
+
+  // Обработка WebSocket обновлений для мгновенного обновления карточек
+  useEffect(() => {
+    if (lastBidUpdate) {
+      console.log('📢 Карточки получили WebSocket обновление:', lastBidUpdate);
+      // Мгновенно очищаем и перезагружаем данные
+      queryClient.removeQueries({ queryKey: ['/api/listings'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/listings'] });
+    }
+  }, [lastBidUpdate, queryClient]);
 
 
 
