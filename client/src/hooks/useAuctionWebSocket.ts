@@ -110,7 +110,8 @@ export function useAuctionWebSocket(): AuctionWebSocketHook {
           receivedAt: Date.now()
         });
         
-        // Быстро обновляем кэш списка аукционов для отображения новых ставок в карточках
+        // Мгновенно обновляем кэш списка аукционов для отображения новых ставок в карточках
+        queryClient.removeQueries({ queryKey: ['/api/listings'] });
         queryClient.invalidateQueries({ queryKey: ['/api/listings'] });
         queryClient.refetchQueries({ queryKey: ['/api/listings'] });
         
