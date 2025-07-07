@@ -1775,9 +1775,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Получить объявления ожидающие одобрения
   app.get("/api/admin/listings/pending-approval", adminAuth, async (req, res) => {
     try {
+      console.log('📋 Запрос на модерацию объявлений...');
       const listings = await storage.getListingsByStatus('pending');
+      console.log(`📋 Найдено ${listings.length} объявлений на модерацию`);
+      
+      // Добавляем CORS заголовки для кросс-доменных запросов
+      res.header('Access-Control-Allow-Origin', '*');
+      res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+      res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+      
       res.json(listings);
     } catch (error) {
+      console.error('❌ Ошибка при получении объявлений на модерацию:', error);
       res.status(500).json({ error: "Failed to fetch pending approval listings" });
     }
   });

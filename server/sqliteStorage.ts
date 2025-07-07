@@ -1626,7 +1626,7 @@ export class SQLiteStorage implements IStorage {
       // Находим все активные аукционы, которые просрочены
       const findExpiredStmt = this.db.prepare(`
         SELECT * FROM car_listings 
-        WHERE status = 'active' AND end_time <= ?
+        WHERE status = 'active' AND end_date <= ?
       `);
       const expiredListings = findExpiredStmt.all(now).map(row => this.mapListing(row));
       

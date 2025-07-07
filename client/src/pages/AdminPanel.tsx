@@ -162,13 +162,21 @@ function ModerationManagement() {
   const [editingListing, setEditingListing] = useState<CarListing | null>(null);
 
   // Получение объявлений ожидающих одобрения
-  const { data: pendingListings = [], isLoading } = useQuery<CarListing[]>({
+  const { data: pendingListings = [], isLoading, error: pendingError } = useQuery<CarListing[]>({
     queryKey: ['/api/admin/listings/pending-approval'],
     queryFn: async () => {
+      console.log('🔄 Загружаем объявления на модерацию...');
       const response = await fetch('/api/admin/listings/pending-approval');
       if (!response.ok) throw new Error('Failed to fetch pending listings');
-      return response.json();
-    }
+      const data = await response.json();
+      console.log('📋 Получены данные модерации:', data);
+      return data;
+    },
+    staleTime: 0, // Всегда загружаем свежие данные
+    gcTime: 0, // Не кэшируем вообще
+    refetchInterval: 5000, // автообновление каждые 5 секунд
+    refetchOnMount: true,
+    refetchOnWindowFocus: true
   });
 
   // Мутация одобрения объявления
@@ -298,15 +306,36 @@ function ModerationManagement() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Модерация объявлений</CardTitle>
-        <CardDescription>
-          Объявления ожидающие одобрения: {pendingListings.length}
-        </CardDescription>
+        <div className="flex justify-between items-center">
+          <div>
+            <CardTitle>Модерация объявлений</CardTitle>
+            <CardDescription>
+              Объявления ожидающие одобрения: {pendingListings.length}
+            </CardDescription>
+          </div>
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={() => {
+              console.log('🔄 Принудительное обновление модерации...');
+              queryClient.removeQueries({ queryKey: ['/api/admin/listings/pending-approval'] });
+              queryClient.invalidateQueries({ queryKey: ['/api/admin/listings/pending-approval'] });
+            }}
+          >
+            🔄 Обновить
+          </Button>
+        </div>
       </CardHeader>
       <CardContent>
+        {pendingError && (
+          <div className="text-center py-4 mb-4 bg-red-50 border border-red-200 rounded-lg">
+            <p className="text-red-600">Ошибка: {pendingError.message}</p>
+          </div>
+        )}
         {pendingListings.length === 0 ? (
           <div className="text-center py-8">
             <p className="text-gray-500">Нет объявлений ожидающих модерации</p>
+            <p className="text-xs text-gray-400 mt-2">Debug: Загружено {pendingListings.length} объявлений</p>
           </div>
         ) : (
           <div className="space-y-4">
