@@ -41,7 +41,7 @@ export function useServerSentEvents() {
 
       eventSource.onerror = () => {
         setIsConnected(false);
-        console.log('❌ SSE отключен, переподключение...');
+        // console.log('❌ SSE отключен, переподключение...');
         
         // Переподключение через 2 секунды
         setTimeout(() => {

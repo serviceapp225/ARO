@@ -8,7 +8,7 @@ export function useTimestampSync() {
   // Получаем timestamp последней ставки
   const { data: timestampData } = useQuery({
     queryKey: ['/api/bid-updates/timestamp'],
-    refetchInterval: 500, // Проверяем каждые 500мс
+    refetchInterval: 2000, // Проверяем каждые 2 секунды
     staleTime: 0, // Всегда считаем данные устаревшими
     gcTime: 0, // Не кэшируем
   });

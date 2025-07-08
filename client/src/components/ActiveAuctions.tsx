@@ -12,9 +12,7 @@ import { useLocation } from 'wouter';
 import { useState, useEffect, useMemo, memo } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuctionWebSocket } from '@/hooks/useAuctionWebSocket';
-import { useOptimisticBids } from '@/hooks/useOptimisticBids';
-import { usePollingSync } from '@/hooks/usePollingSync';
-import { useTimestampSync } from '@/hooks/useTimestampSync';
+import { useSimpleSync } from '@/hooks/useSimpleSync';
 
 
 interface ActiveAuctionsProps {
@@ -27,17 +25,8 @@ export function ActiveAuctions({ searchQuery = "", customListings }: ActiveAucti
   const { isFavorite, addToFavorites, removeFromFavorites } = useFavorites();
   const queryClient = useQueryClient();
   
-  // WebSocket для мгновенного обновления карточек
-  const { lastBidUpdate } = useAuctionWebSocket();
-  
-  // Оптимистичные обновления для мгновенного отображения
-  const { getOptimisticBid } = useOptimisticBids();
-  
-  // Агрессивная синхронизация каждые 200мс
-  const { forceSync } = usePollingSync(200);
-  
-  // Timestamp sync для мгновенных обновлений
-  const { lastUpdate } = useTimestampSync();
+  // Простая синхронизация каждые 2 секунды
+  useSimpleSync();
 
   const [, setLocation] = useLocation();
   const [page, setPage] = useState(1);
@@ -47,15 +36,7 @@ export function ActiveAuctions({ searchQuery = "", customListings }: ActiveAucti
 
   const ITEMS_PER_PAGE = 20;
 
-  // Обработка WebSocket обновлений для мгновенного обновления карточек
-  useEffect(() => {
-    if (lastBidUpdate) {
-      console.log('📢 Карточки получили WebSocket обновление:', lastBidUpdate);
-      // Мгновенно очищаем и перезагружаем данные
-      queryClient.removeQueries({ queryKey: ['/api/listings'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/listings'] });
-    }
-  }, [lastBidUpdate, queryClient]);
+
 
 
 

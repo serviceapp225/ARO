@@ -26,7 +26,7 @@ export function usePollingSync(intervalMs: number = 200) {
             });
             
             lastUpdateRef.current = now;
-            console.log('🔄 Принудительная синхронизация данных');
+            // console.log('🔄 Принудительная синхронизация данных');
           } catch (error) {
             console.error('Ошибка синхронизации:', error);
           }
