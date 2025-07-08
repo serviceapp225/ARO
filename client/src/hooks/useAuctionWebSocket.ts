@@ -118,6 +118,29 @@ export function useAuctionWebSocket(): AuctionWebSocketHook {
         // console.log(`💰 Новая ставка в real-time: ${message.data?.bid?.amount} сомони`);
         break;
         
+      case 'notification':
+        // Обработка уведомлений от WebSocket
+        if (message.data && user?.userId) {
+          const notification = message.data;
+          
+          // Показываем уведомление только если оно для текущего пользователя
+          if (notification.userId === (user as any)?.userId) {
+            console.log('🔔 Получено уведомление:', notification);
+            
+            // Обновляем кэш уведомлений
+            queryClient.invalidateQueries({ queryKey: ['/api/notifications'] });
+            
+            // Показываем браузерное уведомление если разрешено
+            if (Notification.permission === 'granted') {
+              new Notification(notification.title, {
+                body: notification.message,
+                icon: '/favicon.ico'
+              });
+            }
+          }
+        }
+        break;
+        
       case 'hot_auction_mode':
         setIsHotAuction(message.data?.isHot || false);
         console.log(`🔥 Режим горячего аукциона: ${message.data?.isHot ? 'ВКЛЮЧЕН' : 'отключен'}`);

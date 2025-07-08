@@ -202,6 +202,25 @@ class AuctionWebSocketManager {
     this.broadcastToRoom(room, message);
   }
 
+  public sendNotificationToUser(userId: number, notification: any) {
+    // Находим всех клиентов этого пользователя
+    let notificationSent = false;
+    this.clients.forEach((client) => {
+      if (client.userId === userId && client.ws.readyState === WebSocket.OPEN) {
+        this.sendMessage(client, {
+          type: 'notification',
+          data: notification,
+          timestamp: Date.now()
+        });
+        notificationSent = true;
+      }
+    });
+    
+    if (!notificationSent) {
+      console.log(`⚠️ Пользователь ${userId} не подключен к WebSocket, уведомление не отправлено`);
+    }
+  }
+
   public setHotAuction(listingId: number, isHot: boolean) {
     const room = this.rooms.get(listingId);
     if (room) {

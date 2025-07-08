@@ -782,7 +782,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           
           try {
             console.log(`Creating outbid notification for user ${previousHighestBidder.bidderId} (previous highest bidder)`);
-            await storage.createNotification({
+            const notification = await storage.createNotification({
               userId: previousHighestBidder.bidderId,
               title: "Ваша ставка перебита!",
               message: `Новая ставка ${validatedData.amount} Сомони на ${listing.make} ${listing.model} ${listing.year}. Сделайте ставку выше!`,
@@ -791,6 +791,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
               isRead: false
             });
             console.log(`Notification created successfully for user ${previousHighestBidder.bidderId}`);
+            
+            // Отправляем уведомление через WebSocket
+            if (wsManager) {
+              wsManager.sendNotificationToUser(previousHighestBidder.bidderId, notification);
+              console.log(`📲 Отправлено WebSocket уведомление пользователю ${previousHighestBidder.bidderId}`);
+            }
           } catch (notificationError) {
             console.error(`Failed to create notification for user ${previousHighestBidder.bidderId}:`, notificationError);
           }
