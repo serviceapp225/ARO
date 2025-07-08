@@ -727,11 +727,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
-      // Get current highest bid to validate new bid amount
+      // КРИТИЧНО: Очищаем кэш ПЕРЕД получением ставок для валидации
+      clearCachePattern('listings');
+      clearCachePattern('auction');
+      clearCachePattern('bids');
+      
+      // Получаем самые свежие данные без кэша
       const existingBids = await storage.getBidsForListing(listingId);
       const currentHighestBid = existingBids.length > 0 
         ? Math.max(...existingBids.map(bid => parseFloat(bid.amount)))
         : parseFloat(listing.startingPrice);
+        
+      console.log(`💰 Валидация ставки: текущая макс ${currentHighestBid}, новая ${validatedData.amount}`);
       
       const newBidAmount = parseFloat(validatedData.amount);
       

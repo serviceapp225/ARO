@@ -25,8 +25,20 @@ export function ActiveAuctions({ searchQuery = "", customListings }: ActiveAucti
   const { isFavorite, addToFavorites, removeFromFavorites } = useFavorites();
   const queryClient = useQueryClient();
   
-  // Простая синхронизация каждые 2 секунды
+  // Простая синхронизация каждую секунду
   useSimpleSync();
+  
+  // WebSocket для мгновенного обновления
+  const { lastBidUpdate } = useAuctionWebSocket();
+  
+  // Мгновенное обновление при WebSocket событиях
+  useEffect(() => {
+    if (lastBidUpdate) {
+      console.log('🚀 WebSocket: мгновенное обновление карточек');
+      queryClient.removeQueries({ queryKey: ['/api/listings'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/listings'] });
+    }
+  }, [lastBidUpdate, queryClient]);
 
   const [, setLocation] = useLocation();
   const [page, setPage] = useState(1);
