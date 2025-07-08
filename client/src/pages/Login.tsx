@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Phone, ArrowRight } from "lucide-react";
+import { Phone, ArrowRight, Gift } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -13,6 +13,8 @@ export default function Login() {
   const [agreeToTerms, setAgreeToTerms] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [, navigate] = useLocation();
+  const [showReferralInput, setShowReferralInput] = useState(false);
+  const [referrerPhone, setReferrerPhone] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,7 +30,9 @@ export default function Login() {
       email: phoneNumber + "@autoauction.tj",
       phoneNumber: phoneNumber,
       uid: "demo-user-" + Date.now(),
-      isActive: false // All new users are inactive by default
+      isActive: false, // All new users are inactive by default
+      invitedBy: referrerPhone || null, // Номер пригласившего, если указан
+      isInvited: !!referrerPhone // true если есть приглашающий
     };
     localStorage.setItem('demo-user', JSON.stringify(demoUser));
     
@@ -112,6 +116,38 @@ export default function Login() {
                 </Label>
               </div>
             </div>
+
+            {/* Кнопка "По приглашению" */}
+            <div className="text-center">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setShowReferralInput(!showReferralInput)}
+                className="text-green-600 border-green-300 hover:bg-green-50"
+              >
+                <Gift className="w-4 h-4 mr-2" />
+                По приглашению
+              </Button>
+            </div>
+
+            {/* Поле для ввода номера приглашающего */}
+            {showReferralInput && (
+              <div className="space-y-1 bg-green-50 p-3 rounded-lg border border-green-200">
+                <Label htmlFor="referrer">Номер того, кто вас пригласил</Label>
+                <Input
+                  id="referrer"
+                  type="tel"
+                  placeholder="+992 (__) ___-__-__"
+                  value={referrerPhone}
+                  onChange={(e) => setReferrerPhone(e.target.value)}
+                  className="text-base"
+                />
+                <p className="text-xs text-green-600">
+                  Введите номер телефона пользователя, который вас пригласил
+                </p>
+              </div>
+            )}
 
             <Button
               type="submit"

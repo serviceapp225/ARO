@@ -2,9 +2,11 @@ import { useState, useEffect } from "react";
 import { Car, Users, Gift, Star, Crown, Award } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { ReferralModal } from "./ReferralModal";
 
 export function PremiumBanner() {
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [showReferralModal, setShowReferralModal] = useState(false);
 
   const bannerSlides = [
     {
@@ -29,9 +31,9 @@ export function PremiumBanner() {
     },
     {
       id: 3,
-      title: "Приведи друга - получи подарок",
-      subtitle: "Зарабатывай на рефералах",
-      description: "1000 сомони за каждого активного друга",
+      title: "Приведи друга – получи 1000 Сомони с его первой покупки!",
+      subtitle: "Реферальная программа",
+      description: "Зарабатывайте с каждого приглашенного друга",
       icon: <Gift className="w-8 h-8" />,
       buttonText: "Пригласить друга",
       gradient: "from-emerald-600 to-green-700",
@@ -53,6 +55,13 @@ export function PremiumBanner() {
   };
 
   const currentBanner = bannerSlides[currentSlide];
+
+  const handleButtonClick = () => {
+    if (currentBanner.id === 3) {
+      // Открываем модальное окно для реферальной системы
+      setShowReferralModal(true);
+    }
+  };
 
   return (
     <div className="w-full">
@@ -82,6 +91,7 @@ export function PremiumBanner() {
                 
                 <div className="mt-4">
                   <Button
+                    onClick={handleButtonClick}
                     className="px-4 py-1.5 bg-white text-gray-800 hover:bg-gray-100 font-bold rounded-full transition-all duration-300 inline-flex items-center gap-1 shadow-lg hover:shadow-xl tracking-wide text-sm"
                   >
                     {currentBanner.buttonText} →
@@ -107,6 +117,12 @@ export function PremiumBanner() {
           </div>
         </CardContent>
       </Card>
+      
+      {/* Модальное окно реферальной системы */}
+      <ReferralModal 
+        isOpen={showReferralModal} 
+        onClose={() => setShowReferralModal(false)} 
+      />
     </div>
   );
 }

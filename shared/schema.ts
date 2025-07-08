@@ -11,6 +11,9 @@ export const users = pgTable("users", {
   profilePhoto: text("profile_photo"),
   phoneNumber: text("phone_number"), // Phone number for authentication
   isActive: boolean("is_active").default(false),
+  // Реферальная система
+  invitedBy: text("invited_by"), // Номер телефона пригласившего
+  isInvited: boolean("is_invited").default(false), // Отметка о том, что пользователь приглашен
   createdAt: timestamp("created_at").defaultNow(),
 });
 

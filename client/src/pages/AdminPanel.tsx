@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { Trash2, User as UserIcon, Car, Bell, Settings, CheckCircle, XCircle, AlertCircle, Edit, Search, Image, Plus, Eye, ChevronUp, RefreshCw, Award } from 'lucide-react';
+import { Trash2, User as UserIcon, Car, Bell, Settings, CheckCircle, XCircle, AlertCircle, Edit, Search, Image, Plus, Eye, ChevronUp, RefreshCw, Award, Gift } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { Link } from 'wouter';
@@ -109,6 +109,10 @@ export default function AdminPanel() {
               <Award className="h-4 w-4" />
               Выигрыши
             </TabsTrigger>
+            <TabsTrigger value="referrals" className="flex items-center gap-2 w-full justify-start">
+              <Gift className="h-4 w-4" />
+              Рефералы
+            </TabsTrigger>
             <TabsTrigger value="stats" className="flex items-center gap-2 w-full justify-start">
               <Settings className="h-4 w-4" />
               Статистика
@@ -149,6 +153,10 @@ export default function AdminPanel() {
 
           <TabsContent value="wins">
             <WinsSection />
+          </TabsContent>
+
+          <TabsContent value="referrals">
+            <ReferralsSection />
           </TabsContent>
 
           <TabsContent value="stats">
@@ -790,10 +798,22 @@ function UsersManagement() {
                       <p className="text-sm text-gray-600 dark:text-gray-300">
                         {user.phoneNumber} • {user.role}
                       </p>
+                      {(user as any).isInvited && (
+                        <p className="text-xs text-green-600">
+                          Приглашен: {(user as any).invitedBy}
+                        </p>
+                      )}
                     </div>
-                    <Badge variant={(user.isActive || false) ? 'default' : 'secondary'}>
-                      {(user.isActive || false) ? 'Активен' : 'Неактивен'}
-                    </Badge>
+                    <div className="flex gap-2">
+                      <Badge variant={(user.isActive || false) ? 'default' : 'secondary'}>
+                        {(user.isActive || false) ? 'Активен' : 'Неактивен'}
+                      </Badge>
+                      {(user as any).isInvited && (
+                        <Badge variant="outline" className="text-green-600 border-green-300">
+                          Реферал
+                        </Badge>
+                      )}
+                    </div>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
@@ -2772,5 +2792,168 @@ function ScrollToTopButton() {
         </Button>
       )}
     </>
+  );
+}
+
+// Компонент управления реферальной системой
+function ReferralsSection() {
+  const { data: users = [], isLoading } = useQuery<User[]>({
+    queryKey: ['/api/admin/users'],
+    staleTime: 1000,
+    refetchInterval: 5000,
+  });
+
+  if (isLoading) {
+    return <div className="text-center py-8">Загрузка...</div>;
+  }
+
+  // Фильтруем пользователей-рефералов
+  const referredUsers = users.filter(user => (user as any).isInvited);
+  const referrers = users.filter(user => 
+    referredUsers.some(ref => (ref as any).invitedBy === user.phoneNumber)
+  );
+
+  // Статистика по рефералам
+  const stats = {
+    totalReferrals: referredUsers.length,
+    activeReferrals: referredUsers.filter(user => user.isActive).length,
+    uniqueReferrers: referrers.length
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Статистика */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Всего рефералов</p>
+                <p className="text-2xl font-bold">{stats.totalReferrals}</p>
+              </div>
+              <Gift className="h-8 w-8 text-green-500" />
+            </div>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Активные рефералы</p>
+                <p className="text-2xl font-bold">{stats.activeReferrals}</p>
+              </div>
+              <UserIcon className="h-8 w-8 text-blue-500" />
+            </div>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Приглашающих</p>
+                <p className="text-2xl font-bold">{stats.uniqueReferrers}</p>
+              </div>
+              <Award className="h-8 w-8 text-orange-500" />
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Список рефералов */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Приглашенные пользователи</CardTitle>
+          <CardDescription>
+            Пользователи, зарегистрированные по реферальной программе
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {referredUsers.length > 0 ? (
+            <div className="space-y-3">
+              {referredUsers.map((user) => (
+                <div key={user.id} className="flex items-center justify-between p-4 border rounded-lg">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3">
+                      <div>
+                        <p className="font-medium">{user.fullName || user.phoneNumber}</p>
+                        <p className="text-sm text-gray-600">
+                          Пригласил: {(user as any).invitedBy}
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          Регистрация: {new Date(user.createdAt!).toLocaleDateString('ru-RU')}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <Badge variant={user.isActive ? 'default' : 'secondary'}>
+                      {user.isActive ? 'Активен' : 'Неактивен'}
+                    </Badge>
+                    <Badge variant="outline" className="text-green-600 border-green-300">
+                      Реферал
+                    </Badge>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-8 text-gray-500">
+              <Gift className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+              <p>Рефералов пока нет</p>
+              <p className="text-sm mt-1">Когда появятся приглашенные пользователи, они отобразятся здесь</p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Список приглашающих */}
+      {referrers.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Активные приглашающие</CardTitle>
+            <CardDescription>
+              Пользователи, которые приглашают других в систему
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {referrers.map((referrer) => {
+                const referredCount = referredUsers.filter(
+                  ref => (ref as any).invitedBy === referrer.phoneNumber
+                ).length;
+                
+                return (
+                  <div key={referrer.id} className="flex items-center justify-between p-4 border rounded-lg">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3">
+                        <div>
+                          <p className="font-medium">{referrer.fullName || referrer.phoneNumber}</p>
+                          <p className="text-sm text-gray-600">
+                            {referrer.phoneNumber} • {referrer.role}
+                          </p>
+                          <p className="text-xs text-blue-600">
+                            Пригласил: {referredCount} пользовател{referredCount === 1 ? 'я' : referredCount < 5 ? 'ей' : 'ей'}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <Badge variant={referrer.isActive ? 'default' : 'secondary'}>
+                        {referrer.isActive ? 'Активен' : 'Неактивен'}
+                      </Badge>
+                      <Badge variant="outline" className="text-blue-600 border-blue-300">
+                        Приглашающий
+                      </Badge>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+    </div>
   );
 }

@@ -30,6 +30,8 @@ export class SQLiteStorage implements IStorage {
         profile_photo TEXT,
         phone_number TEXT,
         is_active BOOLEAN DEFAULT 0,
+        invited_by TEXT,
+        is_invited BOOLEAN DEFAULT 0,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
       )
     `);
@@ -37,6 +39,19 @@ export class SQLiteStorage implements IStorage {
     // Добавляем колонку phone_number если она не существует
     try {
       this.db.exec(`ALTER TABLE users ADD COLUMN phone_number TEXT`);
+    } catch (error) {
+      // Колонка уже существует, игнорируем ошибку
+    }
+
+    // Добавляем реферальные колонки если они не существуют
+    try {
+      this.db.exec(`ALTER TABLE users ADD COLUMN invited_by TEXT`);
+    } catch (error) {
+      // Колонка уже существует, игнорируем ошибку
+    }
+
+    try {
+      this.db.exec(`ALTER TABLE users ADD COLUMN is_invited BOOLEAN DEFAULT 0`);
     } catch (error) {
       // Колонка уже существует, игнорируем ошибку
     }
@@ -299,12 +314,20 @@ export class SQLiteStorage implements IStorage {
 
   async createUser(insertUser: InsertUser): Promise<User> {
     const stmt = this.db.prepare(`
-      INSERT INTO users (username, email, role, full_name, profile_photo, phone_number, is_active)
-      VALUES (?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO users (username, email, role, full_name, profile_photo, phone_number, is_active, invited_by, is_invited)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
-    const result = stmt.run(insertUser.username, insertUser.email, insertUser.role, 
-                           insertUser.fullName || null, insertUser.profilePhoto || null, 
-                           insertUser.phoneNumber || null, insertUser.isActive ? 1 : 0);
+    const result = stmt.run(
+      insertUser.username, 
+      insertUser.email, 
+      insertUser.role, 
+      insertUser.fullName || null, 
+      insertUser.profilePhoto || null, 
+      insertUser.phoneNumber || null, 
+      insertUser.isActive ? 1 : 0,
+      (insertUser as any).invitedBy || null,
+      (insertUser as any).isInvited ? 1 : 0
+    );
     
     return this.getUser(result.lastInsertRowid as number) as Promise<User>;
   }
@@ -928,6 +951,8 @@ export class SQLiteStorage implements IStorage {
       profilePhoto: row.profile_photo,
       isActive: Boolean(row.is_active),
       phoneNumber: row.phone_number,
+      invitedBy: row.invited_by,
+      isInvited: Boolean(row.is_invited),
       createdAt: new Date(row.created_at)
     };
   }
