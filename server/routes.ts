@@ -40,15 +40,23 @@ function getCached(key: string) {
 
 function setCache(key: string, data: any) {
   cache.set(key, { data, timestamp: Date.now() });
+  console.log(`💾 Кэш сохранен для ключа: ${key}`);
 }
 
 function clearCachePattern(pattern: string) {
   const keys = Array.from(cache.keys());
+  console.log(`🗑️ Очистка кэша по паттерну "${pattern}". Найдено ключей: ${keys.length}`);
+  console.log(`🔍 Существующие ключи кэша: ${keys.join(', ')}`);
+  
+  let deletedCount = 0;
   keys.forEach(key => {
     if (key.includes(pattern)) {
       cache.delete(key);
+      deletedCount++;
+      console.log(`🗑️ Удален ключ кэша: ${key}`);
     }
   });
+  console.log(`✅ Очищено ${deletedCount} ключей кэша`);
 }
 
 // Middleware для защиты админских маршрутов - упрощенная версия для разработки
