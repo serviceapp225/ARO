@@ -34,8 +34,25 @@ export function ActiveAuctions({ searchQuery = "", customListings }: ActiveAucti
   // Мгновенное обновление при WebSocket событиях
   useEffect(() => {
     if (lastBidUpdate) {
-      console.log('🚀 WebSocket: мгновенное обновление карточек');
-      queryClient.removeQueries({ queryKey: ['/api/listings'] });
+      console.log('🚀 WebSocket: обновление карточек', lastBidUpdate);
+      // Принудительное обновление данных аукционов
+      queryClient.setQueryData(['/api/listings'], (oldData: any[]) => {
+        if (!oldData) return oldData;
+        return oldData.map(listing => {
+          // Приводим оба значения к строкам для сравнения
+          if (listing.id.toString() === lastBidUpdate.listingId.toString()) {
+            console.log('🎯 Обновляем карточку:', listing.id, 'новая ставка:', lastBidUpdate.bid?.amount);
+            return {
+              ...listing,
+              currentBid: lastBidUpdate.bid?.amount || listing.currentBid,
+              bidCount: (listing.bidCount || 0) + 1
+            };
+          }
+          return listing;
+        });
+      });
+      
+      // Также инвалидируем кэш для следующего обновления
       queryClient.invalidateQueries({ queryKey: ['/api/listings'] });
     }
   }, [lastBidUpdate, queryClient]);

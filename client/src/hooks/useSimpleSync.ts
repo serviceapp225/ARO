@@ -6,12 +6,10 @@ export function useSimpleSync() {
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
-    // Каждую секунду принудительно обновляем данные для быстрой синхронизации
+    // Каждые 5 секунд обновляем данные (убираем моргание)
     intervalRef.current = setInterval(() => {
-      queryClient.removeQueries({ queryKey: ['/api/listings'] });
       queryClient.invalidateQueries({ queryKey: ['/api/listings'] });
-      queryClient.refetchQueries({ queryKey: ['/api/listings'] });
-    }, 1000);
+    }, 5000);
 
     return () => {
       if (intervalRef.current) {
