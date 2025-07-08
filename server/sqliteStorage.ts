@@ -75,6 +75,8 @@ export class SQLiteStorage implements IStorage {
         condition TEXT,
         vin TEXT,
         location TEXT,
+        battery_capacity DECIMAL(6,1),
+        electric_range INTEGER,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
       )
     `);
@@ -568,8 +570,8 @@ export class SQLiteStorage implements IStorage {
           photos, auction_duration, status, auction_start_time, auction_end_time,
           customs_cleared, recycled, technical_inspection_valid, technical_inspection_date,
           tinted, tinting_date, engine, transmission, fuel_type, body_type, drive_type,
-          color, condition, vin, location
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          color, condition, vin, location, battery_capacity, electric_range
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `);
       
       // Calculate auction end time
@@ -592,7 +594,9 @@ export class SQLiteStorage implements IStorage {
       insertListing.fuelType || null, insertListing.bodyType || null,
       insertListing.driveType || null, insertListing.color || null,
       insertListing.condition || null, insertListing.vin || null,
-      insertListing.location || null
+      insertListing.location || null,
+      (insertListing as any).batteryCapacity || null,
+      (insertListing as any).electricRange || null
     );
     
     console.log('Listing created successfully with ID:', result.lastInsertRowid);
@@ -699,6 +703,16 @@ export class SQLiteStorage implements IStorage {
     if (data.tintingDate !== undefined) {
       fields.push('tinting_date = ?');
       values.push(data.tintingDate);
+    }
+    
+    // Electric car specific fields
+    if (data.batteryCapacity !== undefined) {
+      fields.push('battery_capacity = ?');
+      values.push(data.batteryCapacity);
+    }
+    if (data.electricRange !== undefined) {
+      fields.push('electric_range = ?');
+      values.push(data.electricRange);
     }
     
     if (fields.length === 0) {
@@ -952,6 +966,8 @@ export class SQLiteStorage implements IStorage {
       condition: row.condition,
       vin: row.vin,
       location: row.location,
+      batteryCapacity: row.battery_capacity,
+      electricRange: row.electric_range,
       createdAt: new Date(row.created_at)
     };
   }

@@ -48,6 +48,9 @@ export const carListings = pgTable("car_listings", {
   condition: text("condition"),
   vin: text("vin"),
   location: text("location"),
+  // Electric car specific fields
+  batteryCapacity: numeric("battery_capacity", { precision: 6, scale: 1 }), // кВт·ч
+  electricRange: integer("electric_range"), // запас хода в км
   createdAt: timestamp("created_at").defaultNow(),
 }, (table) => ({
   statusIdx: index("car_listings_status_idx").on(table.status),

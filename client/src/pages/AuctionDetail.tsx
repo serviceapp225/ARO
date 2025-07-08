@@ -760,6 +760,30 @@ export default function AuctionDetail() {
               </div>
             </div>
 
+            {/* Electric car specific characteristics */}
+            {auction.fuelType === 'electric' && (auction.batteryCapacity || auction.electricRange) && (
+              <div className="mt-6 p-4 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-xl border border-blue-200">
+                <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                  <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                  ⚡ Характеристики электромобиля
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {auction.batteryCapacity && (
+                    <div className="flex justify-between items-center py-3 px-4 rounded-lg bg-white border border-blue-100">
+                      <span className="text-gray-600 font-medium">Емкость батареи</span>
+                      <span className="font-semibold text-blue-600">{auction.batteryCapacity} кВт·ч</span>
+                    </div>
+                  )}
+                  {auction.electricRange && (
+                    <div className="flex justify-between items-center py-3 px-4 rounded-lg bg-white border border-blue-100">
+                      <span className="text-gray-600 font-medium">Запас хода</span>
+                      <span className="font-semibold text-blue-600">{auction.electricRange} км</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
             {/* Дополнительная информация */}
             <div className="mt-6 space-y-4">
               <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">

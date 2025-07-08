@@ -48,6 +48,10 @@ export function ListingEditModal({ listingId, isOpen, onClose }: ListingEditModa
   const [technicalInspectionDate, setTechnicalInspectionDate] = useState('');
   const [tinted, setTinted] = useState(false);
   const [tintingDate, setTintingDate] = useState('');
+  
+  // Electric car specific fields
+  const [batteryCapacity, setBatteryCapacity] = useState('');
+  const [electricRange, setElectricRange] = useState('');
 
   // Fetch listing data
   const { data: listing, isLoading } = useQuery<CarListing>({
@@ -84,6 +88,10 @@ export function ListingEditModal({ listingId, isOpen, onClose }: ListingEditModa
       setTechnicalInspectionDate(listing.technicalInspectionDate || '');
       setTinted(listing.tinted || false);
       setTintingDate(listing.tintingDate || '');
+      
+      // Electric car specific fields
+      setBatteryCapacity(listing.batteryCapacity?.toString() || '');
+      setElectricRange(listing.electricRange?.toString() || '');
     }
   }, [listing]);
 
@@ -116,6 +124,10 @@ export function ListingEditModal({ listingId, isOpen, onClose }: ListingEditModa
       setTechnicalInspectionDate('');
       setTinted(false);
       setTintingDate('');
+      
+      // Reset electric car fields
+      setBatteryCapacity('');
+      setElectricRange('');
     }
   }, [isOpen]);
 
@@ -146,6 +158,9 @@ export function ListingEditModal({ listingId, isOpen, onClose }: ListingEditModa
       technicalInspectionDate?: string;
       tinted?: boolean;
       tintingDate?: string;
+      // Electric car fields
+      batteryCapacity?: number;
+      electricRange?: number;
     }) => {
       const response = await fetch(`/api/admin/listings/${listingId}`, {
         method: 'PUT',
@@ -211,6 +226,9 @@ export function ListingEditModal({ listingId, isOpen, onClose }: ListingEditModa
       technicalInspectionDate: technicalInspectionDate.trim() || undefined,
       tinted,
       tintingDate: tintingDate.trim() || undefined,
+      // Electric car fields
+      batteryCapacity: fuelType === 'electric' && batteryCapacity ? parseFloat(batteryCapacity) : undefined,
+      electricRange: fuelType === 'electric' && electricRange ? parseInt(electricRange) : undefined,
     });
   };
 
@@ -490,6 +508,40 @@ export function ListingEditModal({ listingId, isOpen, onClose }: ListingEditModa
                 )}
               </div>
             </div>
+
+            {/* Electric car specific fields */}
+            {fuelType === 'electric' && (
+              <div className="border-t pt-4">
+                <h3 className="text-lg font-semibold mb-3 text-blue-700">⚡ Характеристики электромобиля</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="batteryCapacity">Емкость батареи (кВт·ч)</Label>
+                    <Input
+                      id="batteryCapacity"
+                      type="number"
+                      step="0.1"
+                      min="10"
+                      max="200"
+                      value={batteryCapacity}
+                      onChange={(e) => setBatteryCapacity(e.target.value)}
+                      placeholder="75.0"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="electricRange">Запас хода (км)</Label>
+                    <Input
+                      id="electricRange"
+                      type="number"
+                      min="50"
+                      max="800"
+                      value={electricRange}
+                      onChange={(e) => setElectricRange(e.target.value)}
+                      placeholder="400"
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
 
             <div>
               <Label htmlFor="description">Описание</Label>

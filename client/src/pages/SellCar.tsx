@@ -71,7 +71,10 @@ export default function SellCar() {
     technicalInspectionValid: "",
     technicalInspectionDate: "",
     tinted: "",
-    tintingDate: ""
+    tintingDate: "",
+    // Electric car fields
+    batteryCapacity: "",
+    electricRange: ""
   });
   
   const [availableModels, setAvailableModels] = useState<string[]>([]);
@@ -270,6 +273,53 @@ export default function SellCar() {
       return;
     }
 
+    // Валидация полей для электромобилей
+    if (formData.fuelType === 'electric') {
+      if (!formData.batteryCapacity) {
+        toast({
+          title: "Заполните емкость батареи",
+          description: "Для электромобилей обязательно указание емкости батареи в кВт·ч",
+          variant: "destructive",
+          duration: 3000,
+        });
+        return;
+      }
+      
+      if (!formData.electricRange) {
+        toast({
+          title: "Заполните запас хода",
+          description: "Для электромобилей обязательно указание запаса хода в км",
+          variant: "destructive",
+          duration: 3000,
+        });
+        return;
+      }
+
+      // Проверяем разумные значения
+      const batteryCapacity = parseFloat(formData.batteryCapacity);
+      const electricRange = parseInt(formData.electricRange);
+      
+      if (batteryCapacity < 10 || batteryCapacity > 200) {
+        toast({
+          title: "Неверная емкость батареи",
+          description: "Емкость батареи должна быть от 10 до 200 кВт·ч",
+          variant: "destructive",
+          duration: 3000,
+        });
+        return;
+      }
+      
+      if (electricRange < 50 || electricRange > 800) {
+        toast({
+          title: "Неверный запас хода",
+          description: "Запас хода должен быть от 50 до 800 км",
+          variant: "destructive",
+          duration: 3000,
+        });
+        return;
+      }
+    }
+
     // Находим первое незаполненное поле в порядке сверху вниз
     const fieldMapping: Record<string, string> = {
       "Марка": "make",
@@ -410,6 +460,9 @@ export default function SellCar() {
         condition: formData.condition || null,
         vin: formData.vin || null,
         location: formData.location || null,
+        // Electric car fields
+        batteryCapacity: formData.fuelType === 'electric' && formData.batteryCapacity ? parseFloat(formData.batteryCapacity) : null,
+        electricRange: formData.fuelType === 'electric' && formData.electricRange ? parseInt(formData.electricRange) : null,
       };
 
       // Add timeout to prevent hanging
@@ -458,7 +511,9 @@ export default function SellCar() {
           technicalInspectionValid: "",
           technicalInspectionDate: "",
           tinted: "",
-          tintingDate: ""
+          tintingDate: "",
+          batteryCapacity: "",
+          electricRange: ""
         });
         setUploadedImages([]);
       }, 100);
@@ -744,6 +799,49 @@ export default function SellCar() {
                   </Select>
                 </div>
               </div>
+
+              {/* Electric car specific fields - показываются только для электромобилей */}
+              {formData.fuelType === 'electric' && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-blue-50 dark:bg-blue-950/20 rounded-lg border-2 border-blue-200 dark:border-blue-800">
+                  <div className="md:col-span-2">
+                    <h4 className="text-lg font-semibold text-blue-700 dark:text-blue-300 mb-2">
+                      ⚡ Характеристики электромобиля
+                    </h4>
+                    <p className="text-sm text-blue-600 dark:text-blue-400 mb-4">
+                      Дополнительные поля для электромобилей
+                    </p>
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="batteryCapacity">Емкость батареи (кВт·ч) <span className="text-red-500">*</span></Label>
+                    <Input
+                      id="batteryCapacity"
+                      type="number"
+                      step="0.1"
+                      min="10"
+                      max="200"
+                      placeholder="75.0"
+                      value={formData.batteryCapacity}
+                      onChange={(e) => handleInputChange("batteryCapacity", e.target.value)}
+                    />
+                    <p className="text-xs text-gray-500 mt-1">Емкость аккумулятора в киловатт-часах</p>
+                  </div>
+
+                  <div>
+                    <Label htmlFor="electricRange">Запас хода (км) <span className="text-red-500">*</span></Label>
+                    <Input
+                      id="electricRange"
+                      type="number"
+                      min="50"
+                      max="800"
+                      placeholder="400"
+                      value={formData.electricRange}
+                      onChange={(e) => handleInputChange("electricRange", e.target.value)}
+                    />
+                    <p className="text-xs text-gray-500 mt-1">Дальность поездки на одной зарядке</p>
+                  </div>
+                </div>
+              )}
 
               <div className="grid grid-cols-1 gap-4">
                 <div>
