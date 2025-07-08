@@ -1546,11 +1546,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!banner) {
         // Создаем баннер по умолчанию если его нет
         const defaultBanner = await storage.createSellCarBanner({
-          title: "Продай свое авто",
-          description: "Получи максимальную цену за свой автомобиль на нашем аукционе",
-          buttonText: "Начать продажу",
+          title: "Приведи друга – получи 1000 Сомони с его первой покупки!",
+          description: "Поделись номером с друзьями и зарабатывай на каждом приглашении",
+          buttonText: "Пригласить друга",
           linkUrl: "/sell",
-          backgroundImageUrl: "https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?w=800&h=300&fit=crop",
+          backgroundImageUrl: "https://images.unsplash.com/photo-1521791055366-0d553872125f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
           gradientFrom: "#059669",
           gradientTo: "#047857",
           textColor: "#ffffff",
