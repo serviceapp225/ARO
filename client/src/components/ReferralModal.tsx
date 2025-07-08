@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Copy, Gift, Phone } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
@@ -54,14 +54,30 @@ export function ReferralModal({ isOpen, onClose }: ReferralModalProps) {
     }
   };
 
+  const handleClose = (open: boolean) => {
+    console.log('🔄 ReferralModal handleClose called with:', open);
+    if (!open) {
+      console.log('❌ Closing ReferralModal');
+      onClose();
+    }
+  };
+
+  const handleCloseButton = () => {
+    console.log('🔘 Close button clicked');
+    onClose();
+  };
+
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-md mx-auto">
+    <Dialog open={isOpen} onOpenChange={handleClose}>
+      <DialogContent className="max-w-md mx-auto z-50">
         <DialogHeader>
           <DialogTitle className="text-center text-xl font-bold text-green-600 flex items-center justify-center gap-2">
             <Gift className="w-6 h-6" />
             Пригласи друга получи 1000 сомони с первой покупки
           </DialogTitle>
+          <DialogDescription className="text-center text-gray-600">
+            Реферальная программа AUTOBID.TJ
+          </DialogDescription>
         </DialogHeader>
         
         <div className="space-y-6 py-4">
@@ -87,7 +103,11 @@ export function ReferralModal({ isOpen, onClose }: ReferralModalProps) {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={handleCopyPhone}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleCopyPhone();
+                  }}
                   className={`${copied ? 'bg-green-100 border-green-300' : ''}`}
                 >
                   <Copy className="w-4 h-4" />
@@ -100,7 +120,11 @@ export function ReferralModal({ isOpen, onClose }: ReferralModalProps) {
           {/* Действия */}
           <div className="flex flex-col gap-3">
             <Button
-              onClick={handleShare}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                handleShare();
+              }}
               className="w-full bg-green-600 hover:bg-green-700 text-white"
             >
               <Gift className="w-4 h-4 mr-2" />
@@ -109,8 +133,13 @@ export function ReferralModal({ isOpen, onClose }: ReferralModalProps) {
             
             <Button
               variant="outline"
-              onClick={onClose}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                handleCloseButton();
+              }}
               className="w-full"
+              type="button"
             >
               Понятно
             </Button>
