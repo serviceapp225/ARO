@@ -121,6 +121,14 @@ export function ReferralModal({ isOpen, onClose }: ReferralModalProps) {
                 <span>После успешной покупки вы получаете 1000 сомони на ваш счет</span>
               </div>
             </div>
+            
+            {/* Дополнительная информация о регистрации */}
+            <div className="mt-4 pt-3 border-t border-green-200">
+              <p className="text-green-700 text-sm">
+                <strong>Как друг должен регистрироваться:</strong><br />
+                Попросите Вашего друга кликнуть при входе в приложение по промокоду и написать ваш номер телефона
+              </p>
+            </div>
           </div>
 
           {/* Номер пользователя */}
