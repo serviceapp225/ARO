@@ -131,12 +131,12 @@ export function AdvertisementCarousel() {
       <div className="relative z-10 h-full flex flex-col justify-center items-center text-center space-y-3">
         {/* Специальное оформление для реферальной рекламы */}
         {(currentAd.title.includes('друга') || currentAd.title.includes('1000 Сомони')) ? (
-          <div className="bg-white/95 backdrop-blur-sm rounded-2xl p-6 shadow-2xl border border-white/20">
-            <h2 className="text-2xl font-extrabold text-green-600 text-center max-w-md leading-tight mb-2">
+          <div className="text-center">
+            <h2 className="text-3xl font-bold text-white drop-shadow-2xl text-center max-w-md leading-tight mb-2 bg-gradient-to-r from-green-400 to-green-600 bg-clip-text text-transparent" style={{WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', textShadow: '2px 2px 4px rgba(0,0,0,0.8)'}}>
               {currentAd.title}
             </h2>
-            <div className="text-sm text-gray-700 font-medium">
-              🎁 Реферальная программа AUTOBID.TJ
+            <div className="text-sm text-white/90 font-medium drop-shadow-lg">
+              Реферальная программа AUTOBID.TJ
             </div>
           </div>
         ) : (
@@ -152,8 +152,8 @@ export function AdvertisementCarousel() {
         {currentAd.linkUrl && (
           <div className="mt-4">
             {(currentAd.title.includes('друга') || currentAd.title.includes('1000 Сомони')) ? (
-              <span className="px-6 py-3 rounded-full text-sm font-bold hover:opacity-90 transition-all duration-300 cursor-pointer inline-flex items-center gap-2 min-w-[200px] justify-center shadow-xl hover:shadow-2xl transform hover:scale-105 bg-gradient-to-r from-green-500 to-green-600 text-white">
-                🤝 {currentAd.buttonText}
+              <span className="px-6 py-3 rounded-full text-sm font-bold hover:opacity-90 transition-all duration-300 cursor-pointer inline-flex items-center gap-2 min-w-[200px] justify-center shadow-xl hover:shadow-2xl transform hover:scale-105 bg-white/95 backdrop-blur-sm text-green-600 border-2 border-green-500/30">
+                {currentAd.buttonText}
               </span>
             ) : (
               <span className="px-4 py-2 rounded-full text-sm font-bold hover:opacity-90 transition-all duration-300 cursor-pointer inline-flex items-center gap-1 min-w-[180px] justify-center shadow-lg hover:shadow-xl transform hover:scale-105 bg-white text-blue-600">
