@@ -12,6 +12,9 @@ import { useLocation } from 'wouter';
 import { useState, useEffect, useMemo, memo } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuctionWebSocket } from '@/hooks/useAuctionWebSocket';
+import { useOptimisticBids } from '@/hooks/useOptimisticBids';
+import { usePollingSync } from '@/hooks/usePollingSync';
+import { useTimestampSync } from '@/hooks/useTimestampSync';
 
 
 interface ActiveAuctionsProps {
@@ -26,6 +29,15 @@ export function ActiveAuctions({ searchQuery = "", customListings }: ActiveAucti
   
   // WebSocket для мгновенного обновления карточек
   const { lastBidUpdate } = useAuctionWebSocket();
+  
+  // Оптимистичные обновления для мгновенного отображения
+  const { getOptimisticBid } = useOptimisticBids();
+  
+  // Агрессивная синхронизация каждые 200мс
+  const { forceSync } = usePollingSync(200);
+  
+  // Timestamp sync для мгновенных обновлений
+  const { lastUpdate } = useTimestampSync();
 
   const [, setLocation] = useLocation();
   const [page, setPage] = useState(1);

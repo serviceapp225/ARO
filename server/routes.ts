@@ -75,6 +75,9 @@ const externalAdminAuth = (req: any, res: any, next: any) => {
 // Глобальный WebSocket менеджер
 let wsManager: AuctionWebSocketManager;
 
+// Простая система принудительного обновления
+let lastBidUpdate = Date.now();
+
 export async function registerRoutes(app: Express): Promise<Server> {
   // Статический кэш для максимальной скорости
   let cachedListings: any[] = [];
@@ -807,6 +810,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       clearCachePattern('listings');
       clearCachePattern('auction');
       console.log('🧹 Очищен серверный кэш для мгновенного обновления карточек');
+      
+      // Обновляем время последней ставки для принудительного обновления
+      lastBidUpdate = Date.now();
       
       res.status(201).json(bid);
     } catch (error) {
@@ -2319,6 +2325,14 @@ async function sendSMSCode(phoneNumber: string, code: string): Promise<{success:
     console.error("SMS sending failed:", error);
     return { success: false, message: error instanceof Error ? error.message : "Unknown error" };
   }
+
+  // API для проверки последних обновлений
+  app.get('/api/bid-updates/timestamp', (req, res) => {
+    res.json({ timestamp: lastBidUpdate });
+  });
+
+  const httpServer = createServer(app);
+  return httpServer;
 }
 
 

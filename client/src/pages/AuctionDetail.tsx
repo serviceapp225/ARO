@@ -14,6 +14,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
 import { useAuctionWebSocket } from "@/hooks/useAuctionWebSocket";
+import { useOptimisticBids } from "@/hooks/useOptimisticBids";
 
 export default function AuctionDetail() {
   const { id } = useParams();
@@ -56,6 +57,9 @@ export default function AuctionDetail() {
     participantCount,
     isHotAuction 
   } = useAuctionWebSocket();
+  
+  // Оптимистичные обновления для мгновенного отображения
+  const { addOptimisticBid } = useOptimisticBids();
 
   // Translation functions for car characteristics
   const translateTransmission = (transmission: string) => {
@@ -188,6 +192,10 @@ export default function AuctionDetail() {
         description: `Ваша ставка ${parseFloat(variables.amount).toLocaleString()} Сомони успешно размещена`,
         duration: 3000,
       });
+      
+      // ОПТИМИСТИЧНОЕ ОБНОВЛЕНИЕ - мгновенно показать новую ставку
+      addOptimisticBid(parseInt(id!), variables.amount);
+      console.log(`🚀 Оптимистичное обновление: ставка ${variables.amount} для аукциона ${id}`);
       
       // МГНОВЕННОЕ ОБНОВЛЕНИЕ КАРТОЧЕК - не ждем WebSocket
       console.log('🚀 Мгновенное обновление карточек после успешной ставки');
