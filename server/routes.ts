@@ -1459,10 +1459,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const cacheKey = 'advertisement_carousel';
       const cached = getCached(cacheKey);
       if (cached) {
+        console.log(`📋 Возвращаем кэшированные данные карусели: ${cached.length} элементов`);
         return res.json(cached);
       }
       
       const carousel = await storage.getAdvertisementCarousel();
+      console.log(`📋 Загружены свежие данные карусели из БД: ${carousel.length} элементов`);
       setCache(cacheKey, carousel);
       res.json(carousel);
     } catch (error) {

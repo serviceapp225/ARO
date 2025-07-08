@@ -1357,7 +1357,9 @@ export class SQLiteStorage implements IStorage {
     // For public API, show only active items
     const stmt = this.db.prepare('SELECT * FROM advertisement_carousel WHERE is_active = 1 ORDER BY display_order');
     const rows: any[] = stmt.all();
-    return rows.map((row: any) => ({
+    console.log('📊 SQLite результат для карусели:', rows.length, 'активных элементов');
+    
+    const mapped = rows.map((row: any) => ({
       id: row.id,
       title: row.title,
       description: row.description || null,
@@ -1369,6 +1371,9 @@ export class SQLiteStorage implements IStorage {
       createdAt: new Date(row.created_at),
       updatedAt: row.updated_at ? new Date(row.updated_at) : null
     }));
+    
+    console.log('🎠 Отправляем данные карусели:', mapped);
+    return mapped;
   }
 
   async getAdvertisementCarouselAll(): Promise<AdvertisementCarousel[]> {
