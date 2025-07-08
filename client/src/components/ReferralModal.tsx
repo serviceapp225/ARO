@@ -26,11 +26,18 @@ export function ReferralModal({ isOpen, onClose }: ReferralModalProps) {
         });
         setTimeout(() => setCopied(false), 2000);
       } catch (error) {
-        toast({
+        const errorToast = toast({
           title: "Ошибка",
           description: "Не удалось скопировать номер",
-          variant: "destructive"
+          variant: "destructive",
+          duration: 1000, // 1 секунда
+          action: undefined // Убираем кнопку X
         });
+        
+        // Автоматически закрыть через 1 секунду
+        setTimeout(() => {
+          errorToast.dismiss();
+        }, 1000);
       }
     }
   };
