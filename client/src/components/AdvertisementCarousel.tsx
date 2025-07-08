@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useLocation } from 'wouter';
+import { ReferralModal } from './ReferralModal';
 
 interface AdvertisementItem {
   id: number;
@@ -18,6 +19,7 @@ interface AdvertisementItem {
 export function AdvertisementCarousel() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
+  const [showReferralModal, setShowReferralModal] = useState(false);
   const [, setLocation] = useLocation();
 
   const { data: advertisements = [], isLoading } = useQuery<AdvertisementItem[]>({
@@ -56,6 +58,12 @@ export function AdvertisementCarousel() {
   };
 
   const handleClick = () => {
+    // Проверяем, это ли реферальная карточка
+    if (currentAd?.title.includes('друга') || currentAd?.title.includes('1000 Сомони')) {
+      setShowReferralModal(true);
+      return;
+    }
+    
     if (currentAd?.linkUrl) {
       let url = currentAd.linkUrl.trim();
       
@@ -193,6 +201,12 @@ export function AdvertisementCarousel() {
       {/* Decorative Elements */}
       <div className="absolute top-4 right-4 w-12 h-12 rounded-full bg-white/10 blur-xl"></div>
       <div className="absolute bottom-6 left-6 w-8 h-8 rounded-full bg-white/5 blur-lg"></div>
+      
+      {/* Модальное окно реферальной системы */}
+      <ReferralModal 
+        isOpen={showReferralModal} 
+        onClose={() => setShowReferralModal(false)} 
+      />
     </div>
   );
 }

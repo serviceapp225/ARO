@@ -1,13 +1,10 @@
-import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { Plus } from "lucide-react";
 import type { SellCarBanner } from "@shared/schema";
-import { ReferralModal } from "./ReferralModal";
 
 export function DynamicSellCarBanner() {
   const [, setLocation] = useLocation();
-  const [showReferralModal, setShowReferralModal] = useState(false);
 
   // Загружаем данные баннера из API
   const { data: banner, isLoading } = useQuery<SellCarBanner>({
@@ -22,12 +19,7 @@ export function DynamicSellCarBanner() {
   }
 
   const handleClick = () => {
-    // Если это реферальный баннер, открываем модальное окно
-    if (banner.title.includes('друга') || banner.title.includes('1000 Сомони')) {
-      setShowReferralModal(true);
-    } else {
-      setLocation(banner.linkUrl);
-    }
+    setLocation(banner.linkUrl);
   };
 
   return (
@@ -82,12 +74,6 @@ export function DynamicSellCarBanner() {
       {/* Decorative Elements */}
       <div className="absolute top-4 right-4 w-12 h-12 rounded-full bg-white/10 blur-xl"></div>
       <div className="absolute bottom-6 left-6 w-8 h-8 rounded-full bg-white/5 blur-lg"></div>
-      
-      {/* Модальное окно реферальной системы */}
-      <ReferralModal 
-        isOpen={showReferralModal} 
-        onClose={() => setShowReferralModal(false)} 
-      />
     </div>
   );
 }
