@@ -110,10 +110,21 @@ export function useAuctionWebSocket(): AuctionWebSocketHook {
           receivedAt: Date.now()
         });
         
-        // Мгновенно обновляем кэш списка аукционов для отображения новых ставок в карточках
+        // Мгновенно обновляем кэш для актуальных цен в карточках и деталях
         queryClient.removeQueries({ queryKey: ['/api/listings'] });
         queryClient.invalidateQueries({ queryKey: ['/api/listings'] });
         queryClient.refetchQueries({ queryKey: ['/api/listings'] });
+        
+        // Также обновляем конкретный аукцион и его ставки если открыт
+        if (message.listingId) {
+          queryClient.removeQueries({ queryKey: [`/api/listings/${message.listingId}`] });
+          queryClient.invalidateQueries({ queryKey: [`/api/listings/${message.listingId}`] });
+          queryClient.refetchQueries({ queryKey: [`/api/listings/${message.listingId}`] });
+          
+          queryClient.removeQueries({ queryKey: [`/api/listings/${message.listingId}/bids`] });
+          queryClient.invalidateQueries({ queryKey: [`/api/listings/${message.listingId}/bids`] });
+          queryClient.refetchQueries({ queryKey: [`/api/listings/${message.listingId}/bids`] });
+        }
         
         // console.log(`💰 Новая ставка в real-time: ${message.data?.bid?.amount} сомони`);
         break;
