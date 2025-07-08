@@ -106,10 +106,21 @@ export function ReferralModal({ isOpen, onClose }: ReferralModalProps) {
         <div className="space-y-6 py-4">
           {/* Инструкция */}
           <div className="bg-green-50 rounded-lg p-4 border border-green-200">
-            <h3 className="font-semibold text-green-800 mb-2">Как это работает:</h3>
-            <p className="text-green-700 text-sm leading-relaxed">
-              Попросите Вашего друга кликнуть при входе в приложение по промокоду и написать ваш номер телефона
-            </p>
+            <h3 className="font-semibold text-green-800 mb-3">Как это работает:</h3>
+            <div className="space-y-2 text-green-700 text-sm leading-relaxed">
+              <div className="flex items-start gap-2">
+                <span className="font-bold text-green-600">1.</span>
+                <span>Вы приглашаете друга через реферальную ссылку</span>
+              </div>
+              <div className="flex items-start gap-2">
+                <span className="font-bold text-green-600">2.</span>
+                <span>Друг регистрируется и покупает свою первую машину на аукционе</span>
+              </div>
+              <div className="flex items-start gap-2">
+                <span className="font-bold text-green-600">3.</span>
+                <span>После успешной покупки вы получаете 1000 сомони на ваш счет</span>
+              </div>
+            </div>
           </div>
 
           {/* Номер пользователя */}
