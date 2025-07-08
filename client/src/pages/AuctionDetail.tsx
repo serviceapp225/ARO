@@ -189,13 +189,15 @@ export default function AuctionDetail() {
         duration: 3000,
       });
       
+      // МГНОВЕННОЕ ОБНОВЛЕНИЕ КАРТОЧЕК - не ждем WebSocket
+      console.log('🚀 Мгновенное обновление карточек после успешной ставки');
+      queryClient.removeQueries({ queryKey: ['/api/listings'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/listings'] });
+      queryClient.refetchQueries({ queryKey: ['/api/listings'] });
+      
       // Refetch auction data and bidding history to get updated price
       refetchAuction();
-      queryClient.invalidateQueries({ queryKey: ['/api/listings'] });
       queryClient.invalidateQueries({ queryKey: [`/api/listings/${id}/bids`] });
-      
-      // Update auction context data for favorites page
-      queryClient.invalidateQueries({ queryKey: ['/api/listings'] });
       
       // Reset bid amount
       setBidAmount("");

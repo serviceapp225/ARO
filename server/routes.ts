@@ -803,6 +803,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.log(`📡 WebSocket broadcast: новая ставка ${bid.amount} на аукцион ${listingId}`);
       }
       
+      // ПРИНУДИТЕЛЬНАЯ ОЧИСТКА КЭША СЕРВЕРА для мгновенного обновления
+      clearCachePattern('listings');
+      clearCachePattern('auction');
+      console.log('🧹 Очищен серверный кэш для мгновенного обновления карточек');
+      
       res.status(201).json(bid);
     } catch (error) {
       if (error instanceof z.ZodError) {
