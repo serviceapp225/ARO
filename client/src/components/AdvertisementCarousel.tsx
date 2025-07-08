@@ -129,12 +129,14 @@ export function AdvertisementCarousel() {
       
       {/* Content */}
       <div className="relative z-10 h-full flex flex-col justify-center items-center text-center space-y-2">
-        <h2 className="text-2xl font-bold drop-shadow-lg text-white h-8 flex items-center">
+        <h2 className="text-2xl font-bold drop-shadow-lg text-white text-center max-w-md leading-tight">
           {currentAd.title}
         </h2>
-        <p className="text-base leading-relaxed opacity-95 drop-shadow-md max-w-md text-white h-12 flex items-center">
-          {currentAd.description}
-        </p>
+        {currentAd.description && (
+          <p className="text-base leading-relaxed opacity-95 drop-shadow-md max-w-md text-white text-center">
+            {currentAd.description}
+          </p>
+        )}
         {currentAd.linkUrl && (
           <div className="mt-4">
             <span 
