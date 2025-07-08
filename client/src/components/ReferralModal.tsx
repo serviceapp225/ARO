@@ -128,6 +128,9 @@ export function ReferralModal({ isOpen, onClose }: ReferralModalProps) {
                 <strong>Как друг должен регистрироваться:</strong><br />
                 Попросите Вашего друга кликнуть при входе в приложение по промокоду и написать ваш номер телефона
               </p>
+              <p className="text-green-600 text-xs mt-2 font-medium">
+                ⚠️ Максимум 5 человек можно пригласить
+              </p>
             </div>
           </div>
 
