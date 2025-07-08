@@ -205,10 +205,7 @@ export function AdvertisementCarousel() {
       {/* Модальное окно реферальной системы */}
       <ReferralModal 
         isOpen={showReferralModal} 
-        onClose={() => {
-          console.log('🔄 Закрытие модального окна рефералов');
-          setShowReferralModal(false);
-        }} 
+        onClose={() => setShowReferralModal(false)} 
       />
     </div>
   );

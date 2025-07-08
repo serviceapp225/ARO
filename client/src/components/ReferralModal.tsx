@@ -65,11 +65,7 @@ export function ReferralModal({ isOpen, onClose }: ReferralModalProps) {
       e.preventDefault();
       e.stopPropagation();
     }
-    console.log('❌ Кнопка X нажата!');
-    // Принудительно закрываем модальное окно через небольшую задержку
-    setTimeout(() => {
-      onClose();
-    }, 0);
+    onClose();
   };
 
   return (
