@@ -1,9 +1,19 @@
 import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Phone, MessageCircle, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useLocation } from 'wouter';
 import { ReferralModal } from './ReferralModal';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface AdvertisementItem {
   id: number;
@@ -20,6 +30,7 @@ export function AdvertisementCarousel() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
   const [showReferralModal, setShowReferralModal] = useState(false);
+  const [showSupportModal, setShowSupportModal] = useState(false);
   const [, setLocation] = useLocation();
 
   const { data: advertisements = [], isLoading } = useQuery<AdvertisementItem[]>({
@@ -61,6 +72,20 @@ export function AdvertisementCarousel() {
 
   const prevSlide = () => {
     setCurrentSlide((prev) => (prev - 1 + activeAds.length) % activeAds.length);
+  };
+
+  const handleSupportClick = () => {
+    setShowSupportModal(true);
+  };
+
+  const handlePhoneCall = () => {
+    window.location.href = 'tel:+99200000000';
+    setShowSupportModal(false);
+  };
+
+  const handleWhatsApp = () => {
+    window.open('https://wa.me/99200000000', '_blank');
+    setShowSupportModal(false);
   };
 
   const handleClick = () => {
@@ -112,19 +137,7 @@ export function AdvertisementCarousel() {
     }
   };
 
-  const handleSupportClick = () => {
-    // Показываем модальное окно с вариантами связи
-    const choice = confirm('Выберите способ связи:\n\nOK - Позвонить\nОтмена - Написать в WhatsApp');
-    
-    if (choice) {
-      // Звонок
-      window.location.href = 'tel:+99200000000';
-    } else {
-      // WhatsApp
-      const whatsappUrl = `https://wa.me/99200000000?text=${encodeURIComponent('Здравствуйте! Мне нужна помощь с аукционом автомобилей.')}`;
-      window.open(whatsappUrl, '_blank');
-    }
-  };
+
 
   if (isLoading) {
     return (
@@ -241,6 +254,38 @@ export function AdvertisementCarousel() {
         isOpen={showReferralModal} 
         onClose={() => setShowReferralModal(false)} 
       />
+      
+      {/* Модальное окно поддержки */}
+      <AlertDialog open={showSupportModal} onOpenChange={setShowSupportModal}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-center">Свяжитесь с нами</AlertDialogTitle>
+            <AlertDialogDescription className="text-center">
+              Выберите удобный способ связи с нашей службой поддержки
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="flex flex-col gap-2">
+            <Button 
+              onClick={handlePhoneCall}
+              className="w-full bg-green-600 hover:bg-green-700 text-white"
+            >
+              <Phone className="mr-2 h-4 w-4" />
+              Позвонить
+            </Button>
+            <Button 
+              onClick={handleWhatsApp}
+              className="w-full bg-emerald-600 hover:bg-emerald-700 text-white"
+            >
+              <MessageCircle className="mr-2 h-4 w-4" />
+              WhatsApp
+            </Button>
+            <AlertDialogCancel className="w-full">
+              <X className="mr-2 h-4 w-4" />
+              Отмена
+            </AlertDialogCancel>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
