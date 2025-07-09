@@ -74,16 +74,6 @@ export function ActiveAuctions({ searchQuery = "", customListings }: ActiveAucti
   // Use custom listings if provided, otherwise use filtered auctions
   const sourceAuctions = customListings || auctions;
   
-  // Отладочная информация для всех аукционов
-  console.log('🚗 Все аукционы:', sourceAuctions.length, sourceAuctions.map(a => ({
-    id: a.id,
-    make: a.make,
-    model: a.model,
-    fuelType: a.fuelType,
-    electricRange: a.electricRange,
-    batteryCapacity: a.batteryCapacity
-  })));
-  
   // Memoize filtered and sorted auctions for better performance
   const displayedAuctions = useMemo(() => {
     // Include both active auctions and recently won auctions (ended status)

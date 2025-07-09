@@ -812,29 +812,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
           .filter(bid => bid.bidderId !== validatedData.bidderId) // Exclude current bidder
           .sort((a, b) => parseFloat(b.amount) - parseFloat(a.amount));
         
-        // Only notify the user whose bid was directly outbid (the previous highest bidder)
-        if (sortedBids.length > 0) {
-          const previousHighestBidder = sortedBids[0];
-          
+        // Notify ALL users who participated in this auction about the new bid
+        const uniqueBidders = new Set<number>();
+        allBids.forEach(bid => {
+          if (bid.bidderId !== validatedData.bidderId) { // Exclude current bidder
+            uniqueBidders.add(bid.bidderId);
+          }
+        });
+        
+        console.log(`📢 Уведомляем ${uniqueBidders.size} участников о новой ставке в аукционе ${listingId}`);
+        
+        // Send notification to each participant
+        for (const participantId of uniqueBidders) {
           try {
-            console.log(`Creating outbid notification for user ${previousHighestBidder.bidderId} (previous highest bidder)`);
             const notification = await storage.createNotification({
-              userId: previousHighestBidder.bidderId,
-              title: "Ваша ставка перебита!",
+              userId: participantId,
+              title: "Новая ставка в аукционе!",
               message: `Новая ставка ${validatedData.amount} Сомони на ${listing.make} ${listing.model} ${listing.year}. Сделайте ставку выше!`,
               type: "bid_outbid",
               listingId: listingId,
               isRead: false
             });
-            console.log(`Notification created successfully for user ${previousHighestBidder.bidderId}`);
             
             // Отправляем уведомление через WebSocket
             if (wsManager) {
-              wsManager.sendNotificationToUser(previousHighestBidder.bidderId, notification);
-              console.log(`📲 Отправлено WebSocket уведомление пользователю ${previousHighestBidder.bidderId}`);
+              wsManager.sendNotificationToUser(participantId, notification);
+              console.log(`📲 Отправлено WebSocket уведомление пользователю ${participantId}`);
             }
           } catch (notificationError) {
-            console.error(`Failed to create notification for user ${previousHighestBidder.bidderId}:`, notificationError);
+            console.error(`Failed to create notification for user ${participantId}:`, notificationError);
           }
         }
       }
