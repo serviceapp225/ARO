@@ -965,9 +965,6 @@ export class SQLiteStorage implements IStorage {
   }
 
   private mapListing(row: any): CarListing {
-    // Debug logging for photos
-    console.log(`🖼️ Raw photos data for listing ${row.id}:`, row.photos);
-    
     let photos: string[] = [];
     try {
       if (row.photos) {
@@ -977,7 +974,15 @@ export class SQLiteStorage implements IStorage {
           photos = row.photos;
         }
       }
-      console.log(`✅ Parsed photos for listing ${row.id}:`, photos);
+      
+      // Только для объявления ID 31 показываем отладку
+      if (row.id === 31) {
+        console.log(`🔍 Отладка для объявления 31:`);
+        console.log(`Raw photos type: ${typeof row.photos}`);
+        console.log(`Raw photos length: ${row.photos?.length || 0}`);
+        console.log(`Parsed photos count: ${photos.length}`);
+        console.log(`First photo preview: ${photos[0] ? photos[0].substring(0, 50) + '...' : 'none'}`);
+      }
     } catch (error) {
       console.error(`❌ Error parsing photos for listing ${row.id}:`, error);
       photos = [];
