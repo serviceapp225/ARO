@@ -14,6 +14,7 @@ export function LazyCarImage({ listingId, make, model, year, className = "" }: L
   const [photos, setPhotos] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   useEffect(() => {
     // Проверяем кэш в localStorage
@@ -66,6 +67,17 @@ export function LazyCarImage({ listingId, make, model, year, className = "" }: L
     return () => clearTimeout(timer);
   }, [listingId]);
 
+  // Автоматическая ротация фотографий каждые 3 секунды
+  useEffect(() => {
+    if (photos.length <= 1) return;
+    
+    const intervalId = setInterval(() => {
+      setCurrentImageIndex((prevIndex) => (prevIndex + 1) % photos.length);
+    }, 3000); // 3 секунды
+
+    return () => clearInterval(intervalId);
+  }, [photos.length]);
+
   if (loading || error || photos.length === 0) {
     return (
       <div className={`bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center ${className}`}>
@@ -77,11 +89,17 @@ export function LazyCarImage({ listingId, make, model, year, className = "" }: L
   return (
     <div className={`relative ${className}`}>
       <img 
-        src={photos[0]} 
+        src={photos[currentImageIndex]} 
         alt={`${year} ${make} ${model}`}
-        className="w-full h-full object-cover"
+        className="w-full h-full object-cover transition-opacity duration-500"
         onError={() => setError(true)}
       />
+      {/* Индикатор количества фотографий */}
+      {photos.length > 1 && (
+        <div className="absolute bottom-2 right-2 bg-black/50 text-white text-xs px-2 py-1 rounded-full">
+          {currentImageIndex + 1}/{photos.length}
+        </div>
+      )}
     </div>
   );
 }
