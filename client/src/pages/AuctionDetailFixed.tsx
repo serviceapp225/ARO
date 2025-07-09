@@ -996,103 +996,172 @@ export default function AuctionDetail() {
                 </div>
               </div>
 
-              {/* Auction Timer */}
-              <div className="bg-gradient-to-r from-blue-50 to-purple-50 p-4 rounded-lg">
-                <div className="flex items-center gap-2 mb-2">
-                  <Clock className="h-4 w-4 text-blue-600" />
-                  <span className="font-medium text-gray-900">Время до окончания</span>
-                </div>
-                <div className="grid grid-cols-4 gap-2 text-center">
-                  <div>
-                    <div className="text-xl font-bold text-blue-600">{timeLeft.days}</div>
-                    <div className="text-xs text-gray-600">дни</div>
-                  </div>
-                  <div>
-                    <div className="text-xl font-bold text-blue-600">{timeLeft.hours}</div>
-                    <div className="text-xs text-gray-600">часы</div>
-                  </div>
-                  <div>
-                    <div className="text-xl font-bold text-blue-600">{timeLeft.minutes}</div>
-                    <div className="text-xs text-gray-600">мин</div>
-                  </div>
-                  <div>
-                    <div className="text-xl font-bold text-blue-600">{timeLeft.seconds}</div>
-                    <div className="text-xs text-gray-600">сек</div>
-                  </div>
-                </div>
-              </div>
+              {/* Auction Timer or Winner Congratulations */}
+              {(() => {
+                const isAuctionEnded = auction.status === 'ended' || auction.status === 'archived';
+                const highestBid = sortedBids && sortedBids.length > 0 ? sortedBids[0] : null;
+                const userId = (currentUser as any)?.userId || (currentUser as any)?.id;
+                const isWinner = isAuctionEnded && highestBid && userId && highestBid.bidderId === userId;
+                
+                if (isAuctionEnded && isWinner) {
+                  return (
+                    <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-4 rounded-lg border border-green-200">
+                      <div className="flex items-center gap-2 mb-3">
+                        <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
+                          <span className="text-white font-bold text-lg">🏆</span>
+                        </div>
+                        <span className="font-bold text-green-800 text-lg">Поздравляем! Вы выиграли!</span>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-2xl font-bold text-green-600 mb-1">
+                          {parseFloat(highestBid.amount).toLocaleString()} Сомони
+                        </div>
+                        <div className="text-sm text-green-700 mb-2">
+                          Ваша выигрышная ставка
+                        </div>
+                        <div className="text-xs text-green-600">
+                          Аукцион завершен {new Date(auction.endDate || auction.auctionEndTime).toLocaleDateString('ru-RU')}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                } else if (isAuctionEnded) {
+                  return (
+                    <div className="bg-gradient-to-r from-gray-50 to-gray-100 p-4 rounded-lg border border-gray-200">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Clock className="h-4 w-4 text-gray-600" />
+                        <span className="font-medium text-gray-900">Аукцион завершен</span>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-lg font-medium text-gray-600 mb-1">
+                          Торги окончены
+                        </div>
+                        <div className="text-sm text-gray-500">
+                          Завершен {new Date(auction.endDate || auction.auctionEndTime).toLocaleDateString('ru-RU')}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                } else {
+                  return (
+                    <div className="bg-gradient-to-r from-blue-50 to-purple-50 p-4 rounded-lg">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Clock className="h-4 w-4 text-blue-600" />
+                        <span className="font-medium text-gray-900">Время до окончания</span>
+                      </div>
+                      <div className="grid grid-cols-4 gap-2 text-center">
+                        <div>
+                          <div className="text-xl font-bold text-blue-600">{timeLeft.days}</div>
+                          <div className="text-xs text-gray-600">дни</div>
+                        </div>
+                        <div>
+                          <div className="text-xl font-bold text-blue-600">{timeLeft.hours}</div>
+                          <div className="text-xs text-gray-600">часы</div>
+                        </div>
+                        <div>
+                          <div className="text-xl font-bold text-blue-600">{timeLeft.minutes}</div>
+                          <div className="text-xs text-gray-600">мин</div>
+                        </div>
+                        <div>
+                          <div className="text-xl font-bold text-blue-600">{timeLeft.seconds}</div>
+                          <div className="text-xs text-gray-600">сек</div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                }
+              })()}
 
               {/* Bidding Controls */}
-              {auction.sellerId === (currentUser as any)?.userId ? (
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-center">
-                  <div className="text-blue-800 font-medium mb-2">Ваш автомобиль</div>
-                  <p className="text-sm text-blue-600">
-                    Вы не можете делать ставки на собственный автомобиль
-                  </p>
-                </div>
-              ) : !showBidInput ? (
-                <Button 
-                  onClick={() => {
-                    if (!currentUser) {
-                      toast({
-                        title: "Войдите в систему",
-                        description: "Для участия в аукционе необходимо войти в систему",
-                        variant: "destructive",
-                        duration: 3000,
-                      });
-                      setLocation('/login');
-                      return;
-                    }
-                    
-                    // Check if user is active before showing bid input
-                    if (!currentUser.isActive) {
-                      setShowActivationDialog(true);
-                      return;
-                    }
-                    
-                    setShowBidInput(true);
-                  }}
-                  className="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-3"
-                  size="lg"
-                >
-                  Сделать ставку
-                </Button>
-              ) : (
-                <div className="space-y-3">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Ваша ставка (минимум: {(currentBid + 100).toLocaleString()} Сомони)
-                    </label>
-                    <div className="relative">
-                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">Сомони</span>
-                      <input
-                        type="number"
-                        value={bidAmount}
-                        onChange={(e) => setBidAmount(e.target.value)}
-                        className="w-full pl-20 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                        placeholder="Введите сумму"
-                        min={currentBid + 100}
-                        step="100"
-                      />
+              {(() => {
+                const isAuctionEnded = auction.status === 'ended' || auction.status === 'archived';
+                
+                if (isAuctionEnded) {
+                  return (
+                    <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 text-center">
+                      <div className="text-gray-600 font-medium mb-2">Аукцион завершен</div>
+                      <p className="text-sm text-gray-500">
+                        Торги по данному лоту окончены
+                      </p>
                     </div>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button
-                      onClick={handlePlaceBid}
-                      disabled={isPlacingBid || !bidAmount || parseFloat(bidAmount) <= currentBid}
-                      className="flex-1 bg-green-600 hover:bg-green-700 text-white"
+                  );
+                } else if (auction.sellerId === (currentUser as any)?.userId) {
+                  return (
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-center">
+                      <div className="text-blue-800 font-medium mb-2">Ваш автомобиль</div>
+                      <p className="text-sm text-blue-600">
+                        Вы не можете делать ставки на собственный автомобиль
+                      </p>
+                    </div>
+                  );
+                } else if (!showBidInput) {
+                  return (
+                    <Button 
+                      onClick={() => {
+                        if (!currentUser) {
+                          toast({
+                            title: "Войдите в систему",
+                            description: "Для участия в аукционе необходимо войти в систему",
+                            variant: "destructive",
+                            duration: 3000,
+                          });
+                          setLocation('/login');
+                          return;
+                        }
+                        
+                        // Check if user is active before showing bid input
+                        if (!currentUser.isActive) {
+                          setShowActivationDialog(true);
+                          return;
+                        }
+                        
+                        setShowBidInput(true);
+                      }}
+                      className="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-3"
+                      size="lg"
                     >
-                      {isPlacingBid ? "Размещение..." : "Подтвердить ставку"}
+                      Сделать ставку
                     </Button>
-                    <Button
-                      variant="outline"
-                      onClick={() => setShowBidInput(false)}
-                    >
-                      Отмена
-                    </Button>
-                  </div>
-                </div>
-              )}
+                  );
+                } else {
+                  return (
+                    <div className="space-y-3">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Ваша ставка (минимум: {(currentBid + 100).toLocaleString()} Сомони)
+                        </label>
+                        <div className="relative">
+                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">Сомони</span>
+                          <input
+                            type="number"
+                            value={bidAmount}
+                            onChange={(e) => setBidAmount(e.target.value)}
+                            className="w-full pl-20 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            placeholder="Введите сумму"
+                            min={currentBid + 100}
+                            step="100"
+                          />
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button
+                          onClick={handlePlaceBid}
+                          disabled={isPlacingBid || !bidAmount || parseFloat(bidAmount) <= currentBid}
+                          className="flex-1 bg-green-600 hover:bg-green-700 text-white"
+                        >
+                          {isPlacingBid ? "Размещение..." : "Подтвердить ставку"}
+                        </Button>
+                        <Button
+                          variant="outline"
+                          onClick={() => setShowBidInput(false)}
+                        >
+                          Отмена
+                        </Button>
+                      </div>
+                    </div>
+                  );
+                }
+              })()}
             </CardContent>
           </Card>
 
