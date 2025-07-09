@@ -1948,4 +1948,193 @@ export class SQLiteStorage implements IStorage {
       return [];
     }
   }
+
+  // Smart Auction Lifecycle Methods
+  
+  // Получить выигранные аукционы последних N часов для показа на главной странице
+  async getRecentWonListings(hoursLimit: number): Promise<CarListing[]> {
+    try {
+      const timeLimit = new Date(Date.now() - hoursLimit * 60 * 60 * 1000).toISOString();
+      
+      const stmt = this.db.prepare(`
+        SELECT cl.* FROM car_listings cl
+        JOIN user_wins uw ON cl.id = uw.listing_id
+        WHERE cl.status = 'ended' 
+        AND uw.won_at >= ?
+        ORDER BY uw.won_at DESC
+        LIMIT 10
+      `);
+      
+      const rows = stmt.all(timeLimit);
+      const listings = rows.map(row => this.mapListing(row));
+      
+      console.log(`🏆 Найдено ${listings.length} выигранных аукционов за последние ${hoursLimit} часов`);
+      return listings;
+    } catch (error) {
+      console.error('Error fetching recent won listings:', error);
+      return [];
+    }
+  }
+
+  // Получить информацию о победителе выигранного аукциона
+  async getWonListingWinnerInfo(listingId: number): Promise<{userId: number, fullName: string, currentBid: string} | undefined> {
+    try {
+      const stmt = this.db.prepare(`
+        SELECT uw.user_id, u.full_name, uw.winning_bid
+        FROM user_wins uw
+        JOIN users u ON uw.user_id = u.id
+        WHERE uw.listing_id = ?
+      `);
+      
+      const row: any = stmt.get(listingId);
+      
+      if (!row) return undefined;
+      
+      return {
+        userId: row.user_id,
+        fullName: row.full_name || `Пользователь ${row.user_id}`,
+        currentBid: row.winning_bid
+      };
+    } catch (error) {
+      console.error('Error fetching winner info:', error);
+      return undefined;
+    }
+  }
+
+  // Улучшенная обработка просроченных аукционов с умной логикой
+  async processExpiredListings(): Promise<number> {
+    try {
+      const now = new Date().toISOString();
+      
+      // Находим все активные аукционы, которые просрочены
+      const findExpiredStmt = this.db.prepare(`
+        SELECT * FROM car_listings 
+        WHERE status = 'active' AND auction_end_time <= ?
+      `);
+      const expiredListings = findExpiredStmt.all(now).map(row => this.mapListing(row));
+      
+      console.log(`🔄 Найдено ${expiredListings.length} просроченных аукционов`);
+      
+      let processedCount = 0;
+      for (const listing of expiredListings) {
+        try {
+          // Получаем все ставки для аукциона
+          const bids = await this.getBidsForListing(listing.id);
+          const hasReservePrice = listing.reservePrice && parseFloat(listing.reservePrice) > 0;
+          
+          console.log(`📊 Аукцион ${listing.id}: ${bids.length} ставок, резерв: ${listing.reservePrice}`);
+          
+          if (bids.length === 0) {
+            // Нет ставок - автоматический перезапуск
+            console.log(`🔄 Аукцион ${listing.id} перезапускается (нет ставок)`);
+            await this.autoRestartListing(listing);
+          } else {
+            // Есть ставки - проверяем резервную цену
+            const highestBid = bids.reduce((max, bid) => 
+              parseFloat(bid.amount) > parseFloat(max.amount) ? bid : max
+            );
+            
+            if (hasReservePrice && parseFloat(highestBid.amount) < parseFloat(listing.reservePrice)) {
+              // Не достигли резерва - автоматический перезапуск
+              console.log(`🔄 Аукцион ${listing.id} перезапускается (не достигли резерва)`);
+              await this.autoRestartListing(listing);
+            } else {
+              // Успешное завершение - создаем записи о выигрыше
+              console.log(`🏆 Аукцион ${listing.id} успешно завершен`);
+              await this.finalizeWonAuction(listing, highestBid);
+            }
+          }
+          
+          processedCount++;
+        } catch (error) {
+          console.error(`❌ Ошибка при обработке аукциона ${listing.id}:`, error);
+        }
+      }
+      
+      console.log(`✅ Обработано ${processedCount} просроченных аукционов`);
+      return processedCount;
+    } catch (error) {
+      console.error('Error processing expired listings:', error);
+      return 0;
+    }
+  }
+
+  // Автоматический перезапуск неуспешного аукциона
+  private async autoRestartListing(listing: CarListing): Promise<void> {
+    try {
+      // Удаляем все старые ставки
+      const deleteBidsStmt = this.db.prepare('DELETE FROM bids WHERE listing_id = ?');
+      deleteBidsStmt.run(listing.id);
+      
+      // Обновляем аукцион: новые даты, сбрасываем текущую ставку
+      const newStartTime = new Date();
+      const newEndTime = new Date(newStartTime.getTime() + (listing.auctionDuration || 7) * 24 * 60 * 60 * 1000);
+      
+      const updateStmt = this.db.prepare(`
+        UPDATE car_listings 
+        SET auction_start_time = ?, 
+            auction_end_time = ?, 
+            current_bid = ?, 
+            status = 'active'
+        WHERE id = ?
+      `);
+      
+      updateStmt.run(
+        newStartTime.toISOString(),
+        newEndTime.toISOString(),
+        listing.startingPrice,
+        listing.id
+      );
+      
+      // Уведомляем пользователей из избранного
+      const favoritedUsers = await this.getUsersWithFavoriteListing(listing.id);
+      for (const userId of favoritedUsers) {
+        await this.createNotification({
+          userId,
+          type: 'auction_restarted',
+          message: `Аукцион ${listing.make} ${listing.model} ${listing.year} перезапущен`,
+          data: { listingId: listing.id }
+        });
+      }
+      
+      console.log(`🔄 Аукцион ${listing.id} успешно перезапущен`);
+    } catch (error) {
+      console.error(`❌ Ошибка при перезапуске аукциона ${listing.id}:`, error);
+      throw error;
+    }
+  }
+
+  // Финализация выигранного аукциона
+  private async finalizeWonAuction(listing: CarListing, winningBid: any): Promise<void> {
+    try {
+      // Создаем запись о выигрыше
+      await this.createUserWin({
+        userId: winningBid.bidderId,
+        listingId: listing.id,
+        winningBid: winningBid.amount
+      });
+      
+      // Обновляем статус аукциона на ended
+      const updateStmt = this.db.prepare(`
+        UPDATE car_listings 
+        SET status = 'ended', ended_at = ?
+        WHERE id = ?
+      `);
+      
+      updateStmt.run(new Date().toISOString(), listing.id);
+      
+      // Уведомляем победителя
+      await this.createNotification({
+        userId: winningBid.bidderId,
+        type: 'auction_won',
+        message: `Поздравляем! Вы выиграли аукцион ${listing.make} ${listing.model} ${listing.year}`,
+        data: { listingId: listing.id, winningBid: winningBid.amount }
+      });
+      
+      console.log(`🏆 Аукцион ${listing.id} успешно завершен, победитель: ${winningBid.bidderId}`);
+    } catch (error) {
+      console.error(`❌ Ошибка при финализации аукциона ${listing.id}:`, error);
+      throw error;
+    }
+  }
 }

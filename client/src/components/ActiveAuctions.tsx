@@ -76,11 +76,13 @@ export function ActiveAuctions({ searchQuery = "", customListings }: ActiveAucti
   
   // Memoize filtered and sorted auctions for better performance
   const displayedAuctions = useMemo(() => {
-    // First filter for active auctions only
-    const activeAuctions = sourceAuctions.filter((auction: any) => auction.status === 'active');
+    // Include both active auctions and recently won auctions (ended status)
+    const relevantAuctions = sourceAuctions.filter((auction: any) => 
+      auction.status === 'active' || auction.status === 'ended'
+    );
     
     // Then filter by search query (lot number or car name)
-    const filteredAuctions = activeAuctions.filter((auction: any) => {
+    const filteredAuctions = relevantAuctions.filter((auction: any) => {
       if (!searchQuery.trim()) return true;
       
       const query = searchQuery.toLowerCase();
@@ -262,15 +264,21 @@ export function ActiveAuctions({ searchQuery = "", customListings }: ActiveAucti
               
               {/* Status Badge */}
               <div className="absolute bottom-3 left-3">
-                <span className={`px-2 py-1 rounded text-xs font-semibold text-white ${
-                  auction.bidCount > 5 ? 'bg-red-600' :
-                  auction.bidCount > 2 ? 'bg-orange-600' :
-                  'bg-green-600'
-                }`}>
-                  {auction.bidCount > 5 ? 'ГОРЯЧИЙ АУКЦИОН' :
-                   auction.bidCount > 2 ? 'АКТИВНЫЙ' :
-                   'НОВЫЙ'}
-                </span>
+                {auction.status === 'ended' ? (
+                  <span className="px-2 py-1 rounded text-xs font-semibold text-white bg-green-600">
+                    ВЫИГРАНО
+                  </span>
+                ) : (
+                  <span className={`px-2 py-1 rounded text-xs font-semibold text-white ${
+                    auction.bidCount > 5 ? 'bg-red-600' :
+                    auction.bidCount > 2 ? 'bg-orange-600' :
+                    'bg-green-600'
+                  }`}>
+                    {auction.bidCount > 5 ? 'ГОРЯЧИЙ АУКЦИОН' :
+                     auction.bidCount > 2 ? 'АКТИВНЫЙ' :
+                     'НОВЫЙ'}
+                  </span>
+                )}
               </div>
             </div>
             <CardContent className="p-4">
@@ -285,6 +293,18 @@ export function ActiveAuctions({ searchQuery = "", customListings }: ActiveAucti
               <p className="text-gray-600 text-sm mb-3">
                 {auction.year} • {auction.mileage.toLocaleString()} км • {auction.location || 'Душанбе'}
               </p>
+              
+              {/* Winner Info for ended auctions */}
+              {auction.status === 'ended' && auction.winnerInfo && (
+                <div className="mb-3 p-2 bg-green-50 rounded border border-green-200">
+                  <p className="text-xs text-green-700">
+                    <span className="font-semibold">Победитель:</span> {auction.winnerInfo.fullName}
+                  </p>
+                  <p className="text-xs text-green-700">
+                    <span className="font-semibold">Выигрышная ставка:</span> {parseFloat(auction.winnerInfo.currentBid).toLocaleString()} с.
+                  </p>
+                </div>
+              )}
               
               {/* Compact status indicators */}
               <div className="flex flex-wrap gap-1 mb-3">

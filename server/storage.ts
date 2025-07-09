@@ -91,6 +91,11 @@ export interface IStorage {
   createUserWin(win: InsertUserWin): Promise<UserWin>;
   getWinByListingId(listingId: number): Promise<UserWin | undefined>;
 
+  // Smart Auction Lifecycle Operations
+  getRecentWonListings(hoursLimit: number): Promise<CarListing[]>;
+  processExpiredListings(): Promise<number>;
+  getWonListingWinnerInfo(listingId: number): Promise<{userId: number, fullName: string, currentBid: string} | undefined>;
+
   // Admin operations
   getAdminStats(): Promise<{
     pendingListings: number;

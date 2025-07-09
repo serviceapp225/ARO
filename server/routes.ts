@@ -98,8 +98,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Для главной страницы показываем только активные и завершенные объявления
       // Pending объявления теперь видны только в админ панели
       const activeListings = await storage.getListingsByStatus('active', 15);
-      const endedListings = await storage.getListingsByStatus('ended', 5);
-      const listings = [...activeListings, ...endedListings];
+      
+      // Получаем выигранные аукционы последних 24 часов для показа
+      const recentWonListings = await storage.getRecentWonListings(24);
+      
+      // Добавляем информацию о победителях для выигранных аукционов
+      const wonListingsWithWinners = await Promise.all(
+        recentWonListings.map(async (listing) => {
+          const winnerInfo = await storage.getWonListingWinnerInfo(listing.id);
+          return {
+            ...listing,
+            winnerInfo
+          };
+        })
+      );
+      
+      const listings = [...activeListings, ...wonListingsWithWinners];
       
       // Обновляем кэш количества ставок
       bidCountsCache.clear();
