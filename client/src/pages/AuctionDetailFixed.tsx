@@ -874,6 +874,12 @@ export default function AuctionDetail() {
                   <Badge variant="outline" className="font-mono text-blue-700 bg-blue-50 border-blue-200">
                     Лот № {auction.lotNumber}
                   </Badge>
+                  {/* Electric car range - показывается ПЕРВЫМ для электромобилей */}
+                  {auction.fuelType === 'Электро' && auction.electricRange && (
+                    <Badge variant="outline" className="text-blue-700 bg-blue-100 border-blue-200">
+                      ⚡ Запас хода: {auction.electricRange} км
+                    </Badge>
+                  )}
                   <Badge variant="outline" className={`${auction.customsCleared ? 'text-green-700 bg-green-50 border-green-200' : 'text-red-700 bg-red-50 border-red-200'}`}>
                     {auction.customsCleared ? '✓ Растаможен' : '✗ Не растаможен'}
                   </Badge>
