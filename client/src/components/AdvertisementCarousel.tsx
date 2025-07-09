@@ -70,8 +70,22 @@ export function AdvertisementCarousel() {
       return;
     }
     
+    // Проверяем, это ли карточка поддержки
+    if (currentAd?.title.includes('помощь') || currentAd?.title.includes('Поддержка')) {
+      // Показываем модальное окно с вариантами связи
+      handleSupportClick();
+      return;
+    }
+    
     if (currentAd?.linkUrl) {
       let url = currentAd.linkUrl.trim();
+      
+      // Если это телефонная ссылка (tel:), открываем в системе
+      if (url.startsWith('tel:')) {
+        console.log('📞 Телефонная ссылка карусели:', url);
+        window.location.href = url;
+        return;
+      }
       
       // Если это внешняя ссылка (начинается с http), открываем в новой вкладке
       if (url.startsWith('http')) {
@@ -95,6 +109,20 @@ export function AdvertisementCarousel() {
         console.log('❌ Неверный роут карусели:', url, 'Перенаправляем на главную');
         setLocation('/');
       }
+    }
+  };
+
+  const handleSupportClick = () => {
+    // Показываем модальное окно с вариантами связи
+    const choice = confirm('Выберите способ связи:\n\nOK - Позвонить\nОтмена - Написать в WhatsApp');
+    
+    if (choice) {
+      // Звонок
+      window.location.href = 'tel:+99200000000';
+    } else {
+      // WhatsApp
+      const whatsappUrl = `https://wa.me/99200000000?text=${encodeURIComponent('Здравствуйте! Мне нужна помощь с аукционом автомобилей.')}`;
+      window.open(whatsappUrl, '_blank');
     }
   };
 
