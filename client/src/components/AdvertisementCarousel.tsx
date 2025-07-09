@@ -279,10 +279,14 @@ export function AdvertisementCarousel() {
               <MessageCircle className="mr-2 h-4 w-4" />
               WhatsApp
             </Button>
-            <AlertDialogCancel className="w-full">
+            <Button 
+              onClick={() => setShowSupportModal(false)}
+              variant="outline"
+              className="w-full"
+            >
               <X className="mr-2 h-4 w-4" />
               Отмена
-            </AlertDialogCancel>
+            </Button>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
