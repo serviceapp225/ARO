@@ -146,6 +146,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         color: listing.color,
         condition: listing.condition,
         location: listing.location,
+        batteryCapacity: listing.batteryCapacity,
+        electricRange: listing.electricRange,
         bidCount: bidCountsCache.get(listing.id) || 0
         // Убираем фотографии из кэша для экономии памяти
       }));
@@ -163,6 +165,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Обновляем кэш каждые 300 секунд (5 минут) для максимальной скорости
   setInterval(updateListingsCache, 300000);
+  
+  // Принудительно обновляем кэш для электромобилей
+  setTimeout(() => {
+    console.log('🔄 Принудительное обновление кэша для электромобилей');
+    updateListingsCache();
+  }, 5000);
   
   // Clear all caches when listings change
   function clearAllCaches() {
@@ -236,6 +244,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         color: listing.color,
         condition: listing.condition,
         location: listing.location,
+        batteryCapacity: listing.batteryCapacity,
+        electricRange: listing.electricRange,
         bidCount: bidCountsCache.get(listing.id) || 0
       }));
       
