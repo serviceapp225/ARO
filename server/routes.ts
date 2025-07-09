@@ -177,8 +177,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: "Listing not found" });
       }
       
-      // Возвращаем только первое фото для превью
-      const photos = Array.isArray(listing.photos) ? listing.photos.slice(0, 1) : [];
+      // Возвращаем ВСЕ фотографии для автоматической ротации
+      const photos = Array.isArray(listing.photos) ? listing.photos : [];
+      console.log(`📸 Отправляю ${photos.length} фотографий для аукциона ${id}`);
       res.json({ photos });
     } catch (error) {
       console.error("Error getting photos:", error);
@@ -356,20 +357,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // New endpoint for getting listing photos
-  app.get("/api/listings/:id/photos", async (req, res) => {
-    try {
-      const listing = await storage.getListing(Number(req.params.id));
-      if (!listing) {
-        return res.status(404).json({ error: "Listing not found" });
-      }
-      
-      res.json({ photos: listing.photos || [] });
-    } catch (error) {
-      console.error("Error fetching listing photos:", error);
-      res.status(500).json({ error: "Failed to fetch photos" });
-    }
-  });
+
 
   app.get("/api/listings/search", async (req, res) => {
     try {
