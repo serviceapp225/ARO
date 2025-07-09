@@ -966,6 +966,24 @@ export class SQLiteStorage implements IStorage {
   }
 
   private mapListing(row: any): CarListing {
+    // Debug logging for photos
+    console.log(`🖼️ Raw photos data for listing ${row.id}:`, row.photos);
+    
+    let photos: string[] = [];
+    try {
+      if (row.photos) {
+        if (typeof row.photos === 'string') {
+          photos = JSON.parse(row.photos);
+        } else if (Array.isArray(row.photos)) {
+          photos = row.photos;
+        }
+      }
+      console.log(`✅ Parsed photos for listing ${row.id}:`, photos);
+    } catch (error) {
+      console.error(`❌ Error parsing photos for listing ${row.id}:`, error);
+      photos = [];
+    }
+    
     return {
       id: row.id,
       sellerId: row.seller_id,
@@ -979,7 +997,7 @@ export class SQLiteStorage implements IStorage {
       startingPrice: row.starting_price.toString(),
       reservePrice: row.reserve_price ? row.reserve_price.toString() : null,
       currentBid: row.current_bid ? row.current_bid.toString() : null,
-      photos: JSON.parse(row.photos),
+      photos: photos,
       auctionDuration: row.auction_duration,
       status: row.status,
       auctionStartTime: row.auction_start_time ? new Date(row.auction_start_time) : null,
