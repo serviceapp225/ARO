@@ -122,6 +122,9 @@ export const insertCarListingSchema = createInsertSchema(carListings).omit({
   createdAt: true,
 }).extend({
   lotNumber: z.string().optional(),
+  // Electric vehicle fields as optional numbers
+  batteryCapacity: z.number().optional().nullable(),
+  electricRange: z.number().optional().nullable(),
 });
 
 export const insertBidSchema = createInsertSchema(bids).omit({

@@ -593,7 +593,6 @@ export class SQLiteStorage implements IStorage {
 
   async createListing(insertListing: InsertCarListing): Promise<CarListing> {
     try {
-      console.log('Creating listing with data:', insertListing);
       
       const stmt = this.db.prepare(`
         INSERT INTO car_listings (

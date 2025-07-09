@@ -526,7 +526,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/listings", async (req, res) => {
     try {
-      const validatedData = insertCarListingSchema.parse(req.body);
+      // Preprocess the data to handle electric vehicle fields
+      const processedData = { ...req.body };
+      
+      // Convert electric vehicle fields to correct types if they exist
+      if (processedData.batteryCapacity !== undefined && processedData.batteryCapacity !== null) {
+        processedData.batteryCapacity = typeof processedData.batteryCapacity === 'string' 
+          ? parseFloat(processedData.batteryCapacity) 
+          : processedData.batteryCapacity;
+      }
+      
+      if (processedData.electricRange !== undefined && processedData.electricRange !== null) {
+        processedData.electricRange = typeof processedData.electricRange === 'string' 
+          ? parseInt(processedData.electricRange) 
+          : processedData.electricRange;
+      }
+      
+      const validatedData = insertCarListingSchema.parse(processedData);
       
       // Generate lot number if not provided
       let lotNumber = validatedData.lotNumber;
