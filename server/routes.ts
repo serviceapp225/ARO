@@ -28,7 +28,7 @@ const queryParamsSchema = z.object({
 
 // Simple in-memory cache
 const cache = new Map();
-const CACHE_TTL = 300000; // 5 minutes for ultra performance
+const CACHE_TTL = 10000; // 10 seconds for fast advertisement updates
 
 function getCached(key: string) {
   const cached = cache.get(key);
