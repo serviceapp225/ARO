@@ -821,10 +821,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
         
         console.log(`📢 Уведомляем ${uniqueBidders.size} участников о новой ставке в аукционе ${listingId}`);
+        console.log(`📋 Все ставки в аукционе ${listingId}:`, allBids.map(b => `ID:${b.bidderId} - ${b.amount} Сомони`));
+        console.log(`🎯 Участники для уведомления:`, Array.from(uniqueBidders));
         
         // Send notification to each participant
         for (const participantId of uniqueBidders) {
           try {
+            console.log(`📝 Создаем уведомление для пользователя ${participantId}...`);
             const notification = await storage.createNotification({
               userId: participantId,
               title: "Новая ставка в аукционе!",
@@ -833,6 +836,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               listingId: listingId,
               isRead: false
             });
+            console.log(`✅ Уведомление создано для пользователя ${participantId}, ID: ${notification.id}`);
             
             // Отправляем уведомление через WebSocket
             if (wsManager) {
@@ -840,7 +844,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               console.log(`📲 Отправлено WebSocket уведомление пользователю ${participantId}`);
             }
           } catch (notificationError) {
-            console.error(`Failed to create notification for user ${participantId}:`, notificationError);
+            console.error(`❌ Ошибка создания уведомления для пользователя ${participantId}:`, notificationError);
           }
         }
       }
