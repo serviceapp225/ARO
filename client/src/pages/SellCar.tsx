@@ -89,69 +89,34 @@ export default function SellCar() {
       const remainingSlots = 20 - uploadedImages.length;
       const filesToProcess = Array.from(files).slice(0, remainingSlots);
       
-      const newImages: string[] = [];
+      // Показываем уведомление о начале обработки
+      toast({
+        title: "Обработка фотографий",
+        description: `Сжимаем ${filesToProcess.length} фото...`,
+        duration: 2000,
+      });
       
-      for (const file of filesToProcess) {
-        // Показываем размер оригинального файла
-        const originalSizeKB = Math.round(file.size / 1024);
-        console.log(`📸 Загружается фото: ${file.name}, размер: ${originalSizeKB}KB`);
-        
-        // Клиентское сжатие - базовое уменьшение размера
-        const clientCompressed = await compressImage(file, 0.8, 1200);
-        
-        newImages.push(clientCompressed);
-      }
+      // Параллельная обработка всех фотографий
+      const newImages = await Promise.all(
+        filesToProcess.map(async (file) => {
+          const originalSizeKB = Math.round(file.size / 1024);
+          console.log(`📸 Загружается фото: ${file.name}, размер: ${originalSizeKB}KB`);
+          
+          // Агрессивное клиентское сжатие - сразу до конечного размера
+          return await compressImage(file, 0.65, 800); // Уменьшили качество и размер
+        })
+      );
       
-      // Дополнительное серверное сжатие если фотографий много
-      if (newImages.length > 0) {
-        try {
-          console.log(`🔄 Отправляем ${newImages.length} фото на серверное сжатие...`);
-          
-          // Показываем уведомление о сжатии
-          toast({
-            title: "Обработка фотографий",
-            description: `Сжимаем ${newImages.length} фото для оптимальной загрузки...`,
-            duration: 3000,
-          });
-          
-          const response = await fetch('/api/compress-photos', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ photos: newImages }),
-          });
-          
-          if (response.ok) {
-            const { compressedPhotos } = await response.json();
-            
-            // Показываем итоговую статистику
-            const totalOriginalKB = newImages.reduce((sum, img) => sum + Math.round((img.length * 3) / 4 / 1024), 0);
-            const totalCompressedKB = compressedPhotos.reduce((sum: number, img: string) => sum + Math.round((img.length * 3) / 4 / 1024), 0);
-            const finalRatio = Math.round((1 - totalCompressedKB / totalOriginalKB) * 100);
-            
-            console.log(`✅ Финальное сжатие: ${totalOriginalKB}KB → ${totalCompressedKB}KB (экономия ${finalRatio}%)`);
-            
-            // Показываем успешное уведомление
-            toast({
-              title: "Фотографии готовы",
-              description: `Размер уменьшен на ${finalRatio}% - быстрая загрузка обеспечена!`,
-              duration: 2000,
-            });
-            
-            // Используем серверно-сжатые изображения
-            setUploadedImages(prev => [...prev, ...compressedPhotos]);
-          } else {
-            // Если серверное сжатие не удалось, используем клиентские
-            console.log('⚠️ Серверное сжатие недоступно, используем клиентское');
-            setUploadedImages(prev => [...prev, ...newImages]);
-          }
-        } catch (error) {
-          console.error('Ошибка серверного сжатия:', error);
-          // При ошибке используем клиентски сжатые изображения
-          setUploadedImages(prev => [...prev, ...newImages]);
-        }
-      }
+      // Добавляем сжатые фотографии без дополнительного серверного сжатия
+      setUploadedImages(prev => [...prev, ...newImages]);
+      
+      // Показываем успешное уведомление
+      const totalSize = newImages.reduce((sum, img) => sum + Math.round((img.length * 3) / 4 / 1024), 0);
+      toast({
+        title: "Фотографии готовы",
+        description: `${newImages.length} фото добавлено (${totalSize}KB)`,
+        duration: 1500,
+      });
     }
   };
 
@@ -162,16 +127,12 @@ export default function SellCar() {
       const img = new Image();
       
       img.onload = () => {
-        // Смарт-сжатие: больше фото - меньше размер каждого
-        const dynamicMaxWidth = uploadedImages.length > 5 ? 800 : maxWidth;
-        const dynamicQuality = uploadedImages.length > 10 ? 0.6 : quality;
-        
         // Рассчитываем новые размеры с сохранением пропорций
         let { width, height } = img;
         
         // Уменьшаем только если изображение больше максимального размера
-        if (width > dynamicMaxWidth || height > dynamicMaxWidth) {
-          const ratio = Math.min(dynamicMaxWidth / width, dynamicMaxWidth / height);
+        if (width > maxWidth || height > maxWidth) {
+          const ratio = Math.min(maxWidth / width, maxWidth / height);
           width = Math.round(width * ratio);
           height = Math.round(height * ratio);
         }
@@ -179,16 +140,18 @@ export default function SellCar() {
         canvas.width = width;
         canvas.height = height;
         
-        // Применяем сглаживание для лучшего качества при уменьшении
-        ctx.imageSmoothingEnabled = true;
-        ctx.imageSmoothingQuality = 'high';
+        // Быстрое сжатие без сглаживания для скорости
+        ctx.imageSmoothingEnabled = false;
         
         // Отрисовываем сжатое изображение
         ctx.drawImage(img, 0, 0, width, height);
         
         // Конвертируем в JPEG с настроенным качеством
-        const compressedDataUrl = canvas.toDataURL('image/jpeg', dynamicQuality);
+        const compressedDataUrl = canvas.toDataURL('image/jpeg', quality);
         resolve(compressedDataUrl);
+        
+        // Освобождаем память
+        URL.revokeObjectURL(img.src);
       };
       
       img.src = URL.createObjectURL(file);
