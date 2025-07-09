@@ -74,7 +74,9 @@ export default function SellCar() {
     tintingDate: "",
     // Electric car fields
     batteryCapacity: "",
-    electricRange: ""
+    electricRange: "",
+    // Custom make/model field
+    customMakeModel: ""
   });
   
   const [availableModels, setAvailableModels] = useState<string[]>([]);
@@ -235,6 +237,8 @@ export default function SellCar() {
     const requiredFields = [
       { field: formData.make, name: "Марка" },
       { field: formData.model, name: "Модель" },
+      // Для "Другие марки" проверяем также кастомное поле
+      ...(formData.make === "Другие марки" ? [{ field: formData.customMakeModel, name: "Марка и модель" }] : []),
       { field: formData.year, name: "Год выпуска" },
       { field: formData.mileage, name: "Пробег" },
       { field: formData.bodyType, name: "Тип кузова" },
@@ -438,6 +442,7 @@ export default function SellCar() {
         lotNumber: `${Math.floor(100000 + Math.random() * 900000)}`,
         make: formData.make,
         model: formData.model,
+        customMakeModel: formData.make === "Другие марки" ? formData.customMakeModel : null,
         year: parseInt(formData.year),
         mileage: parseInt(formData.mileage) || 0,
         description: formData.description,
@@ -513,7 +518,8 @@ export default function SellCar() {
           tinted: "",
           tintingDate: "",
           batteryCapacity: "",
-          electricRange: ""
+          electricRange: "",
+          customMakeModel: ""
         });
         setUploadedImages([]);
       }, 100);
@@ -653,6 +659,24 @@ export default function SellCar() {
                   </Select>
                 </div>
               </div>
+
+              {/* Custom Make/Model Field - показываем только если выбрано "Другие марки" */}
+              {formData.make === "Другие марки" && (
+                <div>
+                  <Label htmlFor="customMakeModel">Укажите марку и модель <span className="text-red-500">*</span></Label>
+                  <Input
+                    id="customMakeModel"
+                    type="text"
+                    placeholder="Например: Changan CS75, Hongqi H9, Новая Марка X1"
+                    value={formData.customMakeModel}
+                    onChange={(e) => handleInputChange("customMakeModel", e.target.value)}
+                    className="mt-1"
+                  />
+                  <p className="text-sm text-gray-600 mt-1">
+                    Введите точную марку и модель автомобиля, если её нет в списке
+                  </p>
+                </div>
+              )}
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>

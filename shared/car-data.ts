@@ -225,13 +225,13 @@ export const CAR_MAKES_MODELS = {
     "Terios", "Sirion", "Materia", "Copen", "Move"
   ],
   "Geely": [
-    "Atlas", "Coolray", "Emgrand", "GC9", "Tugella"
+    "Atlas", "Coolray", "Emgrand", "GC9", "Tugella", "Monjaro", "Galaxy", "Xingyue", "Xingyue L", "Boyue", "Binyue"
   ],
   "Chery": [
-    "Tiggo", "Arrizo", "QQ", "Bonus", "CrossEastar"
+    "Tiggo 7", "Tiggo 8", "Tiggo 4", "Tiggo 5", "Arrizo 5", "Arrizo 6", "Arrizo 7", "QQ", "QQ Ice Cream", "Bonus", "CrossEastar"
   ],
   "BYD": [
-    "Han", "Tang", "Song", "Qin", "Yuan", "E6", "F3"
+    "Han", "Tang", "Song", "Song Plus", "Qin", "Qin Plus", "Yuan", "E6", "F3", "Atto 3", "Seal", "Dolphin", "Destroyer 05"
   ],
   "Great Wall": [
     "Hover", "Wingle", "Sailor", "Peri", "Voleex"
@@ -244,6 +244,87 @@ export const CAR_MAKES_MODELS = {
   ],
   "Lifan": [
     "X60", "Solano", "Breez", "Cebrium", "Myway"
+  ],
+  "GAC": [
+    "Trumpchi GS3", "Trumpchi GS4", "Trumpchi GS5", "Trumpchi GS8", "Trumpchi GA4", "Trumpchi GA6", "Trumpchi GA8", "Aion S", "Aion V", "Aion Y"
+  ],
+  "Neta": [
+    "Neta V", "Neta U", "Neta S", "Neta GT"
+  ],
+  "Hongqi": [
+    "H5", "H7", "H9", "HS5", "HS7", "E-HS3", "E-HS9"
+  ],
+  "Dongfeng": [
+    "AX7", "AX5", "AX3", "AX4", "E70", "Fengshen"
+  ],
+  "Weltmeister": [
+    "EX5", "EX6", "W6", "M7"
+  ],
+  "Leapmotor": [
+    "C01", "C11", "T03", "C10"
+  ],
+  "Changan": [
+    "CS75", "CS55", "CS35", "Uni-T", "Uni-K", "Eado"
+  ],
+  "Zeekr": [
+    "001", "009", "X", "007"
+  ],
+  "Wuling": [
+    "Hongguang Mini EV", "Asta", "Victory", "Confero"
+  ],
+  "Xpeng": [
+    "P5", "P7", "G3", "G6", "G9", "X9"
+  ],
+  "Skyworth": [
+    "EV6", "HT-i"
+  ],
+  "Beijing": [
+    "X3", "X5", "X7", "EU5", "EU7", "EX3", "EX5"
+  ],
+  "FAW": [
+    "Besturn B30", "Besturn B50", "Besturn B70", "Besturn X40", "Besturn X80", "Besturn T77"
+  ],
+  "Xiaomi": [
+    "SU7", "SU7 Pro", "SU7 Max"
+  ],
+  "Huawei": [
+    "Aito M5", "Aito M7", "Aito M9", "Luxeed S7"
+  ],
+  "Avatr": [
+    "11", "12", "E11", "E12"
+  ],
+  "LiXiang": [
+    "L7", "L8", "L9", "One"
+  ],
+  "BAIC": [
+    "X25", "X35", "X55", "X65", "BJ40", "BJ80"
+  ],
+  "Aiways": [
+    "U5", "U6", "U7"
+  ],
+  "Venucia": [
+    "T60", "T70", "T90", "D60", "e30"
+  ],
+  "Arcfox": [
+    "αT", "αS", "GT"
+  ],
+  "HiPhi": [
+    "X", "Z", "Y"
+  ],
+  "Roewe": [
+    "RX3", "RX5", "RX8", "i5", "i6", "Marvel R"
+  ],
+  "Rising Auto": [
+    "R7", "F7"
+  ],
+  "Marvel": [
+    "R", "X"
+  ],
+  "Voyah": [
+    "Free", "Dreamer", "Passion"
+  ],
+  "Другие марки": [
+    "Другая модель"
   ]
 };
 

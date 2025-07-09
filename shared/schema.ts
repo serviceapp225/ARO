@@ -23,6 +23,7 @@ export const carListings = pgTable("car_listings", {
   lotNumber: text("lot_number").notNull(),
   make: text("make").notNull(),
   model: text("model").notNull(),
+  customMakeModel: text("custom_make_model"), // Пользовательская марка/модель для "Другие марки"
   year: integer("year").notNull(),
   mileage: integer("mileage").notNull(),
   description: text("description").notNull(),

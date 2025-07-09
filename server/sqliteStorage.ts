@@ -56,6 +56,13 @@ export class SQLiteStorage implements IStorage {
       // Колонка уже существует, игнорируем ошибку
     }
 
+    // Добавляем поле custom_make_model для таблицы car_listings
+    try {
+      this.db.exec(`ALTER TABLE car_listings ADD COLUMN custom_make_model TEXT`);
+    } catch (error) {
+      // Колонка уже существует, игнорируем ошибку
+    }
+
     // Create car_listings table (только если не существует)
     this.db.exec(`
       CREATE TABLE IF NOT EXISTS car_listings (
@@ -64,6 +71,7 @@ export class SQLiteStorage implements IStorage {
         lot_number TEXT NOT NULL,
         make TEXT NOT NULL,
         model TEXT NOT NULL,
+        custom_make_model TEXT,
         year INTEGER NOT NULL,
         mileage INTEGER NOT NULL,
         description TEXT NOT NULL,
@@ -589,12 +597,12 @@ export class SQLiteStorage implements IStorage {
       
       const stmt = this.db.prepare(`
         INSERT INTO car_listings (
-          seller_id, lot_number, make, model, year, mileage, description, starting_price, reserve_price,
+          seller_id, lot_number, make, model, custom_make_model, year, mileage, description, starting_price, reserve_price,
           photos, auction_duration, status, auction_start_time, auction_end_time,
           customs_cleared, recycled, technical_inspection_valid, technical_inspection_date,
           tinted, tinting_date, engine, transmission, fuel_type, body_type, drive_type,
           color, condition, vin, location, battery_capacity, electric_range
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `);
       
       // Calculate auction end time
@@ -604,7 +612,7 @@ export class SQLiteStorage implements IStorage {
     
     const result = stmt.run(
       insertListing.sellerId, insertListing.lotNumber, insertListing.make, insertListing.model,
-      insertListing.year, insertListing.mileage, insertListing.description, 
+      insertListing.customMakeModel || null, insertListing.year, insertListing.mileage, insertListing.description, 
       parseFloat(insertListing.startingPrice), 
       (insertListing as any).reservePrice ? parseFloat((insertListing as any).reservePrice) : null,
       JSON.stringify(insertListing.photos), 
@@ -964,6 +972,7 @@ export class SQLiteStorage implements IStorage {
       lotNumber: row.lot_number,
       make: row.make,
       model: row.model,
+      customMakeModel: row.custom_make_model,
       year: row.year,
       mileage: row.mileage,
       description: row.description,
