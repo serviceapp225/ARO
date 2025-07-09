@@ -875,7 +875,7 @@ export default function AuctionDetail() {
                     Лот № {auction.lotNumber}
                   </Badge>
                   {/* Electric car range - показывается ПЕРВЫМ для электромобилей */}
-                  {auction.fuelType === 'Электро' && auction.electricRange && (
+                  {(auction.fuelType === 'Электро' || auction.fuelType === 'electric') && auction.electricRange && (
                     <Badge variant="outline" className="text-blue-700 bg-blue-100 border-blue-200">
                       ⚡ Запас хода: {auction.electricRange} км
                     </Badge>
@@ -930,6 +930,23 @@ export default function AuctionDetail() {
                     <span className="text-gray-600 font-medium">Топливо</span>
                     <span className="font-semibold text-gray-900">{translateFuelType(auction.fuelType)}</span>
                   </div>
+                  {/* Характеристики электромобиля */}
+                  {(auction.fuelType === 'Электро' || auction.fuelType === 'electric') && (
+                    <>
+                      {auction.batteryCapacity && (
+                        <div className="flex justify-between items-center py-2 px-3 rounded-lg bg-blue-50 border border-blue-200">
+                          <span className="text-blue-700 font-medium">Батарея</span>
+                          <span className="font-semibold text-blue-900">{auction.batteryCapacity} кВт·ч</span>
+                        </div>
+                      )}
+                      {auction.electricRange && (
+                        <div className="flex justify-between items-center py-2 px-3 rounded-lg bg-blue-50 border border-blue-200">
+                          <span className="text-blue-700 font-medium">Запас хода</span>
+                          <span className="font-semibold text-blue-900">{auction.electricRange} км</span>
+                        </div>
+                      )}
+                    </>
+                  )}
                 </div>
               </div>
 

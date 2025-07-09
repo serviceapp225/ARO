@@ -309,7 +309,7 @@ export function ActiveAuctions({ searchQuery = "", customListings }: ActiveAucti
               {/* Compact status indicators */}
               <div className="flex flex-wrap gap-1 mb-3">
                 {/* Electric car range - показывается ПЕРВЫМ для электромобилей */}
-                {auction.fuelType === 'Электро' && auction.electricRange && (
+                {(auction.fuelType === 'Электро' || auction.fuelType === 'electric') && auction.electricRange && (
                   <span className="text-xs px-2 py-1 rounded bg-blue-100 text-blue-700">
                     ⚡ Запас хода: {auction.electricRange} км
                   </span>
