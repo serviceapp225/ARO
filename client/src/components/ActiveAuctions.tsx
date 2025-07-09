@@ -74,6 +74,16 @@ export function ActiveAuctions({ searchQuery = "", customListings }: ActiveAucti
   // Use custom listings if provided, otherwise use filtered auctions
   const sourceAuctions = customListings || auctions;
   
+  // Отладочная информация для всех аукционов
+  console.log('🚗 Все аукционы:', sourceAuctions.length, sourceAuctions.map(a => ({
+    id: a.id,
+    make: a.make,
+    model: a.model,
+    fuelType: a.fuelType,
+    electricRange: a.electricRange,
+    batteryCapacity: a.batteryCapacity
+  })));
+  
   // Memoize filtered and sorted auctions for better performance
   const displayedAuctions = useMemo(() => {
     // Include both active auctions and recently won auctions (ended status)
@@ -309,11 +319,21 @@ export function ActiveAuctions({ searchQuery = "", customListings }: ActiveAucti
               {/* Compact status indicators */}
               <div className="flex flex-wrap gap-1 mb-3">
                 {/* Electric car range - показывается ПЕРВЫМ для электромобилей */}
-                {(auction.fuelType === 'Электро' || auction.fuelType === 'electric') && auction.electricRange && (
-                  <span className="text-xs px-2 py-1 rounded bg-blue-100 text-blue-700">
-                    ⚡ Запас хода: {auction.electricRange} км
-                  </span>
-                )}
+                {(() => {
+                  // Отладочная информация
+                  console.log(`🔋 Проверка электромобиля ${auction.make} ${auction.model}:`, {
+                    fuelType: auction.fuelType,
+                    electricRange: auction.electricRange,
+                    batteryCapacity: auction.batteryCapacity,
+                    id: auction.id
+                  });
+                  
+                  return (auction.fuelType === 'Электро' || auction.fuelType === 'electric') && auction.electricRange && auction.electricRange > 0 ? (
+                    <span className="text-xs px-2 py-1 rounded bg-blue-100 text-blue-700">
+                      ⚡ Запас хода: {auction.electricRange} км
+                    </span>
+                  ) : null;
+                })()}
                 {auction.customsCleared && (
                   <span className="text-xs px-2 py-1 rounded bg-green-100 text-green-700">
                     Растаможен

@@ -21,6 +21,9 @@ interface Auction {
   tinted: boolean;
   tintingDate?: string;
   condition?: string;
+  fuelType?: string;
+  electricRange?: number;
+  batteryCapacity?: number;
 }
 
 interface AuctionContextType {
@@ -67,7 +70,10 @@ export function AuctionProvider({ children }: { children: ReactNode }) {
     technicalInspectionDate: listing.technicalInspectionDate,
     tinted: listing.tinted || false,
     tintingDate: listing.tintingDate,
-    condition: listing.condition || 'good'
+    condition: listing.condition || 'good',
+    fuelType: listing.fuelType,
+    electricRange: listing.electricRange,
+    batteryCapacity: listing.batteryCapacity
   })) : [];
 
   const refreshAuctions = () => {
