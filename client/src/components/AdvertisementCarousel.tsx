@@ -256,8 +256,15 @@ export function AdvertisementCarousel() {
       />
       
       {/* Модальное окно поддержки */}
-      <AlertDialog open={showSupportModal} onOpenChange={setShowSupportModal}>
-        <AlertDialogContent>
+      <AlertDialog open={showSupportModal} onOpenChange={(open) => {
+        if (!open) {
+          setShowSupportModal(false);
+        }
+      }}>
+        <AlertDialogContent 
+          className="sm:max-w-[425px]"
+          onClick={(e) => e.stopPropagation()}
+        >
           <AlertDialogHeader>
             <AlertDialogTitle className="text-center">Свяжитесь с нами</AlertDialogTitle>
             <AlertDialogDescription className="text-center">
@@ -280,7 +287,11 @@ export function AdvertisementCarousel() {
               WhatsApp
             </Button>
             <Button 
-              onClick={() => setShowSupportModal(false)}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setShowSupportModal(false);
+              }}
               variant="outline"
               className="w-full"
             >
