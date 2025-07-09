@@ -292,7 +292,8 @@ function ModerationManagement() {
       toast({
         title: "Объявление удалено",
         description: "Объявление было успешно удалено из системы",
-        variant: "default"
+        variant: "default",
+        duration: 1000
       });
       // Обновляем все кэши объявлений
       queryClient.invalidateQueries({ queryKey: ['/api/admin/listings/pending-approval'] });
@@ -891,7 +892,8 @@ function ListingsManagement() {
       toast({
         title: "Объявление удалено",
         description: "Объявление было успешно удалено из системы",
-        variant: "default"
+        variant: "default",
+        duration: 1000
       });
       // Обновляем все кэши объявлений
       queryClient.invalidateQueries({ queryKey: ['/api/admin/listings'] });
