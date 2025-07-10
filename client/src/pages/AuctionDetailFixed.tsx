@@ -265,7 +265,7 @@ export default function AuctionDetail() {
         setCurrentPrice(newAmount);
         setBidAmount((newAmount + 1000).toString());
         
-        // Мгновенно обновляем данные аукциона в кэше для характеристик
+        // Мгновенно и плавно обновляем данные аукциона в кэше для характеристик
         queryClient.setQueryData([`/api/listings/${id}`], (oldData: any) => {
           if (oldData) {
             return {
@@ -277,6 +277,19 @@ export default function AuctionDetail() {
           return oldData;
         });
         
+        // Плавно обновляем данные ставок без полной перерисовки
+        queryClient.setQueryData([`/api/listings/${id}/bids`], (oldBids: any) => {
+          if (Array.isArray(oldBids) && lastBidUpdate.data?.bid) {
+            // Добавляем новую ставку в начало списка, если её там нет
+            const newBid = lastBidUpdate.data.bid;
+            const existingBid = oldBids.find(bid => bid.id === newBid.id);
+            if (!existingBid) {
+              return [newBid, ...oldBids];
+            }
+          }
+          return oldBids;
+        });
+        
         // Показываем уведомление о новой ставке
         toast({
           title: "🔥 Новая ставка!",
@@ -285,20 +298,10 @@ export default function AuctionDetail() {
         });
       }
       
-      // Мгновенное обновление кэша для максимальной скорости
-      queryClient.removeQueries({ queryKey: [`/api/listings/${id}/bids`] });
-      queryClient.removeQueries({ queryKey: [`/api/listings/${id}`] });
-      queryClient.removeQueries({ queryKey: ['/api/listings'] });
-      
-      // Принудительное мгновенное обновление данных аукциона для характеристик
-      queryClient.invalidateQueries({ queryKey: [`/api/listings/${id}/bids`] });
-      queryClient.invalidateQueries({ queryKey: [`/api/listings/${id}`] });
-      queryClient.invalidateQueries({ queryKey: ['/api/listings'] });
-      
-      // Принудительное обновление данных аукциона для синхронизации характеристик
-      refetchAuction();
+      // Мягкое обновление кэша без полного удаления (убираем моргание)
+      queryClient.invalidateQueries({ queryKey: ['/api/listings'], refetchType: 'none' });
     }
-  }, [lastBidUpdate, id, queryClient, toast, refetchAuction]);
+  }, [lastBidUpdate, id, queryClient, toast]);
 
   useEffect(() => {
     const calculateTimeLeft = () => {

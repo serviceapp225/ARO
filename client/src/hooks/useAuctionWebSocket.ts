@@ -104,29 +104,57 @@ export function useAuctionWebSocket(): AuctionWebSocketHook {
         break;
         
       case 'bid_update':
-        // console.log('🔥 Получено WebSocket сообщение bid_update:', message);
+        console.log('💰 WebSocket обновление: принудительное обновление кэша для аукциона', message.listingId, ', новая ставка:', message.data?.bid?.amount, 'сомони');
         setLastBidUpdate({
           ...message,
           receivedAt: Date.now()
         });
         
-        // Мгновенно обновляем кэш для актуальных цен в карточках и деталях
-        queryClient.removeQueries({ queryKey: ['/api/listings'] });
-        queryClient.invalidateQueries({ queryKey: ['/api/listings'] });
-        queryClient.refetchQueries({ queryKey: ['/api/listings'] });
-        
-        // Также обновляем конкретный аукцион и его ставки если открыт
-        if (message.listingId) {
-          queryClient.removeQueries({ queryKey: [`/api/listings/${message.listingId}`] });
-          queryClient.invalidateQueries({ queryKey: [`/api/listings/${message.listingId}`] });
-          queryClient.refetchQueries({ queryKey: [`/api/listings/${message.listingId}`] });
+        // Плавно обновляем данные в кэше без полной очистки (убираем моргание)
+        if (message.listingId && message.data?.bid) {
+          const newBid = message.data.bid;
+          const newAmount = parseFloat(newBid.amount);
           
-          queryClient.removeQueries({ queryKey: [`/api/listings/${message.listingId}/bids`] });
-          queryClient.invalidateQueries({ queryKey: [`/api/listings/${message.listingId}/bids`] });
-          queryClient.refetchQueries({ queryKey: [`/api/listings/${message.listingId}/bids`] });
+          // Плавно обновляем список аукционов
+          queryClient.setQueryData(['/api/listings'], (oldListings: any) => {
+            if (Array.isArray(oldListings)) {
+              return oldListings.map((listing: any) => {
+                if (listing.id === message.listingId) {
+                  return {
+                    ...listing,
+                    currentBid: newAmount.toString(),
+                    bidCount: (listing.bidCount || 0) + 1
+                  };
+                }
+                return listing;
+              });
+            }
+            return oldListings;
+          });
+          
+          // Плавно обновляем данные конкретного аукциона
+          queryClient.setQueryData([`/api/listings/${message.listingId}`], (oldData: any) => {
+            if (oldData) {
+              return {
+                ...oldData,
+                currentBid: newAmount.toString(),
+                bidCount: (oldData.bidCount || 0) + 1
+              };
+            }
+            return oldData;
+          });
+          
+          // Плавно обновляем ставки
+          queryClient.setQueryData([`/api/listings/${message.listingId}/bids`], (oldBids: any) => {
+            if (Array.isArray(oldBids)) {
+              const existingBid = oldBids.find(bid => bid.id === newBid.id);
+              if (!existingBid) {
+                return [newBid, ...oldBids];
+              }
+            }
+            return oldBids;
+          });
         }
-        
-        console.log(`💰 WebSocket обновление: принудительное обновление кэша для аукциона ${message.listingId}, новая ставка: ${message.data?.bid?.amount} сомони`);
         break;
         
       case 'notification':
