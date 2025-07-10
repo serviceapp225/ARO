@@ -147,8 +147,10 @@ export default function AuctionDetail() {
   const { data: currentAuction, refetch: refetchAuction } = useQuery({
     queryKey: [`/api/listings/${id}`],
     enabled: !!id,
-    refetchInterval: 5000, // Refresh every 5 seconds for real-time updates
+    refetchInterval: 1000, // Refresh every 1 second for real-time updates
     refetchIntervalInBackground: true,
+    staleTime: 0, // Данные всегда считаются устаревшими
+    gcTime: 1000, // Кэш только 1 секунда
   });
 
   // Fetch real bidding history with auto-refresh
@@ -262,6 +264,18 @@ export default function AuctionDetail() {
         console.log('💰 Обновляю цену с', currentPrice, 'на', newAmount);
         setCurrentPrice(newAmount);
         setBidAmount((newAmount + 1000).toString());
+        
+        // Мгновенно обновляем данные аукциона в кэше для характеристик
+        queryClient.setQueryData([`/api/listings/${id}`], (oldData: any) => {
+          if (oldData) {
+            return {
+              ...oldData,
+              currentBid: newAmount.toString(),
+              bidCount: (oldData.bidCount || 0) + 1
+            };
+          }
+          return oldData;
+        });
         
         // Показываем уведомление о новой ставке
         toast({
