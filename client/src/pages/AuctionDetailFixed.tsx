@@ -216,12 +216,17 @@ export default function AuctionDetail() {
 
   // Вычисляем текущую ставку из реальных данных - ВСЕГДА АКТУАЛЬНАЯ ЦЕНА
   const getCurrentBid = () => {
-    // Сначала проверяем свежие данные из currentAuction (обновляется каждую секунду)
+    // Сначала проверяем состояние currentPrice (обновляется WebSocket мгновенно)
+    if (currentPrice && currentPrice > 0) {
+      return currentPrice;
+    }
+    
+    // Затем проверяем свежие данные из currentAuction (обновляется каждую секунду)
     if (currentAuction?.currentBid) {
       return parseFloat(currentAuction.currentBid);
     }
     
-    // Затем проверяем историю ставок
+    // Потом проверяем историю ставок
     if (Array.isArray(bidsData) && bidsData.length > 0) {
       const maxBid = Math.max(...bidsData.map((bid: any) => parseFloat(bid.amount)));
       return maxBid;
@@ -340,12 +345,27 @@ export default function AuctionDetail() {
   // Синхронизация теперь происходит автоматически через реальные данные ставок
 
   useEffect(() => {
-    // Обновляем currentPrice на основе реальной текущей ставки
-    if (currentBid && currentBid !== currentPrice) {
-      setCurrentPrice(currentBid);
-      setBidAmount((currentBid + 1000).toString());
+    // Инициализируем currentPrice при загрузке данных аукциона
+    if (currentAuction?.currentBid) {
+      const auctionCurrentBid = parseFloat(currentAuction.currentBid);
+      if (auctionCurrentBid !== currentPrice) {
+        setCurrentPrice(auctionCurrentBid);
+        setBidAmount((auctionCurrentBid + 1000).toString());
+      }
+    } else if (Array.isArray(bidsData) && bidsData.length > 0) {
+      const maxBid = Math.max(...bidsData.map((bid: any) => parseFloat(bid.amount)));
+      if (maxBid !== currentPrice) {
+        setCurrentPrice(maxBid);
+        setBidAmount((maxBid + 1000).toString());
+      }
+    } else if (auction?.startingPrice) {
+      const startingPrice = parseFloat(auction.startingPrice);
+      if (startingPrice !== currentPrice) {
+        setCurrentPrice(startingPrice);
+        setBidAmount((startingPrice + 1000).toString());
+      }
     }
-  }, [currentBid, currentPrice]);
+  }, [currentAuction, bidsData, auction, currentPrice]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
