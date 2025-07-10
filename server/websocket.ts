@@ -205,16 +205,29 @@ class AuctionWebSocketManager {
   public sendNotificationToUser(userId: number, notification: any) {
     // Находим всех клиентов этого пользователя
     let notificationSent = false;
+    let activeClients = 0;
+    let totalClients = 0;
+    
+    console.log(`🔍 Поиск клиентов для пользователя ${userId}:`);
+    
     this.clients.forEach((client) => {
-      if (client.userId === userId && client.ws.readyState === WebSocket.OPEN) {
-        this.sendMessage(client, {
-          type: 'notification',
-          data: notification,
-          timestamp: Date.now()
-        });
-        notificationSent = true;
+      totalClients++;
+      if (client.userId === userId) {
+        console.log(`  • Найден клиент пользователя ${userId}, статус WebSocket: ${client.ws.readyState === WebSocket.OPEN ? 'OPEN' : 'CLOSED'}`);
+        if (client.ws.readyState === WebSocket.OPEN) {
+          activeClients++;
+          this.sendMessage(client, {
+            type: 'notification',
+            data: notification,
+            timestamp: Date.now()
+          });
+          notificationSent = true;
+          console.log(`  ✅ Уведомление отправлено пользователю ${userId}`);
+        }
       }
     });
+    
+    console.log(`📊 Статус для пользователя ${userId}: активных клиентов ${activeClients}, всего клиентов WebSocket: ${totalClients}`);
     
     if (!notificationSent) {
       console.log(`⚠️ Пользователь ${userId} не подключен к WebSocket, уведомление не отправлено`);

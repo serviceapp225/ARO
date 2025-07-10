@@ -135,8 +135,12 @@ export function useAuctionWebSocket(): AuctionWebSocketHook {
           const notification = message.data;
           
           // Показываем уведомление только если оно для текущего пользователя
-          if (notification.userId === (user as any)?.userId) {
-            console.log('🔔 Получено уведомление:', notification);
+          // Проверяем оба варианта поля: userId (клиентский) и user_id (серверный из БД)
+          const notificationUserId = notification.userId || notification.user_id;
+          console.log('📞 Получено WebSocket уведомление, для пользователя:', notificationUserId, ', текущий пользователь:', (user as any)?.userId);
+          
+          if (notificationUserId === (user as any)?.userId) {
+            console.log('🔔 Уведомление для текущего пользователя, показываем:', notification);
             
             // Обновляем кэш уведомлений
             queryClient.invalidateQueries({ queryKey: ['/api/notifications'] });
@@ -148,6 +152,8 @@ export function useAuctionWebSocket(): AuctionWebSocketHook {
                 icon: '/favicon.ico'
               });
             }
+          } else {
+            console.log('❌ Уведомление НЕ для текущего пользователя, игнорируем');
           }
         }
         break;
