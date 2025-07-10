@@ -275,11 +275,16 @@ export default function AuctionDetail() {
       queryClient.removeQueries({ queryKey: [`/api/listings/${id}/bids`] });
       queryClient.removeQueries({ queryKey: [`/api/listings/${id}`] });
       queryClient.removeQueries({ queryKey: ['/api/listings'] });
+      
+      // Принудительное мгновенное обновление данных аукциона для характеристик
       queryClient.invalidateQueries({ queryKey: [`/api/listings/${id}/bids`] });
       queryClient.invalidateQueries({ queryKey: [`/api/listings/${id}`] });
       queryClient.invalidateQueries({ queryKey: ['/api/listings'] });
+      
+      // Принудительное обновление данных аукциона для синхронизации характеристик
+      refetchAuction();
     }
-  }, [lastBidUpdate, id, queryClient, toast]);
+  }, [lastBidUpdate, id, queryClient, toast, refetchAuction]);
 
   useEffect(() => {
     const calculateTimeLeft = () => {
