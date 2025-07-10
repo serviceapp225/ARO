@@ -294,6 +294,9 @@ export default function AuctionDetail() {
           return oldData;
         });
         
+        // Принудительно обновляем запрос деталей аукциона для характеристик
+        queryClient.invalidateQueries({ queryKey: [`/api/listings/${id}`] });
+        
         // Плавно обновляем данные ставок без полной перерисовки
         queryClient.setQueryData([`/api/listings/${id}/bids`], (oldBids: any) => {
           if (Array.isArray(oldBids) && lastBidUpdate.data?.bid) {
