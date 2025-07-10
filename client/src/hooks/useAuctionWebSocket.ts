@@ -126,7 +126,7 @@ export function useAuctionWebSocket(): AuctionWebSocketHook {
           queryClient.refetchQueries({ queryKey: [`/api/listings/${message.listingId}/bids`] });
         }
         
-        // console.log(`💰 Новая ставка в real-time: ${message.data?.bid?.amount} сомони`);
+        console.log(`💰 WebSocket обновление: принудительное обновление кэша для аукциона ${message.listingId}, новая ставка: ${message.data?.bid?.amount} сомони`);
         break;
         
       case 'notification':
