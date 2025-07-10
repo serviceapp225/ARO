@@ -988,9 +988,9 @@ export default function AuctionDetail() {
                     <span className="text-gray-600 font-medium">Топливо</span>
                     <span className="font-semibold text-gray-900">{translateFuelType(auction.fuelType)}</span>
                   </div>
-                  <div className="flex justify-between items-center py-2 px-3 rounded-lg bg-green-50 border border-green-200">
+                  <div className="flex justify-between items-center py-2 px-3 rounded-lg bg-green-50 border border-green-200 transition-all duration-300">
                     <span className="text-green-700 font-medium">Текущая цена</span>
-                    <span className="font-semibold text-green-900">{currentBid.toLocaleString()} Сомони</span>
+                    <span className="font-semibold text-green-900">{getCurrentBid().toLocaleString()} Сомони</span>
                   </div>
                   {/* Характеристики электромобиля */}
                   {(auction.fuelType === 'Электро' || auction.fuelType === 'electric') && (
