@@ -464,10 +464,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/listings/:id", async (req, res) => {
     try {
       const listingId = parseInt(req.params.id);
+      const cacheKey = `listing_${listingId}`;
+      
+      // Check cache first
+      const cached = getCached(cacheKey);
+      if (cached) {
+        console.log(`🎯 КЭШИРОВАННЫЙ аукцион ${listingId} current_bid=${cached.current_bid}`);
+        return res.json(cached);
+      }
+      
       const listing = await storage.getListing(listingId);
       if (!listing) {
         return res.status(404).json({ error: "Listing not found" });
       }
+      
+      console.log(`🆕 СВЕЖИЙ аукцион ${listingId} current_bid=${listing.current_bid}`);
+      
+      // Cache for 30 seconds
+      setCache(cacheKey, listing);
+      
       res.json(listing);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch listing" });
@@ -874,6 +889,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Очищаем ВСЕ кэши включая cachedListings
       clearAllCaches();
+      
+      // ДОПОЛНИТЕЛЬНО: Очищаем кэш для конкретного аукциона в деталях
+      clearCachePattern(`listing_${listingId}`);
+      clearCachePattern(`auction_${listingId}`);
+      console.log(`🧹 ОЧИЩЕН КЭШ для аукциона ${listingId} - теперь характеристики обновятся`);
       
       // Принудительно обновляем кэш листингов для мгновенного отображения новых ставок
       setTimeout(updateListingsCache, 100); // Обновляем через 100мс для гарантированного обновления
