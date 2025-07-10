@@ -803,7 +803,14 @@ export class SQLiteStorage implements IStorage {
 
   async updateListingCurrentBid(id: number, amount: string): Promise<CarListing | undefined> {
     const stmt = this.db.prepare('UPDATE car_listings SET current_bid = ? WHERE id = ?');
-    stmt.run(parseFloat(amount), id);
+    const result = stmt.run(parseFloat(amount), id);
+    console.log(`💾 ОБНОВЛЕНА БАЗА ДАННЫХ: Аукцион ${id}, новая цена ${amount}, затронуто строк: ${result.changes}`);
+    
+    // Проверим, что данные действительно обновились
+    const verifyStmt = this.db.prepare('SELECT current_bid FROM car_listings WHERE id = ?');
+    const verifyResult = verifyStmt.get(id);
+    console.log(`✅ ПРОВЕРКА БАЗЫ ДАННЫХ: Аукцион ${id}, current_bid в базе: ${verifyResult?.current_bid}`);
+    
     return this.getListing(id);
   }
 
