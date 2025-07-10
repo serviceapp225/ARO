@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useParams, useLocation } from 'wouter';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import type { User } from '@shared/schema';
@@ -241,8 +241,9 @@ export default function AuctionDetail() {
     // Если ставок нет, используем стартовую цену
     return auction ? parseFloat(auction.startingPrice) : 0;
   };
-  
-  const currentBid = getCurrentBid();
+
+  // Мемоизируем currentBid с зависимостью от currentPrice для автоматической перерисовки
+  const currentBid = useMemo(() => getCurrentBid(), [currentPrice, sortedBids, currentAuction, bidsData, auction]);
   
   const condition = auction ? translateCondition(auction.condition) : "Неизвестно";
 
