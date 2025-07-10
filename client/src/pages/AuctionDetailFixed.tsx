@@ -356,21 +356,19 @@ export default function AuctionDetail() {
 
   useEffect(() => {
     // Инициализируем currentPrice при загрузке данных аукциона
-    if (currentAuction?.currentBid) {
-      const auctionCurrentBid = parseFloat(currentAuction.currentBid);
-      if (auctionCurrentBid !== currentPrice) {
+    // НО только если currentPrice == 0 (первичная загрузка)
+    // Не перезаписываем currentPrice если он уже установлен через WebSocket
+    if (currentPrice === 0) {
+      if (currentAuction?.currentBid) {
+        const auctionCurrentBid = parseFloat(currentAuction.currentBid);
         setCurrentPrice(auctionCurrentBid);
         setBidAmount((auctionCurrentBid + 1000).toString());
-      }
-    } else if (Array.isArray(bidsData) && bidsData.length > 0) {
-      const maxBid = Math.max(...bidsData.map((bid: any) => parseFloat(bid.amount)));
-      if (maxBid !== currentPrice) {
+      } else if (Array.isArray(bidsData) && bidsData.length > 0) {
+        const maxBid = Math.max(...bidsData.map((bid: any) => parseFloat(bid.amount)));
         setCurrentPrice(maxBid);
         setBidAmount((maxBid + 1000).toString());
-      }
-    } else if (auction?.startingPrice) {
-      const startingPrice = parseFloat(auction.startingPrice);
-      if (startingPrice !== currentPrice) {
+      } else if (auction?.startingPrice) {
+        const startingPrice = parseFloat(auction.startingPrice);
         setCurrentPrice(startingPrice);
         setBidAmount((startingPrice + 1000).toString());
       }
