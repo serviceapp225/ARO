@@ -221,15 +221,21 @@ export default function AuctionDetail() {
       return currentPrice;
     }
     
+    // Затем проверяем свежие данные из сортированных ставок (самые актуальные)
+    if (Array.isArray(sortedBids) && sortedBids.length > 0) {
+      const maxBid = Math.max(...sortedBids.map((bid: any) => parseFloat(bid.amount)));
+      if (maxBid > 0) return maxBid;
+    }
+    
     // Затем проверяем свежие данные из currentAuction (обновляется каждую секунду)
     if (currentAuction?.currentBid) {
       return parseFloat(currentAuction.currentBid);
     }
     
-    // Потом проверяем историю ставок
+    // Потом проверяем историю ставок из API
     if (Array.isArray(bidsData) && bidsData.length > 0) {
       const maxBid = Math.max(...bidsData.map((bid: any) => parseFloat(bid.amount)));
-      return maxBid;
+      if (maxBid > 0) return maxBid;
     }
     
     // Если ставок нет, используем стартовую цену
@@ -483,7 +489,7 @@ export default function AuctionDetail() {
     }
     
     const bidValue = parseFloat(bidAmount);
-    const currentBidValue = (currentAuction as any)?.currentBid ? parseFloat((currentAuction as any).currentBid) : auction.currentBid;
+    const currentBidValue = getCurrentBid();
     
     if (bidValue <= currentBidValue) {
       toast({
@@ -1473,7 +1479,7 @@ export default function AuctionDetail() {
         onConfirm={handleConfirmBid}
         onCancel={handleCancelBid}
         bidAmount={pendingBidAmount}
-        currentBid={auction.currentBid?.toString() || '0'}
+        currentBid={getCurrentBid().toString()}
         carTitle={`${auction?.make} ${auction?.model} ${auction?.year}`}
       />
     </div>
