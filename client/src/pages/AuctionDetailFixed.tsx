@@ -214,13 +214,19 @@ export default function AuctionDetail() {
   const auction = currentAuction as any;
   const sortedBids = Array.isArray(bidsData) ? bidsData : [];
 
-  // Вычисляем текущую ставку из реальных данных
+  // Вычисляем текущую ставку из реальных данных - ВСЕГДА АКТУАЛЬНАЯ ЦЕНА
   const getCurrentBid = () => {
+    // Сначала проверяем свежие данные из currentAuction (обновляется каждую секунду)
+    if (currentAuction?.currentBid) {
+      return parseFloat(currentAuction.currentBid);
+    }
+    
+    // Затем проверяем историю ставок
     if (Array.isArray(bidsData) && bidsData.length > 0) {
-      // Находим максимальную ставку из истории ставок
       const maxBid = Math.max(...bidsData.map((bid: any) => parseFloat(bid.amount)));
       return maxBid;
     }
+    
     // Если ставок нет, используем стартовую цену
     return auction ? parseFloat(auction.startingPrice) : 0;
   };
@@ -1023,7 +1029,7 @@ export default function AuctionDetail() {
             <CardContent className="space-y-4">
               <div>
                 <div className="text-3xl font-bold text-green-600">
-                  {currentBid.toLocaleString()} Сомони
+                  {getCurrentBid().toLocaleString()} Сомони
                 </div>
                 <p className="text-sm text-gray-600 mt-1">
                   Стартовая цена: {parseFloat(auction.startingPrice).toLocaleString()} Сомони
@@ -1033,7 +1039,7 @@ export default function AuctionDetail() {
                 <div className="mt-3">
                   <ReservePriceIndicator
                     reservePrice={auction.reservePrice}
-                    currentBid={currentBid.toString()}
+                    currentBid={getCurrentBid().toString()}
                     startingPrice={auction.startingPrice}
                     size="md"
                     showProgress={false}
@@ -1173,7 +1179,7 @@ export default function AuctionDetail() {
                     <div className="space-y-3">
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Ваша ставка (минимум: {(currentBid + 100).toLocaleString()} Сомони)
+                          Ваша ставка (минимум: {(getCurrentBid() + 100).toLocaleString()} Сомони)
                         </label>
                         <div className="relative">
                           <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">Сомони</span>
@@ -1183,7 +1189,7 @@ export default function AuctionDetail() {
                             onChange={(e) => setBidAmount(e.target.value)}
                             className="w-full pl-20 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                             placeholder="Введите сумму"
-                            min={currentBid + 100}
+                            min={getCurrentBid() + 100}
                             step="100"
                           />
                         </div>
@@ -1191,7 +1197,7 @@ export default function AuctionDetail() {
                       <div className="flex gap-2">
                         <Button
                           onClick={handlePlaceBid}
-                          disabled={isPlacingBid || !bidAmount || parseFloat(bidAmount) <= currentBid}
+                          disabled={isPlacingBid || !bidAmount || parseFloat(bidAmount) <= getCurrentBid()}
                           className="flex-1 bg-green-600 hover:bg-green-700 text-white"
                         >
                           {isPlacingBid ? "Размещение..." : "Подтвердить ставку"}
