@@ -260,16 +260,18 @@ export default function AuctionDetail() {
     }
   }, [auction, auctionEndTime]);
 
-  // WebSocket подключение к аукциону
+  // WebSocket подключение к аукциону - только при смене ID аукциона
   useEffect(() => {
     if (auction?.id) {
+      console.log('🔗 Подключаемся к аукциону:', auction.id);
       joinAuction(parseInt(auction.id));
       
       return () => {
+        console.log('🔗 Отключаемся от аукциона:', auction.id);
         leaveAuction();
       };
     }
-  }, [auction?.id, joinAuction, leaveAuction]);
+  }, [auction?.id]); // Убрали joinAuction и leaveAuction из зависимостей
 
   // Обработка real-time обновлений ставок через WebSocket
   useEffect(() => {

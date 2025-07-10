@@ -36,11 +36,21 @@ export function useAuctionWebSocket(): AuctionWebSocketHook {
   const queryClient = useQueryClient();
   
   const connect = useCallback(() => {
-    if (wsRef.current?.readyState === WebSocket.OPEN) return;
+    // Не создавать новое соединение если уже есть активное
+    if (wsRef.current?.readyState === WebSocket.OPEN) {
+      console.log('🔌 WebSocket уже подключен, пропускаем');
+      setIsConnected(true);
+      return;
+    }
+    
+    // Закрываем предыдущее соединение если есть
+    if (wsRef.current) {
+      wsRef.current.close();
+    }
     
     try {
       const wsUrl = `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.host}/ws`;
-      console.log('🔌 Попытка подключения к WebSocket:', wsUrl);
+      console.log('🔌 Создание нового WebSocket соединения:', wsUrl);
       wsRef.current = new WebSocket(wsUrl);
       
       wsRef.current.onopen = () => {
@@ -49,6 +59,9 @@ export function useAuctionWebSocket(): AuctionWebSocketHook {
         console.log('🔌 WebSocket подключен для real-time аукционов');
         
         // Отправляем пинг каждые 60 секунд для экономии ресурсов
+        if (pingIntervalRef.current) {
+          clearInterval(pingIntervalRef.current);
+        }
         pingIntervalRef.current = setInterval(() => {
           if (wsRef.current?.readyState === WebSocket.OPEN) {
             wsRef.current.send(JSON.stringify({ type: 'ping' }));
@@ -57,7 +70,13 @@ export function useAuctionWebSocket(): AuctionWebSocketHook {
         
         // Повторно подключаемся к аукциону если был активен
         if (currentListingRef.current) {
-          joinAuction(currentListingRef.current);
+          const message = {
+            type: 'join_auction',
+            listingId: currentListingRef.current,
+            userId: (user as any)?.userId
+          };
+          console.log('🔄 Переподключение к аукциону:', message);
+          wsRef.current.send(JSON.stringify(message));
         }
       };
       
@@ -91,12 +110,15 @@ export function useAuctionWebSocket(): AuctionWebSocketHook {
       console.error('Ошибка создания WebSocket соединения:', error);
       setConnectionQuality('disconnected');
     }
-  }, []);
+  }, [user]);
   
   const handleWebSocketMessage = (message: WebSocketMessage) => {
     switch (message.type) {
       case 'connected':
-        // console.log('✅ WebSocket соединение установлено');
+        console.log('✅ WebSocket соединение установлено');
+        // Принудительно обновляем статус соединения
+        setIsConnected(true);
+        setConnectionQuality('excellent');
         break;
         
       case 'joined_auction':
@@ -209,6 +231,7 @@ export function useAuctionWebSocket(): AuctionWebSocketHook {
   const joinAuction = useCallback((listingId: number) => {
     currentListingRef.current = listingId;
     console.log(`🎯 Попытка подключения к аукциону ${listingId}, пользователь:`, (user as any)?.userId);
+    console.log('📊 Состояние WebSocket:', wsRef.current?.readyState, 'isConnected:', isConnected);
     
     if (wsRef.current?.readyState === WebSocket.OPEN) {
       const message = {
@@ -219,11 +242,28 @@ export function useAuctionWebSocket(): AuctionWebSocketHook {
       console.log('📤 Отправляем сообщение join_auction:', message);
       wsRef.current.send(JSON.stringify(message));
     } else {
-      console.log('⚠️ WebSocket не подключен, подключаемся...');
+      console.log('⚠️ WebSocket не подключен, подключаемся и будем ждать...');
       // Если WebSocket не подключен, подключаемся
       connect();
+      
+      // Ждем подключения и повторяем попытку
+      const retryInterval = setInterval(() => {
+        if (wsRef.current?.readyState === WebSocket.OPEN) {
+          clearInterval(retryInterval);
+          const message = {
+            type: 'join_auction',
+            listingId,
+            userId: (user as any)?.userId
+          };
+          console.log('📤 Отправляем сообщение join_auction после подключения:', message);
+          wsRef.current.send(JSON.stringify(message));
+        }
+      }, 100);
+      
+      // Отменяем попытки через 5 секунд
+      setTimeout(() => clearInterval(retryInterval), 5000);
     }
-  }, [user, connect]);
+  }, [user, connect, isConnected]);
   
   const leaveAuction = useCallback(() => {
     currentListingRef.current = null;
