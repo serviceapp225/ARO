@@ -982,13 +982,14 @@ export class SQLiteStorage implements IStorage {
         }
       }
       
-      // Только для объявления ID 31 и 35 показываем отладку
-      if (row.id === 31 || row.id === 35) {
+      // Только для объявления ID 31, 32 и 35 показываем отладку
+      if (row.id === 31 || row.id === 32 || row.id === 35) {
         console.log(`🔍 Отладка для объявления ${row.id}:`);
         console.log(`Raw photos type: ${typeof row.photos}`);
         console.log(`Raw photos length: ${row.photos?.length || 0}`);
         console.log(`Parsed photos count: ${photos.length}`);
         console.log(`First photo preview: ${photos[0] ? photos[0].substring(0, 50) + '...' : 'none'}`);
+        console.log(`💰 ОТЛАДКА ЦЕН: starting_price=${row.starting_price}, current_bid=${row.current_bid}`);
       }
     } catch (error) {
       console.error(`❌ Error parsing photos for listing ${row.id}:`, error);
