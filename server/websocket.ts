@@ -25,7 +25,7 @@ class AuctionWebSocketManager {
   constructor(server: Server) {
     this.wss = new WebSocketServer({ 
       server,
-      path: '/ws/auction',
+      path: '/ws',
       clientTracking: false
     });
     

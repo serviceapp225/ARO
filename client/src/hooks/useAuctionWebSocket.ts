@@ -39,13 +39,14 @@ export function useAuctionWebSocket(): AuctionWebSocketHook {
     if (wsRef.current?.readyState === WebSocket.OPEN) return;
     
     try {
-      const wsUrl = `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.host}/ws/auction`;
+      const wsUrl = `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.host}/ws`;
+      console.log('🔌 Попытка подключения к WebSocket:', wsUrl);
       wsRef.current = new WebSocket(wsUrl);
       
       wsRef.current.onopen = () => {
         setIsConnected(true);
         setConnectionQuality('excellent');
-        // console.log('🔌 WebSocket подключен для real-time аукционов');
+        console.log('🔌 WebSocket подключен для real-time аукционов');
         
         // Отправляем пинг каждые 60 секунд для экономии ресурсов
         pingIntervalRef.current = setInterval(() => {
@@ -63,7 +64,7 @@ export function useAuctionWebSocket(): AuctionWebSocketHook {
       wsRef.current.onmessage = (event) => {
         try {
           const message: WebSocketMessage = JSON.parse(event.data);
-          // console.log('📩 Получено WebSocket сообщение:', message);
+          console.log('📩 Получено WebSocket сообщение:', message);
           handleWebSocketMessage(message);
         } catch (error) {
           console.error('Ошибка парсинга WebSocket сообщения:', error);
