@@ -43,10 +43,10 @@ export function AuctionProvider({ children }: { children: ReactNode }) {
   const { data: listings = [], isLoading, refetch } = useQuery<any[]>({
     queryKey: ['/api/listings'],
     refetchInterval: 2000, // Обновление каждые 2 секунды для быстрых цен
-    staleTime: 1000, // Данные считаются свежими 1 секунду
-    gcTime: 10000, // Кэшируем на 10 секунд
-    refetchOnWindowFocus: true,
-    refetchOnMount: true,
+    staleTime: 0, // Данные всегда считаются устаревшими
+    gcTime: 1000, // Кэшируем только на 1 секунду
+    refetchOnWindowFocus: 'always', // Всегда обновлять при фокусе
+    refetchOnMount: 'always', // Всегда обновлять при монтировании
     refetchOnReconnect: true,
   });
 

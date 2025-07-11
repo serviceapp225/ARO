@@ -151,6 +151,8 @@ export default function AuctionDetail() {
     refetchIntervalInBackground: true,
     staleTime: 0, // Данные всегда считаются устаревшими
     gcTime: 1000, // Кэш только 1 секунда
+    refetchOnMount: 'always', // Всегда обновлять при монтировании
+    refetchOnWindowFocus: 'always', // Всегда обновлять при фокусе окна
   });
 
   // Fetch real bidding history with auto-refresh
@@ -161,6 +163,8 @@ export default function AuctionDetail() {
     refetchIntervalInBackground: true,
     staleTime: 1000, // Данные устаревают через 1 секунду
     gcTime: 5000, // В кэше только 5 секунд
+    refetchOnMount: 'always', // Всегда обновлять при монтировании
+    refetchOnWindowFocus: 'always', // Всегда обновлять при фокусе окна
   });
 
   // Get unique bidder IDs to fetch user data
@@ -259,6 +263,19 @@ export default function AuctionDetail() {
       setIsTimerReady(true);
     }
   }, [auction, auctionEndTime]);
+
+  // Принудительное обновление кэша при изменении ID аукциона
+  useEffect(() => {
+    if (id) {
+      console.log('🔄 Принудительное обновление кэша для аукциона ID:', id);
+      // Очищаем кэш для конкретного аукциона
+      queryClient.invalidateQueries({ queryKey: [`/api/listings/${id}`] });
+      queryClient.invalidateQueries({ queryKey: [`/api/listings/${id}/bids`] });
+      
+      // Принудительно обновляем данные
+      refetchAuction();
+    }
+  }, [id, queryClient, refetchAuction]);
 
   // WebSocket подключение к аукциону - только при смене ID аукциона
   useEffect(() => {
