@@ -990,6 +990,10 @@ export class SQLiteStorage implements IStorage {
         console.log(`Parsed photos count: ${photos.length}`);
         console.log(`First photo preview: ${photos[0] ? photos[0].substring(0, 50) + '...' : 'none'}`);
         console.log(`💰 ОТЛАДКА ЦЕН: starting_price=${row.starting_price}, current_bid=${row.current_bid}`);
+        
+        // КРИТИЧЕСКАЯ ОТЛАДКА для current_bid
+        const currentBidValue = row.current_bid ? row.current_bid.toString() : null;
+        console.log(`🔍 mapListing РЕЗУЛЬТАТ: current_bid=${row.current_bid} → currentBid="${currentBidValue}"`);
       }
     } catch (error) {
       console.error(`❌ Error parsing photos for listing ${row.id}:`, error);
