@@ -403,6 +403,30 @@ export default function AuctionDetail() {
   }, [auctionEndTime, isTimerReady]);
 
   // Синхронизация теперь происходит автоматически через реальные данные ставок
+  
+  // Принудительное обновление данных каждые 3 секунды для гарантированной синхронизации
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (id && auction) {
+        console.log('🔄 Принудительное обновление данных для синхронизации');
+        refetchAuction();
+      }
+    }, 3000); // Обновляем каждые 3 секунды
+
+    return () => clearInterval(interval);
+  }, [id, auction, refetchAuction]);
+
+  // Автоматическая синхронизация currentPrice с данными из базы
+  useEffect(() => {
+    if (auction?.currentBid) {
+      const serverCurrentBid = parseFloat(auction.currentBid);
+      if (currentPrice !== serverCurrentBid && serverCurrentBid > 0) {
+        console.log(`🔄 Синхронизация: currentPrice ${currentPrice} → ${serverCurrentBid} (из базы данных)`);
+        setCurrentPrice(serverCurrentBid);
+        setBidAmount((serverCurrentBid + 1000).toString());
+      }
+    }
+  }, [auction?.currentBid, currentPrice]);
 
   useEffect(() => {
     // Инициализируем currentPrice при загрузке данных аукциона

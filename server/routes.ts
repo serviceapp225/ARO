@@ -883,6 +883,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Отправляем real-time обновление через WebSocket
+      console.log(`🔍 ПРОВЕРКА wsManager: ${wsManager ? 'инициализирован' : 'НЕ ИНИЦИАЛИЗИРОВАН'}`);
       if (wsManager) {
         const updatedListing = await storage.getListing(listingId);
         const allBids = await storage.getBidsForListing(listingId);
