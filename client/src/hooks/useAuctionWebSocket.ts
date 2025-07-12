@@ -166,6 +166,9 @@ export function useAuctionWebSocket(): AuctionWebSocketHook {
             }
             return oldData;
           });
+
+          // Принудительно обновляем данные аукциона для мгновенной синхронизации
+          queryClient.invalidateQueries({ queryKey: [`/api/listings/${message.listingId}`] });
           
           // Плавно обновляем ставки
           queryClient.setQueryData([`/api/listings/${message.listingId}/bids`], (oldBids: any) => {

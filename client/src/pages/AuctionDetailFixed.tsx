@@ -78,6 +78,14 @@ export default function AuctionDetail() {
     isHotAuction 
   } = useAuctionWebSocket();
 
+  // Принудительное обновление при получении WebSocket обновления
+  useEffect(() => {
+    if (lastBidUpdate && lastBidUpdate.listingId && parseInt(lastBidUpdate.listingId) === parseInt(id || '0')) {
+      console.log(`🔄 Принудительное обновление аукциона ${id} после WebSocket обновления`);
+      refetchAuction();
+    }
+  }, [lastBidUpdate, id, refetchAuction]);
+
   // Translation functions for car characteristics
   const translateTransmission = (transmission: string) => {
     const translations = {
@@ -160,10 +168,10 @@ export default function AuctionDetail() {
   const { data: currentAuction, refetch: refetchAuction } = useQuery({
     queryKey: [`/api/listings/${id}`],
     enabled: !!id,
-    refetchInterval: 1000, // Refresh every 1 second for fast updates
+    refetchInterval: 2000, // Refresh every 2 seconds for balance between speed and performance
     refetchIntervalInBackground: true,
-    staleTime: 0, // Данные всегда считаются устаревшими
-    gcTime: 0, // НЕ кэшировать вообще
+    staleTime: 1000, // Данные считаются свежими 1 секунду
+    gcTime: 5000, // Кэшируем 5 секунд для производительности
     refetchOnMount: 'always', // Всегда обновлять при монтировании
     refetchOnWindowFocus: 'always', // Всегда обновлять при фокусе окна
   });
