@@ -990,18 +990,13 @@ export class SQLiteStorage implements IStorage {
         console.log(`Parsed photos count: ${photos.length}`);
         console.log(`First photo preview: ${photos[0] ? photos[0].substring(0, 50) + '...' : 'none'}`);
         console.log(`💰 ОТЛАДКА ЦЕН: starting_price=${row.starting_price}, current_bid=${row.current_bid}`);
-        
-        // КРИТИЧЕСКАЯ ОТЛАДКА для current_bid
-        const currentBidValue = row.current_bid ? row.current_bid.toString() : null;
-        console.log(`🔍 mapListing РЕЗУЛЬТАТ: current_bid=${row.current_bid} → currentBid="${currentBidValue}"`);
-        console.log(`🔍 mapListing ТИП: typeof current_bid=${typeof row.current_bid}, значение="${row.current_bid}"`);
       }
     } catch (error) {
       console.error(`❌ Error parsing photos for listing ${row.id}:`, error);
       photos = [];
     }
     
-    return {
+    const result = {
       id: row.id,
       sellerId: row.seller_id,
       lotNumber: row.lot_number,
@@ -1039,6 +1034,14 @@ export class SQLiteStorage implements IStorage {
       electricRange: row.electric_range,
       createdAt: new Date(row.created_at)
     };
+
+    // КРИТИЧЕСКАЯ ОТЛАДКА для аукциона 32
+    if (row.id === 32) {
+      console.log(`🔍 mapListing РЕЗУЛЬТАТ: current_bid=${row.current_bid} → currentBid="${result.currentBid}"`);
+      console.log(`🔍 mapListing ТИП: typeof current_bid=${typeof row.current_bid}, значение="${row.current_bid}"`);
+    }
+
+    return result;
   }
 
   // Bid operations
