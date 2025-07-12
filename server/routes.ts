@@ -889,15 +889,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         console.log(`🔍 ОТЛАДКА ПОСЛЕ ОБНОВЛЕНИЯ БД: Аукцион ${listingId}, current_bid в объекте: ${updatedListing?.currentBid}`);
         
-        wsManager.broadcastBidUpdate(listingId, {
+        const bidUpdateData = {
           bid,
           listing: updatedListing,
           totalBids: allBids.length,
           highestBid: Math.max(...allBids.map(b => parseFloat(b.amount))),
           timestamp: Date.now()
+        };
+        
+        console.log(`📡 ОТПРАВЛЯЕМ WebSocket broadcast для аукциона ${listingId}:`, {
+          bidAmount: bid.amount,
+          currentBid: updatedListing?.currentBid,
+          highestBid: bidUpdateData.highestBid,
+          totalBids: bidUpdateData.totalBids
         });
         
-        console.log(`📡 WebSocket broadcast: новая ставка ${bid.amount} на аукцион ${listingId}, обновленная цена в WebSocket: ${updatedListing?.currentBid}`);
+        wsManager.broadcastBidUpdate(listingId, bidUpdateData);
+        
+        console.log(`✅ WebSocket broadcast ОТПРАВЛЕН: новая ставка ${bid.amount} на аукцион ${listingId}, обновленная цена в WebSocket: ${updatedListing?.currentBid}`);
       }
       
       // ПРИНУДИТЕЛЬНАЯ ОЧИСТКА КЭША СЕРВЕРА для мгновенного обновления
