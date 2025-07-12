@@ -87,6 +87,15 @@ let wsManager: AuctionWebSocketManager;
 let lastBidUpdate = Date.now();
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Отладка всех входящих POST запросов
+  app.use((req, res, next) => {
+    if (req.method === 'POST') {
+      console.log(`🔍 POST запрос: ${req.path}`);
+      console.log(`📦 Body:`, req.body);
+    }
+    next();
+  });
+
   // Статический кэш для максимальной скорости
   let cachedListings: any[] = [];
   let bidCountsCache = new Map<number, number>();
