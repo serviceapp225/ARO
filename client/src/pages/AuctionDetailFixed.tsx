@@ -620,10 +620,15 @@ export default function AuctionDetail() {
     
     // Используем bidMutation для создания ставки
     console.log('📤 Вызываем bidMutation.mutate...');
+    console.log('🔍 bidMutation объект:', bidMutation);
+    console.log('🔍 bidMutation.mutate функция:', typeof bidMutation.mutate);
+    
     bidMutation.mutate({
       bidderId: userId,
       amount: pendingBidAmount
     });
+    
+    console.log('✅ bidMutation.mutate вызван успешно!');
     
     // Очищаем поле ввода после размещения ставки
     setBidAmount("");
