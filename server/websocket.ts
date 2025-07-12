@@ -175,7 +175,14 @@ class AuctionWebSocketManager {
 
   public broadcastBidUpdate(listingId: number, bidData: any) {
     const room = this.rooms.get(listingId);
-    if (!room) return;
+    console.log(`📡 broadcastBidUpdate: аукцион ${listingId}, комната найдена: ${!!room}`);
+    
+    if (!room) {
+      console.log(`❌ Комната для аукциона ${listingId} не найдена! Доступные комнаты: ${Array.from(this.rooms.keys())}`);
+      return;
+    }
+
+    console.log(`👥 Отправляем bid_update в комнату ${listingId} для ${room.clients.size} клиентов`);
 
     const message = {
       type: 'bid_update',
@@ -186,6 +193,8 @@ class AuctionWebSocketManager {
 
     this.broadcastToRoom(room, message);
     room.lastUpdate = Date.now();
+    
+    console.log(`✅ bid_update отправлено для аукциона ${listingId}`);
   }
 
   public broadcastAuctionEnd(listingId: number, finalData: any) {
