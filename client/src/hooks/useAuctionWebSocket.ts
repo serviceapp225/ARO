@@ -68,6 +68,16 @@ export function useAuctionWebSocket(): AuctionWebSocketHook {
           }
         }, 60000);
         
+        // ВАЖНО: Идентифицируем пользователя для уведомлений
+        if (user?.userId) {
+          const identifyMessage = {
+            type: 'identify_user',
+            userId: (user as any)?.userId
+          };
+          console.log('👤 Идентификация пользователя для уведомлений:', identifyMessage);
+          wsRef.current.send(JSON.stringify(identifyMessage));
+        }
+        
         // Повторно подключаемся к аукциону если был активен
         if (currentListingRef.current) {
           const message = {
@@ -119,6 +129,10 @@ export function useAuctionWebSocket(): AuctionWebSocketHook {
         // Принудительно обновляем статус соединения
         setIsConnected(true);
         setConnectionQuality('excellent');
+        break;
+        
+      case 'user_identified':
+        console.log('👤 Пользователь успешно идентифицирован для WebSocket уведомлений:', message.userId);
         break;
         
       case 'joined_auction':

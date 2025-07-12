@@ -88,6 +88,30 @@ class AuctionWebSocketManager {
         client.lastPing = Date.now();
         this.sendMessage(client, { type: 'pong' });
         break;
+      case 'identify_user':
+        // Новый тип сообщения для идентификации пользователя
+        if (message.userId) {
+          client.userId = message.userId;
+          console.log(`👤 Клиент идентифицирован как пользователь ${message.userId}`);
+          this.sendMessage(client, { 
+            type: 'user_identified', 
+            userId: message.userId,
+            message: 'Пользователь успешно идентифицирован для уведомлений' 
+          });
+        }
+        break;
+      case 'identify_user':
+        // Новый тип сообщения для идентификации пользователя
+        if (message.userId) {
+          client.userId = message.userId;
+          console.log(`👤 Клиент идентифицирован как пользователь ${message.userId}`);
+          this.sendMessage(client, { 
+            type: 'user_identified', 
+            userId: message.userId,
+            message: 'Пользователь успешно идентифицирован для уведомлений' 
+          });
+        }
+        break;
     }
   }
 
