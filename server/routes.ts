@@ -468,9 +468,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Check cache first
       const cached = getCached(cacheKey);
-      if (cached) {
+      if (cached && listingId !== 32) { // Для аукциона 32 ПРИНУДИТЕЛЬНО обновляем
         console.log(`🎯 КЭШИРОВАННЫЙ аукцион ${listingId} current_bid=${cached.current_bid}`);
         return res.json(cached);
+      }
+      
+      // Для аукциона 32 всегда загружаем свежие данные
+      if (listingId === 32) {
+        console.log(`🔍 ПРИНУДИТЕЛЬНАЯ ЗАГРУЗКА для аукциона 32 (игнорируем кэш)`);
       }
       
       const listing = await storage.getListing(listingId);
