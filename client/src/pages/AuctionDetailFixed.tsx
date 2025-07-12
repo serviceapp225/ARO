@@ -58,7 +58,6 @@ export default function AuctionDetail() {
   // Принудительная очистка кэша при монтировании компонента
   useEffect(() => {
     if (id) {
-      console.log(`🔄 Принудительная очистка кэша для аукциона ID: ${id}`);
       queryClient.removeQueries({ queryKey: [`/api/listings/${id}`] });
       queryClient.removeQueries({ queryKey: [`/api/listings/${id}/bids`] });
       queryClient.removeQueries({ queryKey: ['/api/listings'] });
@@ -246,22 +245,16 @@ export default function AuctionDetail() {
   const getCurrentBid = () => {
     // 1. Главный источник: свежая история ставок из API
     if (Array.isArray(bidsData) && bidsData.length > 0) {
-      const latestBid = parseFloat(bidsData[0].amount);
-      console.log(`💰 getCurrentBid: используем свежую историю ставок = ${latestBid}`);
-      return latestBid;
+      return parseFloat(bidsData[0].amount);
     }
     
     // 2. Резервный источник: данные аукциона из базы
     if (currentAuction?.currentBid) {
-      const bid = parseFloat(currentAuction.currentBid);
-      console.log(`💰 getCurrentBid: используем currentAuction.currentBid = ${bid}`);
-      return bid;
+      return parseFloat(currentAuction.currentBid);
     }
     
     // 3. Если ставок нет: стартовая цена
-    const startingPrice = currentAuction ? parseFloat(currentAuction.startingPrice) : 0;
-    console.log(`💰 getCurrentBid: используем стартовую цену = ${startingPrice}`);
-    return startingPrice;
+    return currentAuction ? parseFloat(currentAuction.startingPrice) : 0;
   };
 
   // Мемоизируем currentBid - единый источник правды через историю ставок
@@ -355,7 +348,7 @@ export default function AuctionDetail() {
   // Принудительное обновление кэша при изменении ID аукциона
   useEffect(() => {
     if (id) {
-      console.log('🔄 Принудительное обновление кэша для аукциона ID:', id);
+      // Принудительное обновление кэша для аукциона
       // УБРАНО: Принудительная очистка кэша (вызывала откат цен)
       // queryClient.removeQueries({ queryKey: [`/api/listings/${id}`] });
       // queryClient.removeQueries({ queryKey: [`/api/listings/${id}/bids`] });
@@ -386,7 +379,7 @@ export default function AuctionDetail() {
       // Немедленно обновляем состояние без перерисовки
       if (lastBidUpdate.data?.bid?.amount) {
         const newAmount = parseFloat(lastBidUpdate.data.bid.amount);
-        console.log('💰 Обновляем минимальную ставку на', newAmount + 1000);
+        // Обновляем минимальную ставку
         setBidAmount((newAmount + 1000).toString());
         
         // Мгновенно и плавно обновляем данные аукциона в кэше для характеристик
