@@ -1039,6 +1039,7 @@ export class SQLiteStorage implements IStorage {
     if (row.id === 32) {
       console.log(`🔍 mapListing РЕЗУЛЬТАТ: current_bid=${row.current_bid} → currentBid="${result.currentBid}"`);
       console.log(`🔍 mapListing ТИП: typeof current_bid=${typeof row.current_bid}, значение="${row.current_bid}"`);
+      console.log(`🔍 mapListing СТРОКА: currentBid строка = "${row.current_bid ? row.current_bid.toString() : null}"`);
     }
 
     return result;

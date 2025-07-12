@@ -28,7 +28,7 @@ const queryParamsSchema = z.object({
 
 // Simple in-memory cache
 const cache = new Map();
-const CACHE_TTL = 10000; // 10 seconds for fast advertisement updates
+const CACHE_TTL = 2000; // 2 seconds for ultra-fast updates
 
 function getCached(key: string) {
   const cached = cache.get(key);
@@ -468,22 +468,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Check cache first
       const cached = getCached(cacheKey);
-      if (cached && listingId !== 32) { // Для аукциона 32 ПРИНУДИТЕЛЬНО обновляем
-        console.log(`🎯 КЭШИРОВАННЫЙ аукцион ${listingId} current_bid=${cached.current_bid}`);
+      if (cached) { // Всегда используем кэш если есть
+        console.log(`🎯 КЭШИРОВАННЫЙ аукцион ${listingId} currentBid=${cached.currentBid}`);
         return res.json(cached);
       }
       
-      // Для аукциона 32 всегда загружаем свежие данные
-      if (listingId === 32) {
-        console.log(`🔍 ПРИНУДИТЕЛЬНАЯ ЗАГРУЗКА для аукциона 32 (игнорируем кэш)`);
-      }
+      // Загружаем свежие данные из базы
       
       const listing = await storage.getListing(listingId);
       if (!listing) {
         return res.status(404).json({ error: "Listing not found" });
       }
       
-      console.log(`🆕 СВЕЖИЙ аукцион ${listingId} current_bid=${listing.current_bid}`);
+      console.log(`🆕 СВЕЖИЙ аукцион ${listingId} currentBid=${listing.currentBid}`);
       
       // Cache for 30 seconds
       setCache(cacheKey, listing);

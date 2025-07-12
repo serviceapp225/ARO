@@ -53,6 +53,18 @@ export default function AuctionDetail() {
   
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  
+  // Принудительная очистка кэша при монтировании компонента
+  useEffect(() => {
+    if (id) {
+      console.log(`🔄 Принудительная очистка кэша для аукциона ID: ${id}`);
+      queryClient.removeQueries({ queryKey: [`/api/listings/${id}`] });
+      queryClient.removeQueries({ queryKey: [`/api/listings/${id}/bids`] });
+      queryClient.removeQueries({ queryKey: ['/api/listings'] });
+      queryClient.invalidateQueries({ queryKey: [`/api/listings/${id}`] });
+      queryClient.invalidateQueries({ queryKey: [`/api/listings/${id}/bids`] });
+    }
+  }, [id, queryClient]);
 
   // WebSocket для real-time обновлений
   const { 
