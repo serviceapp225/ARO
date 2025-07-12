@@ -817,8 +817,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const bid = await storage.createBid(validatedData);
       
-      // Update listing's current bid
+      // КРИТИЧЕСКИ ВАЖНО: Обновляем current_bid в базе данных НЕМЕДЛЕННО
+      console.log(`🔄 НАЧИНАЕМ обновление current_bid для аукциона ${listingId} на ${validatedData.amount}`);
       await storage.updateListingCurrentBid(listingId, validatedData.amount);
+      console.log(`✅ ЗАВЕРШЕНО обновление current_bid для аукциона ${listingId}`);
+      
+      // Двойная проверка: убеждаемся что данные действительно обновились
+      const verificationListing = await storage.getListing(listingId);
+      console.log(`🔍 ПРОВЕРКА: current_bid в базе данных теперь ${verificationListing?.currentBid}`);
+      
+      if (verificationListing?.currentBid !== validatedData.amount) {
+        console.error(`❌ ОШИБКА: current_bid не обновился! Ожидался ${validatedData.amount}, получен ${verificationListing?.currentBid}`);
+      } else {
+        console.log(`✅ УСПЕХ: current_bid правильно обновлен на ${validatedData.amount}`);
+      }
       
       if (listing) {
         // Get all bids for this listing to find the previously highest bidder
