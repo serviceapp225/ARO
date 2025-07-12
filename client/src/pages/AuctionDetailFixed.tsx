@@ -341,6 +341,10 @@ export default function AuctionDetail() {
           return oldData;
         });
         
+        // Принудительно обновляем auction данные через refetch для характеристик
+        console.log(`🔄 Принудительно обновляем auction данные для характеристик`);
+        refetchAuction();
+        
         // УБИРАЕМ invalidateQueries - он перезаписывает WebSocket данные старыми данными из базы
         // queryClient.invalidateQueries({ queryKey: [`/api/listings/${id}`] });
         
