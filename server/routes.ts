@@ -891,8 +891,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
             
             // Отправляем уведомление через WebSocket
             if (wsManager) {
+              console.log(`📲 ПОПЫТКА отправить WebSocket уведомление пользователю ${participantId}`);
               wsManager.sendNotificationToUser(participantId, notification);
-              console.log(`📲 Отправлено WebSocket уведомление пользователю ${participantId}`);
+              console.log(`📲 ✅ ЗАВЕРШЕНА попытка отправки WebSocket уведомления пользователю ${participantId}`);
+            } else {
+              console.log(`❌ wsManager не инициализирован - WebSocket уведомления недоступны`);
             }
           } catch (notificationError) {
             console.error(`❌ Ошибка создания уведомления для пользователя ${participantId}:`, notificationError);
