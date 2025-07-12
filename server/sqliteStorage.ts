@@ -994,6 +994,7 @@ export class SQLiteStorage implements IStorage {
         // КРИТИЧЕСКАЯ ОТЛАДКА для current_bid
         const currentBidValue = row.current_bid ? row.current_bid.toString() : null;
         console.log(`🔍 mapListing РЕЗУЛЬТАТ: current_bid=${row.current_bid} → currentBid="${currentBidValue}"`);
+        console.log(`🔍 mapListing ТИП: typeof current_bid=${typeof row.current_bid}, значение="${row.current_bid}"`);
       }
     } catch (error) {
       console.error(`❌ Error parsing photos for listing ${row.id}:`, error);
