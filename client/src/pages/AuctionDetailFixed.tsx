@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useParams, useLocation } from 'wouter';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
+import { apiRequest } from '@/lib/queryClient';
 import type { User } from '@shared/schema';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -167,6 +168,8 @@ export default function AuctionDetail() {
     refetchOnWindowFocus: 'always', // Всегда обновлять при фокусе окна
   });
 
+  // Mutation for placing bids (moved to later in the file)
+
   // Fetch real bidding history with auto-refresh
   const { data: bidsData } = useQuery({
     queryKey: [`/api/listings/${id}/bids`],
@@ -276,6 +279,77 @@ export default function AuctionDetail() {
   const currentBid = useMemo(() => getCurrentBid(), [currentAuction, currentPrice, sortedBids, bidsData, auction]);
   
   const condition = auction ? translateCondition(auction.condition) : "Неизвестно";
+
+  // Bid mutation with celebration effects
+  const bidMutation = useMutation({
+    mutationFn: async (bidData: { bidderId: number; amount: string }) => {
+      console.log(`📤 Отправляем POST запрос ставки:`, bidData);
+      try {
+        const response = await fetch(`/api/listings/${id}/bids`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(bidData),
+        });
+        
+        if (!response.ok) {
+          const errorData = await response.json();
+          const error = new Error(errorData.message || 'Failed to place bid');
+          (error as any).errorType = errorData.error;
+          (error as any).errorMessage = errorData.message;
+          throw error;
+        }
+        
+        console.log(`✅ Ставка успешно создана!`);
+        return response.json();
+      } catch (fetchError) {
+        console.log("❌ Ошибка при создании ставки:", fetchError);
+        throw fetchError;
+      }
+    },
+    onSuccess: (data, variables) => {
+      console.log(`🎉 Ставка успешно принята! Сумма: ${variables.amount}`);
+      
+      // Trigger celebration effects
+      setShowConfetti(true);
+      setCurrentPrice(parseFloat(variables.amount));
+      
+      // Automatically add to favorites when placing a bid
+      if (!isFavorite(id!)) {
+        addToFavorites(id!);
+      }
+      
+      // Show success toast
+      toast({
+        title: "🎉 Ставка принята!",
+        description: `Ваша ставка ${parseFloat(variables.amount).toLocaleString()} Сомони успешно размещена!`,
+        duration: 3000,
+      });
+      
+      // Принудительное обновление кэша после успешной ставки
+      queryClient.invalidateQueries({ queryKey: [`/api/listings/${id}`] });
+      queryClient.invalidateQueries({ queryKey: [`/api/listings/${id}/bids`] });
+      queryClient.invalidateQueries({ queryKey: ['/api/listings'] });
+      
+      // Hide celebration after 5 seconds
+      setTimeout(() => setShowConfetti(false), 5000);
+    },
+    onError: (error: any) => {
+      console.log("❌ Ошибка при создании ставки:", error);
+      
+      // Handle specific error types
+      if (error.errorType === 'Account not activated') {
+        setShowActivationDialog(true);
+        return;
+      }
+      
+      // Show error toast
+      toast({
+        title: "❌ Ошибка",
+        description: error.message || "Не удалось сделать ставку. Попробуйте еще раз.",
+        variant: "destructive",
+      });
+    },
+  });
 
   // All useEffect hooks - placed after state initialization but before conditional returns
   useEffect(() => {
@@ -588,7 +662,23 @@ export default function AuctionDetail() {
     setShowBidConfirmation(true);
   };
 
-  const handleConfirmBid = async () => {
+  const handleConfirmBid = () => {
+    setShowBidConfirmation(false);
+    
+    const userId = (currentUser as any)?.userId || (currentUser as any)?.id;
+    
+    // Используем bidMutation для создания ставки
+    bidMutation.mutate({
+      bidderId: userId,
+      amount: pendingBidAmount
+    });
+    
+    // Очищаем поле ввода после размещения ставки
+    setBidAmount("");
+    setPendingBidAmount("");
+  };
+
+  const handleConfirmBidOLD = async () => {
     setShowBidConfirmation(false);
     setIsPlacingBid(true);
     
