@@ -871,6 +871,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const updatedListing = await storage.getListing(listingId);
         const allBids = await storage.getBidsForListing(listingId);
         
+        console.log(`🔍 ОТЛАДКА ПОСЛЕ ОБНОВЛЕНИЯ БД: Аукцион ${listingId}, current_bid в объекте: ${updatedListing?.currentBid}`);
+        
         wsManager.broadcastBidUpdate(listingId, {
           bid,
           listing: updatedListing,
@@ -879,7 +881,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           timestamp: Date.now()
         });
         
-        console.log(`📡 WebSocket broadcast: новая ставка ${bid.amount} на аукцион ${listingId}`);
+        console.log(`📡 WebSocket broadcast: новая ставка ${bid.amount} на аукцион ${listingId}, обновленная цена в WebSocket: ${updatedListing?.currentBid}`);
       }
       
       // ПРИНУДИТЕЛЬНАЯ ОЧИСТКА КЭША СЕРВЕРА для мгновенного обновления
