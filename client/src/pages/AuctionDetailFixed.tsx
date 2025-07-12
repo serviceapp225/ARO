@@ -159,10 +159,10 @@ export default function AuctionDetail() {
   const { data: currentAuction, refetch: refetchAuction } = useQuery({
     queryKey: [`/api/listings/${id}`],
     enabled: !!id,
-    refetchInterval: 2000, // Refresh every 2 seconds for balance between speed and performance
+    refetchInterval: 250, // МАКСИМАЛЬНАЯ СКОРОСТЬ: обновление каждые 0.25 секунды
     refetchIntervalInBackground: true,
-    staleTime: 1000, // Данные считаются свежими 1 секунду
-    gcTime: 5000, // Кэшируем 5 секунд для производительности
+    staleTime: 0, // Данные всегда считаются устаревшими
+    gcTime: 0, // НЕ кэшировать вообще
     refetchOnMount: 'always', // Всегда обновлять при монтировании
     refetchOnWindowFocus: 'always', // Всегда обновлять при фокусе окна
   });
@@ -181,7 +181,7 @@ export default function AuctionDetail() {
   const { data: bidsData, refetch: refetchBids } = useQuery({
     queryKey: [`/api/listings/${id}/bids`],
     enabled: !!id,
-    refetchInterval: 1000, // Refresh every 1 second for real-time feel
+    refetchInterval: 250, // МАКСИМАЛЬНАЯ СКОРОСТЬ: обновление каждые 0.25 секунды
     refetchIntervalInBackground: true,
     staleTime: 0, // Данные всегда считаются устаревшими
     gcTime: 0, // НЕ кэшировать вообще
@@ -402,23 +402,7 @@ export default function AuctionDetail() {
         // УБИРАЕМ invalidateQueries - он перезаписывает WebSocket данные старыми данными из базы
         // queryClient.invalidateQueries({ queryKey: [`/api/listings/${id}`] });
         
-        // Плавно обновляем данные ставок без полной перерисовки
-        queryClient.setQueryData([`/api/listings/${id}/bids`], (oldBids: any) => {
-          if (Array.isArray(oldBids) && lastBidUpdate.data?.bid) {
-            // Добавляем новую ставку в начало списка, если её там нет
-            const newBid = lastBidUpdate.data.bid;
-            const existingBid = oldBids.find(bid => bid.id === newBid.id);
-            if (!existingBid) {
-              return [newBid, ...oldBids];
-            }
-          }
-          return oldBids;
-        });
-        
-        // ПРИНУДИТЕЛЬНО ОБНОВЛЯЕМ ИСТОРИЮ СТАВОК для мгновенного отображения
-        queryClient.invalidateQueries({ queryKey: [`/api/listings/${id}/bids`] });
-        
-        // МГНОВЕННОЕ ОБНОВЛЕНИЕ - принудительно загружаем свежие данные ставок
+        // МГНОВЕННОЕ ОБНОВЛЕНИЕ - только принудительная загрузка свежих данных
         refetchBids();
         
         // Показываем уведомление о новой ставке

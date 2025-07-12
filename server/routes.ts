@@ -710,6 +710,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/listings/:id/bids", async (req, res) => {
     try {
       const listingId = parseInt(req.params.id);
+      
+      // КРИТИЧНО: НЕ ИСПОЛЬЗУЕМ КЭШ - всегда свежие данные из базы
       const bids = await storage.getBidsForListing(listingId);
       
       // Enrich bids with user information
@@ -726,6 +728,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
           };
         })
       );
+      
+      // КРИТИЧНО: НЕ КЭШИРУЕМ - всегда свежие данные
+      res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+      res.setHeader('Pragma', 'no-cache');
+      res.setHeader('Expires', '0');
       
       res.json(enrichedBids);
     } catch (error) {
