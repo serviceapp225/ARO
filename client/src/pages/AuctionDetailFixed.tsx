@@ -159,7 +159,7 @@ export default function AuctionDetail() {
   const { data: currentAuction, refetch: refetchAuction } = useQuery({
     queryKey: [`/api/listings/${id}`],
     enabled: !!id,
-    refetchInterval: 500, // Refresh every 0.5 seconds for ultra-fast updates
+    refetchInterval: 1000, // Refresh every 1 second for fast updates
     refetchIntervalInBackground: true,
     staleTime: 0, // Данные всегда считаются устаревшими
     gcTime: 0, // НЕ кэшировать вообще
@@ -171,10 +171,10 @@ export default function AuctionDetail() {
   const { data: bidsData } = useQuery({
     queryKey: [`/api/listings/${id}/bids`],
     enabled: !!id,
-    refetchInterval: 3000, // Refresh every 3 seconds for real-time feel
+    refetchInterval: 2000, // Refresh every 2 seconds for real-time feel
     refetchIntervalInBackground: true,
-    staleTime: 1000, // Данные устаревают через 1 секунду
-    gcTime: 5000, // В кэше только 5 секунд
+    staleTime: 0, // Данные всегда считаются устаревшими
+    gcTime: 0, // НЕ кэшировать вообще
     refetchOnMount: 'always', // Всегда обновлять при монтировании
     refetchOnWindowFocus: 'always', // Всегда обновлять при фокусе окна
   });
@@ -232,21 +232,18 @@ export default function AuctionDetail() {
 
   // Вычисляем текущую ставку из реальных данных - ВСЕГДА АКТУАЛЬНАЯ ЦЕНА
   const getCurrentBid = () => {
-    console.log('🔍 getCurrentBid() вызван:');
-    console.log('  currentPrice:', currentPrice);
-    console.log('  currentAuction?.currentBid:', currentAuction?.currentBid);
-    console.log('  sortedBids длина:', sortedBids?.length);
+    // Отладка убрана для производительности
     
     // ПРИОРИТЕТ: Свежие данные из currentAuction (обновляется каждые 0.5 секунды из базы) - ИСПРАВЛЕНО
     if (currentAuction?.currentBid) {
       const bid = parseFloat(currentAuction.currentBid);
-      console.log('  ✅ Используем currentAuction.currentBid (ПРИОРИТЕТ - ИСПРАВЛЕНО):', bid);
+      // Используем свежие данные из базы
       return bid;
     }
     
     // Затем проверяем состояние currentPrice (обновляется WebSocket мгновенно)
     if (currentPrice && currentPrice > 0) {
-      console.log('  ✅ Используем currentPrice (FALLBACK):', currentPrice);
+      // Используем WebSocket данные
       return currentPrice;
     }
     
@@ -254,7 +251,7 @@ export default function AuctionDetail() {
     if (Array.isArray(sortedBids) && sortedBids.length > 0) {
       const maxBid = Math.max(...sortedBids.map((bid: any) => parseFloat(bid.amount)));
       if (maxBid > 0) {
-        console.log('  ✅ Используем sortedBids maxBid:', maxBid);
+        // Используем данные из ставок
         return maxBid;
       }
     }
@@ -263,14 +260,14 @@ export default function AuctionDetail() {
     if (Array.isArray(bidsData) && bidsData.length > 0) {
       const maxBid = Math.max(...bidsData.map((bid: any) => parseFloat(bid.amount)));
       if (maxBid > 0) {
-        console.log('  ✅ Используем bidsData maxBid:', maxBid);
+        // Используем API данные ставок
         return maxBid;
       }
     }
     
     // Если ставок нет, используем стартовую цену
     const startingPrice = auction ? parseFloat(auction.startingPrice) : 0;
-    console.log('  ✅ Используем startingPrice:', startingPrice);
+    // Используем стартовую цену
     return startingPrice;
   };
 
