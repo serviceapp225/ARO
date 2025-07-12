@@ -1085,6 +1085,8 @@ export class SQLiteStorage implements IStorage {
   }
 
   async createBid(insertBid: InsertBid): Promise<Bid> {
+    console.log(`💰 SQLiteStorage.createBid: аукцион ${insertBid.listingId}, пользователь ${insertBid.bidderId}, сумма ${insertBid.amount}`);
+    
     const stmt = this.db.prepare(`
       INSERT INTO bids (listing_id, bidder_id, amount) 
       VALUES (?, ?, ?)
@@ -1096,17 +1098,23 @@ export class SQLiteStorage implements IStorage {
       parseFloat(insertBid.amount)
     );
     
+    console.log(`✅ SQLiteStorage.createBid: ставка создана с ID ${result.lastInsertRowid}`);
+    
     // Get the created bid
     const getBidStmt = this.db.prepare('SELECT * FROM bids WHERE id = ?');
     const row: any = getBidStmt.get(result.lastInsertRowid);
     
-    return {
+    const bid = {
       id: row.id,
       listingId: row.listing_id,
       bidderId: row.bidder_id,
       amount: row.amount.toString(),
       createdAt: new Date(row.created_at)
     };
+    
+    console.log(`📤 SQLiteStorage.createBid: возвращаем ставку`, bid);
+    
+    return bid;
   }
   // Favorites operations
   async getFavoritesByUser(userId: number): Promise<Favorite[]> {
