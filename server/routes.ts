@@ -744,6 +744,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const listingId = parseInt(req.params.id);
       console.log(`🎯 ПОЛУЧЕН POST запрос ставки для аукциона ${listingId}:`, req.body);
+      console.log(`🎯 НАЧАЛО ОБРАБОТКИ СТАВКИ для аукциона ${listingId} от пользователя ${req.body.bidderId}`);
       
       // Check if auction exists and is still active
       const listing = await storage.getListing(listingId);
