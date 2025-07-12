@@ -159,10 +159,10 @@ export default function AuctionDetail() {
   const { data: currentAuction, refetch: refetchAuction } = useQuery({
     queryKey: [`/api/listings/${id}`],
     enabled: !!id,
-    refetchInterval: 1000, // Refresh every 1 second for real-time updates
+    refetchInterval: 500, // Refresh every 0.5 seconds for ultra-fast updates
     refetchIntervalInBackground: true,
     staleTime: 0, // Данные всегда считаются устаревшими
-    gcTime: 1000, // Кэш только 1 секунда
+    gcTime: 0, // НЕ кэшировать вообще
     refetchOnMount: 'always', // Всегда обновлять при монтировании
     refetchOnWindowFocus: 'always', // Всегда обновлять при фокусе окна
   });
@@ -232,30 +232,46 @@ export default function AuctionDetail() {
 
   // Вычисляем текущую ставку из реальных данных - ВСЕГДА АКТУАЛЬНАЯ ЦЕНА
   const getCurrentBid = () => {
+    console.log('🔍 getCurrentBid() вызван:');
+    console.log('  currentPrice:', currentPrice);
+    console.log('  currentAuction?.currentBid:', currentAuction?.currentBid);
+    console.log('  sortedBids длина:', sortedBids?.length);
+    
     // Сначала проверяем состояние currentPrice (обновляется WebSocket мгновенно)
     if (currentPrice && currentPrice > 0) {
+      console.log('  ✅ Используем currentPrice:', currentPrice);
       return currentPrice;
+    }
+    
+    // Затем проверяем свежие данные из currentAuction (обновляется каждые 0.5 секунды)
+    if (currentAuction?.currentBid) {
+      const bid = parseFloat(currentAuction.currentBid);
+      console.log('  ✅ Используем currentAuction.currentBid:', bid);
+      return bid;
     }
     
     // Затем проверяем свежие данные из сортированных ставок (самые актуальные)
     if (Array.isArray(sortedBids) && sortedBids.length > 0) {
       const maxBid = Math.max(...sortedBids.map((bid: any) => parseFloat(bid.amount)));
-      if (maxBid > 0) return maxBid;
-    }
-    
-    // Затем проверяем свежие данные из currentAuction (обновляется каждую секунду)
-    if (currentAuction?.currentBid) {
-      return parseFloat(currentAuction.currentBid);
+      if (maxBid > 0) {
+        console.log('  ✅ Используем sortedBids maxBid:', maxBid);
+        return maxBid;
+      }
     }
     
     // Потом проверяем историю ставок из API
     if (Array.isArray(bidsData) && bidsData.length > 0) {
       const maxBid = Math.max(...bidsData.map((bid: any) => parseFloat(bid.amount)));
-      if (maxBid > 0) return maxBid;
+      if (maxBid > 0) {
+        console.log('  ✅ Используем bidsData maxBid:', maxBid);
+        return maxBid;
+      }
     }
     
     // Если ставок нет, используем стартовую цену
-    return auction ? parseFloat(auction.startingPrice) : 0;
+    const startingPrice = auction ? parseFloat(auction.startingPrice) : 0;
+    console.log('  ✅ Используем startingPrice:', startingPrice);
+    return startingPrice;
   };
 
   // Мемоизируем currentBid с зависимостью от currentPrice для автоматической перерисовки
@@ -280,9 +296,9 @@ export default function AuctionDetail() {
   useEffect(() => {
     if (id) {
       console.log('🔄 Принудительное обновление кэша для аукциона ID:', id);
-      // Очищаем кэш для конкретного аукциона
-      queryClient.invalidateQueries({ queryKey: [`/api/listings/${id}`] });
-      queryClient.invalidateQueries({ queryKey: [`/api/listings/${id}/bids`] });
+      // Принудительно очищаем ВЕСЬ кэш для аукциона
+      queryClient.removeQueries({ queryKey: [`/api/listings/${id}`] });
+      queryClient.removeQueries({ queryKey: [`/api/listings/${id}/bids`] });
       
       // Принудительно обновляем данные
       refetchAuction();
