@@ -294,11 +294,11 @@ export default function AuctionDetail() {
   useEffect(() => {
     if (id) {
       console.log('🔄 Принудительное обновление кэша для аукциона ID:', id);
-      // Принудительно очищаем ВЕСЬ кэш для аукциона
-      queryClient.removeQueries({ queryKey: [`/api/listings/${id}`] });
-      queryClient.removeQueries({ queryKey: [`/api/listings/${id}/bids`] });
+      // УБРАНО: Принудительная очистка кэша (вызывала откат цен)
+      // queryClient.removeQueries({ queryKey: [`/api/listings/${id}`] });
+      // queryClient.removeQueries({ queryKey: [`/api/listings/${id}/bids`] });
       
-      // Принудительно обновляем данные
+      // Только обновляем данные, не очищая кэш
       refetchAuction();
     }
   }, [id, queryClient, refetchAuction]);
@@ -405,19 +405,25 @@ export default function AuctionDetail() {
     // НО только если currentPrice == 0 (первичная загрузка)
     // Не перезаписываем currentPrice если он уже установлен через WebSocket
     if (currentPrice === 0) {
+      console.log('🔄 Инициализация currentPrice (currentPrice === 0)');
       if (currentAuction?.currentBid) {
         const auctionCurrentBid = parseFloat(currentAuction.currentBid);
+        console.log(`🔄 Устанавливаем currentPrice из currentAuction: ${auctionCurrentBid}`);
         setCurrentPrice(auctionCurrentBid);
         setBidAmount((auctionCurrentBid + 1000).toString());
       } else if (Array.isArray(bidsData) && bidsData.length > 0) {
         const maxBid = Math.max(...bidsData.map((bid: any) => parseFloat(bid.amount)));
+        console.log(`🔄 Устанавливаем currentPrice из bidsData: ${maxBid}`);
         setCurrentPrice(maxBid);
         setBidAmount((maxBid + 1000).toString());
       } else if (auction?.startingPrice) {
         const startingPrice = parseFloat(auction.startingPrice);
+        console.log(`🔄 Устанавливаем currentPrice из startingPrice: ${startingPrice}`);
         setCurrentPrice(startingPrice);
         setBidAmount((startingPrice + 1000).toString());
       }
+    } else {
+      console.log(`🔄 currentPrice уже установлен: ${currentPrice}, не перезаписываем`);
     }
   }, [currentAuction, bidsData, auction, currentPrice]);
 
