@@ -237,17 +237,17 @@ export default function AuctionDetail() {
     console.log('  currentAuction?.currentBid:', currentAuction?.currentBid);
     console.log('  sortedBids длина:', sortedBids?.length);
     
-    // Сначала проверяем состояние currentPrice (обновляется WebSocket мгновенно)
-    if (currentPrice && currentPrice > 0) {
-      console.log('  ✅ Используем currentPrice:', currentPrice);
-      return currentPrice;
-    }
-    
-    // Затем проверяем свежие данные из currentAuction (обновляется каждые 0.5 секунды)
+    // ПРИОРИТЕТ: Свежие данные из currentAuction (обновляется каждые 0.5 секунды из базы) - ИСПРАВЛЕНО
     if (currentAuction?.currentBid) {
       const bid = parseFloat(currentAuction.currentBid);
-      console.log('  ✅ Используем currentAuction.currentBid:', bid);
+      console.log('  ✅ Используем currentAuction.currentBid (ПРИОРИТЕТ - ИСПРАВЛЕНО):', bid);
       return bid;
+    }
+    
+    // Затем проверяем состояние currentPrice (обновляется WebSocket мгновенно)
+    if (currentPrice && currentPrice > 0) {
+      console.log('  ✅ Используем currentPrice (FALLBACK):', currentPrice);
+      return currentPrice;
     }
     
     // Затем проверяем свежие данные из сортированных ставок (самые актуальные)
@@ -274,8 +274,8 @@ export default function AuctionDetail() {
     return startingPrice;
   };
 
-  // Мемоизируем currentBid с зависимостью от currentPrice для автоматической перерисовки
-  const currentBid = useMemo(() => getCurrentBid(), [currentPrice, sortedBids, currentAuction, bidsData, auction]);
+  // Мемоизируем currentBid с ПРИОРИТЕТОМ для currentAuction (свежие данные из базы)
+  const currentBid = useMemo(() => getCurrentBid(), [currentAuction, currentPrice, sortedBids, bidsData, auction]);
   
   const condition = auction ? translateCondition(auction.condition) : "Неизвестно";
 
