@@ -92,6 +92,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     if (req.method === 'POST') {
       console.log(`🔍 POST запрос: ${req.path}`);
       console.log(`📦 Body:`, req.body);
+      if (req.path.includes('/bids')) {
+        console.log(`🚨 КРИТИЧНО: Это запрос ставки! Путь: ${req.path}`);
+      }
     }
     next();
   });
