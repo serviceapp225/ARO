@@ -178,10 +178,10 @@ export default function AuctionDetail() {
   // Mutation for placing bids (moved to later in the file)
 
   // Fetch real bidding history with auto-refresh
-  const { data: bidsData } = useQuery({
+  const { data: bidsData, refetch: refetchBids } = useQuery({
     queryKey: [`/api/listings/${id}/bids`],
     enabled: !!id,
-    refetchInterval: 2000, // Refresh every 2 seconds for real-time feel
+    refetchInterval: 1000, // Refresh every 1 second for real-time feel
     refetchIntervalInBackground: true,
     staleTime: 0, // Данные всегда считаются устаревшими
     gcTime: 0, // НЕ кэшировать вообще
@@ -414,6 +414,12 @@ export default function AuctionDetail() {
           }
           return oldBids;
         });
+        
+        // ПРИНУДИТЕЛЬНО ОБНОВЛЯЕМ ИСТОРИЮ СТАВОК для мгновенного отображения
+        queryClient.invalidateQueries({ queryKey: [`/api/listings/${id}/bids`] });
+        
+        // МГНОВЕННОЕ ОБНОВЛЕНИЕ - принудительно загружаем свежие данные ставок
+        refetchBids();
         
         // Показываем уведомление о новой ставке
         toast({
