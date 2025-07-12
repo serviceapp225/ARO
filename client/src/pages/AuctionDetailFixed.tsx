@@ -232,19 +232,15 @@ export default function AuctionDetail() {
 
   // Вычисляем текущую ставку из реальных данных - ВСЕГДА АКТУАЛЬНАЯ ЦЕНА
   const getCurrentBid = () => {
-    // Отладка убрана для производительности
-    
-    // ПРИОРИТЕТ: Свежие данные из currentAuction (обновляется каждые 0.5 секунды из базы) - ИСПРАВЛЕНО
-    if (currentAuction?.currentBid) {
-      const bid = parseFloat(currentAuction.currentBid);
-      // Используем свежие данные из базы
-      return bid;
+    // ПРИОРИТЕТ: WebSocket данные (мгновенные обновления)
+    if (currentPrice && currentPrice > 0) {
+      return currentPrice;
     }
     
-    // Затем проверяем состояние currentPrice (обновляется WebSocket мгновенно)
-    if (currentPrice && currentPrice > 0) {
-      // Используем WebSocket данные
-      return currentPrice;
+    // Затем проверяем свежие данные из currentAuction (база данных)
+    if (currentAuction?.currentBid) {
+      const bid = parseFloat(currentAuction.currentBid);
+      return bid;
     }
     
     // Затем проверяем свежие данные из сортированных ставок (самые актуальные)
