@@ -817,7 +817,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
+      console.log(`🚀 СОЗДАЕМ СТАВКУ: аукцион ${listingId}, пользователь ${validatedData.bidderId}, сумма ${validatedData.amount}`);
       const bid = await storage.createBid(validatedData);
+      console.log(`✅ СТАВКА СОЗДАНА: ID ${bid.id}, сумма ${bid.amount}`);
       
       // КРИТИЧЕСКИ ВАЖНО: Обновляем current_bid в базе данных НЕМЕДЛЕННО
       console.log(`🔄 НАЧИНАЕМ обновление current_bid для аукциона ${listingId} на ${validatedData.amount}`);
