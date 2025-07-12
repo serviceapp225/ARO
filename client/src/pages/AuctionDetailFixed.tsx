@@ -331,6 +331,7 @@ export default function AuctionDetail() {
         // Мгновенно и плавно обновляем данные аукциона в кэше для характеристик
         queryClient.setQueryData([`/api/listings/${id}`], (oldData: any) => {
           if (oldData) {
+            console.log(`🔄 Обновляем кэш аукциона ${id}: ${oldData.currentBid} → ${newAmount}`);
             return {
               ...oldData,
               currentBid: newAmount.toString(),
@@ -340,8 +341,8 @@ export default function AuctionDetail() {
           return oldData;
         });
         
-        // Принудительно обновляем запрос деталей аукциона для характеристик
-        queryClient.invalidateQueries({ queryKey: [`/api/listings/${id}`] });
+        // УБИРАЕМ invalidateQueries - он перезаписывает WebSocket данные старыми данными из базы
+        // queryClient.invalidateQueries({ queryKey: [`/api/listings/${id}`] });
         
         // Плавно обновляем данные ставок без полной перерисовки
         queryClient.setQueryData([`/api/listings/${id}/bids`], (oldBids: any) => {
