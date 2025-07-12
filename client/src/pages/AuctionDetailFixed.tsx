@@ -234,12 +234,14 @@ export default function AuctionDetail() {
   const getCurrentBid = () => {
     // ПРИОРИТЕТ: WebSocket данные (мгновенные обновления)
     if (currentPrice && currentPrice > 0) {
+      console.log(`💰 getCurrentBid: используем WebSocket currentPrice = ${currentPrice}`);
       return currentPrice;
     }
     
     // Затем проверяем свежие данные из currentAuction (база данных)
     if (currentAuction?.currentBid) {
       const bid = parseFloat(currentAuction.currentBid);
+      console.log(`💰 getCurrentBid: используем currentAuction.currentBid = ${bid}`);
       return bid;
     }
     
@@ -248,6 +250,7 @@ export default function AuctionDetail() {
       const maxBid = Math.max(...sortedBids.map((bid: any) => parseFloat(bid.amount)));
       if (maxBid > 0) {
         // Используем данные из ставок
+        console.log(`💰 getCurrentBid: используем sortedBids max = ${maxBid}`);
         return maxBid;
       }
     }
@@ -257,6 +260,7 @@ export default function AuctionDetail() {
       const maxBid = Math.max(...bidsData.map((bid: any) => parseFloat(bid.amount)));
       if (maxBid > 0) {
         // Используем API данные ставок
+        console.log(`💰 getCurrentBid: используем bidsData max = ${maxBid}`);
         return maxBid;
       }
     }
@@ -264,6 +268,7 @@ export default function AuctionDetail() {
     // Если ставок нет, используем стартовую цену
     const startingPrice = auction ? parseFloat(auction.startingPrice) : 0;
     // Используем стартовую цену
+    console.log(`💰 getCurrentBid: используем startingPrice = ${startingPrice}`);
     return startingPrice;
   };
 
