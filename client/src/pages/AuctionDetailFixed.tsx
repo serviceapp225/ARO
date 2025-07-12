@@ -551,7 +551,11 @@ export default function AuctionDetail() {
   };
 
   const handlePlaceBid = async () => {
+    console.log('🎯 handlePlaceBid нажата кнопка "Подтвердить ставку"!');
+    console.log('💰 Введенная сумма:', bidAmount);
+    
     if (!currentUser) {
+      console.log('❌ Пользователь не авторизован');
       toast({
         title: "Войдите в систему",
         description: "Для участия в аукционе необходимо войти в систему",
@@ -566,6 +570,7 @@ export default function AuctionDetail() {
     // Check if user is active before allowing bid - use server data if available
     const isUserActive = serverUser?.isActive ?? (currentUser as any)?.isActive ?? false;
     if (!isUserActive) {
+      console.log('❌ Пользователь не активирован');
       setShowActivationDialog(true);
       return;
     }
@@ -575,6 +580,7 @@ export default function AuctionDetail() {
                           timeLeftData.minutes === 0 && timeLeftData.seconds === 0;
     
     if (isAuctionEnded) {
+      console.log('❌ Аукцион завершен');
       toast({
         title: "Аукцион завершен",
         description: "К сожалению, ваша ставка не была высокой. Аукцион уже завершен.",
@@ -588,6 +594,7 @@ export default function AuctionDetail() {
     const currentBidValue = getCurrentBid();
     
     if (bidValue <= currentBidValue) {
+      console.log('❌ Ставка слишком низкая:', bidValue, '<=', currentBidValue);
       toast({
         title: "Ставка слишком низкая",
         description: `Минимальная ставка: ${(currentBidValue + 100).toLocaleString()} Сомони`,
@@ -597,17 +604,22 @@ export default function AuctionDetail() {
       return;
     }
     
+    console.log('✅ Все проверки пройдены, показываем диалог подтверждения');
     // Показываем диалог подтверждения
     setPendingBidAmount(bidAmount);
     setShowBidConfirmation(true);
   };
 
   const handleConfirmBid = () => {
+    console.log('🚀 handleConfirmBid вызван!');
     setShowBidConfirmation(false);
     
     const userId = (currentUser as any)?.userId || (currentUser as any)?.id;
+    console.log('👤 User ID для ставки:', userId);
+    console.log('💰 Сумма ставки:', pendingBidAmount);
     
     // Используем bidMutation для создания ставки
+    console.log('📤 Вызываем bidMutation.mutate...');
     bidMutation.mutate({
       bidderId: userId,
       amount: pendingBidAmount
