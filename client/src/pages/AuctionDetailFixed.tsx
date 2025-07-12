@@ -43,7 +43,7 @@ export default function AuctionDetail() {
   const [mouseEnd, setMouseEnd] = useState<number | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
-  const [currentPrice, setCurrentPrice] = useState(0);
+  // Убираем currentPrice - теперь всё через историю ставок
   const [showBidInput, setShowBidInput] = useState(false);
   const [isPlacingBid, setIsPlacingBid] = useState(false);
   const [imageLoadError, setImageLoadError] = useState(false);
@@ -242,49 +242,30 @@ export default function AuctionDetail() {
   const sortedBids = Array.isArray(bidsData) ? bidsData : [];
 
   // Вычисляем текущую ставку из реальных данных - ВСЕГДА АКТУАЛЬНАЯ ЦЕНА
+  // ЕДИНЫЙ ИСТОЧНИК ПРАВДЫ - только история ставок
   const getCurrentBid = () => {
-    // ПРИОРИТЕТ: WebSocket данные (мгновенные обновления)
-    if (currentPrice && currentPrice > 0) {
-      console.log(`💰 getCurrentBid: используем WebSocket currentPrice = ${currentPrice}`);
-      return currentPrice;
+    // 1. Главный источник: свежая история ставок из API
+    if (Array.isArray(bidsData) && bidsData.length > 0) {
+      const latestBid = parseFloat(bidsData[0].amount);
+      console.log(`💰 getCurrentBid: используем свежую историю ставок = ${latestBid}`);
+      return latestBid;
     }
     
-    // Затем проверяем свежие данные из currentAuction (база данных)
+    // 2. Резервный источник: данные аукциона из базы
     if (currentAuction?.currentBid) {
       const bid = parseFloat(currentAuction.currentBid);
       console.log(`💰 getCurrentBid: используем currentAuction.currentBid = ${bid}`);
       return bid;
     }
     
-    // Затем проверяем свежие данные из сортированных ставок (самые актуальные)
-    if (Array.isArray(sortedBids) && sortedBids.length > 0) {
-      const maxBid = Math.max(...sortedBids.map((bid: any) => parseFloat(bid.amount)));
-      if (maxBid > 0) {
-        // Используем данные из ставок
-        console.log(`💰 getCurrentBid: используем sortedBids max = ${maxBid}`);
-        return maxBid;
-      }
-    }
-    
-    // Потом проверяем историю ставок из API
-    if (Array.isArray(bidsData) && bidsData.length > 0) {
-      const maxBid = Math.max(...bidsData.map((bid: any) => parseFloat(bid.amount)));
-      if (maxBid > 0) {
-        // Используем API данные ставок
-        console.log(`💰 getCurrentBid: используем bidsData max = ${maxBid}`);
-        return maxBid;
-      }
-    }
-    
-    // Если ставок нет, используем стартовую цену
-    const startingPrice = auction ? parseFloat(auction.startingPrice) : 0;
-    // Используем стартовую цену
-    console.log(`💰 getCurrentBid: используем startingPrice = ${startingPrice}`);
+    // 3. Если ставок нет: стартовая цена
+    const startingPrice = currentAuction ? parseFloat(currentAuction.startingPrice) : 0;
+    console.log(`💰 getCurrentBid: используем стартовую цену = ${startingPrice}`);
     return startingPrice;
   };
 
-  // Мемоизируем currentBid с ПРИОРИТЕТОМ для currentAuction (свежие данные из базы)
-  const currentBid = useMemo(() => getCurrentBid(), [currentAuction, currentPrice, sortedBids, bidsData, auction]);
+  // Мемоизируем currentBid - единый источник правды через историю ставок
+  const currentBid = useMemo(() => getCurrentBid(), [bidsData, currentAuction]);
   
   const condition = auction ? translateCondition(auction.condition) : "Неизвестно";
 
@@ -319,7 +300,6 @@ export default function AuctionDetail() {
       
       // Trigger celebration effects
       setShowConfetti(true);
-      setCurrentPrice(parseFloat(variables.amount));
       
       // Automatically add to favorites when placing a bid
       if (!isFavorite(id!)) {
@@ -406,8 +386,7 @@ export default function AuctionDetail() {
       // Немедленно обновляем состояние без перерисовки
       if (lastBidUpdate.data?.bid?.amount) {
         const newAmount = parseFloat(lastBidUpdate.data.bid.amount);
-        console.log('💰 Обновляю цену с', currentPrice, 'на', newAmount);
-        setCurrentPrice(newAmount);
+        console.log('💰 Обновляем минимальную ставку на', newAmount + 1000);
         setBidAmount((newAmount + 1000).toString());
         
         // Мгновенно и плавно обновляем данные аукциона в кэше для характеристик
@@ -498,44 +477,13 @@ export default function AuctionDetail() {
     return () => clearInterval(interval);
   }, [id, auction, refetchAuction]);
 
-  // Автоматическая синхронизация currentPrice с данными из базы
-  useEffect(() => {
-    if (auction?.currentBid) {
-      const serverCurrentBid = parseFloat(auction.currentBid);
-      if (currentPrice !== serverCurrentBid && serverCurrentBid > 0) {
-        console.log(`🔄 Синхронизация: currentPrice ${currentPrice} → ${serverCurrentBid} (из базы данных)`);
-        setCurrentPrice(serverCurrentBid);
-        setBidAmount((serverCurrentBid + 1000).toString());
-      }
-    }
-  }, [auction?.currentBid, currentPrice]);
+  // Убираем синхронизацию currentPrice - теперь всё через getCurrentBid()
 
+  // Устанавливаем минимальную ставку на основе текущей цены
   useEffect(() => {
-    // Инициализируем currentPrice при загрузке данных аукциона
-    // НО только если currentPrice == 0 (первичная загрузка)
-    // Не перезаписываем currentPrice если он уже установлен через WebSocket
-    if (currentPrice === 0) {
-      console.log('🔄 Инициализация currentPrice (currentPrice === 0)');
-      if (currentAuction?.currentBid) {
-        const auctionCurrentBid = parseFloat(currentAuction.currentBid);
-        console.log(`🔄 Устанавливаем currentPrice из currentAuction: ${auctionCurrentBid}`);
-        setCurrentPrice(auctionCurrentBid);
-        setBidAmount((auctionCurrentBid + 1000).toString());
-      } else if (Array.isArray(bidsData) && bidsData.length > 0) {
-        const maxBid = Math.max(...bidsData.map((bid: any) => parseFloat(bid.amount)));
-        console.log(`🔄 Устанавливаем currentPrice из bidsData: ${maxBid}`);
-        setCurrentPrice(maxBid);
-        setBidAmount((maxBid + 1000).toString());
-      } else if (auction?.startingPrice) {
-        const startingPrice = parseFloat(auction.startingPrice);
-        console.log(`🔄 Устанавливаем currentPrice из startingPrice: ${startingPrice}`);
-        setCurrentPrice(startingPrice);
-        setBidAmount((startingPrice + 1000).toString());
-      }
-    } else {
-      console.log(`🔄 currentPrice уже установлен: ${currentPrice}, не перезаписываем`);
-    }
-  }, [currentAuction, bidsData, auction, currentPrice]);
+    const currentBidAmount = getCurrentBid();
+    setBidAmount((currentBidAmount + 1000).toString());
+  }, [bidsData, currentAuction]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
