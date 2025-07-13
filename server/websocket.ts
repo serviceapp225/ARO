@@ -338,7 +338,7 @@ class AuctionWebSocketManager {
           listingId: listingId,
           listingTitle: carTitle,
           newAmount: amount,
-          message: `🔔 Ваша ставка перебита\n${carTitle}\nСделайте новую ставку выше ${formattedAmount} сомони!`
+          message: `🔔 Ваша ставка перебита ${carTitle} Сделайте новую ставку выше ${formattedAmount} сомони!`
         };
         
         // Отправляем уведомление через WebSocket всем подключенным клиентам этого пользователя
@@ -350,7 +350,7 @@ class AuctionWebSocketManager {
             userId: participantId,
             type: 'bid_outbid',
             title: "🔔 Ваша ставка перебита",
-            message: `${carTitle}\nСделайте новую ставку выше ${formattedAmount} сомони!`,
+            message: `${carTitle} Сделайте новую ставку выше ${formattedAmount} сомони!`,
             isRead: false,
             listingId: listingId
           });
