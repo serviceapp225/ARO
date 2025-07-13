@@ -22,24 +22,12 @@ export default function AuctionDetail() {
   const [, setLocation] = useLocation();
   const { isFavorite, addToFavorites, removeFromFavorites } = useFavorites();
   const { auctions } = useAuctions();
-  const { user: currentUser } = useAuth();
+  const { user } = useAuth();
   
   // Fetch current user activation status from database
   const { data: serverUser } = useQuery<User>({
-    queryKey: [`/api/users/${(() => {
-      try {
-        return (currentUser as any)?.userId;
-      } catch (error) {
-        return null;
-      }
-    })()}`],
-    enabled: !!currentUser && !!(() => {
-      try {
-        return (currentUser as any)?.userId;
-      } catch (error) {
-        return null;
-      }
-    })(),
+    queryKey: [`/api/users/${(user as any)?.userId}`],
+    enabled: !!user && !!(user as any)?.userId,
   });
   
   const [bidAmount, setBidAmount] = useState("");
@@ -281,13 +269,7 @@ export default function AuctionDetail() {
 
     // Find highest bid (first in sorted array)
     const highestBid = bidsArray[0];
-    let currentUserId;
-    try {
-      currentUserId = (currentUser as any)?.userId;
-    } catch (error) {
-      // Подавляем ошибку "user is not defined"
-      currentUserId = null;
-    }
+    const currentUserId = (user as any)?.userId;
     const isWinner = currentUserId && highestBid.bidderId === currentUserId;
 
     if (isWinner) {
@@ -319,7 +301,7 @@ export default function AuctionDetail() {
   const handleBidSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!currentUser) {
+    if (!user) {
       toast({
         title: "Войдите в систему",
         description: "Для участия в аукционе необходимо войти в систему",
@@ -331,7 +313,7 @@ export default function AuctionDetail() {
     }
     
     // Check if user is active before allowing bid submission - use server data if available
-    const isUserActive = serverUser?.isActive ?? (currentUser as any)?.isActive ?? false;
+    const isUserActive = serverUser?.isActive ?? (user as any)?.isActive ?? false;
     if (!isUserActive) {
       setShowActivationDialog(true);
       return;
@@ -342,13 +324,7 @@ export default function AuctionDetail() {
     // Убираем клиентскую валидацию - пусть сервер проверяет ставки
 
     // Get current user ID from auth context
-    let userId;
-    try {
-      userId = (currentUser as any)?.userId;
-    } catch (error) {
-      // Подавляем ошибку "user is not defined"
-      userId = null;
-    }
+    const userId = (user as any)?.userId;
     if (!userId) {
       toast({
         title: "Ошибка",
