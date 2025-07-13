@@ -210,8 +210,8 @@ export function useAuctionWebSocket(): AuctionWebSocketHook {
           if (notificationUserId === user?.id) {
             console.log('🔔 Уведомление для текущего пользователя, показываем:', notification);
             
-            // Обновляем кэш уведомлений
-            queryClient.invalidateQueries({ queryKey: ['/api/notifications'] });
+            // Обновляем кэш уведомлений для колокольчика
+            queryClient.invalidateQueries({ queryKey: [`/api/notifications/${user.id}`] });
             
             // Показываем браузерное уведомление если разрешено
             if (Notification.permission === 'granted') {
@@ -241,7 +241,9 @@ export function useAuctionWebSocket(): AuctionWebSocketHook {
         });
         
         // Обновляем кэш уведомлений
-        queryClient.invalidateQueries({ queryKey: ['/api/notifications'] });
+        if (user?.id) {
+          queryClient.invalidateQueries({ queryKey: [`/api/notifications/${user.id}`] });
+        }
         
         // Показываем браузерное уведомление если разрешено
         if (Notification.permission === 'granted') {
