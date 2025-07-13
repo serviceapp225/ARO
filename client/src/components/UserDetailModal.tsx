@@ -61,7 +61,7 @@ export function UserDetailModal({ userId, isOpen, onClose }: UserDetailModalProp
     if (user) {
       setFullName(user.fullName || '');
       setEmail(user.email || '');
-      setPhoneNumber(user.phoneNumber || '');
+      setPhoneNumber(user?.phoneNumber || '');
       setIsActive(user.isActive || false);
     }
   }, [user]);

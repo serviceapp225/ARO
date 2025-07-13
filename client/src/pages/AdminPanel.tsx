@@ -795,9 +795,9 @@ function UsersManagement() {
                 <div className="flex-1">
                   <div className="flex items-center gap-3">
                     <div>
-                      <p className="font-medium">{user.fullName || user.phoneNumber}</p>
+                      <p className="font-medium">{user.fullName || user?.phoneNumber}</p>
                       <p className="text-sm text-gray-600 dark:text-gray-300">
-                        {user.phoneNumber} • {user.role}
+                        {user?.phoneNumber} • {user.role}
                       </p>
                       {(user as any).isInvited && (
                         <p className="text-xs text-green-600">
@@ -2812,7 +2812,7 @@ function ReferralsSection() {
   // Фильтруем пользователей-рефералов
   const referredUsers = users.filter(user => (user as any).isInvited);
   const referrers = users.filter(user => 
-    referredUsers.some(ref => (ref as any).invitedBy === user.phoneNumber)
+    referredUsers.some(ref => (ref as any).invitedBy === user?.phoneNumber)
   );
 
   // Статистика по рефералам
@@ -2879,7 +2879,7 @@ function ReferralsSection() {
                   <div className="flex-1">
                     <div className="flex items-center gap-3">
                       <div>
-                        <p className="font-medium">{user.fullName || user.phoneNumber}</p>
+                        <p className="font-medium">{user.fullName || user?.phoneNumber}</p>
                         <p className="text-sm text-gray-600">
                           Пригласил: {(user as any).invitedBy}
                         </p>

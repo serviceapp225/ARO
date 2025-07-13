@@ -36,7 +36,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } else if (user === undefined) {
       console.log('🔍 AuthContext: user стал undefined');
     } else {
-      console.log('🔍 AuthContext: user обновлен:', { phoneNumber: user.phoneNumber, userId: user.userId });
+      console.log('🔍 AuthContext: user обновлен:', { phoneNumber: user?.phoneNumber, userId: user.userId });
     }
   }, [user]);
 
@@ -195,7 +195,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         
         // Обновляем кэш
         if (user?.phoneNumber) {
-          preCacheUserData(user.phoneNumber, {
+          preCacheUserData(user?.phoneNumber || '', {
             isActive: userData.isActive,
             userId: userData.id
           });

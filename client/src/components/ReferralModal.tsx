@@ -18,7 +18,7 @@ export function ReferralModal({ isOpen, onClose }: ReferralModalProps) {
   const handleCopyPhone = async () => {
     if (user?.phoneNumber) {
       try {
-        await navigator.clipboard.writeText(user.phoneNumber);
+        await navigator.clipboard.writeText(user?.phoneNumber || '');
         setCopied(true);
         toast({
           title: "Скопировано!",
