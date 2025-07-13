@@ -28,7 +28,7 @@ export default function UserData() {
 
   // Function to get current user ID from auth context
   const getCurrentUserId = () => {
-    return (user as any)?.userId || null;
+    return user?.userId || null;
   };
 
   // Mutation to update user profile in database

@@ -168,7 +168,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const refreshUserStatus = async () => {
-    if (!user || !user.userId) return;
+    if (!user?.userId) return;
     
     try {
       const response = await fetch(`/api/users/${user.userId}`);
@@ -183,10 +183,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(updatedUser);
         
         // Обновляем кэш
-        preCacheUserData(user.phoneNumber, {
-          isActive: userData.isActive,
-          userId: userData.id
-        });
+        if (user?.phoneNumber) {
+          preCacheUserData(user.phoneNumber, {
+            isActive: userData.isActive,
+            userId: userData.id
+          });
+        }
         
         // Обновляем localStorage
         localStorage.setItem('demo-user', JSON.stringify(updatedUser));
