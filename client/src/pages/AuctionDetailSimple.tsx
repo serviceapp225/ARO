@@ -180,8 +180,7 @@ export default function AuctionDetail() {
       // Reset bid amount
       setBidAmount("");
       
-      // Hide celebration after 2 seconds
-      setTimeout(() => setShowConfetti(false), 2000);
+      // Confetti will auto-hide via ConfettiEffect component
     },
     onError: (error: any) => {
       // Handle specific error types
@@ -238,6 +237,18 @@ export default function AuctionDetail() {
     }
   }, [auction, auctionEndTime]);
 
+  // Автоматическое скрытие конфетти через 2 секунды
+  useEffect(() => {
+    if (showConfetti) {
+      const timer = setTimeout(() => {
+        setShowConfetti(false);
+        console.log('🎊 Конфетти автоматически скрыто через 2 секунды');
+      }, 2000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [showConfetti]);
+
   // Handle auction end callback
   const handleAuctionEnd = useCallback(() => {
     // Проверяем, было ли уже показано уведомление о завершении
@@ -269,9 +280,6 @@ export default function AuctionDetail() {
         duration: 8000,
       });
       setShowConfetti(true);
-      
-      // Hide confetti after 5 seconds for winner
-      setTimeout(() => setShowConfetti(false), 5000);
     } else {
       // User didn't win, remove from favorites
       if (isFavorite(id!)) {

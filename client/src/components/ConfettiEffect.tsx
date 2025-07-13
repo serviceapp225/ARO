@@ -59,7 +59,7 @@ export function ConfettiEffect({ isActive, onComplete }: ConfettiEffectProps) {
       clearInterval(interval);
       setParticles([]);
       onComplete?.();
-    }, 3000);
+    }, 2000);
 
     return () => {
       clearInterval(interval);

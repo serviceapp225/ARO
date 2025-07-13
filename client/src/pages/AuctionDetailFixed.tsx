@@ -374,8 +374,7 @@ export default function AuctionDetail() {
       queryClient.invalidateQueries({ queryKey: [`/api/listings/${id}/bids`] });
       queryClient.invalidateQueries({ queryKey: ['/api/listings'] });
       
-      // Hide celebration after 2 seconds
-      setTimeout(() => setShowConfetti(false), 2000);
+      // Confetti will auto-hide via ConfettiEffect component
     },
     onError: (error: any) => {
       console.log("❌ Ошибка при создании ставки:", error);
@@ -421,6 +420,18 @@ export default function AuctionDetail() {
       refetchAuction();
     }
   }, [id, queryClient, refetchAuction]);
+
+  // Автоматическое скрытие конфетти через 2 секунды
+  useEffect(() => {
+    if (showConfetti) {
+      const timer = setTimeout(() => {
+        setShowConfetti(false);
+        console.log('🎊 Конфетти автоматически скрыто через 2 секунды');
+      }, 2000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [showConfetti]);
 
   // WebSocket подключение к аукциону - только при смене ID аукциона
   useEffect(() => {
