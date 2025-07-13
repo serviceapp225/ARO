@@ -249,7 +249,7 @@ export function useAuctionWebSocket(): AuctionWebSocketHook {
             console.log('🔔 Уведомление для текущего пользователя, показываем:', notification);
             
             // Обновляем кэш уведомлений для колокольчика
-            queryClient.invalidateQueries({ queryKey: [`/api/notifications/${user.id}`] });
+            queryClient.invalidateQueries({ queryKey: [`/api/notifications/${currentUserId}`] });
             
             // Показываем браузерное уведомление если разрешено
             if (Notification.permission === 'granted') {
