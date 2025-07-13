@@ -1353,21 +1353,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/notifications/:id", async (req, res) => {
-    try {
-      const notificationId = parseInt(req.params.id);
-      const success = await storage.deleteNotification(notificationId);
-      
-      if (!success) {
-        return res.status(404).json({ error: "Notification not found" });
-      }
-      
-      res.json({ success: true });
-    } catch (error) {
-      console.error("Error deleting notification:", error);
-      res.status(500).json({ error: "Failed to delete notification" });
-    }
-  });
+
 
   app.patch("/api/notifications/:id/read", async (req, res) => {
     try {

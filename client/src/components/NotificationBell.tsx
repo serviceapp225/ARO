@@ -117,7 +117,9 @@ export function NotificationBell({ userId }: NotificationBellProps) {
       const response = await fetch(`/api/notifications/${notificationId}`, {
         method: 'DELETE',
       });
-      if (!response.ok && response.status !== 404) throw new Error('Failed to delete notification');
+      if (!response.ok && response.status !== 404) {
+        throw new Error(`Failed to delete notification: ${response.status}`);
+      }
       return notificationId;
     },
     onMutate: async (notificationId: number) => {
