@@ -78,6 +78,19 @@ export function useAuctionWebSocket(): AuctionWebSocketHook {
           wsRef.current.send(JSON.stringify(identifyMessage));
         } else {
           console.log('⚠️ Пользователь не определен при WebSocket подключении, пропускаем идентификацию');
+          console.log('🔄 Попытка повторной идентификации через 2 секунды...');
+          
+          // Повторная попытка идентификации через 2 секунды
+          setTimeout(() => {
+            if (wsRef.current?.readyState === WebSocket.OPEN && user?.id) {
+              const identifyMessage = {
+                type: 'identify_user',
+                userId: user.id
+              };
+              console.log('👤 Повторная идентификация пользователя:', identifyMessage);
+              wsRef.current.send(JSON.stringify(identifyMessage));
+            }
+          }, 2000);
         }
         
         // Повторно подключаемся к аукциону если был активен
@@ -123,6 +136,18 @@ export function useAuctionWebSocket(): AuctionWebSocketHook {
       setConnectionQuality('disconnected');
     }
   }, [user]);
+  
+  // Переподключение при изменении пользователя
+  useEffect(() => {
+    if (user?.id && wsRef.current?.readyState === WebSocket.OPEN) {
+      console.log('🔄 Пользователь загружен, отправляем идентификацию:', user.id);
+      const identifyMessage = {
+        type: 'identify_user',
+        userId: user.id
+      };
+      wsRef.current.send(JSON.stringify(identifyMessage));
+    }
+  }, [user?.id]);
   
   const handleWebSocketMessage = (message: WebSocketMessage) => {
     switch (message.type) {
