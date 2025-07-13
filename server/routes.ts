@@ -888,10 +888,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         for (const participantId of uniqueBidders) {
           try {
             console.log(`📝 Создаем уведомление для пользователя ${participantId}...`);
+            const carTitle = `${listing.make} ${listing.model} ${listing.year}`;
+            const formattedAmount = parseInt(validatedData.amount).toLocaleString('ru-RU');
+            
             const notification = await storage.createNotification({
               userId: participantId,
-              title: "Новая ставка в аукционе!",
-              message: `ваша ставка перебита`,
+              title: "Ваша ставка перебита",
+              message: `${carTitle}\nСделайте новую ставку выше ${formattedAmount} сомони!`,
               type: "bid_outbid",
               listingId: listingId,
               isRead: false

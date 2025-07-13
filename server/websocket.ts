@@ -330,12 +330,15 @@ class AuctionWebSocketManager {
       
       // Отправляем уведомления всем перебитым участникам через WebSocket
       for (const participantId of uniqueBidders) {
+        const carTitle = `${listing.make} ${listing.model} ${listing.year}`;
+        const formattedAmount = parseInt(amount).toLocaleString('ru-RU');
+        
         const notification = {
           type: 'bid_outbid',
           listingId: listingId,
-          listingTitle: `${listing.make} ${listing.model}`,
+          listingTitle: carTitle,
           newAmount: amount,
-          message: `ваша ставка перебита`
+          message: `Ваша ставка перебита\n${carTitle}\nСделайте новую ставку выше ${formattedAmount} сомони!`
         };
         
         // Отправляем уведомление через WebSocket всем подключенным клиентам этого пользователя
@@ -346,7 +349,7 @@ class AuctionWebSocketManager {
           await storage.createNotification({
             userId: participantId,
             type: 'bid_outbid',
-            message: `ваша ставка перебита`,
+            message: `Ваша ставка перебита\n${carTitle}\nСделайте новую ставку выше ${formattedAmount} сомони!`,
             isRead: false,
             listingId: listingId
           });
