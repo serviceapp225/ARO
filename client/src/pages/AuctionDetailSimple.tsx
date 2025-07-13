@@ -128,9 +128,37 @@ export default function AuctionDetail() {
       }
     },
     onSuccess: (data, variables) => {
-      // Trigger celebration effects
+      // Trigger celebration effects with automatic cleanup
       setShowConfetti(true);
       setCurrentPrice(parseFloat(variables.amount));
+      
+      // Воспроизведение звука торжества
+      try {
+        const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+        const duration = 0.8;
+        const sampleRate = audioContext.sampleRate;
+        const buffer = audioContext.createBuffer(1, duration * sampleRate, sampleRate);
+        const data = buffer.getChannelData(0);
+        
+        // Создаем приятный звук успеха
+        for (let i = 0; i < data.length; i++) {
+          const t = i / sampleRate;
+          const envelope = Math.exp(-t * 4) * (1 - Math.exp(-t * 8));
+          const freq1 = 523.25 * (1 + t * 0.2);
+          const freq2 = 659.25 * (1 + t * 0.15);
+          const wave = Math.sin(2 * Math.PI * freq1 * t) * 0.4 + Math.sin(2 * Math.PI * freq2 * t) * 0.3;
+          data[i] = wave * envelope * 0.2;
+        }
+        
+        const source = audioContext.createBufferSource();
+        source.buffer = buffer;
+        source.connect(audioContext.destination);
+        source.start();
+        
+        console.log('🔊 Звук успеха воспроизведен');
+      } catch (audioError) {
+        console.log('🔇 Не удалось воспроизвести звук:', audioError);
+      }
       
       // Automatically add to favorites when placing a bid
       if (!isFavorite(id!)) {
@@ -141,7 +169,7 @@ export default function AuctionDetail() {
       toast({
         title: "🎉 Ставка принята!",
         description: `Ваша ставка ${parseFloat(variables.amount).toLocaleString()} Сомони была успешно размещена.`,
-        duration: 4000,
+        duration: 1000, // Сокращено до 1 секунды
       });
       
       // Refetch auction data and bidding history to get updated price
@@ -151,6 +179,9 @@ export default function AuctionDetail() {
       
       // Reset bid amount
       setBidAmount("");
+      
+      // Hide celebration after 2 seconds
+      setTimeout(() => setShowConfetti(false), 2000);
     },
     onError: (error: any) => {
       // Handle specific error types
@@ -238,6 +269,9 @@ export default function AuctionDetail() {
         duration: 8000,
       });
       setShowConfetti(true);
+      
+      // Hide confetti after 5 seconds for winner
+      setTimeout(() => setShowConfetti(false), 5000);
     } else {
       // User didn't win, remove from favorites
       if (isFavorite(id!)) {

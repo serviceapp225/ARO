@@ -291,8 +291,37 @@ export default function AuctionDetail() {
     onSuccess: (data, variables) => {
       console.log(`🎉 Ставка успешно принята! Сумма: ${variables.amount}`);
       
-      // Trigger celebration effects
+      // Trigger celebration effects with automatic cleanup
       setShowConfetti(true);
+      
+      // Воспроизведение звука торжества
+      try {
+        // Сначала пытаемся использовать Web Audio API для создания звука
+        const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+        const duration = 0.8; // Короткий звук
+        const sampleRate = audioContext.sampleRate;
+        const buffer = audioContext.createBuffer(1, duration * sampleRate, sampleRate);
+        const data = buffer.getChannelData(0);
+        
+        // Создаем приятный звук успеха
+        for (let i = 0; i < data.length; i++) {
+          const t = i / sampleRate;
+          const envelope = Math.exp(-t * 4) * (1 - Math.exp(-t * 8));
+          const freq1 = 523.25 * (1 + t * 0.2); // До пятой октавы
+          const freq2 = 659.25 * (1 + t * 0.15); // Ми пятой октавы
+          const wave = Math.sin(2 * Math.PI * freq1 * t) * 0.4 + Math.sin(2 * Math.PI * freq2 * t) * 0.3;
+          data[i] = wave * envelope * 0.2;
+        }
+        
+        const source = audioContext.createBufferSource();
+        source.buffer = buffer;
+        source.connect(audioContext.destination);
+        source.start();
+        
+        console.log('🔊 Звук успеха воспроизведен');
+      } catch (audioError) {
+        console.log('🔇 Не удалось воспроизвести звук:', audioError);
+      }
       
       // Automatically add to favorites when placing a bid
       if (!isFavorite(id!)) {
@@ -345,8 +374,8 @@ export default function AuctionDetail() {
       queryClient.invalidateQueries({ queryKey: [`/api/listings/${id}/bids`] });
       queryClient.invalidateQueries({ queryKey: ['/api/listings'] });
       
-      // Hide celebration after 5 seconds
-      setTimeout(() => setShowConfetti(false), 5000);
+      // Hide celebration after 2 seconds (быстрее чем было)
+      setTimeout(() => setShowConfetti(false), 2000);
     },
     onError: (error: any) => {
       console.log("❌ Ошибка при создании ставки:", error);
