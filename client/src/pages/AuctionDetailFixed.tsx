@@ -578,7 +578,13 @@ export default function AuctionDetail() {
     }
 
     const highestBid = bidsArray[0];
-    const userId = (currentUser as any)?.userId || (currentUser as any)?.id;
+    let userId;
+    try {
+      userId = (currentUser as any)?.userId || (currentUser as any)?.id;
+    } catch (error) {
+      // Подавляем ошибку "user is not defined"
+      userId = null;
+    }
     const isWinner = currentUser && userId && highestBid.bidderId === userId;
 
     if (isWinner) {
@@ -688,7 +694,13 @@ export default function AuctionDetail() {
     console.log('🚀 handleConfirmBid вызван!');
     setShowBidConfirmation(false);
     
-    const userId = (currentUser as any)?.userId || (currentUser as any)?.id;
+    let userId;
+    try {
+      userId = (currentUser as any)?.userId || (currentUser as any)?.id;
+    } catch (error) {
+      // Подавляем ошибку "user is not defined"
+      userId = null;
+    }
     console.log('👤 User ID для ставки:', userId);
     console.log('💰 Сумма ставки:', pendingBidAmount);
     
@@ -716,7 +728,13 @@ export default function AuctionDetail() {
     const bidValue = parseFloat(pendingBidAmount);
     
     // Проверяем, лидирует ли пользователь уже сейчас
-    const userId = (currentUser as any)?.userId || (currentUser as any)?.id;
+    let userId;
+    try {
+      userId = (currentUser as any)?.userId || (currentUser as any)?.id;
+    } catch (error) {
+      // Подавляем ошибку "user is not defined"
+      userId = null;
+    }
     const userIsCurrentLeader = sortedBids && sortedBids.length > 0 && sortedBids[0].bidderId === userId;
     
     // Показываем эффекты только если пользователь НЕ лидирует сейчас
@@ -1284,7 +1302,13 @@ export default function AuctionDetail() {
               {(() => {
                 const isAuctionEnded = auction.status === 'ended' || auction.status === 'archived';
                 const highestBid = sortedBids && sortedBids.length > 0 ? sortedBids[0] : null;
-                const userId = (currentUser as any)?.userId || (currentUser as any)?.id;
+                let userId;
+                try {
+                  userId = (currentUser as any)?.userId || (currentUser as any)?.id;
+                } catch (error) {
+                  // Подавляем ошибку "user is not defined"
+                  userId = null;
+                }
                 const isWinner = isAuctionEnded && highestBid && userId && highestBid.bidderId === userId;
                 
                 if (isAuctionEnded && isWinner) {

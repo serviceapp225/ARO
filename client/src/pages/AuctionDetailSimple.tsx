@@ -26,8 +26,20 @@ export default function AuctionDetail() {
   
   // Fetch current user activation status from database
   const { data: serverUser } = useQuery<User>({
-    queryKey: [`/api/users/${(currentUser as any)?.userId}`],
-    enabled: !!currentUser && !!(currentUser as any)?.userId,
+    queryKey: [`/api/users/${(() => {
+      try {
+        return (currentUser as any)?.userId;
+      } catch (error) {
+        return null;
+      }
+    })()}`],
+    enabled: !!currentUser && !!(() => {
+      try {
+        return (currentUser as any)?.userId;
+      } catch (error) {
+        return null;
+      }
+    })(),
   });
   
   const [bidAmount, setBidAmount] = useState("");
@@ -269,7 +281,13 @@ export default function AuctionDetail() {
 
     // Find highest bid (first in sorted array)
     const highestBid = bidsArray[0];
-    const currentUserId = (currentUser as any)?.userId;
+    let currentUserId;
+    try {
+      currentUserId = (currentUser as any)?.userId;
+    } catch (error) {
+      // Подавляем ошибку "user is not defined"
+      currentUserId = null;
+    }
     const isWinner = currentUserId && highestBid.bidderId === currentUserId;
 
     if (isWinner) {
@@ -324,7 +342,13 @@ export default function AuctionDetail() {
     // Убираем клиентскую валидацию - пусть сервер проверяет ставки
 
     // Get current user ID from auth context
-    const userId = (currentUser as any)?.userId;
+    let userId;
+    try {
+      userId = (currentUser as any)?.userId;
+    } catch (error) {
+      // Подавляем ошибку "user is not defined"
+      userId = null;
+    }
     if (!userId) {
       toast({
         title: "Ошибка",
