@@ -77,7 +77,7 @@ class AuctionWebSocketManager {
     
     switch (message.type) {
       case 'join_auction':
-        console.log(`🎯 Клиент присоединяется к аукциону ${message.listingId}, пользователь ${message.userId}`);
+        console.log(`🎯 Клиент присоединяется к аукциону ${message.listingId}, пользователь ${message.userId || 'не определен'}`);
         this.joinAuction(client, message.listingId, message.userId);
         break;
       case 'leave_auction':
