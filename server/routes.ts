@@ -812,6 +812,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Получаем самые свежие данные без кэша
       const existingBids = await storage.getBidsForListing(listingId);
+      console.log(`🔍 ОТЛАДКА: Получено ${existingBids.length} существующих ставок для аукциона ${listingId}:`);
+      existingBids.forEach((bid, index) => {
+        console.log(`  ${index + 1}. Пользователь ${bid.bidderId}: ${bid.amount} Сомони`);
+      });
       const currentHighestBid = existingBids.length > 0 
         ? Math.max(...existingBids.map(bid => parseFloat(bid.amount)))
         : parseFloat(listing.startingPrice);
