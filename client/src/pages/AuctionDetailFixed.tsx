@@ -374,8 +374,8 @@ export default function AuctionDetail() {
       queryClient.invalidateQueries({ queryKey: [`/api/listings/${id}/bids`] });
       queryClient.invalidateQueries({ queryKey: ['/api/listings'] });
       
-      // Hide celebration after 5 seconds
-      setTimeout(() => setShowConfetti(false), 5000);
+      // Hide celebration after 2 seconds
+      setTimeout(() => setShowConfetti(false), 2000);
     },
     onError: (error: any) => {
       console.log("❌ Ошибка при создании ставки:", error);

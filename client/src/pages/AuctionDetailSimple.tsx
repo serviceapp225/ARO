@@ -180,8 +180,8 @@ export default function AuctionDetail() {
       // Reset bid amount
       setBidAmount("");
       
-      // Hide celebration after 5 seconds
-      setTimeout(() => setShowConfetti(false), 5000);
+      // Hide celebration after 2 seconds
+      setTimeout(() => setShowConfetti(false), 2000);
     },
     onError: (error: any) => {
       // Handle specific error types
