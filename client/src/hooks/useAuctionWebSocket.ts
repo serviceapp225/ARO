@@ -76,6 +76,8 @@ export function useAuctionWebSocket(): AuctionWebSocketHook {
           };
           console.log('👤 Идентификация пользователя для уведомлений:', identifyMessage);
           wsRef.current.send(JSON.stringify(identifyMessage));
+        } else {
+          console.log('⚠️ Пользователь не определен при WebSocket подключении, пропускаем идентификацию');
         }
         
         // Повторно подключаемся к аукциону если был активен
@@ -83,7 +85,7 @@ export function useAuctionWebSocket(): AuctionWebSocketHook {
           const message = {
             type: 'join_auction',
             listingId: currentListingRef.current,
-            userId: user?.id
+            userId: user?.id || null
           };
           console.log('🔄 Переподключение к аукциону:', message);
           wsRef.current.send(JSON.stringify(message));
@@ -294,14 +296,14 @@ export function useAuctionWebSocket(): AuctionWebSocketHook {
   
   const joinAuction = useCallback((listingId: number) => {
     currentListingRef.current = listingId;
-    console.log(`🎯 Попытка подключения к аукциону ${listingId}, пользователь:`, user?.id);
+    console.log(`🎯 Попытка подключения к аукциону ${listingId}, пользователь:`, user?.id || 'не определен');
     console.log('📊 Состояние WebSocket:', wsRef.current?.readyState, 'isConnected:', isConnected);
     
     if (wsRef.current?.readyState === WebSocket.OPEN) {
       const message = {
         type: 'join_auction',
         listingId,
-        userId: user?.id
+        userId: user?.id || null
       };
       console.log('📤 Отправляем сообщение join_auction:', message);
       wsRef.current.send(JSON.stringify(message));
@@ -317,7 +319,7 @@ export function useAuctionWebSocket(): AuctionWebSocketHook {
           const message = {
             type: 'join_auction',
             listingId,
-            userId: user?.id
+            userId: user?.id || null
           };
           console.log('📤 Отправляем сообщение join_auction после подключения:', message);
           wsRef.current.send(JSON.stringify(message));
