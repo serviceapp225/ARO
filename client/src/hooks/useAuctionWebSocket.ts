@@ -225,6 +225,42 @@ export function useAuctionWebSocket(): AuctionWebSocketHook {
           }
         }
         break;
+
+      case 'bid_outbid':
+        // НОВАЯ СИСТЕМА: Уведомления о перебитых ставках
+        console.log('🏆 Получено уведомление о перебитой ставке:', message);
+        
+        // Динамически импортируем toast
+        import('@/hooks/use-toast').then(({ toast }) => {
+          toast({
+            title: "Ваша ставка перебита!",
+            description: message.message,
+            variant: "destructive",
+            duration: 3000,
+          });
+        });
+        
+        // Обновляем кэш уведомлений
+        queryClient.invalidateQueries({ queryKey: ['/api/notifications'] });
+        
+        // Показываем браузерное уведомление если разрешено
+        if (Notification.permission === 'granted') {
+          new Notification('Ваша ставка перебита!', {
+            body: message.message,
+            icon: '/favicon.ico'
+          });
+        }
+        break;
+        
+      case 'bid_processed':
+        // Подтверждение обработки ставки через WebSocket
+        console.log('✅ Подтверждение обработки ставки:', message);
+        if (message.success) {
+          console.log('🎉 Ставка успешно обработана:', message.message);
+        } else {
+          console.error('❌ Ошибка обработки ставки:', message.message);
+        }
+        break;
         
       case 'hot_auction_mode':
         setIsHotAuction(message.data?.isHot || false);

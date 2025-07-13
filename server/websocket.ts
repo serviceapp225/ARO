@@ -89,7 +89,7 @@ class AuctionWebSocketManager {
         this.sendMessage(client, { type: 'pong' });
         break;
       case 'identify_user':
-        // Новый тип сообщения для идентификации пользователя
+        // Идентификация пользователя для уведомлений
         if (message.userId) {
           client.userId = message.userId;
           console.log(`👤 Клиент идентифицирован как пользователь ${message.userId}`);
@@ -100,16 +100,18 @@ class AuctionWebSocketManager {
           });
         }
         break;
-      case 'identify_user':
-        // Новый тип сообщения для идентификации пользователя
-        if (message.userId) {
-          client.userId = message.userId;
-          console.log(`👤 Клиент идентифицирован как пользователь ${message.userId}`);
-          this.sendMessage(client, { 
-            type: 'user_identified', 
-            userId: message.userId,
-            message: 'Пользователь успешно идентифицирован для уведомлений' 
-          });
+      case 'place_bid':
+        // НОВАЯ СИСТЕМА: Обработка ставок через WebSocket
+        if (message.listingId && message.amount && message.bidderId) {
+          console.log(`🎯 НОВАЯ СТАВКА через WebSocket: Аукцион ${message.listingId}, пользователь ${message.bidderId}, сумма ${message.amount}`);
+          this.handleBidPlacement(message.listingId, message.bidderId, message.amount, client);
+        }
+        break;
+      case 'bid_placement':
+        // НОВАЯ СИСТЕМА: Уведомления о размещении ставки
+        if (message.listingId && message.amount && message.bidderId) {
+          console.log(`💰 Уведомление о размещении ставки: Аукцион ${message.listingId}, пользователь ${message.bidderId}, сумма ${message.amount}`);
+          this.handleBidPlacement(message.listingId, message.bidderId, message.amount, client);
         }
         break;
     }
@@ -297,6 +299,93 @@ class AuctionWebSocketManager {
     
     // Удаляем мертвые соединения
     deadClients.forEach(client => room.clients.delete(client));
+  }
+
+  // НОВЫЙ МЕТОД: Обработка ставок через WebSocket с уведомлениями
+  async handleBidPlacement(listingId: number, bidderId: number, amount: string, client: WebSocketClient) {
+    try {
+      console.log(`💰 Обработка WebSocket ставки: аукцион ${listingId}, пользователь ${bidderId}, сумма ${amount}`);
+      
+      // Импортируем storage напрямую
+      const { storage } = await import('./storage');
+      
+      // Получаем всех участников этого аукциона (кто делал ставки)
+      const allBids = await storage.getBidsForListing(listingId);
+      const uniqueBidders = new Set<number>();
+      allBids.forEach(bid => {
+        if (bid.bidderId !== bidderId) { // Исключаем текущего участника
+          uniqueBidders.add(bid.bidderId);
+        }
+      });
+      
+      console.log(`📢 Найдено ${uniqueBidders.size} участников для уведомления о перебитии ставки`);
+      console.log(`👥 Участники:`, Array.from(uniqueBidders));
+      
+      // Получаем информацию об аукционе для уведомления
+      const listing = await storage.getListing(listingId);
+      if (!listing) {
+        console.error(`❌ Аукцион ${listingId} не найден`);
+        return;
+      }
+      
+      // Отправляем уведомления всем перебитым участникам через WebSocket
+      for (const participantId of uniqueBidders) {
+        const notification = {
+          type: 'bid_outbid',
+          listingId: listingId,
+          listingTitle: `${listing.make} ${listing.model}`,
+          newAmount: amount,
+          message: `Ваша ставка перебита в аукционе ${listing.make} ${listing.model}! Новая ставка: ${amount} Сомони`
+        };
+        
+        // Отправляем уведомление через WebSocket всем подключенным клиентам этого пользователя
+        this.sendNotificationToUserAdvanced(participantId, notification);
+        
+        // Также сохраняем уведомление в базу данных для истории
+        try {
+          await storage.createNotification({
+            userId: participantId,
+            type: 'bid_outbid',
+            message: `Ваша ставка перебита в аукционе ${listing.make} ${listing.model}! Новая ставка: ${amount} Сомони`,
+            isRead: false,
+            listingId: listingId
+          });
+          console.log(`📝 Уведомление сохранено в базу для пользователя ${participantId}`);
+        } catch (error) {
+          console.error(`❌ Ошибка сохранения уведомления для пользователя ${participantId}:`, error);
+        }
+      }
+      
+      // Подтверждаем клиенту успешную обработку
+      this.sendMessage(client, {
+        type: 'bid_processed',
+        success: true,
+        message: `Ставка ${amount} Сомони обработана, уведомлено ${uniqueBidders.size} участников`
+      });
+      
+    } catch (error) {
+      console.error('❌ Ошибка обработки WebSocket ставки:', error);
+      this.sendMessage(client, {
+        type: 'bid_processed',
+        success: false,
+        message: 'Ошибка обработки ставки'
+      });
+    }
+  }
+  
+  // Отправка уведомления конкретному пользователю (улучшенная версия)
+  private sendNotificationToUserAdvanced(userId: number, notification: any) {
+    let sentCount = 0;
+    
+    // Ищем всех клиентов этого пользователя
+    this.clients.forEach(client => {
+      if (client.userId === userId && client.ws.readyState === WebSocket.OPEN) {
+        this.sendMessage(client, notification);
+        sentCount++;
+      }
+    });
+    
+    console.log(`📬 Уведомление отправлено пользователю ${userId} на ${sentCount} устройств`);
   }
 
   public getStats() {

@@ -306,6 +306,32 @@ export default function AuctionDetail() {
         duration: 1000, // 1 секунда автоисчезновения
       });
       
+      // НОВАЯ СИСТЕМА: Уведомления о перебитых ставках через WebSocket
+      // Отправляем уведомление всем участникам аукциона через WebSocket
+      if (wsConnected && user?.userId) {
+        const webSocketMessage = {
+          type: 'bid_placement',
+          listingId: parseInt(id!),
+          bidderId: (user as any).userId,
+          amount: variables.amount
+        };
+        console.log('📤 Отправляем WebSocket уведомление о ставке:', webSocketMessage);
+        
+        // Отправляем через WebSocket хук для обработки уведомлений
+        const wsUrl = `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.host}/ws`;
+        const tempWs = new WebSocket(wsUrl);
+        
+        tempWs.onopen = () => {
+          tempWs.send(JSON.stringify(webSocketMessage));
+          console.log('📬 WebSocket уведомление о ставке отправлено');
+          tempWs.close();
+        };
+        
+        tempWs.onerror = (error) => {
+          console.error('❌ Ошибка отправки WebSocket уведомления:', error);
+        };
+      }
+      
       // Принудительное обновление кэша после успешной ставки
       queryClient.invalidateQueries({ queryKey: [`/api/listings/${id}`] });
       queryClient.invalidateQueries({ queryKey: [`/api/listings/${id}/bids`] });
