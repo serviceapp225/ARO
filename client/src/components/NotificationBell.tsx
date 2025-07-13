@@ -11,7 +11,7 @@ interface NotificationBellProps {
 export function NotificationBell({ userId }: NotificationBellProps) {
   const [isOpen, setIsOpen] = useState(false);
   
-  // Загружаем список удаленных уведомлений из localStorage
+  // Загружаем список удаленных уведомлений из localStorage с временными метками
   const [deletedNotificationIds, setDeletedNotificationIds] = useState<Set<number>>(() => {
     try {
       const stored = localStorage.getItem(`deletedNotifications_${userId}`);
@@ -21,6 +21,16 @@ export function NotificationBell({ userId }: NotificationBellProps) {
     } catch {
       console.log('Failed to load deleted notifications from localStorage');
       return new Set<number>();
+    }
+  });
+
+  // Запоминаем время последней очистки всех уведомлений
+  const [lastClearTime, setLastClearTime] = useState<number>(() => {
+    try {
+      const stored = localStorage.getItem(`lastClearTime_${userId}`);
+      return stored ? parseInt(stored) : 0;
+    } catch {
+      return 0;
     }
   });
 
@@ -72,9 +82,20 @@ export function NotificationBell({ userId }: NotificationBellProps) {
   // пока не будут очищены вручную или не истечет срок хранения
 
   // Показываем уведомления о ставках и найденных машинах, исключаем уведомления о создании поисковых запросов
-  const notifications = allNotifications.filter(n => 
-    !deletedNotificationIds.has(n.id) && n.type !== 'alert_created'
-  );
+  // КРИТИЧЕСКИ ВАЖНО: Новые уведомления после очистки всех должны показываться
+  const notifications = allNotifications.filter(n => {
+    // Исключаем уведомления о создании поисковых запросов
+    if (n.type === 'alert_created') return false;
+    
+    // Если уведомление создано ПОСЛЕ последней очистки всех уведомлений - показываем его
+    const notificationTime = new Date(n.createdAt).getTime();
+    if (notificationTime > lastClearTime) {
+      return true; // Новое уведомление после очистки - показываем независимо от localStorage
+    }
+    
+    // Для старых уведомлений проверяем localStorage
+    return !deletedNotificationIds.has(n.id);
+  });
 
 
 
@@ -140,6 +161,15 @@ export function NotificationBell({ userId }: NotificationBellProps) {
     onMutate: async () => {
       // Отменяем все текущие запросы
       await queryClient.cancelQueries({ queryKey: [`/api/notifications/${userId}`] });
+      
+      // Записываем время очистки всех уведомлений
+      const clearTime = Date.now();
+      setLastClearTime(clearTime);
+      try {
+        localStorage.setItem(`lastClearTime_${userId}`, clearTime.toString());
+      } catch (error) {
+        console.error('Failed to save clear time to localStorage:', error);
+      }
       
       // Добавляем все ID уведомлений в список удаленных
       const notificationIds = notifications.map(n => n.id);
