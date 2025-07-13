@@ -35,6 +35,29 @@ export function useAuctionWebSocket(): AuctionWebSocketHook {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   
+  // Единая функция для получения ID пользователя
+  const getCurrentUserId = useCallback(() => {
+    if (!user?.phoneNumber) return null;
+    
+    const phoneToUserIdMap: Record<string, number> = {
+      "+992 (00) 000-00-00": 4,
+      "+992 (11) 111-11-11": 3,
+      "+992 (22) 222-22-22": 18,
+      "+992 (41) 111-11-11": 15,
+      "+992 (88) 888-88-88": 17,
+      "+992000000000": 4,
+      "+992111111111": 3,
+      "+992222222222": 18,
+      "+992411111111": 15,
+      "+992888888888": 17
+    };
+    
+    return phoneToUserIdMap[user.phoneNumber] || null;
+  }, [user?.phoneNumber]);
+  
+  // Мемоизированный результат для оптимизации
+  const currentUserId = getCurrentUserId();
+  
   const connect = useCallback(() => {
     // Не создавать новое соединение если уже есть активное
     if (wsRef.current?.readyState === WebSocket.OPEN) {
@@ -69,26 +92,16 @@ export function useAuctionWebSocket(): AuctionWebSocketHook {
         }, 60000);
         
         // ВАЖНО: Идентифицируем пользователя для уведомлений
-        if (user?.id) {
+        if (currentUserId) {
           const identifyMessage = {
             type: 'identify_user',
-            userId: user.id
+            userId: currentUserId
           };
           console.log('👤 Идентификация пользователя для уведомлений:', identifyMessage);
           wsRef.current.send(JSON.stringify(identifyMessage));
         } else {
           // Пользователь не определен при подключении - это нормально при загрузке
-          // Повторная попытка идентификации через 2 секунды
-          setTimeout(() => {
-            if (wsRef.current?.readyState === WebSocket.OPEN && user?.id) {
-              const identifyMessage = {
-                type: 'identify_user',
-                userId: user.id
-              };
-              console.log('👤 Повторная идентификация пользователя:', user.id);
-              wsRef.current.send(JSON.stringify(identifyMessage));
-            }
-          }, 2000);
+          console.log('👤 Пользователь не определен при WebSocket подключении');
         }
         
         // Повторно подключаемся к аукциону если был активен
@@ -96,7 +109,7 @@ export function useAuctionWebSocket(): AuctionWebSocketHook {
           const message = {
             type: 'join_auction',
             listingId: currentListingRef.current,
-            userId: user?.id || null
+            userId: currentUserId || null
           };
           console.log('🔄 Переподключение к аукциону:', message);
           wsRef.current.send(JSON.stringify(message));
@@ -137,15 +150,15 @@ export function useAuctionWebSocket(): AuctionWebSocketHook {
   
   // Переподключение при изменении пользователя
   useEffect(() => {
-    if (user?.id && wsRef.current?.readyState === WebSocket.OPEN) {
-      console.log('🔄 Пользователь загружен, отправляем идентификацию:', user.id);
+    if (currentUserId && wsRef.current?.readyState === WebSocket.OPEN) {
+      console.log('🔄 Пользователь загружен, отправляем идентификацию:', currentUserId);
       const identifyMessage = {
         type: 'identify_user',
-        userId: user.id
+        userId: currentUserId
       };
       wsRef.current.send(JSON.stringify(identifyMessage));
     }
-  }, [user?.id]);
+  }, [currentUserId]);
   
   const handleWebSocketMessage = (message: WebSocketMessage) => {
     switch (message.type) {
@@ -224,15 +237,15 @@ export function useAuctionWebSocket(): AuctionWebSocketHook {
         
       case 'notification':
         // Обработка уведомлений от WebSocket
-        if (message.data && user?.id) {
+        if (message.data && currentUserId) {
           const notification = message.data;
           
           // Показываем уведомление только если оно для текущего пользователя
           // Проверяем оба варианта поля: userId (клиентский) и user_id (серверный из БД)
           const notificationUserId = notification.userId || notification.user_id;
-          console.log('📞 Получено WebSocket уведомление, для пользователя:', notificationUserId, ', текущий пользователь:', user?.id);
+          console.log('📞 Получено WebSocket уведомление, для пользователя:', notificationUserId, ', текущий пользователь:', currentUserId);
           
-          if (notificationUserId === user?.id) {
+          if (notificationUserId === currentUserId) {
             console.log('🔔 Уведомление для текущего пользователя, показываем:', notification);
             
             // Обновляем кэш уведомлений для колокольчика
@@ -266,16 +279,16 @@ export function useAuctionWebSocket(): AuctionWebSocketHook {
         });
         
         // КРИТИЧЕСКИ ВАЖНО: Принудительно обновляем кэш уведомлений для колокольчика
-        if (user?.id) {
+        if (currentUserId) {
           console.log('🔔 Принудительно обновляем кэш уведомлений для колокольчика после WebSocket bid_outbid');
           
           // Убираем кэш и принудительно перезагружаем
-          queryClient.removeQueries({ queryKey: [`/api/notifications/${user.id}`] });
-          queryClient.invalidateQueries({ queryKey: [`/api/notifications/${user.id}`] });
+          queryClient.removeQueries({ queryKey: [`/api/notifications/${currentUserId}`] });
+          queryClient.invalidateQueries({ queryKey: [`/api/notifications/${currentUserId}`] });
           
           // Принудительно обновляем данные через 100мс для гарантии
           setTimeout(() => {
-            queryClient.refetchQueries({ queryKey: [`/api/notifications/${user.id}`] });
+            queryClient.refetchQueries({ queryKey: [`/api/notifications/${currentUserId}`] });
           }, 100);
         }
         
@@ -319,14 +332,14 @@ export function useAuctionWebSocket(): AuctionWebSocketHook {
   
   const joinAuction = useCallback((listingId: number) => {
     currentListingRef.current = listingId;
-    console.log(`🎯 Попытка подключения к аукциону ${listingId}, пользователь:`, user?.id || 'загружается');
+    console.log(`🎯 Попытка подключения к аукциону ${listingId}, пользователь:`, currentUserId || 'загружается');
     console.log('📊 Состояние WebSocket:', wsRef.current?.readyState, 'isConnected:', isConnected);
     
     if (wsRef.current?.readyState === WebSocket.OPEN) {
       const message = {
         type: 'join_auction',
         listingId,
-        userId: user?.id || null
+        userId: currentUserId || null
       };
       console.log('📤 Отправляем сообщение join_auction:', message);
       wsRef.current.send(JSON.stringify(message));
@@ -342,7 +355,7 @@ export function useAuctionWebSocket(): AuctionWebSocketHook {
           const message = {
             type: 'join_auction',
             listingId,
-            userId: user?.id || null
+            userId: currentUserId || null
           };
           console.log('📤 Отправляем сообщение join_auction после подключения:', message);
           wsRef.current.send(JSON.stringify(message));

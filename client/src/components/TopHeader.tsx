@@ -38,7 +38,7 @@ export function TopHeader({
       "+992888888888": 17
     };
     
-    return phoneToUserIdMap[user.phoneNumber] || 18;
+    return phoneToUserIdMap[user?.phoneNumber || ''] || 18;
   };
 
   const currentUserId = getCurrentUserId();
