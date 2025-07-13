@@ -161,6 +161,12 @@ export function useAuctionWebSocket(): AuctionWebSocketHook {
   }, [currentUserId]);
   
   const handleWebSocketMessage = (message: WebSocketMessage) => {
+    // Детальная отладка для поиска "user is not defined"
+    console.log('🔍 handleWebSocketMessage - user:', user);
+    console.log('🔍 handleWebSocketMessage - typeof user:', typeof user);
+    console.log('🔍 handleWebSocketMessage - currentUserId:', currentUserId);
+    console.log('🔍 handleWebSocketMessage - typeof currentUserId:', typeof currentUserId);
+    
     switch (message.type) {
       case 'connected':
         console.log('✅ WebSocket соединение установлено');

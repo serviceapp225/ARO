@@ -29,6 +29,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
+  // Отладка изменений пользователя для поиска "user is not defined"
+  useEffect(() => {
+    if (user === null) {
+      console.log('🔍 AuthContext: user стал null');
+    } else if (user === undefined) {
+      console.log('🔍 AuthContext: user стал undefined');
+    } else {
+      console.log('🔍 AuthContext: user обновлен:', { phoneNumber: user.phoneNumber, userId: user.userId });
+    }
+  }, [user]);
+
   useEffect(() => {
     const loadUser = async () => {
       // Check for demo user in localStorage
