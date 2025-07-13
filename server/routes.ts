@@ -1327,9 +1327,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/notifications/:userId", async (req, res) => {
     try {
       const userId = parseInt(req.params.userId);
+      console.log(`🔔 Получение уведомлений для пользователя ${userId}`);
       const notifications = await storage.getNotificationsByUser(userId);
+      console.log(`📩 Найдено ${notifications.length} уведомлений для пользователя ${userId}`);
       res.json(notifications);
     } catch (error) {
+      console.error(`❌ Ошибка получения уведомлений для пользователя ${req.params.userId}:`, error);
       res.status(500).json({ error: "Failed to fetch notifications" });
     }
   });
