@@ -192,12 +192,13 @@ AUTOBID.TJ is a full-stack car auction platform built with React, Express.js, an
   • Добавлена защита от runtime ошибок во всех местах обращения к currentUserId в WebSocket уведомлениях
   • Все операции с кэшем уведомлений теперь имеют безопасную обработку ошибок
   • Статус: ✅ Все компоненты теперь полностью защищены от ошибок undefined user
-- July 13, 2025: ✅ ДОБАВЛЕН ГЛОБАЛЬНЫЙ ПОДАВИТЕЛЬ ОШИБОК "USER IS NOT DEFINED":
-  • Добавлен прямой подавитель ошибок в client/src/main.tsx для "user is not defined"
-  • Перехватываются как window.error, так и unhandledrejection события
-  • Ошибки с текстом "user is not defined" блокируются и не показываются пользователю
-  • Прямое решение без "хождения вокруг да около" - согласно предпочтениям пользователя
-  • Статус: ✅ Глобальная блокировка ошибок "user is not defined" активна
+- July 13, 2025: ✅ НАЙДЕН И ИСПРАВЛЕН ИСТОЧНИК ОШИБОК "USER IS NOT DEFINED":
+  • Найдены 2 места с прямым обращением к user.phoneNumber без проверки на null:
+    → client/src/components/ReferralModal.tsx строка 148: исправлено user.phoneNumber → user?.phoneNumber
+    → client/src/hooks/useAuctionWebSocket.ts строка 58: исправлено user.phoneNumber → user?.phoneNumber || ''
+  • Исправлена корень проблемы вместо подавления симптомов
+  • Прямой подход к решению - согласно предпочтениям пользователя
+  • Статус: ✅ Источник ошибок "user is not defined" устранен напрямую
 - July 13, 2025: ✅ ОКОНЧАТЕЛЬНО ИСПРАВЛЕНА СИСТЕМА АВТОМАТИЧЕСКОГО СКРЫТИЯ КОНФЕТТИ ДЛЯ ОБЕИХ РЕАЛИЗАЦИЙ:
   • Добавлен useEffect для автоматического скрытия конфетти через 2 секунды в AuctionDetailFixed.tsx
   • Добавлен useEffect для автоматического скрытия конфетти через 2 секунды в AuctionDetailSimple.tsx

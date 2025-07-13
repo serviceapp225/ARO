@@ -142,7 +142,7 @@ export function ReferralModal({ isOpen, onClose }: ReferralModalProps) {
                   <Phone className="w-5 h-5 text-blue-600" />
                   <div>
                     <p className="text-sm text-gray-600">Ваш номер для друзей:</p>
-                    <p className="font-mono font-bold text-lg">{user.phoneNumber}</p>
+                    <p className="font-mono font-bold text-lg">{user?.phoneNumber}</p>
                   </div>
                 </div>
                 <Button

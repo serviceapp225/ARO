@@ -52,7 +52,7 @@ export function useAuctionWebSocket(): AuctionWebSocketHook {
       "+992888888888": 17
     };
     
-    return phoneToUserIdMap[user.phoneNumber] || null;
+    return phoneToUserIdMap[user?.phoneNumber || ''] || null;
   }, [user?.phoneNumber]);
   
   // Мемоизированный результат для оптимизации
