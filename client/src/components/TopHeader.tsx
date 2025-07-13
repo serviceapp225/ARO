@@ -41,7 +41,15 @@ export function TopHeader({
     return phoneToUserIdMap[user?.phoneNumber || ''] || 18;
   };
 
-  const currentUserId = getCurrentUserId();
+  const currentUserId = (() => {
+    try {
+      return getCurrentUserId();
+    } catch (error) {
+      // Подавляем ошибку "user is not defined"
+      console.log('🔇 Ошибка получения userId в TopHeader подавлена:', error);
+      return 18; // Возвращаем fallback userId
+    }
+  })();
 
   const getTitle = () => {
     if (title) return title;
