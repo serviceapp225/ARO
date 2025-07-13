@@ -77,9 +77,7 @@ export function useAuctionWebSocket(): AuctionWebSocketHook {
           console.log('👤 Идентификация пользователя для уведомлений:', identifyMessage);
           wsRef.current.send(JSON.stringify(identifyMessage));
         } else {
-          console.log('⚠️ Пользователь не определен при WebSocket подключении, пропускаем идентификацию');
-          console.log('🔄 Попытка повторной идентификации через 2 секунды...');
-          
+          // Пользователь не определен при подключении - это нормально при загрузке
           // Повторная попытка идентификации через 2 секунды
           setTimeout(() => {
             if (wsRef.current?.readyState === WebSocket.OPEN && user?.id) {
@@ -87,7 +85,7 @@ export function useAuctionWebSocket(): AuctionWebSocketHook {
                 type: 'identify_user',
                 userId: user.id
               };
-              console.log('👤 Повторная идентификация пользователя:', identifyMessage);
+              console.log('👤 Повторная идентификация пользователя:', user.id);
               wsRef.current.send(JSON.stringify(identifyMessage));
             }
           }, 2000);
@@ -321,7 +319,7 @@ export function useAuctionWebSocket(): AuctionWebSocketHook {
   
   const joinAuction = useCallback((listingId: number) => {
     currentListingRef.current = listingId;
-    console.log(`🎯 Попытка подключения к аукциону ${listingId}, пользователь:`, user?.id || 'не определен');
+    console.log(`🎯 Попытка подключения к аукциону ${listingId}, пользователь:`, user?.id || 'загружается');
     console.log('📊 Состояние WebSocket:', wsRef.current?.readyState, 'isConnected:', isConnected);
     
     if (wsRef.current?.readyState === WebSocket.OPEN) {
