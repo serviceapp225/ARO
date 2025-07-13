@@ -891,7 +891,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             const notification = await storage.createNotification({
               userId: participantId,
               title: "Новая ставка в аукционе!",
-              message: `Новая ставка ${validatedData.amount} Сомони на ${listing.make} ${listing.model} ${listing.year}. Сделайте ставку выше!`,
+              message: `ваша ставка перебита`,
               type: "bid_outbid",
               listingId: listingId,
               isRead: false

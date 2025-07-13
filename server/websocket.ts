@@ -335,7 +335,7 @@ class AuctionWebSocketManager {
           listingId: listingId,
           listingTitle: `${listing.make} ${listing.model}`,
           newAmount: amount,
-          message: `Ваша ставка перебита в аукционе ${listing.make} ${listing.model}! Новая ставка: ${amount} Сомони`
+          message: `ваша ставка перебита`
         };
         
         // Отправляем уведомление через WebSocket всем подключенным клиентам этого пользователя
@@ -346,7 +346,7 @@ class AuctionWebSocketManager {
           await storage.createNotification({
             userId: participantId,
             type: 'bid_outbid',
-            message: `Ваша ставка перебита в аукционе ${listing.make} ${listing.model}! Новая ставка: ${amount} Сомони`,
+            message: `ваша ставка перебита`,
             isRead: false,
             listingId: listingId
           });
