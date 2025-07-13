@@ -248,12 +248,9 @@ export function useAuctionWebSocket(): AuctionWebSocketHook {
           if (notificationUserId === currentUserId) {
             console.log('🔔 Уведомление для текущего пользователя, показываем:', notification);
             
-            // Обновляем кэш уведомлений для колокольчика
-            try {
+            // Обновляем кэш уведомлений для колокольчика (только если пользователь валиден)
+            if (currentUserId && typeof currentUserId === 'number') {
               queryClient.invalidateQueries({ queryKey: [`/api/notifications/${currentUserId}`] });
-            } catch (error) {
-              // Подавляем ошибку "user is not defined"
-              console.log('🔇 Ошибка при обновлении кэша уведомлений подавлена:', error);
             }
             
             // Показываем браузерное уведомление если разрешено
@@ -284,22 +281,17 @@ export function useAuctionWebSocket(): AuctionWebSocketHook {
         });
         
         // КРИТИЧЕСКИ ВАЖНО: Принудительно обновляем кэш уведомлений для колокольчика
-        if (currentUserId) {
+        if (currentUserId && typeof currentUserId === 'number') {
           console.log('🔔 Принудительно обновляем кэш уведомлений для колокольчика после WebSocket bid_outbid');
           
-          try {
-            // Убираем кэш и принудительно перезагружаем
-            queryClient.removeQueries({ queryKey: [`/api/notifications/${currentUserId}`] });
-            queryClient.invalidateQueries({ queryKey: [`/api/notifications/${currentUserId}`] });
-            
-            // Принудительно обновляем данные через 100мс для гарантии
-            setTimeout(() => {
-              queryClient.refetchQueries({ queryKey: [`/api/notifications/${currentUserId}`] });
-            }, 100);
-          } catch (error) {
-            // Подавляем ошибку "user is not defined"
-            console.log('🔇 Ошибка при обновлении кэша уведомлений bid_outbid подавлена:', error);
-          }
+          // Убираем кэш и принудительно перезагружаем
+          queryClient.removeQueries({ queryKey: [`/api/notifications/${currentUserId}`] });
+          queryClient.invalidateQueries({ queryKey: [`/api/notifications/${currentUserId}`] });
+          
+          // Принудительно обновляем данные через 100мс для гарантии
+          setTimeout(() => {
+            queryClient.refetchQueries({ queryKey: [`/api/notifications/${currentUserId}`] });
+          }, 100);
         }
         
         // Показываем браузерное уведомление если разрешено

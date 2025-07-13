@@ -175,14 +175,17 @@ AUTOBID.TJ is a full-stack car auction platform built with React, Express.js, an
 - Статус: ✅ Приложение готово для развертывания на любой платформе
 
 ## Changelog
-- July 13, 2025: ✅ ПОЛНОСТЬЮ РЕШЕНА ПРОБЛЕМА С ОШИБКАМИ "USER IS NOT DEFINED":
+- July 13, 2025: ✅ ОКОНЧАТЕЛЬНО РЕШЕНА ПРОБЛЕМА С ОШИБКАМИ "USER IS NOT DEFINED":
   • Найдены и исправлены 2 места с прямым обращением к user.phoneNumber без проверки на null:
     → client/src/components/ReferralModal.tsx строка 148: исправлено user.phoneNumber → user?.phoneNumber
     → client/src/hooks/useAuctionWebSocket.ts строка 58: исправлено user.phoneNumber → user?.phoneNumber || ''
+  • КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Удалены блоки try-catch, которые подавляли ошибки в WebSocket уведомлениях
+    → client/src/hooks/useAuctionWebSocket.ts строки 252-257: убран try-catch, добавлена проверка typeof currentUserId === 'number'
+    → client/src/hooks/useAuctionWebSocket.ts строки 290-302: убран try-catch, добавлена проверка typeof currentUserId === 'number'
   • Удален временный глобальный подавитель ошибок из client/src/main.tsx
-  • Очищен код от временных костылей, оставлены только корректные исправления
+  • Устранена маскировка ошибок - теперь код работает без ошибок, а не скрывает их
   • Прямой подход к решению - согласно предпочтениям пользователя
-  • Статус: ✅ Проблема "user is not defined" полностью решена правильным способом
+  • Статус: ✅ Проблема "user is not defined" полностью решена правильным способом без подавления ошибок
 - July 13, 2025: ✅ ОКОНЧАТЕЛЬНО ИСПРАВЛЕНА СИСТЕМА АВТОМАТИЧЕСКОГО СКРЫТИЯ КОНФЕТТИ ДЛЯ ОБЕИХ РЕАЛИЗАЦИЙ:
   • Добавлен useEffect для автоматического скрытия конфетти через 2 секунды в AuctionDetailFixed.tsx
   • Добавлен useEffect для автоматического скрытия конфетти через 2 секунды в AuctionDetailSimple.tsx
