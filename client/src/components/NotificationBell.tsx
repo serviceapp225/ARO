@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Bell, X, Car, Trash2, Trash, Gavel } from 'lucide-react';
+import { Bell, X, Car, Trash2, Gavel } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useLocation } from 'wouter';
 import type { Notification } from '@shared/schema';
@@ -24,15 +24,7 @@ export function NotificationBell({ userId }: NotificationBellProps) {
     }
   });
 
-  // Запоминаем время последней очистки всех уведомлений
-  const [lastClearTime, setLastClearTime] = useState<number>(() => {
-    try {
-      const stored = localStorage.getItem(`lastClearTime_${userId}`);
-      return stored ? parseInt(stored) : 0;
-    } catch {
-      return 0;
-    }
-  });
+
 
   // Сохраняем изменения в localStorage
   const updateDeletedNotifications = (newSet: Set<number>) => {
@@ -143,55 +135,7 @@ export function NotificationBell({ userId }: NotificationBellProps) {
     },
   });
 
-  const clearAllNotificationsMutation = useMutation({
-    mutationFn: async () => {
-      // Удаляем уведомления последовательно, чтобы избежать конфликтов
-      for (const notification of notifications) {
-        try {
-          const response = await fetch(`/api/notifications/${notification.id}`, {
-            method: 'DELETE',
-          });
-          if (!response.ok) {
-            console.warn(`Failed to delete notification ${notification.id}:`, response.status);
-          }
-        } catch (error) {
-          console.warn(`Error deleting notification ${notification.id}:`, error);
-        }
-      }
-      return true;
-    },
-    onMutate: async () => {
-      // Отменяем все текущие запросы
-      await queryClient.cancelQueries({ queryKey: [`/api/notifications/${userId}`] });
-      
-      // Записываем время очистки всех уведомлений
-      const clearTime = Date.now();
-      setLastClearTime(clearTime);
-      try {
-        localStorage.setItem(`lastClearTime_${userId}`, clearTime.toString());
-      } catch (error) {
-        console.error('Failed to save clear time to localStorage:', error);
-      }
-      
-      // Добавляем все ID уведомлений в список удаленных
-      const notificationIds = notifications.map(n => n.id);
-      const newSet = new Set(deletedNotificationIds);
-      notificationIds.forEach(id => newSet.add(id));
-      updateDeletedNotifications(newSet);
-    },
-    onSuccess: () => {
-      // Принудительно обновляем данные после успешного удаления
-      queryClient.removeQueries({ queryKey: [`/api/notifications/${userId}`] });
-      queryClient.invalidateQueries({ queryKey: [`/api/notifications/${userId}`] });
-    },
-    onError: (error) => {
-      console.error('Failed to clear all notifications:', error);
-      // При ошибке очищаем локальный список удаленных
-      updateDeletedNotifications(new Set());
-      // И принудительно обновляем данные
-      queryClient.invalidateQueries({ queryKey: [`/api/notifications/${userId}`] });
-    },
-  });
+
 
   const unreadCount = notifications.filter(n => !n.isRead).length;
 
@@ -235,27 +179,12 @@ export function NotificationBell({ userId }: NotificationBellProps) {
         <div className="absolute right-0 top-full mt-2 w-80 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50">
           <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
             <h3 className="font-semibold text-gray-900 dark:text-white">Уведомления</h3>
-            <div className="flex items-center gap-2">
-              {notifications.length > 0 && (
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    clearAllNotificationsMutation.mutate();
-                  }}
-                  className="text-red-500 hover:text-red-700 p-1 rounded transition-colors"
-                  title="Очистить все"
-                  disabled={clearAllNotificationsMutation.isPending}
-                >
-                  <Trash className="w-4 h-4" />
-                </button>
-              )}
-              <button
-                onClick={() => setIsOpen(false)}
-                className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
+            <button
+              onClick={() => setIsOpen(false)}
+              className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+            >
+              <X className="w-5 h-5" />
+            </button>
           </div>
 
           <div className="max-h-96 overflow-y-auto">
