@@ -74,18 +74,11 @@ export function NotificationBell({ userId }: NotificationBellProps) {
   // пока не будут очищены вручную или не истечет срок хранения
 
   // Показываем уведомления о ставках и найденных машинах, исключаем уведомления о создании поисковых запросов
-  // КРИТИЧЕСКИ ВАЖНО: Новые уведомления после очистки всех должны показываться
   const notifications = allNotifications.filter(n => {
     // Исключаем уведомления о создании поисковых запросов
     if (n.type === 'alert_created') return false;
     
-    // Если уведомление создано ПОСЛЕ последней очистки всех уведомлений - показываем его
-    const notificationTime = new Date(n.createdAt).getTime();
-    if (notificationTime > lastClearTime) {
-      return true; // Новое уведомление после очистки - показываем независимо от localStorage
-    }
-    
-    // Для старых уведомлений проверяем localStorage
+    // Проверяем localStorage для индивидуально удаленных уведомлений
     return !deletedNotificationIds.has(n.id);
   });
 
