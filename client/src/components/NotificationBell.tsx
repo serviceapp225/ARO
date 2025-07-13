@@ -110,14 +110,11 @@ export function NotificationBell({ userId }: NotificationBellProps) {
     onMutate: async (notificationId: number) => {
       // Немедленно добавляем в список удаленных для мгновенного скрытия
       const newSet = new Set(deletedNotificationIds).add(notificationId);
-
       updateDeletedNotifications(newSet);
     },
-    onSuccess: (notificationId) => {
-      // Принудительно удаляем из кэша и перезагружаем
-      queryClient.removeQueries({ queryKey: ['/api/notifications', userId] });
-      queryClient.removeQueries({ queryKey: [`/api/notifications/${userId}`] });
-      queryClient.refetchQueries({ queryKey: ['/api/notifications', userId] });
+    onSuccess: () => {
+      // Не делаем никаких дополнительных обновлений кэша
+      // Уведомление уже скрыто через onMutate, этого достаточно
     },
     onError: (error, notificationId) => {
       console.error('Failed to delete notification:', error);
@@ -195,9 +192,10 @@ export function NotificationBell({ userId }: NotificationBellProps) {
               notifications.map((notification) => (
                 <div
                   key={notification.id}
-                  className={`p-4 border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors ${
+                  className={`p-4 border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-300 opacity-100 transform translate-y-0 ${
                     !notification.isRead ? 'bg-blue-50 dark:bg-blue-900/20' : ''
                   }`}
+                  style={{ animation: 'fadeIn 0.2s ease-in-out' }}
                 >
                   <div className="flex items-start gap-3">
                     {notification.type === 'car_found' && (
