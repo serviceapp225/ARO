@@ -307,11 +307,8 @@ export default function Messages() {
       <div className="max-w-4xl mx-auto p-6 pb-24">
         <div className="bg-white/60 backdrop-blur-lg rounded-3xl shadow-2xl overflow-hidden border border-white/20">
           <div className="p-6 border-b border-white/30 bg-white/50">
-            <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
-              <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
-                <MessageCircle className="w-4 h-4 text-white" />
-              </div>
-              Переписки
+            <h2 className="text-xl font-bold text-gray-800">
+              Сообщения
             </h2>
           </div>
           
