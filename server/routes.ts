@@ -2576,6 +2576,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = parseInt(req.params.userId);
       console.log(`📊 Получение общего количества непрочитанных сообщений для пользователя ${userId}`);
       
+      // Отключаем HTTP кэширование для этого endpoint
+      res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+      res.set('Pragma', 'no-cache');
+      res.set('Expires', '0');
+      
       // ДЕМО: Для пользователя 4 показываем логику работы красного значка
       if (userId === 4) {
         // Если пользователь НЕ заходил на страницу сообщений - показываем 2 

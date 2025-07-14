@@ -94,8 +94,9 @@ export function TopHeader({
   // Получаем количество непрочитанных сообщений
   const { data: unreadCount } = useQuery({
     queryKey: [`/api/messages/unread-count/${currentUserId}`],
-    refetchInterval: 3000, // Обновляем каждые 3 секунды
-    staleTime: 1000, // Данные становятся устаревшими через 1 секунду
+    refetchInterval: 1000, // Обновляем каждую секунду
+    staleTime: 0, // Данные всегда устаревшие - перезапрашиваем каждый раз
+    gcTime: 0, // Не кэшируем данные
     enabled: !shouldHideNotifications() && !!currentUserId
   });
 
