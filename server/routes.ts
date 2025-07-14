@@ -2532,6 +2532,82 @@ async function sendSMSCode(phoneNumber: string, code: string): Promise<{success:
     res.json({ timestamp: lastBidUpdate });
   });
 
+  // Messaging API routes
+  app.get("/api/conversations/:userId", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      const conversations = await storage.getConversationsByUser(userId);
+      res.json(conversations);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch conversations" });
+    }
+  });
+
+  app.post("/api/conversations", async (req, res) => {
+    try {
+      const { buyerId, sellerId, listingId } = req.body;
+      
+      // Проверяем, существует ли уже такая переписка
+      const existingConversation = await storage.getConversationByParticipants(buyerId, sellerId, listingId);
+      if (existingConversation) {
+        return res.json(existingConversation);
+      }
+
+      const conversation = await storage.createConversation({ buyerId, sellerId, listingId });
+      res.status(201).json(conversation);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to create conversation" });
+    }
+  });
+
+  app.get("/api/conversations/:conversationId/messages", async (req, res) => {
+    try {
+      const conversationId = parseInt(req.params.conversationId);
+      const messages = await storage.getMessagesByConversation(conversationId);
+      res.json(messages);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch messages" });
+    }
+  });
+
+  app.post("/api/conversations/:conversationId/messages", async (req, res) => {
+    try {
+      const conversationId = parseInt(req.params.conversationId);
+      const { senderId, content } = req.body;
+      
+      const message = await storage.createMessage({ conversationId, senderId, content });
+      res.status(201).json(message);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to send message" });
+    }
+  });
+
+  app.patch("/api/conversations/:conversationId/messages/:messageId/read", async (req, res) => {
+    try {
+      const messageId = parseInt(req.params.messageId);
+      const success = await storage.markMessageAsRead(messageId);
+      
+      if (!success) {
+        return res.status(404).json({ error: "Message not found" });
+      }
+      
+      res.status(204).send();
+    } catch (error) {
+      res.status(500).json({ error: "Failed to mark message as read" });
+    }
+  });
+
+  app.get("/api/conversations/:conversationId/unread-count/:userId", async (req, res) => {
+    try {
+      const conversationId = parseInt(req.params.conversationId);
+      const userId = parseInt(req.params.userId);
+      const count = await storage.getUnreadMessageCount(conversationId, userId);
+      res.json({ count });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to get unread count" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

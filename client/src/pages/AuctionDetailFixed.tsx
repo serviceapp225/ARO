@@ -19,7 +19,7 @@ import {
   ArrowLeft, Car, Heart, Clock, TrendingUp, 
   Users, MapPin, Calendar, Gauge, Fuel, 
   Settings, Palette, Hash, Camera,
-  ChevronLeft, ChevronRight
+  ChevronLeft, ChevronRight, MessageSquare
 } from 'lucide-react';
 
 export default function AuctionDetail() {
@@ -363,6 +363,30 @@ export default function AuctionDetail() {
       });
     },
   });
+
+  // Функция для связи с продавцом
+  const handleContactSeller = () => {
+    if (!currentUser) {
+      toast({
+        title: "Войдите в систему",
+        description: "Для связи с продавцом необходимо войти в систему",
+        variant: "destructive",
+        duration: 3000,
+      });
+      setLocation('/login');
+      return;
+    }
+    
+    if (!currentUser.isActive) {
+      setShowActivationDialog(true);
+      return;
+    }
+    
+    if (!auction) return;
+    
+    // Переход на страницу сообщений с параметрами
+    setLocation(`/messages?buyerId=${currentUser.userId}&sellerId=${auction.sellerId}&listingId=${auction.id}`);
+  };
 
   // All useEffect hooks - placed after state initialization but before conditional returns
   useEffect(() => {
@@ -1363,32 +1387,44 @@ export default function AuctionDetail() {
                   );
                 } else if (!showBidInput) {
                   return (
-                    <Button 
-                      onClick={() => {
-                        if (!currentUser) {
-                          toast({
-                            title: "Войдите в систему",
-                            description: "Для участия в аукционе необходимо войти в систему",
-                            variant: "destructive",
-                            duration: 3000,
-                          });
-                          setLocation('/login');
-                          return;
-                        }
-                        
-                        // Check if user is active before showing bid input
-                        if (!currentUser.isActive) {
-                          setShowActivationDialog(true);
-                          return;
-                        }
-                        
-                        setShowBidInput(true);
-                      }}
-                      className="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-3"
-                      size="lg"
-                    >
-                      Сделать ставку
-                    </Button>
+                    <div className="space-y-2">
+                      <Button 
+                        onClick={() => {
+                          if (!currentUser) {
+                            toast({
+                              title: "Войдите в систему",
+                              description: "Для участия в аукционе необходимо войти в систему",
+                              variant: "destructive",
+                              duration: 3000,
+                            });
+                            setLocation('/login');
+                            return;
+                          }
+                          
+                          // Check if user is active before showing bid input
+                          if (!currentUser.isActive) {
+                            setShowActivationDialog(true);
+                            return;
+                          }
+                          
+                          setShowBidInput(true);
+                        }}
+                        className="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-3"
+                        size="lg"
+                      >
+                        Сделать ставку
+                      </Button>
+                      
+                      <Button 
+                        onClick={handleContactSeller}
+                        variant="outline"
+                        className="w-full border-blue-500 text-blue-600 hover:bg-blue-50 font-medium py-3"
+                        size="lg"
+                      >
+                        <MessageSquare className="h-4 w-4 mr-2" />
+                        Связаться с продавцом
+                      </Button>
+                    </div>
                   );
                 } else {
                   return (

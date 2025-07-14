@@ -3,9 +3,10 @@ import { IStorage } from './storage';
 import type {
   User, CarListing, Bid, Favorite, Notification, CarAlert,
   Banner, SellCarSection, AdvertisementCarousel, Document, AlertView, UserWin,
+  Conversation, Message,
   InsertUser, InsertCarListing, InsertBid, InsertFavorite, InsertNotification,
   InsertCarAlert, InsertBanner, InsertSellCarSection, InsertAdvertisementCarousel,
-  InsertDocument, InsertAlertView, InsertUserWin
+  InsertDocument, InsertAlertView, InsertUserWin, InsertConversation, InsertMessage
 } from '@shared/schema';
 
 export class SQLiteStorage implements IStorage {
@@ -225,6 +226,34 @@ export class SQLiteStorage implements IStorage {
         listing_id INTEGER NOT NULL,
         winning_bid DECIMAL(12,2) NOT NULL,
         won_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    // Create conversations table
+    this.db.exec(`
+      CREATE TABLE IF NOT EXISTS conversations (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        buyer_id INTEGER NOT NULL,
+        seller_id INTEGER NOT NULL,
+        listing_id INTEGER NOT NULL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (buyer_id) REFERENCES users(id),
+        FOREIGN KEY (seller_id) REFERENCES users(id),
+        FOREIGN KEY (listing_id) REFERENCES car_listings(id)
+      )
+    `);
+
+    // Create messages table
+    this.db.exec(`
+      CREATE TABLE IF NOT EXISTS messages (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        conversation_id INTEGER NOT NULL,
+        sender_id INTEGER NOT NULL,
+        content TEXT NOT NULL,
+        is_read BOOLEAN DEFAULT 0,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (conversation_id) REFERENCES conversations(id),
+        FOREIGN KEY (sender_id) REFERENCES users(id)
       )
     `);
   }
@@ -2161,5 +2190,135 @@ export class SQLiteStorage implements IStorage {
       console.error(`❌ Ошибка при финализации аукциона ${listing.id}:`, error);
       throw error;
     }
+  }
+
+  // Messaging methods
+  async getConversationsByUser(userId: number): Promise<Conversation[]> {
+    const stmt = this.db.prepare(`
+      SELECT c.*, 
+             u1.full_name as buyer_name, 
+             u2.full_name as seller_name,
+             cl.make, cl.model, cl.year, cl.lot_number,
+             (SELECT COUNT(*) FROM messages m WHERE m.conversation_id = c.id AND m.sender_id != ? AND m.is_read = 0) as unread_count
+      FROM conversations c
+      JOIN users u1 ON c.buyer_id = u1.id
+      JOIN users u2 ON c.seller_id = u2.id
+      JOIN car_listings cl ON c.listing_id = cl.id
+      WHERE c.buyer_id = ? OR c.seller_id = ?
+      ORDER BY c.created_at DESC
+    `);
+    const rows = stmt.all(userId, userId, userId);
+    return rows.map(row => ({
+      id: row.id,
+      buyerId: row.buyer_id,
+      sellerId: row.seller_id,
+      listingId: row.listing_id,
+      buyerName: row.buyer_name,
+      sellerName: row.seller_name,
+      carInfo: {
+        make: row.make,
+        model: row.model,
+        year: row.year,
+        lotNumber: row.lot_number
+      },
+      unreadCount: row.unread_count,
+      createdAt: new Date(row.created_at)
+    }));
+  }
+
+  async getConversationByParticipants(buyerId: number, sellerId: number, listingId: number): Promise<Conversation | undefined> {
+    const stmt = this.db.prepare(`
+      SELECT * FROM conversations 
+      WHERE buyer_id = ? AND seller_id = ? AND listing_id = ?
+    `);
+    const row = stmt.get(buyerId, sellerId, listingId);
+    return row ? {
+      id: row.id,
+      buyerId: row.buyer_id,
+      sellerId: row.seller_id,
+      listingId: row.listing_id,
+      createdAt: new Date(row.created_at)
+    } : undefined;
+  }
+
+  async createConversation(data: { buyerId: number; sellerId: number; listingId: number }): Promise<Conversation> {
+    const stmt = this.db.prepare(`
+      INSERT INTO conversations (buyer_id, seller_id, listing_id) 
+      VALUES (?, ?, ?)
+    `);
+    const result = stmt.run(data.buyerId, data.sellerId, data.listingId);
+    
+    const getStmt = this.db.prepare('SELECT * FROM conversations WHERE id = ?');
+    const row = getStmt.get(result.lastInsertRowid);
+    
+    return {
+      id: row.id,
+      buyerId: row.buyer_id,
+      sellerId: row.seller_id,
+      listingId: row.listing_id,
+      createdAt: new Date(row.created_at)
+    };
+  }
+
+  async getMessagesByConversation(conversationId: number): Promise<Message[]> {
+    const stmt = this.db.prepare(`
+      SELECT m.*, u.full_name as sender_name
+      FROM messages m
+      JOIN users u ON m.sender_id = u.id
+      WHERE m.conversation_id = ?
+      ORDER BY m.created_at ASC
+    `);
+    const rows = stmt.all(conversationId);
+    return rows.map(row => ({
+      id: row.id,
+      conversationId: row.conversation_id,
+      senderId: row.sender_id,
+      senderName: row.sender_name,
+      content: row.content,
+      isRead: Boolean(row.is_read),
+      createdAt: new Date(row.created_at)
+    }));
+  }
+
+  async createMessage(data: { conversationId: number; senderId: number; content: string }): Promise<Message> {
+    const stmt = this.db.prepare(`
+      INSERT INTO messages (conversation_id, sender_id, content) 
+      VALUES (?, ?, ?)
+    `);
+    const result = stmt.run(data.conversationId, data.senderId, data.content);
+    
+    const getStmt = this.db.prepare(`
+      SELECT m.*, u.full_name as sender_name
+      FROM messages m
+      JOIN users u ON m.sender_id = u.id
+      WHERE m.id = ?
+    `);
+    const row = getStmt.get(result.lastInsertRowid);
+    
+    return {
+      id: row.id,
+      conversationId: row.conversation_id,
+      senderId: row.sender_id,
+      senderName: row.sender_name,
+      content: row.content,
+      isRead: Boolean(row.is_read),
+      createdAt: new Date(row.created_at)
+    };
+  }
+
+  async markMessageAsRead(messageId: number): Promise<boolean> {
+    const stmt = this.db.prepare('UPDATE messages SET is_read = 1 WHERE id = ?');
+    const result = stmt.run(messageId);
+    return result.changes > 0;
+  }
+
+  async getUnreadMessageCount(conversationId: number, userId: number): Promise<number> {
+    const stmt = this.db.prepare(`
+      SELECT COUNT(*) as count 
+      FROM messages 
+      WHERE conversation_id = ? AND sender_id != ? AND is_read = 0
+    `);
+    const row = stmt.get(conversationId, userId);
+    return row ? row.count : 0;
   }
 }
