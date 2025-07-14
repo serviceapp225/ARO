@@ -209,7 +209,8 @@ function ModerationManagement() {
       toast({
         title: "Объявление одобрено",
         description: "Объявление теперь доступно в публичном каталоге",
-        variant: "default"
+        variant: "default",
+        duration: 1000
       });
       queryClient.invalidateQueries({ queryKey: ['/api/admin/listings/pending-approval'] });
     },
