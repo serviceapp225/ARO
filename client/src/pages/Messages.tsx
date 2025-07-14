@@ -337,105 +337,111 @@ export default function Messages() {
 
       {/* Область сообщений */}
       <div className="flex-1 flex flex-col pl-4 h-full">
-        {selectedConversation ? (
-          <>
-            {/* Заголовок переписки */}
-            <div className="border-b border-gray-200 pb-4 mb-4 flex-shrink-0">
-              {conversations.find(c => c.id === selectedConversation) && (
-                <div className="flex items-center gap-3">
-                  <Avatar className="w-10 h-10">
-                    <AvatarFallback className="bg-blue-100 text-blue-600">
-                      <User className="w-5 h-5" />
-                    </AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <h2 className="font-semibold text-gray-900">
-                      {conversations.find(c => c.id === selectedConversation)?.otherUser.fullName}
-                    </h2>
-                    <p className="text-sm text-gray-600">
-                      {conversations.find(c => c.id === selectedConversation)?.listing.make}{" "}
-                      {conversations.find(c => c.id === selectedConversation)?.listing.model}{" "}
-                      {conversations.find(c => c.id === selectedConversation)?.listing.year}
-                    </p>
-                  </div>
-                </div>
-              )}
+        {/* Заголовок переписки */}
+        <div className="border-b border-gray-200 pb-4 mb-4 flex-shrink-0">
+          {selectedConversation && conversations.find(c => c.id === selectedConversation) ? (
+            <div className="flex items-center gap-3">
+              <Avatar className="w-10 h-10">
+                <AvatarFallback className="bg-blue-100 text-blue-600">
+                  <User className="w-5 h-5" />
+                </AvatarFallback>
+              </Avatar>
+              <div>
+                <h2 className="font-semibold text-gray-900">
+                  {conversations.find(c => c.id === selectedConversation)?.otherUser.fullName}
+                </h2>
+                <p className="text-sm text-gray-600">
+                  {conversations.find(c => c.id === selectedConversation)?.listing.make}{" "}
+                  {conversations.find(c => c.id === selectedConversation)?.listing.model}{" "}
+                  {conversations.find(c => c.id === selectedConversation)?.listing.year}
+                </p>
+              </div>
             </div>
+          ) : (
+            <div className="flex items-center justify-center py-4">
+              <p className="text-gray-500">Выберите переписку для начала общения</p>
+            </div>
+          )}
+        </div>
 
-            {/* Сообщения */}
-            <div className="flex-1 overflow-y-auto mb-4 space-y-4 min-h-0">
-              {messagesLoading ? (
-                <div className="flex items-center justify-center py-8">
-                  <p className="text-gray-500">Загрузка сообщений...</p>
-                </div>
-              ) : messages && messages.length > 0 ? (
-                messages.map((message) => (
-                  <div
-                    key={message.id}
-                    className={`flex ${
-                      message.senderId === user?.userId ? "justify-end" : "justify-start"
+        {/* Сообщения */}
+        <div className="flex-1 overflow-y-auto mb-4 space-y-4 min-h-0">
+          {!selectedConversation ? (
+            <div className="flex items-center justify-center h-full">
+              <div className="text-center">
+                <MessageCircle className="w-16 h-16 mx-auto mb-4 text-gray-400" />
+                <h2 className="text-xl font-semibold text-gray-800 mb-2">
+                  Выберите переписку
+                </h2>
+                <p className="text-gray-500">
+                  Нажмите на переписку слева, чтобы начать общение
+                </p>
+              </div>
+            </div>
+          ) : messagesLoading ? (
+            <div className="flex items-center justify-center py-8">
+              <p className="text-gray-500">Загрузка сообщений...</p>
+            </div>
+          ) : messages && messages.length > 0 ? (
+            messages.map((message) => (
+              <div
+                key={message.id}
+                className={`flex ${
+                  message.senderId === user?.userId ? "justify-end" : "justify-start"
+                }`}
+              >
+                <div
+                  className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
+                    message.senderId === user?.userId
+                      ? "bg-blue-500 text-white"
+                      : "bg-gray-100 text-gray-900"
+                  }`}
+                >
+                  <p className="text-sm">{message.content}</p>
+                  <p
+                    className={`text-xs mt-1 ${
+                      message.senderId === user?.userId
+                        ? "text-blue-100"
+                        : "text-gray-500"
                     }`}
                   >
-                    <div
-                      className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
-                        message.senderId === user?.userId
-                          ? "bg-blue-500 text-white"
-                          : "bg-gray-100 text-gray-900"
-                      }`}
-                    >
-                      <p className="text-sm">{message.content}</p>
-                      <p
-                        className={`text-xs mt-1 ${
-                          message.senderId === user?.userId
-                            ? "text-blue-100"
-                            : "text-gray-500"
-                        }`}
-                      >
-                        {formatDate(message.createdAt)}
-                      </p>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <div className="flex items-center justify-center py-8">
-                  <p className="text-gray-500">Нет сообщений</p>
+                    {formatDate(message.createdAt)}
+                  </p>
                 </div>
-              )}
+              </div>
+            ))
+          ) : (
+            <div className="flex items-center justify-center py-8">
+              <p className="text-gray-500">Нет сообщений</p>
             </div>
+          )}
+        </div>
 
-            {/* Поле ввода - всегда видимо */}
-            <div className="flex gap-2 flex-shrink-0 border-t border-gray-200 pt-4">
-              <Input
-                value={messageText}
-                onChange={(e) => setMessageText(e.target.value)}
-                placeholder="Введите сообщение..."
-                onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
-                className="flex-1"
-                disabled={sendMessageMutation.isPending}
-              />
-              <Button
-                onClick={handleSendMessage}
-                disabled={!messageText.trim() || sendMessageMutation.isPending}
-                className="gap-2"
-              >
-                <Send className="w-4 h-4" />
-                {sendMessageMutation.isPending ? "Отправка..." : "Отправить"}
-              </Button>
-            </div>
-          </>
-        ) : (
-          <div className="flex items-center justify-center h-full">
-            <div className="text-center">
-              <MessageCircle className="w-16 h-16 mx-auto mb-4 text-gray-400" />
-              <h2 className="text-xl font-semibold text-gray-800 mb-2">
-                Выберите переписку
-              </h2>
-              <p className="text-gray-500">
-                Нажмите на переписку слева, чтобы начать общение
-              </p>
-            </div>
-          </div>
-        )}
+        {/* Поле ввода - ВСЕГДА ВИДИМО при наличии переписок */}
+        <div className="flex gap-2 flex-shrink-0 border-t border-gray-200 pt-4">
+          <Input
+            value={messageText}
+            onChange={(e) => setMessageText(e.target.value)}
+            placeholder={
+              conversationsLoading 
+                ? "Загрузка переписок..." 
+                : selectedConversation 
+                  ? "Введите сообщение..." 
+                  : "Сначала выберите переписку"
+            }
+            onKeyPress={(e) => e.key === "Enter" && selectedConversation && handleSendMessage()}
+            className="flex-1"
+            disabled={sendMessageMutation.isPending || !selectedConversation || conversationsLoading}
+          />
+          <Button
+            onClick={handleSendMessage}
+            disabled={!messageText.trim() || sendMessageMutation.isPending || !selectedConversation || conversationsLoading}
+            className="gap-2"
+          >
+            <Send className="w-4 h-4" />
+            {sendMessageMutation.isPending ? "Отправка..." : "Отправить"}
+          </Button>
+        </div>
       </div>
     </div>
   );
