@@ -418,11 +418,7 @@ export default function Messages() {
                       <span className="text-sm text-gray-600">Активен</span>
                     </div>
                   </div>
-                ) : (
-                  <div className="flex items-center justify-center py-4">
-                    <p className="text-gray-500 text-lg">Выберите переписку для начала общения</p>
-                  </div>
-                )}
+                ) : null}
               </div>
 
               {/* Сообщения с красивыми пузырями */}
@@ -521,10 +517,7 @@ export default function Messages() {
                         Отправка...
                       </div>
                     ) : (
-                      <div className="flex items-center gap-2">
-                        <Send className="w-5 h-5" />
-                        Отправить
-                      </div>
+                      <Send className="w-5 h-5" />
                     )}
                   </Button>
                 </div>
