@@ -40,18 +40,111 @@ export default function Terms() {
               </div>
             </div>
 
-            {/* PDF Embed */}
+            {/* Terms of Service Content */}
             <div className="p-6">
-              <div className="w-full h-96 bg-gray-100 rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center">
-                <div className="text-center">
-                  <FileText className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-gray-700 mb-2">
-                    PDF документ
-                  </h3>
-                  <p className="text-gray-500">
-                    Здесь будет отображен PDF файл с правилами и условиями
+              <div className="prose prose-gray max-w-none">
+                
+                {/* Date */}
+                <div className="mb-6 p-4 bg-blue-50 rounded-lg">
+                  <p className="text-sm text-blue-800 font-medium">
+                    Дата вступления в силу: 14 января 2025 г.
                   </p>
                 </div>
+
+                {/* Welcome */}
+                <div className="mb-8">
+                  <p className="text-gray-700 leading-relaxed">
+                    Добро пожаловать на сайт AutoBid TJ! Пожалуйста, внимательно ознакомьтесь с настоящими Условиями использования перед началом работы с нашим веб-сайтом.
+                  </p>
+                </div>
+
+                {/* Section 1 */}
+                <div className="mb-8">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">1. Общие положения</h3>
+                  <p className="text-gray-700 leading-relaxed">
+                    Настоящие Условия регулируют использование вами сайта AutoBid TJ (далее — «Сайт»), а также всех сервисов, предоставляемых на нём. Посещая или используя Сайт, вы соглашаетесь соблюдать данные Условия. Если вы не согласны с ними — пожалуйста, не используйте Сайт.
+                  </p>
+                </div>
+
+                {/* Section 2 */}
+                <div className="mb-8">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">2. Регистрация и аккаунт</h3>
+                  <p className="text-gray-700 leading-relaxed">
+                    Для участия в торгах вы обязаны создать личный аккаунт, указав достоверную информацию. Пользователь несёт ответственность за конфиденциальность своих данных и всех действий, совершаемых через его аккаунт.
+                  </p>
+                </div>
+
+                {/* Section 3 */}
+                <div className="mb-8">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">3. Участие в торгах</h3>
+                  <p className="text-gray-700 leading-relaxed">
+                    Пользователи могут участвовать в аукционах и делать ставки на транспортные средства. Все ставки являются обязательными. Победитель аукциона обязан произвести оплату в установленные сроки. Невыполнение этих обязательств может повлечь блокировку аккаунта.
+                  </p>
+                </div>
+
+                {/* Section 4 */}
+                <div className="mb-8">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">4. Ответственность и гарантии</h3>
+                  <p className="text-gray-700 leading-relaxed">
+                    AutoBid TJ предоставляет информацию о лотах в том виде, в каком она была получена от продавца. Мы не даём никаких гарантий на состояние транспортных средств. Покупатель несёт ответственность за проверку автомобиля до покупки.
+                  </p>
+                </div>
+
+                {/* Section 5 */}
+                <div className="mb-8">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">5. Ограничение ответственности</h3>
+                  <p className="text-gray-700 leading-relaxed">
+                    AutoBid TJ не несёт ответственности за любые убытки или потери, возникшие в результате участия в торгах или использования информации с сайта.
+                  </p>
+                </div>
+
+                {/* Section 6 */}
+                <div className="mb-8">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">6. Запрещённые действия</h3>
+                  <p className="text-gray-700 leading-relaxed">
+                    Запрещается использовать Сайт в незаконных целях, передавать вредоносные программы, вмешиваться в работу платформы, а также создавать фальшивые аккаунты.
+                  </p>
+                </div>
+
+                {/* Section 7 */}
+                <div className="mb-8">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">7. Изменения условий</h3>
+                  <p className="text-gray-700 leading-relaxed">
+                    Администрация AutoBid TJ оставляет за собой право в любое время вносить изменения в данные Условия. Продолжение использования Сайта после изменений означает ваше согласие с обновлённой редакцией.
+                  </p>
+                </div>
+
+                {/* Section 8 */}
+                <div className="mb-8">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">8. Применимое право</h3>
+                  <p className="text-gray-700 leading-relaxed">
+                    Настоящие Условия регулируются законодательством Республики Таджикистан. Все споры подлежат разрешению в соответствующих судах по месту регистрации компании.
+                  </p>
+                </div>
+
+                {/* Contact Information */}
+                <div className="mt-12 pt-8 border-t border-gray-200">
+                  <div className="p-4 bg-blue-50 rounded-lg">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">Контакты</h3>
+                    <p className="text-gray-700">
+                      Если у вас есть вопросы по настоящим Условиям, свяжитесь с нами через форму обратной связи или по телефону поддержки AutoBid TJ.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Important Notice */}
+                <div className="mt-6 p-4 bg-amber-50 rounded-lg">
+                  <div className="flex items-start gap-3">
+                    <FileText className="w-5 h-5 text-amber-600 mt-0.5 flex-shrink-0" />
+                    <div>
+                      <h4 className="font-semibold text-amber-900 mb-1">Важное уведомление</h4>
+                      <p className="text-sm text-amber-800">
+                        Использование платформы AutoBid TJ означает ваше полное согласие с данными условиями. Регулярно проверяйте обновления данного документа.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
               </div>
             </div>
           </div>
