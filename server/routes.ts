@@ -2473,9 +2473,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   console.log('🤖 Автоматическая обработка просроченных аукционов запущена (каждые 5 минут)');
   
   // Messaging API routes
-  app.get("/api/conversations/:userId", async (req, res) => {
+  app.get("/api/conversations", async (req, res) => {
     try {
-      const userId = parseInt(req.params.userId);
+      const userId = parseInt(req.query.userId as string);
+      if (!userId) {
+        return res.status(400).json({ error: "userId query parameter is required" });
+      }
       const conversations = await storage.getConversationsByUser(userId);
       res.json(conversations);
     } catch (error) {
@@ -2513,7 +2516,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/conversations/:conversationId/messages", async (req, res) => {
     try {
       const conversationId = parseInt(req.params.conversationId);
-      const { senderId, content } = req.body;
+      const { content } = req.body;
+      
+      // Получаем senderId из сессии или другого источника аутентификации
+      const senderId = req.session?.user?.id || req.body.senderId;
+      
+      if (!senderId) {
+        return res.status(400).json({ error: "User not authenticated" });
+      }
       
       const message = await storage.createMessage({ conversationId, senderId, content });
       res.status(201).json(message);

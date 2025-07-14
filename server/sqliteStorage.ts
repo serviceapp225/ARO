@@ -2196,10 +2196,13 @@ export class SQLiteStorage implements IStorage {
   async getConversationsByUser(userId: number): Promise<Conversation[]> {
     const stmt = this.db.prepare(`
       SELECT c.*, 
-             u1.full_name as buyer_name, 
-             u2.full_name as seller_name,
-             cl.make, cl.model, cl.year, cl.lot_number,
-             (SELECT COUNT(*) FROM messages m WHERE m.conversation_id = c.id AND m.sender_id != ? AND m.is_read = 0) as unread_count
+             u1.full_name as buyer_name, u1.email as buyer_email,
+             u2.full_name as seller_name, u2.email as seller_email,
+             cl.make, cl.model, cl.year, cl.lot_number, cl.photos,
+             (SELECT COUNT(*) FROM messages m WHERE m.conversation_id = c.id AND m.sender_id != ? AND m.is_read = 0) as unread_count,
+             (SELECT m.content FROM messages m WHERE m.conversation_id = c.id ORDER BY m.created_at DESC LIMIT 1) as last_message_content,
+             (SELECT m.sender_id FROM messages m WHERE m.conversation_id = c.id ORDER BY m.created_at DESC LIMIT 1) as last_message_sender_id,
+             (SELECT m.created_at FROM messages m WHERE m.conversation_id = c.id ORDER BY m.created_at DESC LIMIT 1) as last_message_created_at
       FROM conversations c
       JOIN users u1 ON c.buyer_id = u1.id
       JOIN users u2 ON c.seller_id = u2.id
@@ -2208,22 +2211,40 @@ export class SQLiteStorage implements IStorage {
       ORDER BY c.created_at DESC
     `);
     const rows = stmt.all(userId, userId, userId);
-    return rows.map(row => ({
-      id: row.id,
-      buyerId: row.buyer_id,
-      sellerId: row.seller_id,
-      listingId: row.listing_id,
-      buyerName: row.buyer_name,
-      sellerName: row.seller_name,
-      carInfo: {
-        make: row.make,
-        model: row.model,
-        year: row.year,
-        lotNumber: row.lot_number
-      },
-      unreadCount: row.unread_count,
-      createdAt: new Date(row.created_at)
-    }));
+    return rows.map(row => {
+      const isUserBuyer = row.buyer_id === userId;
+      const otherUserName = isUserBuyer ? row.seller_name : row.buyer_name;
+      const otherUserEmail = isUserBuyer ? row.seller_email : row.buyer_email;
+      const otherUserId = isUserBuyer ? row.seller_id : row.buyer_id;
+      
+      const photos = row.photos ? JSON.parse(row.photos) : [];
+      
+      return {
+        id: row.id,
+        listingId: row.listing_id,
+        listing: {
+          id: row.listing_id,
+          make: row.make,
+          model: row.model,
+          year: row.year,
+          lotNumber: row.lot_number,
+          photos: photos
+        },
+        otherUser: {
+          id: otherUserId,
+          fullName: otherUserName,
+          email: otherUserEmail
+        },
+        lastMessage: row.last_message_content ? {
+          id: 0,
+          content: row.last_message_content,
+          createdAt: row.last_message_created_at,
+          senderId: row.last_message_sender_id
+        } : undefined,
+        unreadCount: row.unread_count,
+        createdAt: new Date(row.created_at)
+      };
+    });
   }
 
   async getConversationByParticipants(buyerId: number, sellerId: number, listingId: number): Promise<Conversation | undefined> {
@@ -2262,7 +2283,7 @@ export class SQLiteStorage implements IStorage {
 
   async getMessagesByConversation(conversationId: number): Promise<Message[]> {
     const stmt = this.db.prepare(`
-      SELECT m.*, u.full_name as sender_name
+      SELECT m.*, u.full_name as sender_name, u.email as sender_email
       FROM messages m
       JOIN users u ON m.sender_id = u.id
       WHERE m.conversation_id = ?
@@ -2271,12 +2292,14 @@ export class SQLiteStorage implements IStorage {
     const rows = stmt.all(conversationId);
     return rows.map(row => ({
       id: row.id,
-      conversationId: row.conversation_id,
-      senderId: row.sender_id,
-      senderName: row.sender_name,
       content: row.content,
-      isRead: Boolean(row.is_read),
-      createdAt: new Date(row.created_at)
+      createdAt: row.created_at,
+      senderId: row.sender_id,
+      sender: {
+        id: row.sender_id,
+        fullName: row.sender_name,
+        email: row.sender_email
+      }
     }));
   }
 

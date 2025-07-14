@@ -98,6 +98,10 @@ export default function Messages() {
   // Получение списка переписок
   const { data: conversations, isLoading: conversationsLoading } = useQuery<ConversationData[]>({
     queryKey: ["/api/conversations", user?.userId],
+    queryFn: async () => {
+      const res = await apiRequest('GET', `/api/conversations?userId=${user?.userId}`);
+      return res.json();
+    },
     enabled: !!user?.userId,
   });
 
