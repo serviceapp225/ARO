@@ -316,3 +316,51 @@ export const insertUserWinSchema = createInsertSchema(userWins).omit({
 
 export type InsertUserWin = z.infer<typeof insertUserWinSchema>;
 export type UserWin = typeof userWins.$inferSelect;
+
+// Conversations table for messaging system
+export const conversations = pgTable("conversations", {
+  id: serial("id").primaryKey(),
+  listingId: integer("listing_id").notNull().references(() => carListings.id, { onDelete: "cascade" }),
+  buyerId: integer("buyer_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  sellerId: integer("seller_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  lastMessageAt: timestamp("last_message_at").defaultNow(),
+  createdAt: timestamp("created_at").defaultNow(),
+}, (table) => ({
+  buyerIdx: index("conversations_buyer_idx").on(table.buyerId),
+  sellerIdx: index("conversations_seller_idx").on(table.sellerId),
+  listingIdx: index("conversations_listing_idx").on(table.listingId),
+  // Уникальный индекс для предотвращения дублирования переписок
+  uniqueConversationIdx: index("conversations_unique_idx").on(table.listingId, table.buyerId, table.sellerId),
+}));
+
+export const insertConversationSchema = createInsertSchema(conversations).omit({
+  id: true,
+  lastMessageAt: true,
+  createdAt: true,
+});
+
+export type InsertConversation = z.infer<typeof insertConversationSchema>;
+export type Conversation = typeof conversations.$inferSelect;
+
+// Messages table for messaging system
+export const messages = pgTable("messages", {
+  id: serial("id").primaryKey(),
+  conversationId: integer("conversation_id").notNull().references(() => conversations.id, { onDelete: "cascade" }),
+  senderId: integer("sender_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  content: text("content").notNull(),
+  isRead: boolean("is_read").default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+}, (table) => ({
+  conversationIdx: index("messages_conversation_idx").on(table.conversationId),
+  senderIdx: index("messages_sender_idx").on(table.senderId),
+  createdAtIdx: index("messages_created_at_idx").on(table.createdAt),
+}));
+
+export const insertMessageSchema = createInsertSchema(messages).omit({
+  id: true,
+  isRead: true,
+  createdAt: true,
+});
+
+export type InsertMessage = z.infer<typeof insertMessageSchema>;
+export type Message = typeof messages.$inferSelect;

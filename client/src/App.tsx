@@ -28,6 +28,7 @@ import Privacy from "@/pages/Privacy";
 import Login from "@/pages/Login";
 import AdminPanel from "@/pages/AdminPanel";
 import SpecialOffers from "@/pages/SpecialOffers";
+import Messages from "@/pages/Messages";
 
 import NotFound from "@/pages/not-found";
 import { FlutterPreview } from "@/pages/FlutterPreview";
@@ -102,6 +103,7 @@ function Router() {
         <Route path="/login" component={Login} />
         <Route path="/admin" component={AdminPanel} />
         <Route path="/special-offers" component={SpecialOffers} />
+        <Route path="/messages" component={Messages} />
 
         <Route path="/flutter-preview" component={FlutterPreview} />
         <Route component={NotFound} />
