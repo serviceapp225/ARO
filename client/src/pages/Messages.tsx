@@ -301,7 +301,7 @@ export default function Messages() {
         <div className="max-w-7xl mx-auto px-6 py-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <Link href="/profile">
+              <Link href="/">
                 <Button variant="ghost" size="icon" className="mr-2">
                   <ArrowLeft className="w-6 h-6" />
                 </Button>
