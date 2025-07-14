@@ -32,6 +32,7 @@ export function AdvertisementCarousel() {
   const [showReferralModal, setShowReferralModal] = useState(false);
   const [showSupportModal, setShowSupportModal] = useState(false);
   const [, setLocation] = useLocation();
+  const [isTransitioning, setIsTransitioning] = useState(false);
 
   const { data: advertisements = [], isLoading } = useQuery<AdvertisementItem[]>({
     queryKey: ['/api/advertisement-carousel'],
@@ -50,28 +51,47 @@ export function AdvertisementCarousel() {
   console.log('🎠 Загружены объявления карусели:', advertisements);
   console.log('🎯 Активные объявления:', activeAds);
 
+  // Функция для плавного перехода между слайдами
+  const smoothTransition = (newSlide: number) => {
+    if (isTransitioning || newSlide === currentSlide) return;
+    
+    setIsTransitioning(true);
+    
+    // Запускаем fade out для текущего слайда
+    setTimeout(() => {
+      setCurrentSlide(newSlide);
+      // Даем время для fade in нового слайда
+      setTimeout(() => {
+        setIsTransitioning(false);
+      }, 400);
+    }, 200);
+  };
+
   // Автоматическое переключение каждые 5 секунд
   useEffect(() => {
-    if (activeAds.length <= 1 || isPaused) return;
+    if (activeAds.length <= 1 || isPaused || isTransitioning) return;
 
     const interval = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % activeAds.length);
+      const nextSlide = (currentSlide + 1) % activeAds.length;
+      smoothTransition(nextSlide);
     }, 5000);
 
     return () => clearInterval(interval);
-  }, [activeAds.length, isPaused]);
+  }, [activeAds.length, isPaused, isTransitioning, currentSlide]);
 
   // Ручное переключение слайдов
   const goToSlide = (index: number) => {
-    setCurrentSlide(index);
+    smoothTransition(index);
   };
 
   const nextSlide = () => {
-    setCurrentSlide((prev) => (prev + 1) % activeAds.length);
+    const next = (currentSlide + 1) % activeAds.length;
+    smoothTransition(next);
   };
 
   const prevSlide = () => {
-    setCurrentSlide((prev) => (prev - 1 + activeAds.length) % activeAds.length);
+    const prev = (currentSlide - 1 + activeAds.length) % activeAds.length;
+    smoothTransition(prev);
   };
 
   const handleSupportClick = () => {
@@ -158,9 +178,11 @@ export function AdvertisementCarousel() {
       onMouseLeave={() => setIsPaused(false)}
       onClick={handleClick}
     >
-      {/* Background Image */}
+      {/* Background Image with fade transition */}
       <div 
-        className="absolute inset-0 rounded-2xl bg-cover bg-center bg-no-repeat"
+        className={`absolute inset-0 rounded-2xl bg-cover bg-center bg-no-repeat transition-opacity duration-[400ms] ${
+          isTransitioning ? 'opacity-0' : 'opacity-100'
+        }`}
         style={{
           backgroundImage: `url('${currentAd.imageUrl}')`,
         }}
@@ -168,14 +190,18 @@ export function AdvertisementCarousel() {
       
       {/* Minimal dark overlay for text readability */}
       <div 
-        className="absolute inset-0 rounded-2xl"
+        className={`absolute inset-0 rounded-2xl transition-opacity duration-[400ms] ${
+          isTransitioning ? 'opacity-0' : 'opacity-100'
+        }`}
         style={{
           background: 'linear-gradient(135deg, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.2) 100%)',
         }}
       />
       
-      {/* Content */}
-      <div className="relative z-10 h-full flex flex-col justify-center items-center text-center space-y-3">
+      {/* Content with fade transition */}
+      <div className={`relative z-10 h-full flex flex-col justify-center items-center text-center space-y-3 transition-opacity duration-[400ms] ${
+        isTransitioning ? 'opacity-0' : 'opacity-100'
+      }`}>
         <h2 className="text-2xl font-bold drop-shadow-lg text-white text-center max-w-md leading-tight">
           {currentAd.title}
         </h2>
@@ -203,7 +229,9 @@ export function AdvertisementCarousel() {
           <Button
             variant="outline"
             size="icon"
-            className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white/20 hover:bg-white/30 border-white/30 text-white opacity-0 hover:opacity-100 transition-opacity"
+            className={`absolute left-4 top-1/2 transform -translate-y-1/2 bg-white/20 hover:bg-white/30 border-white/30 text-white opacity-0 hover:opacity-100 transition-all duration-[400ms] ${
+              isTransitioning ? 'opacity-0' : ''
+            }`}
             onClick={(e) => {
               e.stopPropagation();
               prevSlide();
@@ -214,7 +242,9 @@ export function AdvertisementCarousel() {
           <Button
             variant="outline"
             size="icon"
-            className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white/20 hover:bg-white/30 border-white/30 text-white opacity-0 hover:opacity-100 transition-opacity"
+            className={`absolute right-4 top-1/2 transform -translate-y-1/2 bg-white/20 hover:bg-white/30 border-white/30 text-white opacity-0 hover:opacity-100 transition-all duration-[400ms] ${
+              isTransitioning ? 'opacity-0' : ''
+            }`}
             onClick={(e) => {
               e.stopPropagation();
               nextSlide();
@@ -227,7 +257,9 @@ export function AdvertisementCarousel() {
 
       {/* Индикаторы слайдов */}
       {activeAds.length > 1 && (
-        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
+        <div className={`absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2 transition-opacity duration-[400ms] ${
+          isTransitioning ? 'opacity-0' : 'opacity-100'
+        }`}>
           {activeAds.map((_, index) => (
             <button
               key={index}
