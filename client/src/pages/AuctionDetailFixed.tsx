@@ -335,39 +335,8 @@ export default function AuctionDetail() {
         duration: 1000, // 1 секунда автоисчезновения
       });
       
-      // НОВАЯ СИСТЕМА: Уведомления о перебитых ставках через WebSocket
-      // Отправляем уведомление через существующее WebSocket соединение
-      if (wsConnected && currentUser?.userId) {
-        const webSocketMessage = {
-          type: 'bid_placement',
-          listingId: parseInt(id!),
-          bidderId: (currentUser as any).userId,
-          amount: variables.amount
-        };
-        console.log('📤 Отправляем WebSocket уведомление о ставке:', webSocketMessage);
-        
-        // Используем существующее WebSocket соединение из хука
-        try {
-          // Получаем WebSocket из window для отправки (временное решение)
-          const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-          const wsUrl = `${wsProtocol}//${window.location.host}/ws`;
-          
-          // Создаем одноразовое соединение только для отправки уведомления
-          const notificationWs = new WebSocket(wsUrl);
-          
-          notificationWs.onopen = () => {
-            notificationWs.send(JSON.stringify(webSocketMessage));
-            console.log('📬 WebSocket уведомление о ставке отправлено');
-            setTimeout(() => notificationWs.close(), 100);
-          };
-          
-          notificationWs.onerror = (error) => {
-            console.error('❌ Ошибка отправки WebSocket уведомления:', error);
-          };
-        } catch (error) {
-          console.error('❌ Ошибка создания WebSocket для уведомлений:', error);
-        }
-      }
+      // Уведомления теперь создаются только через HTTP API при создании ставки
+      // Убрана дублирующая WebSocket система уведомлений
       
       // Принудительное обновление кэша после успешной ставки
       queryClient.invalidateQueries({ queryKey: [`/api/listings/${id}`] });

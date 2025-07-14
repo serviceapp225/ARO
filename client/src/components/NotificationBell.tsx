@@ -63,7 +63,7 @@ export function NotificationBell({ userId }: NotificationBellProps) {
       return data;
     },
     enabled: true,
-    refetchInterval: 5000, // Обновляем каждые 5 секунд для HTTP polling
+    refetchInterval: 1000, // Обновляем каждую секунду для мгновенных уведомлений
     staleTime: 0, // Данные сразу устаревают для немедленного обновления после удаления
     refetchOnWindowFocus: false, // НЕ обновлять при фокусе
     refetchOnMount: true, // Обновлять при монтировании для свежих данных
