@@ -75,6 +75,13 @@ export interface IStorage {
   updateAdvertisementCarouselItem(id: number, item: Partial<InsertAdvertisementCarousel>): Promise<AdvertisementCarousel | undefined>;
   deleteAdvertisementCarouselItem(id: number): Promise<boolean>;
 
+  // Document operations
+  getDocuments(type?: string): Promise<Document[]>;
+  getDocument(id: number): Promise<Document | undefined>;
+  createDocument(document: InsertDocument): Promise<Document>;
+  updateDocument(id: number, document: Partial<InsertDocument>): Promise<Document | undefined>;
+  deleteDocument(id: number): Promise<boolean>;
+
   // Documents operations
   getDocuments(type?: string): Promise<Document[]>;
   getDocument(id: number): Promise<Document | undefined>;

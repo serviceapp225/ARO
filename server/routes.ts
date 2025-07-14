@@ -2527,6 +2527,91 @@ async function sendSMSCode(phoneNumber: string, code: string): Promise<{success:
     return { success: false, message: error instanceof Error ? error.message : "Unknown error" };
   }
 
+  // API роуты для управления документами
+  app.get("/api/admin/documents", requireAdmin, async (req, res) => {
+    try {
+      const documents = await storage.getDocuments();
+      res.json(documents);
+    } catch (error) {
+      console.error("Failed to fetch documents:", error);
+      res.status(500).json({ error: "Failed to fetch documents" });
+    }
+  });
+
+  app.post("/api/admin/documents", requireAdmin, async (req, res) => {
+    try {
+      const { title, content, type } = req.body;
+      
+      if (!title || !content || !type) {
+        return res.status(400).json({ error: "Title, content, and type are required" });
+      }
+      
+      const document = await storage.createDocument({
+        title,
+        content,
+        type,
+        userId: null, // Системный документ
+        fileUrl: null,
+        fileName: null,
+        fileSize: null,
+        isActive: true,
+        order: 0
+      });
+      
+      res.json(document);
+    } catch (error) {
+      console.error("Failed to create document:", error);
+      res.status(500).json({ error: "Failed to create document" });
+    }
+  });
+
+  app.put("/api/admin/documents/:id", requireAdmin, async (req, res) => {
+    try {
+      const documentId = parseInt(req.params.id);
+      const { title, content, type } = req.body;
+      
+      if (isNaN(documentId)) {
+        return res.status(400).json({ error: "Invalid document ID" });
+      }
+      
+      const document = await storage.updateDocument(documentId, {
+        title,
+        content,
+        type
+      });
+      
+      if (!document) {
+        return res.status(404).json({ error: "Document not found" });
+      }
+      
+      res.json(document);
+    } catch (error) {
+      console.error("Failed to update document:", error);
+      res.status(500).json({ error: "Failed to update document" });
+    }
+  });
+
+  app.delete("/api/admin/documents/:id", requireAdmin, async (req, res) => {
+    try {
+      const documentId = parseInt(req.params.id);
+      
+      if (isNaN(documentId)) {
+        return res.status(400).json({ error: "Invalid document ID" });
+      }
+      
+      const success = await storage.deleteDocument(documentId);
+      
+      if (!success) {
+        return res.status(404).json({ error: "Document not found" });
+      }
+      
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Failed to delete document:", error);
+      res.status(500).json({ error: "Failed to delete document" });
+    }
+  });
+
   // API для проверки последних обновлений
   app.get('/api/bid-updates/timestamp', (req, res) => {
     res.json({ timestamp: lastBidUpdate });

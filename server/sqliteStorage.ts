@@ -1549,11 +1549,157 @@ export class SQLiteStorage implements IStorage {
     const result = stmt.run(id);
     return result.changes > 0;
   }
-  async getDocuments(type?: string): Promise<Document[]> { return []; }
-  async getDocument(id: number): Promise<Document | undefined> { return undefined; }
-  async createDocument(insertDocument: InsertDocument): Promise<Document> { throw new Error('Not implemented'); }
-  async updateDocument(id: number, documentData: Partial<InsertDocument>): Promise<Document | undefined> { return undefined; }
-  async deleteDocument(id: number): Promise<boolean> { return false; }
+  async getDocuments(type?: string): Promise<Document[]> {
+    try {
+      let sql = `SELECT * FROM documents WHERE is_active = 1`;
+      let params: any[] = [];
+      
+      if (type) {
+        sql += ` AND type = ?`;
+        params.push(type);
+      }
+      
+      sql += ` ORDER BY "order", created_at`;
+      
+      const stmt = this.db.prepare(sql);
+      const rows = stmt.all(...params);
+      
+      return (rows as any[]).map((row: any) => ({
+        id: row.id,
+        type: row.type,
+        title: row.title,
+        content: row.content,
+        order: row.order,
+        isActive: Boolean(row.is_active),
+        createdAt: new Date(row.created_at),
+        updatedAt: new Date(row.updated_at)
+      }));
+    } catch (error) {
+      console.error('Error getting documents:', error);
+      return [];
+    }
+  }
+
+  async getDocument(id: number): Promise<Document | undefined> {
+    try {
+      const stmt = this.db.prepare('SELECT * FROM documents WHERE id = ?');
+      const row = stmt.get(id) as any;
+      
+      if (!row) return undefined;
+      
+      return {
+        id: row.id,
+        type: row.type,
+        title: row.title,
+        content: row.content,
+        order: row.order,
+        isActive: Boolean(row.is_active),
+        createdAt: new Date(row.created_at),
+        updatedAt: new Date(row.updated_at)
+      };
+    } catch (error) {
+      console.error('Error getting document:', error);
+      return undefined;
+    }
+  }
+
+  async createDocument(insertDocument: InsertDocument): Promise<Document> {
+    try {
+      const stmt = this.db.prepare(`
+        INSERT INTO documents (type, title, content, "order", is_active)
+        VALUES (?, ?, ?, ?, ?)
+      `);
+      
+      const result = stmt.run(
+        insertDocument.type,
+        insertDocument.title,
+        insertDocument.content,
+        insertDocument.order || 0,
+        insertDocument.isActive !== false ? 1 : 0
+      );
+      
+      const getDocumentStmt = this.db.prepare('SELECT * FROM documents WHERE id = ?');
+      const row = getDocumentStmt.get(result.lastInsertRowid) as any;
+      
+      return {
+        id: row.id,
+        type: row.type,
+        title: row.title,
+        content: row.content,
+        order: row.order,
+        isActive: Boolean(row.is_active),
+        createdAt: new Date(row.created_at),
+        updatedAt: new Date(row.updated_at)
+      };
+    } catch (error) {
+      console.error('Error creating document:', error);
+      throw error;
+    }
+  }
+
+  async updateDocument(id: number, documentData: Partial<InsertDocument>): Promise<Document | undefined> {
+    try {
+      const updates: string[] = [];
+      const params: any[] = [];
+      
+      if (documentData.type !== undefined) {
+        updates.push('type = ?');
+        params.push(documentData.type);
+      }
+      
+      if (documentData.title !== undefined) {
+        updates.push('title = ?');
+        params.push(documentData.title);
+      }
+      
+      if (documentData.content !== undefined) {
+        updates.push('content = ?');
+        params.push(documentData.content);
+      }
+      
+      if (documentData.order !== undefined) {
+        updates.push('"order" = ?');
+        params.push(documentData.order);
+      }
+      
+      if (documentData.isActive !== undefined) {
+        updates.push('is_active = ?');
+        params.push(documentData.isActive ? 1 : 0);
+      }
+      
+      if (updates.length === 0) {
+        return this.getDocument(id);
+      }
+      
+      updates.push('updated_at = CURRENT_TIMESTAMP');
+      
+      const sql = `UPDATE documents SET ${updates.join(', ')} WHERE id = ?`;
+      params.push(id);
+      
+      const stmt = this.db.prepare(sql);
+      const result = stmt.run(...params);
+      
+      if (result.changes === 0) {
+        return undefined;
+      }
+      
+      return this.getDocument(id);
+    } catch (error) {
+      console.error('Error updating document:', error);
+      return undefined;
+    }
+  }
+
+  async deleteDocument(id: number): Promise<boolean> {
+    try {
+      const stmt = this.db.prepare('DELETE FROM documents WHERE id = ?');
+      const result = stmt.run(id);
+      return result.changes > 0;
+    } catch (error) {
+      console.error('Error deleting document:', error);
+      return false;
+    }
+  }
   async createAlertView(insertView: InsertAlertView): Promise<AlertView> { throw new Error('Not implemented'); }
   async hasUserViewedAlert(userId: number, alertId: number, listingId: number): Promise<boolean> { return false; }
   async getAdminStats(): Promise<{ pendingListings: number; activeAuctions: number; totalUsers: number; bannedUsers: number }> {
