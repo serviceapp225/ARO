@@ -158,58 +158,59 @@ export function AdvertisementCarousel() {
       onMouseLeave={() => setIsPaused(false)}
       onClick={handleClick}
     >
-      {/* Slider container with horizontal slides */}
-      <div 
-        className="flex transition-transform duration-500 ease-in-out h-full"
-        style={{
-          transform: `translateX(-${currentSlide * 100}%)`,
-          width: `${activeAds.length * 100}%`,
-        }}
-      >
+      {/* Overlay slide system */}
+      <div className="relative h-full">
         {activeAds.map((ad, index) => (
           <div
             key={ad.id}
-            className="relative w-full h-full flex-shrink-0 p-6 text-white"
-            style={{ width: `${100 / activeAds.length}%` }}
+            className={`absolute inset-0 transition-all duration-500 ease-in-out ${
+              index === currentSlide 
+                ? 'translate-x-0 opacity-100' 
+                : index < currentSlide 
+                  ? '-translate-x-full opacity-0' 
+                  : 'translate-x-full opacity-0'
+            }`}
           >
-            {/* Background Image */}
-            <div 
-              className="absolute inset-0 rounded-2xl bg-cover bg-center bg-no-repeat"
-              style={{
-                backgroundImage: `url('${ad.imageUrl}')`,
-              }}
-            />
-            
-            {/* Minimal dark overlay for text readability */}
-            <div 
-              className="absolute inset-0 rounded-2xl"
-              style={{
-                background: 'linear-gradient(135deg, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.2) 100%)',
-              }}
-            />
-            
-            {/* Content */}
-            <div className="relative z-10 h-full flex flex-col justify-center items-center text-center space-y-3">
-              <h2 className="text-2xl font-bold drop-shadow-lg text-white text-center max-w-md leading-tight">
-                {ad.title}
-              </h2>
-              {ad.description && (
-                <p className="text-base leading-relaxed opacity-95 drop-shadow-md max-w-md text-white text-center">
-                  {ad.description}
-                </p>
-              )}
-              {ad.linkUrl && (
-                <div className="mt-4">
-                  <span className="px-4 py-2 rounded-full text-sm font-bold hover:opacity-90 transition-all duration-300 cursor-pointer inline-flex items-center gap-1 min-w-[180px] justify-center shadow-lg hover:shadow-xl transform hover:scale-105 bg-white text-blue-600">
-                    {ad.buttonText}
-                  </span>
-                </div>
-              )}
+            <div className="relative h-full p-6 text-white">
+              {/* Background Image */}
+              <div 
+                className="absolute inset-0 rounded-2xl bg-cover bg-center bg-no-repeat"
+                style={{
+                  backgroundImage: `url('${ad.imageUrl}')`,
+                }}
+              />
+              
+              {/* Minimal dark overlay for text readability */}
+              <div 
+                className="absolute inset-0 rounded-2xl"
+                style={{
+                  background: 'linear-gradient(135deg, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.2) 100%)',
+                }}
+              />
+              
+              {/* Content */}
+              <div className="relative z-10 h-full flex flex-col justify-center items-center text-center space-y-3">
+                <h2 className="text-2xl font-bold drop-shadow-lg text-white text-center max-w-md leading-tight">
+                  {ad.title}
+                </h2>
+                {ad.description && (
+                  <p className="text-base leading-relaxed opacity-95 drop-shadow-md max-w-md text-white text-center">
+                    {ad.description}
+                  </p>
+                )}
+                {ad.linkUrl && (
+                  <div className="mt-4">
+                    <span className="px-4 py-2 rounded-full text-sm font-bold hover:opacity-90 transition-all duration-300 cursor-pointer inline-flex items-center gap-1 min-w-[180px] justify-center shadow-lg hover:shadow-xl transform hover:scale-105 bg-white text-blue-600">
+                      {ad.buttonText}
+                    </span>
+                  </div>
+                )}
+              </div>
+              
+              {/* Decorative Elements */}
+              <div className="absolute top-4 right-4 w-12 h-12 rounded-full bg-white/10 blur-xl"></div>
+              <div className="absolute bottom-6 left-6 w-8 h-8 rounded-full bg-white/5 blur-lg"></div>
             </div>
-            
-            {/* Decorative Elements */}
-            <div className="absolute top-4 right-4 w-12 h-12 rounded-full bg-white/10 blur-xl"></div>
-            <div className="absolute bottom-6 left-6 w-8 h-8 rounded-full bg-white/5 blur-lg"></div>
           </div>
         ))}
       </div>
