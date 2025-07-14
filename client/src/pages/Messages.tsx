@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useState, useEffect } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { MessageCircle, Send, ArrowLeft, User } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -7,6 +7,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { apiRequest } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 
 interface ConversationData {
   id: number;
@@ -45,10 +47,55 @@ interface Message {
   };
 }
 
+// Функция для форматирования даты
+function formatDate(dateString: string): string {
+  return new Date(dateString).toLocaleString('ru-RU', {
+    day: '2-digit',
+    month: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+}
+
 export default function Messages() {
   const { user } = useAuth();
   const [selectedConversation, setSelectedConversation] = useState<number | null>(null);
   const [messageText, setMessageText] = useState("");
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  // Получение URL параметров
+  const urlParams = new URLSearchParams(window.location.search);
+  const buyerId = urlParams.get('buyerId');
+  const sellerId = urlParams.get('sellerId');
+  const listingId = urlParams.get('listingId');
+
+  // Мутация для создания разговора
+  const createConversationMutation = useMutation({
+    mutationFn: async (data: { buyerId: number; sellerId: number; listingId: number }) => {
+      return apiRequest('/api/conversations', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      });
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/conversations"] });
+      setSelectedConversation(data.id);
+      // Очищаем URL параметры
+      window.history.replaceState({}, '', window.location.pathname);
+      toast({
+        title: "Разговор создан",
+        description: "Вы можете начать общение с продавцом",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Ошибка",
+        description: error.message || "Не удалось создать разговор",
+        variant: "destructive",
+      });
+    },
+  });
 
   // Получение списка переписок
   const { data: conversations, isLoading: conversationsLoading } = useQuery<ConversationData[]>({
@@ -56,21 +103,52 @@ export default function Messages() {
     enabled: !!user,
   });
 
+  // Эффект для автоматического создания разговора при наличии параметров
+  useEffect(() => {
+    if (buyerId && sellerId && listingId && user && !createConversationMutation.isPending) {
+      createConversationMutation.mutate({
+        buyerId: parseInt(buyerId),
+        sellerId: parseInt(sellerId),
+        listingId: parseInt(listingId),
+      });
+    }
+  }, [buyerId, sellerId, listingId, user]);
+
   // Получение сообщений для выбранной переписки
   const { data: messages, isLoading: messagesLoading } = useQuery<Message[]>({
     queryKey: ["/api/conversations", selectedConversation, "messages"],
     enabled: !!selectedConversation,
   });
 
-  const handleSendMessage = async () => {
-    if (!messageText.trim() || !selectedConversation) return;
-
-    try {
-      // TODO: Реализовать отправку сообщения
+  // Мутация для отправки сообщения
+  const sendMessageMutation = useMutation({
+    mutationFn: async (data: { conversationId: number; content: string }) => {
+      return apiRequest(`/api/conversations/${data.conversationId}/messages`, {
+        method: 'POST',
+        body: JSON.stringify({ content: data.content }),
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/conversations", selectedConversation, "messages"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/conversations"] });
       setMessageText("");
-    } catch (error) {
-      console.error("Ошибка отправки сообщения:", error);
-    }
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Ошибка",
+        description: error.message || "Не удалось отправить сообщение",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleSendMessage = async () => {
+    if (!messageText.trim() || !selectedConversation || sendMessageMutation.isPending) return;
+
+    sendMessageMutation.mutate({
+      conversationId: selectedConversation,
+      content: messageText,
+    });
   };
 
   const formatDate = (dateString: string) => {
@@ -262,14 +340,15 @@ export default function Messages() {
                 placeholder="Введите сообщение..."
                 onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
                 className="flex-1"
+                disabled={sendMessageMutation.isPending}
               />
               <Button
                 onClick={handleSendMessage}
-                disabled={!messageText.trim()}
+                disabled={!messageText.trim() || sendMessageMutation.isPending}
                 className="gap-2"
               >
                 <Send className="w-4 h-4" />
-                Отправить
+                {sendMessageMutation.isPending ? "Отправка..." : "Отправить"}
               </Button>
             </div>
           </>
