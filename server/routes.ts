@@ -620,54 +620,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Clear all caches to force refresh
       clearAllCaches();
       
-      // Check for matching car alerts and send notifications
-      try {
-        console.log('Checking alerts for new listing:', listing.make, listing.model);
-        const matchingAlerts = await storage.checkAlertsForNewListing(listing);
-        console.log('Found matching alerts:', matchingAlerts.length);
-        
-        // Group alerts by user to avoid duplicate notifications
-        const userAlerts = new Map<number, CarAlert[]>();
-        for (const alert of matchingAlerts) {
-          if (!userAlerts.has(alert.userId)) {
-            userAlerts.set(alert.userId, []);
-          }
-          userAlerts.get(alert.userId)!.push(alert);
-        }
-        
-        // Send notification for each matching alert (avoiding duplicates)
-        for (const alert of matchingAlerts) {
-          console.log('Creating notification for user:', alert.userId, 'alert:', alert.id);
-          
-          // Check if user has already viewed this alert for this listing
-          const hasViewed = await storage.hasUserViewedAlert(alert.userId, alert.id, listing.id);
-          
-          // Check if notification for this listing and alert already exists
-          const existingNotifications = await storage.getNotificationsByUser(alert.userId);
-          const duplicateExists = existingNotifications.some(n => 
-            n.type === "car_found" && 
-            n.listingId === listing.id && 
-            n.alertId === alert.id
-          );
-          
-          if (!hasViewed && !duplicateExists) {
-            await storage.createNotification({
-              userId: alert.userId,
-              title: "Найден автомобиль по вашему запросу",
-              message: `${listing.make.toUpperCase()} ${listing.model.toUpperCase()} ${listing.year} г. - ${listing.startingPrice} Сомони (лот #${listing.lotNumber})`,
-              type: "car_found",
-              listingId: listing.id,
-              alertId: alert.id,
-              isRead: false
-            });
-          } else {
-            console.log('User has already viewed this alert or notification exists for listing:', listing.id, 'alert:', alert.id);
-          }
-        }
-      } catch (alertError) {
-        console.error('Error checking alerts for new listing:', alertError);
-        // Don't fail the listing creation if alert checking fails
-      }
+      // УБРАНО: Не отправляем уведомления при создании объявления
+      // Уведомления будут отправляться только при одобрении админом (pending → active)
       
       res.status(201).json(listing);
     } catch (error) {
@@ -1270,6 +1224,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Clear all caches when admin changes listing status
       clearAllCaches();
       
+      // ОТПРАВЛЯЕМ УВЕДОМЛЕНИЯ ТОЛЬКО ПРИ ОДОБРЕНИИ (pending → active)
+      if (status === 'active') {
+        try {
+          console.log('🔔 Объявление одобрено! Проверяем сохраненные поисковые запросы для:', listing.make, listing.model);
+          const matchingAlerts = await storage.checkAlertsForNewListing(listing);
+          console.log('📧 Найдено совпадающих запросов:', matchingAlerts.length);
+          
+          // Отправляем уведомление для каждого совпадающего запроса
+          for (const alert of matchingAlerts) {
+            console.log('📨 Создаем уведомление для пользователя:', alert.userId, 'запрос:', alert.id);
+            
+            // Проверяем, что уведомление еще не существует
+            const existingNotifications = await storage.getNotificationsByUser(alert.userId);
+            const duplicateExists = existingNotifications.some(n => 
+              n.type === "car_found" && 
+              n.listingId === listing.id && 
+              n.alertId === alert.id
+            );
+            
+            if (!duplicateExists) {
+              await storage.createNotification({
+                userId: alert.userId,
+                title: "Найден автомобиль по вашему запросу",
+                message: `${listing.make.toUpperCase()} ${listing.model.toUpperCase()} ${listing.year} г. - ${listing.startingPrice} Сомони (лот #${listing.lotNumber})`,
+                type: "car_found",
+                listingId: listing.id,
+                alertId: alert.id,
+                isRead: false
+              });
+              console.log('✅ Уведомление создано для пользователя:', alert.userId);
+            } else {
+              console.log('⚠️ Уведомление уже существует для пользователя:', alert.userId);
+            }
+          }
+        } catch (alertError) {
+          console.error('❌ Ошибка при отправке уведомлений о одобрении:', alertError);
+        }
+      }
+      
       res.json(listing);
     } catch (error) {
       res.status(500).json({ error: "Failed to update listing status" });
@@ -1319,6 +1312,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Clear all caches when admin changes listing status
       clearAllCaches();
+      
+      // ОТПРАВЛЯЕМ УВЕДОМЛЕНИЯ ТОЛЬКО ПРИ ОДОБРЕНИИ (pending → active)
+      if (status === 'active') {
+        try {
+          console.log('🔔 Объявление одобрено! Проверяем сохраненные поисковые запросы для:', listing.make, listing.model);
+          const matchingAlerts = await storage.checkAlertsForNewListing(listing);
+          console.log('📧 Найдено совпадающих запросов:', matchingAlerts.length);
+          
+          // Отправляем уведомление для каждого совпадающего запроса
+          for (const alert of matchingAlerts) {
+            console.log('📨 Создаем уведомление для пользователя:', alert.userId, 'запрос:', alert.id);
+            
+            // Проверяем, что уведомление еще не существует
+            const existingNotifications = await storage.getNotificationsByUser(alert.userId);
+            const duplicateExists = existingNotifications.some(n => 
+              n.type === "car_found" && 
+              n.listingId === listing.id && 
+              n.alertId === alert.id
+            );
+            
+            if (!duplicateExists) {
+              await storage.createNotification({
+                userId: alert.userId,
+                title: "Найден автомобиль по вашему запросу",
+                message: `${listing.make.toUpperCase()} ${listing.model.toUpperCase()} ${listing.year} г. - ${listing.startingPrice} Сомони (лот #${listing.lotNumber})`,
+                type: "car_found",
+                listingId: listing.id,
+                alertId: alert.id,
+                isRead: false
+              });
+              console.log('✅ Уведомление создано для пользователя:', alert.userId);
+            } else {
+              console.log('⚠️ Уведомление уже существует для пользователя:', alert.userId);
+            }
+          }
+        } catch (alertError) {
+          console.error('❌ Ошибка при отправке уведомлений о одобрении:', alertError);
+        }
+      }
       
       res.json(listing);
     } catch (error) {
