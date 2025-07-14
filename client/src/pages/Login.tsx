@@ -19,7 +19,7 @@ export default function Login() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!agreeToTerms) {
-      alert("Необходимо согласиться с условиями использования");
+      alert("Необходимо согласиться на обработку персональных данных и подтвердить возраст 18+");
       return;
     }
 
@@ -105,14 +105,7 @@ export default function Login() {
               />
               <div className="text-xs">
                 <Label htmlFor="terms" className="cursor-pointer leading-tight">
-                  Я согласен с{" "}
-                  <Link href="/terms" className="text-primary hover:underline">
-                    условиями использования
-                  </Link>
-                  {" "}и{" "}
-                  <Link href="/privacy" className="text-primary hover:underline">
-                    политикой конфиденциальности
-                  </Link>
+                  Я согласен на обработку моих персональных данных, и подтверждаю, что мне есть 18 лет
                 </Label>
               </div>
             </div>
