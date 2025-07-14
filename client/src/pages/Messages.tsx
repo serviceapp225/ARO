@@ -344,7 +344,7 @@ export default function Messages() {
                         <h3 className="font-semibold text-gray-900 truncate">
                           {conversation.otherUser.fullName}
                         </h3>
-                        {conversation.unreadCount > 0 && (
+                        {conversation.unreadCount > 0 && selectedConversation !== conversation.id && (
                           <div className="w-6 h-6 bg-red-500 rounded-full flex items-center justify-center animate-pulse">
                             <span className="text-xs text-white font-bold">
                               {conversation.unreadCount}
