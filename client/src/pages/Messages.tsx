@@ -73,8 +73,18 @@ export default function Messages() {
       apiRequest('POST', '/api/demo/mark-messages-visited', { userId: user.userId })
         .then(() => {
           console.log(`✅ Посещение страницы сообщений отмечено`);
-          // Обновляем счетчик непрочитанных сообщений
-          queryClient.invalidateQueries({ queryKey: [`/api/messages/unread-count/${user.userId}`] });
+          
+          // ПРИНУДИТЕЛЬНО обновляем счетчик непрочитанных сообщений
+          // 1. Удаляем старые данные из кэша
+          queryClient.removeQueries({ queryKey: [`/api/messages/unread-count/${user.userId}`] });
+          
+          // 2. Принудительно загружаем новые данные
+          queryClient.refetchQueries({ queryKey: [`/api/messages/unread-count/${user.userId}`] });
+          
+          // 3. Устанавливаем новое значение напрямую в кэш
+          queryClient.setQueryData([`/api/messages/unread-count/${user.userId}`], { count: 0 });
+          
+          console.log(`🔄 Счетчик непрочитанных сообщений принудительно обновлен до 0`);
         })
         .catch(error => {
           console.error(`❌ Ошибка отметки посещения:`, error);
