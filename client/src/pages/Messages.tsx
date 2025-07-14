@@ -9,6 +9,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { Link } from "wouter";
 
 interface ConversationData {
   id: number;
@@ -300,6 +301,11 @@ export default function Messages() {
         <div className="max-w-7xl mx-auto px-6 py-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
+              <Link href="/profile">
+                <Button variant="ghost" size="icon" className="mr-2">
+                  <ArrowLeft className="w-6 h-6" />
+                </Button>
+              </Link>
               <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
                 <MessageCircle className="w-6 h-6 text-white" />
               </div>
@@ -394,7 +400,7 @@ export default function Messages() {
                               className={`max-w-xs px-4 py-3 rounded-2xl shadow-md relative ${
                                 message.senderId === user?.userId
                                   ? "bg-gradient-to-br from-blue-500 to-purple-600 text-white"
-                                  : "bg-white/90 text-gray-900"
+                                  : "bg-white/90 text-black"
                               }`}
                             >
                               <p className="text-sm leading-relaxed">{message.content}</p>
@@ -402,7 +408,7 @@ export default function Messages() {
                                 className={`text-xs mt-1 ${
                                   message.senderId === user?.userId
                                     ? "text-white/80"
-                                    : "text-gray-500"
+                                    : "text-black/60"
                                 }`}
                               >
                                 {formatDate(message.createdAt)}
