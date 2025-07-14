@@ -64,6 +64,24 @@ export default function Messages() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
+  // Автоматическое обновление счетчика непрочитанных сообщений при открытии страницы
+  useEffect(() => {
+    if (user?.userId) {
+      console.log(`📖 Пользователь открыл страницу сообщений - отмечаем посещение`);
+      
+      // Отмечаем посещение страницы сообщений
+      apiRequest('POST', '/api/demo/mark-messages-visited', { userId: user.userId })
+        .then(() => {
+          console.log(`✅ Посещение страницы сообщений отмечено`);
+          // Обновляем счетчик непрочитанных сообщений
+          queryClient.invalidateQueries({ queryKey: [`/api/messages/unread-count/${user.userId}`] });
+        })
+        .catch(error => {
+          console.error(`❌ Ошибка отметки посещения:`, error);
+        });
+    }
+  }, [user?.userId, queryClient]);
+
   // Получение URL параметров
   const urlParams = new URLSearchParams(window.location.search);
   const buyerId = urlParams.get('buyerId');
@@ -130,6 +148,31 @@ export default function Messages() {
     staleTime: 0, // Всегда обновляем данные
     gcTime: 0, // Не кэшируем
   });
+
+  // Автоматическое отмечение сообщений как прочитанных при открытии переписки
+  useEffect(() => {
+    if (selectedConversation && messages && messages.length > 0 && user?.userId) {
+      console.log(`📖 Отмечаем сообщения как прочитанные для переписки ${selectedConversation}`);
+      // Находим все непрочитанные сообщения от других пользователей
+      const unreadMessages = messages.filter(msg => msg.senderId !== user.userId);
+      
+      // Отмечаем каждое непрочитанное сообщение как прочитанное
+      unreadMessages.forEach(async (message) => {
+        try {
+          await apiRequest('PATCH', `/api/conversations/${selectedConversation}/messages/${message.id}/read`);
+          console.log(`✅ Сообщение ${message.id} отмечено как прочитанное`);
+        } catch (error) {
+          console.error(`❌ Ошибка отметки сообщения ${message.id} как прочитанного:`, error);
+        }
+      });
+
+      // Обновляем список переписок и счетчик через 500мс для обновления счетчика
+      setTimeout(() => {
+        queryClient.invalidateQueries({ queryKey: ["/api/conversations", user.userId] });
+        queryClient.invalidateQueries({ queryKey: [`/api/messages/unread-count/${user.userId}`] });
+      }, 500);
+    }
+  }, [selectedConversation, messages, user?.userId, queryClient]);
 
   // Мутация для отправки сообщения
   const sendMessageMutation = useMutation({
