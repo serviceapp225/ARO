@@ -2300,7 +2300,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     next();
   };
 
-  // Админские API роуты - только для номера +992000000000
+  // Админские API роуты - только для номера +992903331332
   app.get("/api/admin/users", requireAdmin, async (req, res) => {
     try {
       const users = await storage.getAllUsers();

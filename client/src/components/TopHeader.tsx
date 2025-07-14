@@ -26,12 +26,12 @@ export function TopHeader({
     
     // Map phone numbers to user IDs (based on actual database IDs)
     const phoneToUserIdMap: Record<string, number> = {
-      "+992 (00) 000-00-00": 4,   // Пользователь 992000000000
+      "+992 (90) 333-13-32": 4,   // Пользователь 992903331332 (АДМИН)
       "+992 (11) 111-11-11": 3,   // Пользователь 992111111111  
       "+992 (22) 222-22-22": 18,  // Sony Vaio0
       "+992 (41) 111-11-11": 15,  // Пользователь 992411111111
       "+992 (88) 888-88-88": 17,  // Тестовый пользователь
-      "+992000000000": 4,
+      "+992903331332": 4,
       "+992111111111": 3,
       "+992222222222": 18,
       "+992411111111": 15,
@@ -101,7 +101,7 @@ export function TopHeader({
         )}
         {!shouldHideNotifications() && (
           <button
-            onClick={() => window.open('https://wa.me/992000000000', '_blank')}
+            onClick={() => window.open('https://wa.me/992903331332', '_blank')}
             className="p-2 text-green-600 hover:text-green-700 hover:bg-green-50 rounded-lg transition-colors"
             title="Связаться через WhatsApp"
           >
@@ -120,9 +120,9 @@ export function TopHeader({
 
       {/* Правая часть */}
       <div className="flex items-center gap-2">
-        {/* Кнопка админ панели - только для пользователя 992000000000 */}
-        {(user?.email?.includes('992000000000') || 
-          user?.phoneNumber?.includes('000-00-00')) && (
+        {/* Кнопка админ панели - только для пользователя 992903331332 */}
+        {(user?.email?.includes('992903331332') || 
+          user?.phoneNumber?.includes('333-13-32')) && (
           <Link href="/admin">
             <button className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 dark:text-gray-400 dark:hover:text-blue-400 dark:hover:bg-blue-900/20 rounded-lg transition-colors" title="Админ панель">
               <Settings className="w-5 h-5" />

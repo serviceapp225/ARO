@@ -74,7 +74,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           const phoneDigits = demoUser.phoneNumber.replace(/\D/g, '');
           
           // Используем предустановленные данные для известных пользователей
-          if (phoneDigits === '992000000000') {
+          if (phoneDigits === '992903331332') {
             demoUser.isActive = true;
             demoUser.userId = 4;
             // Загружаем полные данные пользователя из API
