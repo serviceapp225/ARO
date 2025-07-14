@@ -77,7 +77,7 @@ export default function Messages() {
       return res.json();
     },
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ["/api/conversations"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/conversations", user?.userId] });
       setSelectedConversation(data.id);
       // Очищаем URL параметры
       window.history.replaceState({}, '', window.location.pathname);
@@ -97,8 +97,8 @@ export default function Messages() {
 
   // Получение списка переписок
   const { data: conversations, isLoading: conversationsLoading } = useQuery<ConversationData[]>({
-    queryKey: ["/api/conversations"],
-    enabled: !!user,
+    queryKey: ["/api/conversations", user?.userId],
+    enabled: !!user?.userId,
   });
 
   // Эффект для автоматического создания разговора при наличии параметров
@@ -126,7 +126,7 @@ export default function Messages() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/conversations", selectedConversation, "messages"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/conversations"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/conversations", user?.userId] });
       setMessageText("");
     },
     onError: (error: any) => {
