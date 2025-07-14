@@ -285,7 +285,7 @@ export default function Messages() {
         <div className="max-w-6xl mx-auto px-4 py-4">
           <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
             <MessageCircle className="w-6 h-6 text-blue-600" />
-            Сообщения
+            Сообщения - Новый дизайн
           </h1>
         </div>
       </div>
