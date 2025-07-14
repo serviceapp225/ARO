@@ -2568,6 +2568,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/messages/unread-count/:userId", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      console.log(`📊 Получение общего количества непрочитанных сообщений для пользователя ${userId}`);
+      const count = await storage.getUnreadMessageCount(userId);
+      console.log(`✅ Найдено ${count} непрочитанных сообщений для пользователя ${userId}`);
+      res.json({ count });
+    } catch (error) {
+      console.error(`❌ Ошибка получения количества непрочитанных сообщений:`, error);
+      res.status(500).json({ error: "Failed to get unread message count" });
+    }
+  });
+
   // API для проверки последних обновлений
   app.get('/api/bid-updates/timestamp', (req, res) => {
     res.json({ timestamp: lastBidUpdate });

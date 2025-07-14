@@ -3,6 +3,7 @@ import { FaWhatsapp } from "react-icons/fa";
 import { useLocation, Link } from "wouter";
 import { NotificationBell } from "./NotificationBell";
 import { useAuth } from "@/contexts/AuthContext";
+import { useQuery } from "@tanstack/react-query";
 
 interface TopHeaderProps {
   title?: string;
@@ -70,6 +71,8 @@ export function TopHeader({
         return "Профиль";
       case "/notifications":
         return "Уведомления";
+      case "/messages":
+        return "Сообщения";
       default:
         return "AUTOBID.TJ";
     }
@@ -87,6 +90,14 @@ export function TopHeader({
     
     return false;
   };
+
+  // Получаем количество непрочитанных сообщений
+  const { data: unreadCount } = useQuery({
+    queryKey: [`/api/messages/unread-count/${currentUserId}`],
+    refetchInterval: 3000, // Обновляем каждые 3 секунды
+    staleTime: 1000, // Данные становятся устаревшими через 1 секунду
+    enabled: !shouldHideNotifications() && !!currentUserId
+  });
 
   return (
     <header className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 px-4 py-3 flex items-center justify-between">
@@ -134,8 +145,12 @@ export function TopHeader({
           <Link href="/messages">
             <button className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 dark:text-gray-400 dark:hover:text-blue-400 dark:hover:bg-blue-900/20 rounded-lg transition-colors relative" title="Сообщения">
               <MessageCircle className="w-5 h-5" />
-              {/* Счетчик непрочитанных сообщений (заглушка) */}
-              {/* TODO: Добавить реальный счетчик непрочитанных сообщений */}
+              {/* Счетчик непрочитанных сообщений */}
+              {unreadCount?.count > 0 && (
+                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
+                  {unreadCount.count > 9 ? '9+' : unreadCount.count}
+                </span>
+              )}
             </button>
           </Link>
         )}
