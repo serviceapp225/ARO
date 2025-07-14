@@ -97,6 +97,7 @@ export default function Messages() {
   const buyerId = urlParams.get('buyerId');
   const sellerId = urlParams.get('sellerId');
   const listingId = urlParams.get('listingId');
+  const conversationId = urlParams.get('conversationId');
 
   // Мутация для создания разговора
   const createConversationMutation = useMutation({
@@ -143,6 +144,18 @@ export default function Messages() {
       });
     }
   }, [buyerId, sellerId, listingId, user]);
+
+  // Эффект для автоматического выбора разговора при наличии conversationId
+  useEffect(() => {
+    if (conversationId && conversations) {
+      const targetConversation = conversations.find(c => c.id === parseInt(conversationId));
+      if (targetConversation) {
+        setSelectedConversation(targetConversation.id);
+        // Очищаем URL параметры
+        window.history.replaceState({}, '', window.location.pathname);
+      }
+    }
+  }, [conversationId, conversations]);
 
   // Получение сообщений для выбранной переписки
   const { data: messages, isLoading: messagesLoading, refetch: refetchMessages } = useQuery<Message[]>({

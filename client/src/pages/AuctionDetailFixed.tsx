@@ -365,7 +365,7 @@ export default function AuctionDetail() {
   });
 
   // Функция для связи с продавцом
-  function handleContactSeller() {
+  async function handleContactSeller() {
     if (!currentUser) {
       toast({
         title: "Войдите в систему",
@@ -384,8 +384,51 @@ export default function AuctionDetail() {
     
     if (!auction) return;
     
-    // Переход на страницу сообщений с параметрами
-    setLocation(`/messages?buyerId=${currentUser.userId}&sellerId=${auction.sellerId}&listingId=${auction.id}`);
+    // Показываем индикатор загрузки
+    toast({
+      title: "Создание разговора...",
+      description: "Подождите, создаем переписку с продавцом",
+      duration: 2000,
+    });
+    
+    try {
+      // Создаем разговор сразу же
+      const response = await fetch('/api/conversations', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          buyerId: currentUser.userId,
+          sellerId: auction.sellerId,
+          listingId: auction.id
+        }),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Не удалось создать разговор');
+      }
+      
+      const conversation = await response.json();
+      
+      // Переходим на страницу сообщений с ID созданного разговора
+      setLocation(`/messages?conversationId=${conversation.id}`);
+      
+      toast({
+        title: "Разговор создан!",
+        description: "Теперь вы можете общаться с продавцом",
+        duration: 2000,
+      });
+      
+    } catch (error) {
+      console.error('Ошибка создания разговора:', error);
+      toast({
+        title: "Ошибка",
+        description: "Не удалось создать разговор. Попробуйте еще раз.",
+        variant: "destructive",
+        duration: 3000,
+      });
+    }
   }
 
   // All useEffect hooks - placed after state initialization but before conditional returns
