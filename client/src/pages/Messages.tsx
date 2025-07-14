@@ -306,11 +306,7 @@ export default function Messages() {
       {/* Основной контент - только переписки */}
       <div className="max-w-4xl mx-auto p-6 pb-24">
         <div className="bg-white/60 backdrop-blur-lg rounded-3xl shadow-2xl overflow-hidden border border-white/20">
-          <div className="p-6 border-b border-white/30 bg-white/50">
-            <h2 className="text-xl font-bold text-gray-800">
-              Сообщения
-            </h2>
-          </div>
+
           
           <div className="p-4 space-y-4">
             {conversations.map((conversation) => (
