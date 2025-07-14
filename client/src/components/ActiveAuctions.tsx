@@ -150,13 +150,10 @@ export function ActiveAuctions({ searchQuery = "", customListings }: ActiveAucti
     setHoverTimeout(timeout);
   };
 
-  // Fast navigation with preloading
+  // Fast navigation with optimized preloading
   const handleCardClick = async (auctionId: number) => {
-    // Принудительно обновляем кэш перед переходом
-    queryClient.removeQueries({ queryKey: [`/api/listings/${auctionId}`] });
-    queryClient.removeQueries({ queryKey: ['/api/listings'] });
+    // Мягко обновляем только данные конкретного аукциона, НЕ очищая общий кэш
     queryClient.invalidateQueries({ queryKey: [`/api/listings/${auctionId}`] });
-    queryClient.invalidateQueries({ queryKey: ['/api/listings'] });
     
     // Preload auction data and bids immediately
     queryClient.prefetchQuery({
