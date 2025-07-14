@@ -257,7 +257,7 @@ export default function Messages() {
       <div className="flex items-center justify-center min-h-[400px] pb-24">
         <div className="text-center">
           <MessageCircle className="w-12 h-12 mx-auto mb-4 text-gray-400 animate-pulse" />
-          <p className="text-gray-500">Загрузка переписок...</p>
+          <p className="text-gray-500">Загрузка сообщений...</p>
         </div>
       </div>
     );
