@@ -313,7 +313,6 @@ export default function Messages() {
                 <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                   Сообщения
                 </h1>
-                <p className="text-gray-600 text-sm">Общение с продавцами автомобилей</p>
               </div>
             </div>
             <div className="hidden md:flex items-center gap-2 bg-white/50 rounded-full px-4 py-2">
