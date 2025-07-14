@@ -2506,9 +2506,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/conversations/:conversationId/messages", async (req, res) => {
     try {
       const conversationId = parseInt(req.params.conversationId);
+      console.log(`📨 Получение сообщений для переписки ${conversationId}`);
       const messages = await storage.getMessagesByConversation(conversationId);
+      console.log(`✅ Найдено ${messages.length} сообщений для переписки ${conversationId}`);
       res.json(messages);
     } catch (error) {
+      console.error(`❌ Ошибка получения сообщений для переписки ${conversationId}:`, error);
       res.status(500).json({ error: "Failed to fetch messages" });
     }
   });
