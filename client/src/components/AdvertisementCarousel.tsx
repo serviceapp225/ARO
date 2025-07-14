@@ -32,7 +32,6 @@ export function AdvertisementCarousel() {
   const [showReferralModal, setShowReferralModal] = useState(false);
   const [showSupportModal, setShowSupportModal] = useState(false);
   const [, setLocation] = useLocation();
-  const [isTransitioning, setIsTransitioning] = useState(false);
 
   const { data: advertisements = [], isLoading } = useQuery<AdvertisementItem[]>({
     queryKey: ['/api/advertisement-carousel'],
@@ -51,47 +50,28 @@ export function AdvertisementCarousel() {
   console.log('🎠 Загружены объявления карусели:', advertisements);
   console.log('🎯 Активные объявления:', activeAds);
 
-  // Функция для плавного перехода между слайдами
-  const smoothTransition = (newSlide: number) => {
-    if (isTransitioning || newSlide === currentSlide) return;
-    
-    setIsTransitioning(true);
-    
-    // Запускаем fade out для текущего слайда
-    setTimeout(() => {
-      setCurrentSlide(newSlide);
-      // Даем время для fade in нового слайда
-      setTimeout(() => {
-        setIsTransitioning(false);
-      }, 400);
-    }, 200);
-  };
-
   // Автоматическое переключение каждые 5 секунд
   useEffect(() => {
-    if (activeAds.length <= 1 || isPaused || isTransitioning) return;
+    if (activeAds.length <= 1 || isPaused) return;
 
     const interval = setInterval(() => {
-      const nextSlide = (currentSlide + 1) % activeAds.length;
-      smoothTransition(nextSlide);
+      setCurrentSlide((prev) => (prev + 1) % activeAds.length);
     }, 5000);
 
     return () => clearInterval(interval);
-  }, [activeAds.length, isPaused, isTransitioning, currentSlide]);
+  }, [activeAds.length, isPaused]);
 
   // Ручное переключение слайдов
   const goToSlide = (index: number) => {
-    smoothTransition(index);
+    setCurrentSlide(index);
   };
 
   const nextSlide = () => {
-    const next = (currentSlide + 1) % activeAds.length;
-    smoothTransition(next);
+    setCurrentSlide((prev) => (prev + 1) % activeAds.length);
   };
 
   const prevSlide = () => {
-    const prev = (currentSlide - 1 + activeAds.length) % activeAds.length;
-    smoothTransition(prev);
+    setCurrentSlide((prev) => (prev - 1 + activeAds.length) % activeAds.length);
   };
 
   const handleSupportClick = () => {
@@ -173,55 +153,66 @@ export function AdvertisementCarousel() {
 
   return (
     <div 
-      className="relative h-44 rounded-2xl p-6 text-white overflow-hidden cursor-pointer transition-all duration-300"
+      className="relative h-44 rounded-2xl overflow-hidden cursor-pointer transition-all duration-300"
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
       onClick={handleClick}
     >
-      {/* Background Image with fade transition */}
+      {/* Slider container with horizontal slides */}
       <div 
-        className={`absolute inset-0 rounded-2xl bg-cover bg-center bg-no-repeat transition-opacity duration-[400ms] ${
-          isTransitioning ? 'opacity-0' : 'opacity-100'
-        }`}
+        className="flex transition-transform duration-500 ease-in-out h-full"
         style={{
-          backgroundImage: `url('${currentAd.imageUrl}')`,
+          transform: `translateX(-${currentSlide * 100}%)`,
+          width: `${activeAds.length * 100}%`,
         }}
-      />
-      
-      {/* Minimal dark overlay for text readability */}
-      <div 
-        className={`absolute inset-0 rounded-2xl transition-opacity duration-[400ms] ${
-          isTransitioning ? 'opacity-0' : 'opacity-100'
-        }`}
-        style={{
-          background: 'linear-gradient(135deg, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.2) 100%)',
-        }}
-      />
-      
-      {/* Content with fade transition */}
-      <div className={`relative z-10 h-full flex flex-col justify-center items-center text-center space-y-3 transition-opacity duration-[400ms] ${
-        isTransitioning ? 'opacity-0' : 'opacity-100'
-      }`}>
-        <h2 className="text-2xl font-bold drop-shadow-lg text-white text-center max-w-md leading-tight">
-          {currentAd.title}
-        </h2>
-        {currentAd.description && (
-          <p className="text-base leading-relaxed opacity-95 drop-shadow-md max-w-md text-white text-center">
-            {currentAd.description}
-          </p>
-        )}
-        {currentAd.linkUrl && (
-          <div className="mt-4">
-            <span className="px-4 py-2 rounded-full text-sm font-bold hover:opacity-90 transition-all duration-300 cursor-pointer inline-flex items-center gap-1 min-w-[180px] justify-center shadow-lg hover:shadow-xl transform hover:scale-105 bg-white text-blue-600">
-              {currentAd.buttonText}
-            </span>
+      >
+        {activeAds.map((ad, index) => (
+          <div
+            key={ad.id}
+            className="relative w-full h-full flex-shrink-0 p-6 text-white"
+            style={{ width: `${100 / activeAds.length}%` }}
+          >
+            {/* Background Image */}
+            <div 
+              className="absolute inset-0 rounded-2xl bg-cover bg-center bg-no-repeat"
+              style={{
+                backgroundImage: `url('${ad.imageUrl}')`,
+              }}
+            />
+            
+            {/* Minimal dark overlay for text readability */}
+            <div 
+              className="absolute inset-0 rounded-2xl"
+              style={{
+                background: 'linear-gradient(135deg, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.2) 100%)',
+              }}
+            />
+            
+            {/* Content */}
+            <div className="relative z-10 h-full flex flex-col justify-center items-center text-center space-y-3">
+              <h2 className="text-2xl font-bold drop-shadow-lg text-white text-center max-w-md leading-tight">
+                {ad.title}
+              </h2>
+              {ad.description && (
+                <p className="text-base leading-relaxed opacity-95 drop-shadow-md max-w-md text-white text-center">
+                  {ad.description}
+                </p>
+              )}
+              {ad.linkUrl && (
+                <div className="mt-4">
+                  <span className="px-4 py-2 rounded-full text-sm font-bold hover:opacity-90 transition-all duration-300 cursor-pointer inline-flex items-center gap-1 min-w-[180px] justify-center shadow-lg hover:shadow-xl transform hover:scale-105 bg-white text-blue-600">
+                    {ad.buttonText}
+                  </span>
+                </div>
+              )}
+            </div>
+            
+            {/* Decorative Elements */}
+            <div className="absolute top-4 right-4 w-12 h-12 rounded-full bg-white/10 blur-xl"></div>
+            <div className="absolute bottom-6 left-6 w-8 h-8 rounded-full bg-white/5 blur-lg"></div>
           </div>
-        )}
+        ))}
       </div>
-      
-      {/* Decorative Elements */}
-      <div className="absolute top-4 right-4 w-12 h-12 rounded-full bg-white/10 blur-xl"></div>
-      <div className="absolute bottom-6 left-6 w-8 h-8 rounded-full bg-white/5 blur-lg"></div>
       
       {/* Кнопки навигации */}
       {activeAds.length > 1 && (
@@ -229,9 +220,7 @@ export function AdvertisementCarousel() {
           <Button
             variant="outline"
             size="icon"
-            className={`absolute left-4 top-1/2 transform -translate-y-1/2 bg-white/20 hover:bg-white/30 border-white/30 text-white opacity-0 hover:opacity-100 transition-all duration-[400ms] ${
-              isTransitioning ? 'opacity-0' : ''
-            }`}
+            className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white/20 hover:bg-white/30 border-white/30 text-white opacity-0 hover:opacity-100 transition-all duration-300"
             onClick={(e) => {
               e.stopPropagation();
               prevSlide();
@@ -242,9 +231,7 @@ export function AdvertisementCarousel() {
           <Button
             variant="outline"
             size="icon"
-            className={`absolute right-4 top-1/2 transform -translate-y-1/2 bg-white/20 hover:bg-white/30 border-white/30 text-white opacity-0 hover:opacity-100 transition-all duration-[400ms] ${
-              isTransitioning ? 'opacity-0' : ''
-            }`}
+            className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white/20 hover:bg-white/30 border-white/30 text-white opacity-0 hover:opacity-100 transition-all duration-300"
             onClick={(e) => {
               e.stopPropagation();
               nextSlide();
@@ -257,9 +244,7 @@ export function AdvertisementCarousel() {
 
       {/* Индикаторы слайдов */}
       {activeAds.length > 1 && (
-        <div className={`absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2 transition-opacity duration-[400ms] ${
-          isTransitioning ? 'opacity-0' : 'opacity-100'
-        }`}>
+        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
           {activeAds.map((_, index) => (
             <button
               key={index}
@@ -277,9 +262,6 @@ export function AdvertisementCarousel() {
         </div>
       )}
       
-      {/* Decorative Elements */}
-      <div className="absolute top-4 right-4 w-12 h-12 rounded-full bg-white/10 blur-xl"></div>
-      <div className="absolute bottom-6 left-6 w-8 h-8 rounded-full bg-white/5 blur-lg"></div>
       
       {/* Модальное окно реферальной системы */}
       <ReferralModal 
