@@ -279,63 +279,106 @@ export default function Messages() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Заголовок страницы */}
-      <div className="bg-white shadow-sm border-b">
-        <div className="max-w-6xl mx-auto px-4 py-4">
-          <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-            <MessageCircle className="w-6 h-6 text-blue-600" />
-            Сообщения - Новый дизайн
-          </h1>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+      {/* Современный заголовок с градиентом */}
+      <div className="bg-white/80 backdrop-blur-lg shadow-lg border-b border-white/20 sticky top-0 z-10">
+        <div className="max-w-7xl mx-auto px-6 py-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
+                <MessageCircle className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                  Сообщения
+                </h1>
+                <p className="text-gray-600 text-sm">Общение с продавцами автомобилей</p>
+              </div>
+            </div>
+            <div className="hidden md:flex items-center gap-2 bg-white/50 rounded-full px-4 py-2">
+              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+              <span className="text-sm text-gray-600">Онлайн</span>
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Основной контент */}
-      <div className="max-w-6xl mx-auto p-4 pb-24">
-        <div className="bg-white rounded-lg shadow-sm overflow-hidden" style={{ height: 'calc(100vh - 200px)' }}>
+      {/* Основной контент с современными карточками */}
+      <div className="max-w-7xl mx-auto p-6 pb-24">
+        <div className="bg-white/60 backdrop-blur-lg rounded-3xl shadow-2xl overflow-hidden border border-white/20" style={{ height: 'calc(100vh - 180px)' }}>
           <div className="flex h-full">
-            {/* Список переписок */}
-            <div className="w-1/3 border-r border-gray-200 flex flex-col">
-              <div className="p-4 border-b border-gray-200 bg-gray-50">
-                <h2 className="text-lg font-semibold text-gray-800">Переписки</h2>
+            {/* Стильный список переписок */}
+            <div className="w-1/3 border-r border-white/30 flex flex-col bg-gradient-to-b from-white/80 to-white/40">
+              <div className="p-6 border-b border-white/30 bg-white/50">
+                <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+                  <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
+                    <MessageCircle className="w-4 h-4 text-white" />
+                  </div>
+                  Переписки
+                </h2>
               </div>
               
-              <div className="flex-1 overflow-y-auto">
+              <div className="flex-1 overflow-y-auto p-2 space-y-2">
                 {conversations.map((conversation) => (
                   <div
                     key={conversation.id}
-                    className={`p-4 cursor-pointer transition-all hover:bg-gray-50 border-b border-gray-100 ${
+                    className={`relative p-4 cursor-pointer transition-all duration-300 rounded-2xl group hover:shadow-lg ${
                       selectedConversation === conversation.id
-                        ? "bg-blue-50 border-l-4 border-l-blue-500"
-                        : ""
+                        ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg transform scale-105"
+                        : "bg-white/70 hover:bg-white/90 backdrop-blur-sm"
                     }`}
                     onClick={() => setSelectedConversation(conversation.id)}
                   >
                     <div className="flex items-start gap-3">
-                      <Avatar className="w-12 h-12 flex-shrink-0">
-                        <AvatarFallback className="bg-blue-100 text-blue-600">
-                          <User className="w-6 h-6" />
-                        </AvatarFallback>
-                      </Avatar>
+                      <div className="relative">
+                        <Avatar className={`w-12 h-12 ring-2 transition-all ${
+                          selectedConversation === conversation.id 
+                            ? "ring-white/50" 
+                            : "ring-blue-200/50"
+                        }`}>
+                          <AvatarFallback className={`${
+                            selectedConversation === conversation.id
+                              ? "bg-white/20 text-white"
+                              : "bg-gradient-to-br from-blue-100 to-purple-100 text-blue-600"
+                          }`}>
+                            <User className="w-6 h-6" />
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white"></div>
+                      </div>
                       
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between mb-1">
-                          <h3 className="font-medium text-gray-900 truncate">
+                          <h3 className={`font-semibold truncate ${
+                            selectedConversation === conversation.id 
+                              ? "text-white" 
+                              : "text-gray-900"
+                          }`}>
                             {conversation.otherUser.fullName}
                           </h3>
                           {conversation.unreadCount > 0 && (
-                            <Badge variant="destructive" className="text-xs">
-                              {conversation.unreadCount}
-                            </Badge>
+                            <div className="w-6 h-6 bg-red-500 rounded-full flex items-center justify-center animate-pulse">
+                              <span className="text-xs text-white font-bold">
+                                {conversation.unreadCount}
+                              </span>
+                            </div>
                           )}
                         </div>
                         
-                        <p className="text-sm text-gray-600 mb-2">
+                        <p className={`text-sm mb-2 font-medium ${
+                          selectedConversation === conversation.id 
+                            ? "text-white/90" 
+                            : "text-blue-600"
+                        }`}>
                           {conversation.listing.make} {conversation.listing.model} {conversation.listing.year}
                         </p>
                         
                         {conversation.lastMessage && (
-                          <p className="text-sm text-gray-500 truncate">
+                          <p className={`text-sm truncate ${
+                            selectedConversation === conversation.id 
+                              ? "text-white/80" 
+                              : "text-gray-500"
+                          }`}>
                             {conversation.lastMessage.content}
                           </p>
                         )}
@@ -346,52 +389,66 @@ export default function Messages() {
               </div>
             </div>
 
-            {/* Область сообщений */}
-            <div className="flex-1 flex flex-col">
-              {/* Заголовок переписки */}
-              <div className="p-4 border-b border-gray-200 bg-gray-50 flex-shrink-0">
+            {/* Область сообщений с современным дизайном */}
+            <div className="flex-1 flex flex-col bg-gradient-to-b from-white/30 to-white/10">
+              {/* Заголовок активной переписки */}
+              <div className="p-6 border-b border-white/30 bg-white/50 backdrop-blur-sm flex-shrink-0">
                 {selectedConversation && conversations.find(c => c.id === selectedConversation) ? (
-                  <div className="flex items-center gap-3">
-                    <Avatar className="w-10 h-10">
-                      <AvatarFallback className="bg-blue-100 text-blue-600">
-                        <User className="w-5 h-5" />
-                      </AvatarFallback>
-                    </Avatar>
+                  <div className="flex items-center gap-4">
+                    <div className="relative">
+                      <Avatar className="w-14 h-14 ring-2 ring-blue-200/50">
+                        <AvatarFallback className="bg-gradient-to-br from-blue-100 to-purple-100 text-blue-600">
+                          <User className="w-7 h-7" />
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 rounded-full border-2 border-white"></div>
+                    </div>
                     <div>
-                      <h2 className="font-semibold text-gray-900">
+                      <h2 className="text-xl font-bold text-gray-900">
                         {conversations.find(c => c.id === selectedConversation)?.otherUser.fullName}
                       </h2>
-                      <p className="text-sm text-gray-600">
+                      <p className="text-blue-600 font-medium">
                         {conversations.find(c => c.id === selectedConversation)?.listing.make}{" "}
                         {conversations.find(c => c.id === selectedConversation)?.listing.model}{" "}
                         {conversations.find(c => c.id === selectedConversation)?.listing.year}
                       </p>
                     </div>
+                    <div className="ml-auto flex items-center gap-2 bg-white/50 rounded-full px-3 py-1">
+                      <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                      <span className="text-sm text-gray-600">Активен</span>
+                    </div>
                   </div>
                 ) : (
-                  <div className="flex items-center justify-center py-2">
-                    <p className="text-gray-500">Выберите переписку для начала общения</p>
+                  <div className="flex items-center justify-center py-4">
+                    <p className="text-gray-500 text-lg">Выберите переписку для начала общения</p>
                   </div>
                 )}
               </div>
 
-              {/* Сообщения */}
-              <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-white">
+              {/* Сообщения с красивыми пузырями */}
+              <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-gradient-to-b from-transparent to-white/20">
                 {!selectedConversation ? (
                   <div className="flex items-center justify-center h-full">
                     <div className="text-center">
-                      <MessageCircle className="w-16 h-16 mx-auto mb-4 text-gray-400" />
-                      <h2 className="text-xl font-semibold text-gray-800 mb-2">
+                      <div className="w-24 h-24 bg-gradient-to-br from-blue-500 to-purple-600 rounded-3xl flex items-center justify-center mb-6 mx-auto shadow-lg">
+                        <MessageCircle className="w-12 h-12 text-white" />
+                      </div>
+                      <h2 className="text-2xl font-bold text-gray-800 mb-2">
                         Выберите переписку
                       </h2>
-                      <p className="text-gray-500">
+                      <p className="text-gray-600 text-lg">
                         Нажмите на переписку слева, чтобы начать общение
                       </p>
                     </div>
                   </div>
                 ) : messagesLoading ? (
                   <div className="flex items-center justify-center py-8">
-                    <p className="text-gray-500">Загрузка сообщений...</p>
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce"></div>
+                      <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                      <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                      <span className="ml-2 text-gray-600">Загрузка сообщений...</span>
+                    </div>
                   </div>
                 ) : messages && messages.length > 0 ? (
                   messages.map((message) => (
@@ -402,56 +459,73 @@ export default function Messages() {
                       }`}
                     >
                       <div
-                        className={`max-w-xs lg:max-w-md px-4 py-2 rounded-2xl shadow-sm ${
+                        className={`max-w-xs lg:max-w-md px-6 py-4 rounded-3xl shadow-lg backdrop-blur-sm relative ${
                           message.senderId === user?.userId
-                            ? "bg-blue-500 text-white"
-                            : "bg-gray-100 text-gray-900"
+                            ? "bg-gradient-to-br from-blue-500 to-purple-600 text-white ml-4"
+                            : "bg-white/80 text-gray-900 mr-4"
                         }`}
                       >
-                        <p className="text-sm">{message.content}</p>
+                        <p className="text-sm leading-relaxed">{message.content}</p>
                         <p
-                          className={`text-xs mt-1 ${
+                          className={`text-xs mt-2 ${
                             message.senderId === user?.userId
-                              ? "text-blue-100"
+                              ? "text-white/80"
                               : "text-gray-500"
                           }`}
                         >
                           {formatDate(message.createdAt)}
                         </p>
+                        {/* Хвостик сообщения */}
+                        <div className={`absolute top-4 w-4 h-4 transform rotate-45 ${
+                          message.senderId === user?.userId
+                            ? "bg-gradient-to-br from-blue-500 to-purple-600 -right-1"
+                            : "bg-white/80 -left-1"
+                        }`}></div>
                       </div>
                     </div>
                   ))
                 ) : (
                   <div className="flex items-center justify-center py-8">
-                    <p className="text-gray-500">Нет сообщений</p>
+                    <p className="text-gray-500 text-lg">Нет сообщений</p>
                   </div>
                 )}
               </div>
 
-              {/* Поле ввода */}
-              <div className="p-4 border-t border-gray-200 bg-gray-50 flex-shrink-0">
-                <div className="flex gap-2">
-                  <Input
-                    value={messageText}
-                    onChange={(e) => setMessageText(e.target.value)}
-                    placeholder={
-                      conversationsLoading 
-                        ? "Загрузка переписок..." 
-                        : selectedConversation 
-                          ? "Введите сообщение..." 
-                          : "Сначала выберите переписку"
-                    }
-                    onKeyPress={(e) => e.key === "Enter" && selectedConversation && handleSendMessage()}
-                    className="flex-1"
-                    disabled={sendMessageMutation.isPending || !selectedConversation || conversationsLoading}
-                  />
+              {/* Современное поле ввода */}
+              <div className="p-6 border-t border-white/30 bg-white/50 backdrop-blur-sm flex-shrink-0">
+                <div className="flex gap-3">
+                  <div className="flex-1 relative">
+                    <Input
+                      value={messageText}
+                      onChange={(e) => setMessageText(e.target.value)}
+                      placeholder={
+                        conversationsLoading 
+                          ? "Загрузка переписок..." 
+                          : selectedConversation 
+                            ? "Введите сообщение..." 
+                            : "Сначала выберите переписку"
+                      }
+                      onKeyPress={(e) => e.key === "Enter" && selectedConversation && handleSendMessage()}
+                      className="bg-white/80 border-white/30 rounded-2xl px-6 py-4 text-lg focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 backdrop-blur-sm"
+                      disabled={sendMessageMutation.isPending || !selectedConversation || conversationsLoading}
+                    />
+                  </div>
                   <Button
                     onClick={handleSendMessage}
                     disabled={!messageText.trim() || sendMessageMutation.isPending || !selectedConversation || conversationsLoading}
-                    className="gap-2"
+                    className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white rounded-2xl px-8 py-4 text-lg shadow-lg transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
                   >
-                    <Send className="w-4 h-4" />
-                    {sendMessageMutation.isPending ? "Отправка..." : "Отправить"}
+                    {sendMessageMutation.isPending ? (
+                      <div className="flex items-center gap-2">
+                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                        Отправка...
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2">
+                        <Send className="w-5 h-5" />
+                        Отправить
+                      </div>
+                    )}
                   </Button>
                 </div>
               </div>
