@@ -303,226 +303,148 @@ export default function Messages() {
         </div>
       </div>
 
-      {/* Основной контент с современными карточками */}
-      <div className="max-w-7xl mx-auto p-6 pb-24">
-        <div className="bg-white/60 backdrop-blur-lg rounded-3xl shadow-2xl overflow-hidden border border-white/20" style={{ height: 'calc(100vh - 180px)' }}>
-          <div className="flex h-full">
-            {/* Стильный список переписок */}
-            <div className="w-1/3 border-r border-white/30 flex flex-col bg-gradient-to-b from-white/80 to-white/40">
-              <div className="p-6 border-b border-white/30 bg-white/50">
-                <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
-                  <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
-                    <MessageCircle className="w-4 h-4 text-white" />
-                  </div>
-                  Переписки
-                </h2>
+      {/* Основной контент - только переписки */}
+      <div className="max-w-4xl mx-auto p-6 pb-24">
+        <div className="bg-white/60 backdrop-blur-lg rounded-3xl shadow-2xl overflow-hidden border border-white/20">
+          <div className="p-6 border-b border-white/30 bg-white/50">
+            <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+              <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
+                <MessageCircle className="w-4 h-4 text-white" />
               </div>
-              
-              <div className="flex-1 overflow-y-auto p-2 space-y-2">
-                {conversations.map((conversation) => (
-                  <div
-                    key={conversation.id}
-                    className={`relative p-4 cursor-pointer transition-all duration-300 rounded-2xl group hover:shadow-lg ${
-                      selectedConversation === conversation.id
-                        ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg transform scale-105"
-                        : "bg-white/70 hover:bg-white/90 backdrop-blur-sm"
-                    }`}
-                    onClick={() => setSelectedConversation(conversation.id)}
-                  >
-                    <div className="flex items-start gap-3">
-                      <div className="relative">
-                        <Avatar className={`w-12 h-12 ring-2 transition-all ${
-                          selectedConversation === conversation.id 
-                            ? "ring-white/50" 
-                            : "ring-blue-200/50"
-                        }`}>
-                          <AvatarFallback className={`${
-                            selectedConversation === conversation.id
-                              ? "bg-white/20 text-white"
-                              : "bg-gradient-to-br from-blue-100 to-purple-100 text-blue-600"
-                          }`}>
-                            <User className="w-6 h-6" />
-                          </AvatarFallback>
-                        </Avatar>
-                        <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white"></div>
-                      </div>
-                      
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between mb-1">
-                          <h3 className={`font-semibold truncate ${
-                            selectedConversation === conversation.id 
-                              ? "text-white" 
-                              : "text-gray-900"
-                          }`}>
-                            {conversation.otherUser.fullName}
-                          </h3>
-                          {conversation.unreadCount > 0 && (
-                            <div className="w-6 h-6 bg-red-500 rounded-full flex items-center justify-center animate-pulse">
-                              <span className="text-xs text-white font-bold">
-                                {conversation.unreadCount}
-                              </span>
-                            </div>
-                          )}
-                        </div>
-                        
-                        <p className={`text-sm mb-2 font-medium ${
-                          selectedConversation === conversation.id 
-                            ? "text-white/90" 
-                            : "text-blue-600"
-                        }`}>
-                          {conversation.listing.make} {conversation.listing.model} {conversation.listing.year}
-                        </p>
-                        
-                        {conversation.lastMessage && (
-                          <p className={`text-sm truncate ${
-                            selectedConversation === conversation.id 
-                              ? "text-white/80" 
-                              : "text-gray-500"
-                          }`}>
-                            {conversation.lastMessage.content}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Область сообщений с современным дизайном */}
-            <div className="flex-1 flex flex-col bg-gradient-to-b from-white/30 to-white/10">
-              {/* Заголовок активной переписки */}
-              <div className="p-6 border-b border-white/30 bg-white/50 backdrop-blur-sm flex-shrink-0">
-                {selectedConversation && conversations.find(c => c.id === selectedConversation) ? (
-                  <div className="flex items-center gap-4">
+              Переписки
+            </h2>
+          </div>
+          
+          <div className="p-4 space-y-4">
+            {conversations.map((conversation) => (
+              <div key={conversation.id} className="bg-white/70 backdrop-blur-sm rounded-2xl shadow-lg overflow-hidden">
+                {/* Заголовок переписки */}
+                <div
+                  className="p-4 cursor-pointer hover:bg-white/90 transition-all duration-300"
+                  onClick={() => setSelectedConversation(selectedConversation === conversation.id ? null : conversation.id)}
+                >
+                  <div className="flex items-center gap-3">
                     <div className="relative">
-                      <Avatar className="w-14 h-14 ring-2 ring-blue-200/50">
+                      <Avatar className="w-12 h-12 ring-2 ring-blue-200/50">
                         <AvatarFallback className="bg-gradient-to-br from-blue-100 to-purple-100 text-blue-600">
-                          <User className="w-7 h-7" />
+                          <User className="w-6 h-6" />
                         </AvatarFallback>
                       </Avatar>
-                      <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 rounded-full border-2 border-white"></div>
+                      <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white"></div>
                     </div>
-                    <div>
-                      <h2 className="text-xl font-bold text-gray-900">
-                        {conversations.find(c => c.id === selectedConversation)?.otherUser.fullName}
-                      </h2>
-                      <p className="text-blue-600 font-medium">
-                        {conversations.find(c => c.id === selectedConversation)?.listing.make}{" "}
-                        {conversations.find(c => c.id === selectedConversation)?.listing.model}{" "}
-                        {conversations.find(c => c.id === selectedConversation)?.listing.year}
-                      </p>
-                    </div>
-                    <div className="ml-auto flex items-center gap-2 bg-white/50 rounded-full px-3 py-1">
-                      <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                      <span className="text-sm text-gray-600">Активен</span>
-                    </div>
-                  </div>
-                ) : null}
-              </div>
-
-              {/* Сообщения с красивыми пузырями */}
-              <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-gradient-to-b from-transparent to-white/20">
-                {!selectedConversation ? (
-                  <div className="flex items-center justify-center h-full">
-                    <div className="text-center">
-                      <div className="w-24 h-24 bg-gradient-to-br from-blue-500 to-purple-600 rounded-3xl flex items-center justify-center mb-6 mx-auto shadow-lg">
-                        <MessageCircle className="w-12 h-12 text-white" />
+                    
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between mb-1">
+                        <h3 className="font-semibold text-gray-900 truncate">
+                          {conversation.otherUser.fullName}
+                        </h3>
+                        {conversation.unreadCount > 0 && (
+                          <div className="w-6 h-6 bg-red-500 rounded-full flex items-center justify-center animate-pulse">
+                            <span className="text-xs text-white font-bold">
+                              {conversation.unreadCount}
+                            </span>
+                          </div>
+                        )}
                       </div>
-                      <h2 className="text-2xl font-bold text-gray-800 mb-2">
-                        Выберите переписку
-                      </h2>
-                      <p className="text-gray-600 text-lg">
-                        Нажмите на переписку слева, чтобы начать общение
+                      
+                      <p className="text-sm text-blue-600 font-medium mb-2">
+                        {conversation.listing.make} {conversation.listing.model} {conversation.listing.year}
                       </p>
-                    </div>
-                  </div>
-                ) : messagesLoading ? (
-                  <div className="flex items-center justify-center py-8">
-                    <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce"></div>
-                      <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                      <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-                      <span className="ml-2 text-gray-600">Загрузка сообщений...</span>
-                    </div>
-                  </div>
-                ) : messages && messages.length > 0 ? (
-                  messages.map((message) => (
-                    <div
-                      key={message.id}
-                      className={`flex ${
-                        message.senderId === user?.userId ? "justify-end" : "justify-start"
-                      }`}
-                    >
-                      <div
-                        className={`max-w-xs lg:max-w-md px-6 py-4 rounded-3xl shadow-lg backdrop-blur-sm relative ${
-                          message.senderId === user?.userId
-                            ? "bg-gradient-to-br from-blue-500 to-purple-600 text-white ml-4"
-                            : "bg-white/80 text-gray-900 mr-4"
-                        }`}
-                      >
-                        <p className="text-sm leading-relaxed">{message.content}</p>
-                        <p
-                          className={`text-xs mt-2 ${
-                            message.senderId === user?.userId
-                              ? "text-white/80"
-                              : "text-gray-500"
-                          }`}
-                        >
-                          {formatDate(message.createdAt)}
+                      
+                      {conversation.lastMessage && (
+                        <p className="text-sm text-gray-500 truncate">
+                          {conversation.lastMessage.content}
                         </p>
-                        {/* Хвостик сообщения */}
-                        <div className={`absolute top-4 w-4 h-4 transform rotate-45 ${
-                          message.senderId === user?.userId
-                            ? "bg-gradient-to-br from-blue-500 to-purple-600 -right-1"
-                            : "bg-white/80 -left-1"
-                        }`}></div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Развернутая переписка */}
+                {selectedConversation === conversation.id && (
+                  <div className="border-t border-white/30 bg-gradient-to-b from-white/50 to-white/30">
+                    {/* Сообщения */}
+                    <div className="p-4 max-h-96 overflow-y-auto space-y-3">
+                      {messagesLoading ? (
+                        <div className="flex items-center justify-center py-8">
+                          <div className="flex items-center gap-2">
+                            <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce"></div>
+                            <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                            <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                            <span className="ml-2 text-gray-600">Загрузка сообщений...</span>
+                          </div>
+                        </div>
+                      ) : messages && messages.length > 0 ? (
+                        messages.map((message) => (
+                          <div
+                            key={message.id}
+                            className={`flex ${
+                              message.senderId === user?.userId ? "justify-end" : "justify-start"
+                            }`}
+                          >
+                            <div
+                              className={`max-w-xs px-4 py-3 rounded-2xl shadow-md relative ${
+                                message.senderId === user?.userId
+                                  ? "bg-gradient-to-br from-blue-500 to-purple-600 text-white"
+                                  : "bg-white/90 text-gray-900"
+                              }`}
+                            >
+                              <p className="text-sm leading-relaxed">{message.content}</p>
+                              <p
+                                className={`text-xs mt-1 ${
+                                  message.senderId === user?.userId
+                                    ? "text-white/80"
+                                    : "text-gray-500"
+                                }`}
+                              >
+                                {formatDate(message.createdAt)}
+                              </p>
+                              {/* Хвостик сообщения */}
+                              <div className={`absolute top-3 w-3 h-3 transform rotate-45 ${
+                                message.senderId === user?.userId
+                                  ? "bg-gradient-to-br from-blue-500 to-purple-600 -right-1"
+                                  : "bg-white/90 -left-1"
+                              }`}></div>
+                            </div>
+                          </div>
+                        ))
+                      ) : (
+                        <div className="flex items-center justify-center py-8">
+                          <p className="text-gray-500">Нет сообщений</p>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Поле ввода */}
+                    <div className="p-4 border-t border-white/30 bg-white/40">
+                      <div className="flex gap-3">
+                        <div className="flex-1 relative">
+                          <Input
+                            value={messageText}
+                            onChange={(e) => setMessageText(e.target.value)}
+                            placeholder="Введите сообщение..."
+                            onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
+                            className="bg-white/80 border-white/30 rounded-2xl px-4 py-3 focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 backdrop-blur-sm"
+                            disabled={sendMessageMutation.isPending}
+                          />
+                        </div>
+                        <Button
+                          onClick={handleSendMessage}
+                          disabled={!messageText.trim() || sendMessageMutation.isPending}
+                          className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white rounded-2xl px-6 py-3 shadow-lg transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                        >
+                          {sendMessageMutation.isPending ? (
+                            <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                          ) : (
+                            <Send className="w-5 h-5" />
+                          )}
+                        </Button>
                       </div>
                     </div>
-                  ))
-                ) : (
-                  <div className="flex items-center justify-center py-8">
-                    <p className="text-gray-500 text-lg">Нет сообщений</p>
                   </div>
                 )}
               </div>
-
-              {/* Современное поле ввода */}
-              <div className="p-6 border-t border-white/30 bg-white/50 backdrop-blur-sm flex-shrink-0">
-                <div className="flex gap-3">
-                  <div className="flex-1 relative">
-                    <Input
-                      value={messageText}
-                      onChange={(e) => setMessageText(e.target.value)}
-                      placeholder={
-                        conversationsLoading 
-                          ? "Загрузка переписок..." 
-                          : selectedConversation 
-                            ? "Введите сообщение..." 
-                            : "Сначала выберите переписку"
-                      }
-                      onKeyPress={(e) => e.key === "Enter" && selectedConversation && handleSendMessage()}
-                      className="bg-white/80 border-white/30 rounded-2xl px-6 py-4 text-lg focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 backdrop-blur-sm"
-                      disabled={sendMessageMutation.isPending || !selectedConversation || conversationsLoading}
-                    />
-                  </div>
-                  <Button
-                    onClick={handleSendMessage}
-                    disabled={!messageText.trim() || sendMessageMutation.isPending || !selectedConversation || conversationsLoading}
-                    className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white rounded-2xl px-8 py-4 text-lg shadow-lg transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
-                  >
-                    {sendMessageMutation.isPending ? (
-                      <div className="flex items-center gap-2">
-                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                        Отправка...
-                      </div>
-                    ) : (
-                      <Send className="w-5 h-5" />
-                    )}
-                  </Button>
-                </div>
-              </div>
-            </div>
+            ))}
           </div>
         </div>
       </div>
