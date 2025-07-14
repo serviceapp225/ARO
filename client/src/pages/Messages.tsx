@@ -208,7 +208,7 @@ export default function Messages() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto p-4 h-screen flex">
+    <div className="max-w-6xl mx-auto p-4 h-screen flex page-content">
       {/* Список переписок */}
       <div className="w-1/3 border-r border-gray-200 pr-4">
         <h1 className="text-2xl font-bold text-gray-800 mb-4 flex items-center gap-2">
@@ -265,11 +265,11 @@ export default function Messages() {
       </div>
 
       {/* Область сообщений */}
-      <div className="flex-1 flex flex-col pl-4">
+      <div className="flex-1 flex flex-col pl-4 h-full">
         {selectedConversation ? (
           <>
             {/* Заголовок переписки */}
-            <div className="border-b border-gray-200 pb-4 mb-4">
+            <div className="border-b border-gray-200 pb-4 mb-4 flex-shrink-0">
               {conversations.find(c => c.id === selectedConversation) && (
                 <div className="flex items-center gap-3">
                   <Avatar className="w-10 h-10">
@@ -292,7 +292,7 @@ export default function Messages() {
             </div>
 
             {/* Сообщения */}
-            <div className="flex-1 overflow-y-auto mb-4 space-y-4">
+            <div className="flex-1 overflow-y-auto mb-4 space-y-4 min-h-0">
               {messagesLoading ? (
                 <div className="flex items-center justify-center py-8">
                   <p className="text-gray-500">Загрузка сообщений...</p>
@@ -332,8 +332,8 @@ export default function Messages() {
               )}
             </div>
 
-            {/* Поле ввода */}
-            <div className="flex gap-2">
+            {/* Поле ввода - всегда видимо */}
+            <div className="flex gap-2 flex-shrink-0 border-t border-gray-200 pt-4">
               <Input
                 value={messageText}
                 onChange={(e) => setMessageText(e.target.value)}
