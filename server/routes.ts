@@ -2472,66 +2472,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   console.log('🤖 Автоматическая обработка просроченных аукционов запущена (каждые 5 минут)');
   
-  return httpServer;
-}
-
-// Функция для отправки SMS (заменить на реальную интеграцию)
-async function sendSMSCode(phoneNumber: string, code: string): Promise<{success: boolean, message?: string}> {
-  // В production здесь будет реальная интеграция с SMS-провайдером
-  // Примеры популярных провайдеров в Таджикистане:
-  
-  // 1. Tcell SMS API
-  // 2. Beeline SMS Gateway  
-  // 3. Megafon SMS API
-  // 4. Twilio (международный)
-  
-  try {
-    // Имитация задержки отправки SMS
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    // В production раскомментируйте нужную интеграцию:
-    
-    /* Пример интеграции с Twilio:
-    const accountSid = process.env.TWILIO_ACCOUNT_SID;
-    const authToken = process.env.TWILIO_AUTH_TOKEN;
-    const client = require('twilio')(accountSid, authToken);
-    
-    const message = await client.messages.create({
-      body: `Ваш код подтверждения AUTOBID.TJ: ${code}`,
-      from: process.env.TWILIO_PHONE_NUMBER,
-      to: phoneNumber
-    });
-    
-    return { success: true, message: message.sid };
-    */
-    
-    /* Пример с локальным SMS-шлюзом:
-    const response = await fetch('http://localhost:8080/send-sms', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        phone: phoneNumber,
-        text: `Код подтверждения AUTOBID.TJ: ${code}`
-      })
-    });
-    
-    return response.ok ? { success: true } : { success: false };
-    */
-    
-    // Текущая заглушка для разработки
-    console.log(`[SMS DEMO] Отправка SMS на ${phoneNumber}: ${code}`);
-    return { success: true, message: "SMS отправлен (демо-режим)" };
-    
-  } catch (error) {
-    console.error("SMS sending failed:", error);
-    return { success: false, message: error instanceof Error ? error.message : "Unknown error" };
-  }
-
-  // API для проверки последних обновлений
-  app.get('/api/bid-updates/timestamp', (req, res) => {
-    res.json({ timestamp: lastBidUpdate });
-  });
-
   // Messaging API routes
   app.get("/api/conversations/:userId", async (req, res) => {
     try {
@@ -2608,8 +2548,65 @@ async function sendSMSCode(phoneNumber: string, code: string): Promise<{success:
     }
   });
 
-  const httpServer = createServer(app);
+  // API для проверки последних обновлений
+  app.get('/api/bid-updates/timestamp', (req, res) => {
+    res.json({ timestamp: lastBidUpdate });
+  });
+  
   return httpServer;
+}
+
+// Функция для отправки SMS (заменить на реальную интеграцию)
+async function sendSMSCode(phoneNumber: string, code: string): Promise<{success: boolean, message?: string}> {
+  // В production здесь будет реальная интеграция с SMS-провайдером
+  // Примеры популярных провайдеров в Таджикистане:
+  
+  // 1. Tcell SMS API
+  // 2. Beeline SMS Gateway  
+  // 3. Megafon SMS API
+  // 4. Twilio (международный)
+  
+  try {
+    // Имитация задержки отправки SMS
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    // В production раскомментируйте нужную интеграцию:
+    
+    /* Пример интеграции с Twilio:
+    const accountSid = process.env.TWILIO_ACCOUNT_SID;
+    const authToken = process.env.TWILIO_AUTH_TOKEN;
+    const client = require('twilio')(accountSid, authToken);
+    
+    const message = await client.messages.create({
+      body: `Ваш код подтверждения AUTOBID.TJ: ${code}`,
+      from: process.env.TWILIO_PHONE_NUMBER,
+      to: phoneNumber
+    });
+    
+    return { success: true, message: message.sid };
+    */
+    
+    /* Пример с локальным SMS-шлюзом:
+    const response = await fetch('http://localhost:8080/send-sms', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        phone: phoneNumber,
+        text: `Код подтверждения AUTOBID.TJ: ${code}`
+      })
+    });
+    
+    return response.ok ? { success: true } : { success: false };
+    */
+    
+    // Текущая заглушка для разработки
+    console.log(`[SMS DEMO] Отправка SMS на ${phoneNumber}: ${code}`);
+    return { success: true, message: "SMS отправлен (демо-режим)" };
+    
+  } catch (error) {
+    console.error("SMS sending failed:", error);
+    return { success: false, message: error instanceof Error ? error.message : "Unknown error" };
+  }
 }
 
 
