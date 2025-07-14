@@ -115,27 +115,39 @@ export function ActiveAuctions({ searchQuery = "", customListings }: ActiveAucti
     return sortedAuctions.slice(0, page * ITEMS_PER_PAGE);
   }, [sourceAuctions, searchQuery, sortBy, page]);
 
-  // Предзагрузка данных при наведении на карточку
+  // Debounced предзагрузка данных при наведении на карточку
+  const [hoverTimeout, setHoverTimeout] = useState<NodeJS.Timeout | null>(null);
+  
   const handleCardHover = (auctionId: number) => {
-    // Предзагружаем данные аукциона в фоновом режиме
-    queryClient.prefetchQuery({
-      queryKey: [`/api/listings/${auctionId}`],
-      queryFn: async () => {
-        const response = await fetch(`/api/listings/${auctionId}`);
-        return response.json();
-      },
-      staleTime: 10000, // 10 секунд
-    });
+    // Очищаем предыдущий timeout
+    if (hoverTimeout) {
+      clearTimeout(hoverTimeout);
+    }
     
-    // Предзагружаем ставки
-    queryClient.prefetchQuery({
-      queryKey: [`/api/listings/${auctionId}/bids`],
-      queryFn: async () => {
-        const response = await fetch(`/api/listings/${auctionId}/bids`);
-        return response.json();
-      },
-      staleTime: 5000, // 5 секунд
-    });
+    // Устанавливаем новый timeout с задержкой
+    const timeout = setTimeout(() => {
+      // Предзагружаем данные аукциона в фоновом режиме
+      queryClient.prefetchQuery({
+        queryKey: [`/api/listings/${auctionId}`],
+        queryFn: async () => {
+          const response = await fetch(`/api/listings/${auctionId}`);
+          return response.json();
+        },
+        staleTime: 10000, // 10 секунд
+      });
+      
+      // Предзагружаем ставки
+      queryClient.prefetchQuery({
+        queryKey: [`/api/listings/${auctionId}/bids`],
+        queryFn: async () => {
+          const response = await fetch(`/api/listings/${auctionId}/bids`);
+          return response.json();
+        },
+        staleTime: 5000, // 5 секунд
+      });
+    }, 300); // Задержка 300мс для оптимизации
+    
+    setHoverTimeout(timeout);
   };
 
   // Fast navigation with preloading
