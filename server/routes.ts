@@ -2540,6 +2540,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const message = await storage.createMessage({ conversationId, senderId, content });
       console.log(`✅ Сообщение создано успешно:`, message);
+      
+      // ДЕМО: Сбрасываем флаг посещения страницы сообщений для появления красного значка
+      resetMessageVisitedFlag();
+      
       res.status(201).json(message);
     } catch (error) {
       console.error("❌ Ошибка создания сообщения:", error);
@@ -2575,6 +2579,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Переменная для демонстрации - отслеживание посещений страницы сообщений
   let messagesPageVisited = false;
+  
+  // Функция для сброса демонстрационного флага (когда приходит новое сообщение)
+  function resetMessageVisitedFlag() {
+    messagesPageVisited = false;
+    console.log(`🔄 ДЕМО: Сброшен флаг посещения - красный значок снова появится`);
+  }
 
   app.get("/api/messages/unread-count/:userId", async (req, res) => {
     try {
@@ -2637,6 +2647,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error(`❌ Ошибка сброса демонстрации:`, error);
       res.status(500).json({ error: "Failed to reset demo" });
+    }
+  });
+
+  // ДЕМО: Тест нового сообщения для демонстрации красного значка
+  app.post("/api/demo/send-test-message", async (req, res) => {
+    try {
+      console.log(`📧 ДЕМО: Имитация отправки нового сообщения`);
+      
+      // Сбрасываем флаг - как будто пришло новое сообщение
+      resetMessageVisitedFlag();
+      
+      console.log(`✅ ДЕМО: Новое сообщение отправлено - красный значок должен появиться`);
+      res.json({ success: true, message: "Тестовое сообщение отправлено" });
+    } catch (error) {
+      console.error(`❌ Ошибка отправки тестового сообщения:`, error);
+      res.status(500).json({ error: "Failed to send test message" });
     }
   });
 
