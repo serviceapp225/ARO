@@ -284,7 +284,7 @@ export function ActiveAuctions({ searchQuery = "", customListings }: ActiveAucti
             <CardContent className="p-4">
               <div className="mb-2">
                 <span className="text-xs font-mono bg-blue-100 text-blue-700 px-2 py-1 rounded">
-                  {auction.lotNumber}
+                  Номер лота: {auction.lotNumber}
                 </span>
               </div>
               <h3 className="font-bold text-lg text-gray-900 mb-1">
