@@ -1767,7 +1767,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Documents API routes
+  // Documents API routes (public)
   app.get("/api/documents", async (req, res) => {
     try {
       const type = req.query.type as string;
@@ -1775,64 +1775,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(documents);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch documents" });
-    }
-  });
-
-  app.get("/api/admin/documents", async (req, res) => {
-    try {
-      const type = req.query.type as string;
-      const documents = await storage.getDocuments(type);
-      res.json(documents);
-    } catch (error) {
-      res.status(500).json({ error: "Failed to fetch documents" });
-    }
-  });
-
-  app.get("/api/admin/documents/:id", async (req, res) => {
-    try {
-      const id = parseInt(req.params.id);
-      const document = await storage.getDocument(id);
-      if (!document) {
-        return res.status(404).json({ error: "Document not found" });
-      }
-      res.json(document);
-    } catch (error) {
-      res.status(500).json({ error: "Failed to fetch document" });
-    }
-  });
-
-  app.post("/api/admin/documents", async (req, res) => {
-    try {
-      const document = await storage.createDocument(req.body);
-      res.status(201).json(document);
-    } catch (error) {
-      res.status(500).json({ error: "Failed to create document" });
-    }
-  });
-
-  app.put("/api/admin/documents/:id", async (req, res) => {
-    try {
-      const id = parseInt(req.params.id);
-      const document = await storage.updateDocument(id, req.body);
-      if (!document) {
-        return res.status(404).json({ error: "Document not found" });
-      }
-      res.json(document);
-    } catch (error) {
-      res.status(500).json({ error: "Failed to update document" });
-    }
-  });
-
-  app.delete("/api/admin/documents/:id", async (req, res) => {
-    try {
-      const id = parseInt(req.params.id);
-      const deleted = await storage.deleteDocument(id);
-      if (!deleted) {
-        return res.status(404).json({ error: "Document not found" });
-      }
-      res.status(204).send();
-    } catch (error) {
-      res.status(500).json({ error: "Failed to delete document" });
     }
   });
 
@@ -2300,6 +2242,85 @@ export async function registerRoutes(app: Express): Promise<Server> {
     next();
   };
 
+  // API роуты для управления документами
+  app.get("/api/admin/documents", requireAdmin, async (req, res) => {
+    try {
+      const documents = await storage.getDocuments();
+      res.json(documents);
+    } catch (error) {
+      console.error("Failed to fetch documents:", error);
+      res.status(500).json({ error: "Failed to fetch documents" });
+    }
+  });
+
+  app.post("/api/admin/documents", requireAdmin, async (req, res) => {
+    try {
+      const { title, content, type } = req.body;
+      
+      if (!title || !content || !type) {
+        return res.status(400).json({ error: "Title, content, and type are required" });
+      }
+      
+      const document = await storage.createDocument({
+        title,
+        content,
+        type
+      });
+      
+      res.json(document);
+    } catch (error) {
+      console.error("Failed to create document:", error);
+      res.status(500).json({ error: "Failed to create document" });
+    }
+  });
+
+  app.put("/api/admin/documents/:id", requireAdmin, async (req, res) => {
+    try {
+      const documentId = parseInt(req.params.id);
+      const { title, content, type } = req.body;
+      
+      if (isNaN(documentId)) {
+        return res.status(400).json({ error: "Invalid document ID" });
+      }
+      
+      const document = await storage.updateDocument(documentId, {
+        title,
+        content,
+        type
+      });
+      
+      if (!document) {
+        return res.status(404).json({ error: "Document not found" });
+      }
+      
+      res.json(document);
+    } catch (error) {
+      console.error("Failed to update document:", error);
+      res.status(500).json({ error: "Failed to update document" });
+    }
+  });
+
+  app.delete("/api/admin/documents/:id", requireAdmin, async (req, res) => {
+    try {
+      const documentId = parseInt(req.params.id);
+      
+      if (isNaN(documentId)) {
+        return res.status(400).json({ error: "Invalid document ID" });
+      }
+      
+      const success = await storage.deleteDocument(documentId);
+      
+      if (!success) {
+        return res.status(404).json({ error: "Document not found" });
+      }
+      
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Failed to delete document:", error);
+      res.status(500).json({ error: "Failed to delete document" });
+    }
+  });
+
   // Админские API роуты - только для номера +992000000000
   app.get("/api/admin/users", requireAdmin, async (req, res) => {
     try {
@@ -2526,91 +2547,49 @@ async function sendSMSCode(phoneNumber: string, code: string): Promise<{success:
     console.error("SMS sending failed:", error);
     return { success: false, message: error instanceof Error ? error.message : "Unknown error" };
   }
+}
 
-  // API роуты для управления документами
-  app.get("/api/admin/documents", requireAdmin, async (req, res) => {
-    try {
-      const documents = await storage.getDocuments();
-      res.json(documents);
-    } catch (error) {
-      console.error("Failed to fetch documents:", error);
-      res.status(500).json({ error: "Failed to fetch documents" });
-    }
-  });
-
-  app.post("/api/admin/documents", requireAdmin, async (req, res) => {
-    try {
-      const { title, content, type } = req.body;
-      
-      if (!title || !content || !type) {
-        return res.status(400).json({ error: "Title, content, and type are required" });
-      }
-      
-      const document = await storage.createDocument({
-        title,
-        content,
-        type,
-        userId: null, // Системный документ
-        fileUrl: null,
-        fileName: null,
-        fileSize: null,
-        isActive: true,
-        order: 0
-      });
-      
-      res.json(document);
-    } catch (error) {
-      console.error("Failed to create document:", error);
-      res.status(500).json({ error: "Failed to create document" });
-    }
-  });
-
-  app.put("/api/admin/documents/:id", requireAdmin, async (req, res) => {
-    try {
-      const documentId = parseInt(req.params.id);
-      const { title, content, type } = req.body;
-      
-      if (isNaN(documentId)) {
-        return res.status(400).json({ error: "Invalid document ID" });
-      }
-      
-      const document = await storage.updateDocument(documentId, {
-        title,
-        content,
-        type
-      });
-      
-      if (!document) {
-        return res.status(404).json({ error: "Document not found" });
-      }
-      
-      res.json(document);
-    } catch (error) {
-      console.error("Failed to update document:", error);
-      res.status(500).json({ error: "Failed to update document" });
-    }
-  });
-
-  app.delete("/api/admin/documents/:id", requireAdmin, async (req, res) => {
-    try {
-      const documentId = parseInt(req.params.id);
-      
-      if (isNaN(documentId)) {
-        return res.status(400).json({ error: "Invalid document ID" });
-      }
-      
-      const success = await storage.deleteDocument(documentId);
-      
-      if (!success) {
-        return res.status(404).json({ error: "Document not found" });
-      }
-      
-      res.json({ success: true });
-    } catch (error) {
-      console.error("Failed to delete document:", error);
-      res.status(500).json({ error: "Failed to delete document" });
-    }
-  });
+async function sendSMSCode(phoneNumber: string, code: string): Promise<{success: boolean, message?: string}> {
+  // Реализация SMS отправки
+  try {
+    // Здесь должна быть реальная интеграция с SMS-провайдером
+    // Например, через Twilio, Nexmo, или локальный SMS-шлюз
+    
+    /* Пример с Twilio:
+    const accountSid = process.env.TWILIO_ACCOUNT_SID;
+    const authToken = process.env.TWILIO_AUTH_TOKEN;
+    const client = twilio(accountSid, authToken);
+    
+    const message = await client.messages.create({
+      body: `Код подтверждения AUTOBID.TJ: ${code}`,
+      from: process.env.TWILIO_PHONE_NUMBER,
+      to: phoneNumber
+    });
+    
+    return { success: true, message: message.sid };
+    */
+    
+    /* Пример с локальным SMS-шлюзом:
+    const response = await fetch('http://localhost:8080/send-sms', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        phone: phoneNumber,
+        text: `Код подтверждения AUTOBID.TJ: ${code}`
+      })
+    });
+    
+    return response.ok ? { success: true } : { success: false };
+    */
+    
+    // Текущая заглушка для разработки
+    console.log(`[SMS DEMO] Отправка SMS на ${phoneNumber}: ${code}`);
+    return { success: true, message: "SMS отправлен (демо-режим)" };
+    
+  } catch (error) {
+    console.error("SMS sending failed:", error);
+    return { success: false, message: error instanceof Error ? error.message : "Unknown error" };
+  }
 
   // API для проверки последних обновлений
   app.get('/api/bid-updates/timestamp', (req, res) => {
