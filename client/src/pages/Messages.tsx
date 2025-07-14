@@ -73,10 +73,8 @@ export default function Messages() {
   // Мутация для создания разговора
   const createConversationMutation = useMutation({
     mutationFn: async (data: { buyerId: number; sellerId: number; listingId: number }) => {
-      return apiRequest('/api/conversations', {
-        method: 'POST',
-        body: JSON.stringify(data),
-      });
+      const res = await apiRequest('POST', '/api/conversations', data);
+      return res.json();
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["/api/conversations"] });
@@ -123,10 +121,8 @@ export default function Messages() {
   // Мутация для отправки сообщения
   const sendMessageMutation = useMutation({
     mutationFn: async (data: { conversationId: number; content: string }) => {
-      return apiRequest(`/api/conversations/${data.conversationId}/messages`, {
-        method: 'POST',
-        body: JSON.stringify({ content: data.content }),
-      });
+      const res = await apiRequest('POST', `/api/conversations/${data.conversationId}/messages`, { content: data.content });
+      return res.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/conversations", selectedConversation, "messages"] });

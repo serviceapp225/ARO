@@ -366,12 +366,7 @@ export default function AuctionDetail() {
 
   // Функция для связи с продавцом
   function handleContactSeller() {
-    console.log('🔥 handleContactSeller вызвана');
-    console.log('🔥 currentUser:', currentUser);
-    console.log('🔥 auction:', auction);
-    
     if (!currentUser) {
-      console.log('🔥 Пользователь не авторизован');
       toast({
         title: "Войдите в систему",
         description: "Для связи с продавцом необходимо войти в систему",
@@ -383,20 +378,14 @@ export default function AuctionDetail() {
     }
     
     if (!currentUser.isActive) {
-      console.log('🔥 Пользователь не активирован');
       setShowActivationDialog(true);
       return;
     }
     
-    if (!auction) {
-      console.log('🔥 Аукцион не найден');
-      return;
-    }
+    if (!auction) return;
     
     // Переход на страницу сообщений с параметрами
-    const messagesUrl = `/messages?buyerId=${currentUser.userId}&sellerId=${auction.sellerId}&listingId=${auction.id}`;
-    console.log('🔥 Переход на URL:', messagesUrl);
-    setLocation(messagesUrl);
+    setLocation(`/messages?buyerId=${currentUser.userId}&sellerId=${auction.sellerId}&listingId=${auction.id}`);
   }
 
   // All useEffect hooks - placed after state initialization but before conditional returns
