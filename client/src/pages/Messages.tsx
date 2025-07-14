@@ -125,18 +125,23 @@ export default function Messages() {
   // Мутация для отправки сообщения
   const sendMessageMutation = useMutation({
     mutationFn: async (data: { conversationId: number; content: string }) => {
+      console.log(`📤 Отправка сообщения: conversationId=${data.conversationId}, content="${data.content}", senderId=${user?.userId}`);
       const res = await apiRequest('POST', `/api/conversations/${data.conversationId}/messages`, { 
         content: data.content,
         senderId: user?.userId 
       });
-      return res.json();
+      const result = await res.json();
+      console.log(`✅ Ответ сервера:`, result);
+      return result;
     },
     onSuccess: () => {
+      console.log(`✅ Сообщение отправлено успешно, обновляем кэш`);
       queryClient.invalidateQueries({ queryKey: ["/api/conversations", selectedConversation, "messages"] });
       queryClient.invalidateQueries({ queryKey: ["/api/conversations", user?.userId] });
       setMessageText("");
     },
     onError: (error: any) => {
+      console.error(`❌ Ошибка отправки сообщения:`, error);
       toast({
         title: "Ошибка",
         description: error.message || "Не удалось отправить сообщение",

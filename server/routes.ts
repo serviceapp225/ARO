@@ -2518,18 +2518,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const conversationId = parseInt(req.params.conversationId);
       const { content, senderId } = req.body;
       
+      console.log(`📝 Создание сообщения: conversationId=${conversationId}, senderId=${senderId}, content="${content}"`);
+      
       if (!senderId) {
+        console.log("❌ Ошибка: senderId отсутствует");
         return res.status(400).json({ error: "User not authenticated" });
       }
       
       if (!content || content.trim() === "") {
+        console.log("❌ Ошибка: content пустой");
         return res.status(400).json({ error: "Message content is required" });
       }
       
       const message = await storage.createMessage({ conversationId, senderId, content });
+      console.log(`✅ Сообщение создано успешно:`, message);
       res.status(201).json(message);
     } catch (error) {
-      console.error("Error creating message:", error);
+      console.error("❌ Ошибка создания сообщения:", error);
       res.status(500).json({ error: "Failed to send message" });
     }
   });
