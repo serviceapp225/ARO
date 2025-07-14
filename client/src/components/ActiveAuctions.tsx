@@ -115,6 +115,29 @@ export function ActiveAuctions({ searchQuery = "", customListings }: ActiveAucti
     return sortedAuctions.slice(0, page * ITEMS_PER_PAGE);
   }, [sourceAuctions, searchQuery, sortBy, page]);
 
+  // Предзагрузка данных при наведении на карточку
+  const handleCardHover = (auctionId: number) => {
+    // Предзагружаем данные аукциона в фоновом режиме
+    queryClient.prefetchQuery({
+      queryKey: [`/api/listings/${auctionId}`],
+      queryFn: async () => {
+        const response = await fetch(`/api/listings/${auctionId}`);
+        return response.json();
+      },
+      staleTime: 10000, // 10 секунд
+    });
+    
+    // Предзагружаем ставки
+    queryClient.prefetchQuery({
+      queryKey: [`/api/listings/${auctionId}/bids`],
+      queryFn: async () => {
+        const response = await fetch(`/api/listings/${auctionId}/bids`);
+        return response.json();
+      },
+      staleTime: 5000, // 5 секунд
+    });
+  };
+
   // Fast navigation with preloading
   const handleCardClick = async (auctionId: number) => {
     // Принудительно обновляем кэш перед переходом
@@ -233,6 +256,7 @@ export function ActiveAuctions({ searchQuery = "", customListings }: ActiveAucti
             key={`${auction.id}-${index}`}
             className="group relative rounded-xl overflow-hidden bg-white shadow-lg hover:shadow-2xl transition-all duration-300 cursor-pointer"
             onClick={() => handleCardClick(auction.id)}
+            onMouseEnter={() => handleCardHover(auction.id)}
           >
             <div className="relative">
               <LazyCarImage
