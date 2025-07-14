@@ -73,10 +73,36 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
     mutationFn: async (listingId: string) => {
       if (!userId) throw new Error('User not authenticated');
       
-      // Find the favorite ID to delete
-      const favorite = favoritesData?.find((fav: any) => fav.listingId.toString() === listingId);
-      if (!favorite) throw new Error('Favorite not found');
+      // First try to get fresh data to find the favorite ID
+      let favorite = favoritesData?.find((fav: any) => fav.listingId.toString() === listingId);
       
+      // If not found in cached data, fetch fresh data
+      if (!favorite) {
+        try {
+          const response = await fetch(`/api/users/${userId}/favorites`);
+          if (response.ok) {
+            const freshData = await response.json();
+            favorite = freshData.find((fav: any) => fav.listingId.toString() === listingId);
+          }
+        } catch (error) {
+          console.warn('Failed to fetch fresh favorites data:', error);
+        }
+      }
+      
+      // If still not found, try alternative deletion method
+      if (!favorite) {
+        // Use listingId-based deletion as fallback
+        const response = await fetch(`/api/favorites/by-listing/${listingId}?userId=${userId}`, {
+          method: 'DELETE'
+        });
+        
+        if (!response.ok) {
+          throw new Error('Failed to remove favorite - item may already be removed');
+        }
+        return;
+      }
+      
+      // Normal deletion with favorite ID
       const response = await fetch(`/api/favorites/${favorite.id}`, {
         method: 'DELETE'
       });

@@ -1129,6 +1129,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Alternative endpoint for deleting favorite by listingId
+  app.delete("/api/favorites/by-listing/:listingId", async (req, res) => {
+    try {
+      const listingId = parseInt(req.params.listingId);
+      const userId = parseInt(req.query.userId as string);
+      
+      if (!userId) {
+        return res.status(400).json({ error: "userId is required" });
+      }
+      
+      // Find the favorite by userId and listingId
+      const userFavorites = await storage.getFavoritesByUser(userId);
+      const favorite = userFavorites.find(fav => fav.listingId === listingId);
+      
+      if (!favorite) {
+        return res.status(404).json({ error: "Favorite not found" });
+      }
+      
+      // Delete the favorite
+      const success = await storage.deleteFavorite(favorite.id);
+      if (!success) {
+        return res.status(404).json({ error: "Failed to delete favorite" });
+      }
+      
+      res.status(204).send();
+    } catch (error) {
+      res.status(500).json({ error: "Failed to remove favorite" });
+    }
+  });
+
   // Search routes
   app.get("/api/search", async (req, res) => {
     try {
