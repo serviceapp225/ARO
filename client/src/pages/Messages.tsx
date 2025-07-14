@@ -132,6 +132,8 @@ export default function Messages() {
       return res.json();
     },
     enabled: !!user?.userId,
+    staleTime: 5000, // Кэш на 5 секунд
+    gcTime: 60000, // Держим в памяти 1 минуту
   });
 
   // Эффект для автоматического создания разговора при наличии параметров
@@ -168,8 +170,8 @@ export default function Messages() {
       return result;
     },
     enabled: !!selectedConversation,
-    staleTime: 0, // Всегда обновляем данные
-    gcTime: 0, // Не кэшируем
+    staleTime: 2000, // Кэш на 2 секунды
+    gcTime: 30000, // Держим в памяти 30 секунд
   });
 
   // Автоматическое отмечение сообщений как прочитанных при открытии переписки
