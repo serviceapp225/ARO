@@ -2490,15 +2490,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { buyerId, sellerId, listingId } = req.body;
       
+      console.log(`🔍 Создание переписки: buyerId=${buyerId}, sellerId=${sellerId}, listingId=${listingId}`);
+      
       // Проверяем, существует ли уже такая переписка
       const existingConversation = await storage.getConversationByParticipants(buyerId, sellerId, listingId);
       if (existingConversation) {
+        console.log(`✅ Найдена существующая переписка:`, existingConversation);
         return res.json(existingConversation);
       }
 
       const conversation = await storage.createConversation({ buyerId, sellerId, listingId });
+      console.log(`✅ Создана новая переписка:`, conversation);
       res.status(201).json(conversation);
     } catch (error) {
+      console.error("❌ Ошибка создания переписки:", error);
       res.status(500).json({ error: "Failed to create conversation" });
     }
   });

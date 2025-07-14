@@ -106,11 +106,16 @@ export interface IStorage {
 
   // Messaging operations
   getUserConversations(userId: number): Promise<(Conversation & { listing: CarListing; otherUser: User; lastMessage?: Message; unreadCount: number })[]>;
+  getConversationsByUser(userId: number): Promise<any[]>;
   getConversation(listingId: number, buyerId: number, sellerId: number): Promise<Conversation | undefined>;
+  getConversationByParticipants(buyerId: number, sellerId: number, listingId: number): Promise<Conversation | undefined>;
   createConversation(conversation: InsertConversation): Promise<Conversation>;
   getConversationMessages(conversationId: number): Promise<(Message & { sender: User })[]>;
+  getMessagesByConversation(conversationId: number): Promise<any[]>;
   sendMessage(message: InsertMessage): Promise<Message>;
+  createMessage(message: InsertMessage): Promise<Message>;
   markMessagesAsRead(conversationId: number, userId: number): Promise<void>;
+  markMessageAsRead(messageId: number): Promise<boolean>;
   getUnreadMessageCount(userId: number): Promise<number>;
 }
 
