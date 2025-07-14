@@ -337,11 +337,11 @@ export default function AuctionDetail() {
       
       // НОВАЯ СИСТЕМА: Уведомления о перебитых ставках через WebSocket
       // Отправляем уведомление через существующее WebSocket соединение
-      if (wsConnected && user?.userId) {
+      if (wsConnected && currentUser?.userId) {
         const webSocketMessage = {
           type: 'bid_placement',
           listingId: parseInt(id!),
-          bidderId: (user as any).userId,
+          bidderId: (currentUser as any).userId,
           amount: variables.amount
         };
         console.log('📤 Отправляем WebSocket уведомление о ставке:', webSocketMessage);
@@ -523,17 +523,7 @@ export default function AuctionDetail() {
 
   // Синхронизация теперь происходит автоматически через реальные данные ставок
   
-  // Принудительное обновление данных каждые 3 секунды для гарантированной синхронизации
-  useEffect(() => {
-    const interval = setInterval(() => {
-      if (id && auction) {
-        console.log('🔄 Принудительное обновление данных для синхронизации');
-        refetchAuction();
-      }
-    }, 3000); // Обновляем каждые 3 секунды
-
-    return () => clearInterval(interval);
-  }, [id, auction, refetchAuction]);
+  // Убираем агрессивное обновление каждые 3 секунды - используем WebSocket для real-time обновлений
 
   // Убираем синхронизацию currentPrice - теперь всё через getCurrentBid()
 
