@@ -244,7 +244,7 @@ export default function Messages() {
   // Состояние загрузки
   if (conversationsLoading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
+      <div className="flex items-center justify-center min-h-[400px] pb-24">
         <div className="text-center">
           <MessageCircle className="w-12 h-12 mx-auto mb-4 text-gray-400 animate-pulse" />
           <p className="text-gray-500">Загрузка переписок...</p>
@@ -256,7 +256,7 @@ export default function Messages() {
   // Нет переписок
   if (!conversations || conversations.length === 0) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
+      <div className="flex items-center justify-center min-h-[400px] pb-24">
         <div className="text-center">
           <MessageCircle className="w-16 h-16 mx-auto mb-4 text-gray-400" />
           <h2 className="text-xl font-semibold text-gray-800 mb-2">
@@ -279,7 +279,7 @@ export default function Messages() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto p-4 h-screen flex page-content">
+    <div className="max-w-6xl mx-auto p-4 h-screen flex page-content pb-24">
       {/* Список переписок */}
       <div className="w-1/3 border-r border-gray-200 pr-4">
         <h1 className="text-2xl font-bold text-gray-800 mb-4 flex items-center gap-2">
