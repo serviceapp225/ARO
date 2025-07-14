@@ -2335,13 +2335,26 @@ export class SQLiteStorage implements IStorage {
     return result.changes > 0;
   }
 
-  async getUnreadMessageCount(conversationId: number, userId: number): Promise<number> {
-    const stmt = this.db.prepare(`
-      SELECT COUNT(*) as count 
-      FROM messages 
-      WHERE conversation_id = ? AND sender_id != ? AND is_read = 0
-    `);
-    const row = stmt.get(conversationId, userId);
-    return row ? row.count : 0;
+  async getUnreadMessageCount(userIdOrConversationId: number, userId?: number): Promise<number> {
+    if (userId !== undefined) {
+      // Called with conversationId and userId - count unread messages for specific conversation
+      const stmt = this.db.prepare(`
+        SELECT COUNT(*) as count 
+        FROM messages 
+        WHERE conversation_id = ? AND sender_id != ? AND is_read = 0
+      `);
+      const row = stmt.get(userIdOrConversationId, userId);
+      return row ? row.count : 0;
+    } else {
+      // Called with just userId - count total unread messages across all conversations for the user
+      const stmt = this.db.prepare(`
+        SELECT COUNT(*) as count 
+        FROM messages m
+        JOIN conversations c ON m.conversation_id = c.id
+        WHERE (c.buyer_id = ? OR c.seller_id = ?) AND m.sender_id != ? AND m.is_read = 0
+      `);
+      const row = stmt.get(userIdOrConversationId, userIdOrConversationId, userIdOrConversationId);
+      return row ? row.count : 0;
+    }
   }
 }

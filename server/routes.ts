@@ -2603,20 +2603,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.set('Pragma', 'no-cache');
       res.set('Expires', '0');
       
-      // ДЕМО: Для пользователей 3 и 4 показываем логику работы красного значка
-      if (userId === 3 || userId === 4) {
-        // Если пользователь НЕ заходил на страницу сообщений - показываем 1 
-        if (!messagesPageVisited[userId]) {
-          console.log(`✅ ДЕМО: Показываем 1 непрочитанное сообщение для пользователя ${userId} (не заходил на страницу)`);
-          return res.json({ count: 1 });
-        } else {
-          // Если заходил - показываем 0
-          console.log(`✅ ДЕМО: Показываем 0 непрочитанных сообщений для пользователя ${userId} (заходил на страницу)`);
-          return res.json({ count: 0 });
-        }
-      }
-      
-      // Получаем реальное количество непрочитанных сообщений из базы данных
+      // Получаем реальное количество непрочитанных сообщений из базы данных для всех пользователей
       const count = await storage.getUnreadMessageCount(userId);
       console.log(`✅ Найдено ${count} непрочитанных сообщений для пользователя ${userId}`);
       res.json({ count });
