@@ -25,8 +25,6 @@ import MySales from "@/pages/MySalesSimple";
 import LanguageSelector from "@/components/LanguageSelector";
 import Terms from "@/pages/Terms";
 import Privacy from "@/pages/Privacy";
-import PrivacyPolicy from "@/pages/PrivacyPolicy";
-import TermsOfService from "@/pages/TermsOfService";
 import Login from "@/pages/Login";
 import AdminPanel from "@/pages/AdminPanel";
 import SpecialOffers from "@/pages/SpecialOffers";
@@ -101,8 +99,6 @@ function Router() {
         <Route path="/language" component={LanguageSelector} />
         <Route path="/terms" component={Terms} />
         <Route path="/privacy" component={Privacy} />
-        <Route path="/privacy-policy" component={PrivacyPolicy} />
-        <Route path="/terms-of-service" component={TermsOfService} />
         <Route path="/login" component={Login} />
         <Route path="/admin" component={AdminPanel} />
         <Route path="/special-offers" component={SpecialOffers} />
