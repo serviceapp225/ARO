@@ -2516,18 +2516,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/conversations/:conversationId/messages", async (req, res) => {
     try {
       const conversationId = parseInt(req.params.conversationId);
-      const { content } = req.body;
-      
-      // Получаем senderId из сессии или другого источника аутентификации
-      const senderId = req.session?.user?.id || req.body.senderId;
+      const { content, senderId } = req.body;
       
       if (!senderId) {
         return res.status(400).json({ error: "User not authenticated" });
       }
       
+      if (!content || content.trim() === "") {
+        return res.status(400).json({ error: "Message content is required" });
+      }
+      
       const message = await storage.createMessage({ conversationId, senderId, content });
       res.status(201).json(message);
     } catch (error) {
+      console.error("Error creating message:", error);
       res.status(500).json({ error: "Failed to send message" });
     }
   });

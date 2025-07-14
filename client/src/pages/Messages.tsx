@@ -125,7 +125,10 @@ export default function Messages() {
   // Мутация для отправки сообщения
   const sendMessageMutation = useMutation({
     mutationFn: async (data: { conversationId: number; content: string }) => {
-      const res = await apiRequest('POST', `/api/conversations/${data.conversationId}/messages`, { content: data.content });
+      const res = await apiRequest('POST', `/api/conversations/${data.conversationId}/messages`, { 
+        content: data.content,
+        senderId: user?.userId 
+      });
       return res.json();
     },
     onSuccess: () => {
