@@ -117,9 +117,18 @@ export default function Messages() {
   }, [buyerId, sellerId, listingId, user]);
 
   // Получение сообщений для выбранной переписки
-  const { data: messages, isLoading: messagesLoading } = useQuery<Message[]>({
+  const { data: messages, isLoading: messagesLoading, refetch: refetchMessages } = useQuery<Message[]>({
     queryKey: ["/api/conversations", selectedConversation, "messages"],
+    queryFn: async () => {
+      console.log(`🔍 Получаем сообщения для переписки ${selectedConversation}`);
+      const res = await apiRequest('GET', `/api/conversations/${selectedConversation}/messages`);
+      const result = await res.json();
+      console.log(`✅ Получены сообщения:`, result);
+      return result;
+    },
     enabled: !!selectedConversation,
+    staleTime: 0, // Всегда обновляем данные
+    gcTime: 0, // Не кэшируем
   });
 
   // Мутация для отправки сообщения
@@ -135,9 +144,10 @@ export default function Messages() {
       return result;
     },
     onSuccess: () => {
-      console.log(`✅ Сообщение отправлено успешно, обновляем кэш`);
+      console.log(`✅ Сообщение отправлено успешно, обновляем кэш и принудительно загружаем сообщения`);
       queryClient.invalidateQueries({ queryKey: ["/api/conversations", selectedConversation, "messages"] });
       queryClient.invalidateQueries({ queryKey: ["/api/conversations", user?.userId] });
+      refetchMessages(); // Принудительно загружаем сообщения
       setMessageText("");
     },
     onError: (error: any) => {
