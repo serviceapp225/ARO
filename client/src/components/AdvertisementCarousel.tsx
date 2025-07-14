@@ -79,12 +79,12 @@ export function AdvertisementCarousel() {
   };
 
   const handlePhoneCall = () => {
-    window.location.href = 'tel:+99200000000';
+    window.location.href = 'tel:+992903331332';
     setShowSupportModal(false);
   };
 
   const handleWhatsApp = () => {
-    window.open('https://wa.me/99200000000', '_blank');
+    window.open('https://wa.me/992903331332', '_blank');
     setShowSupportModal(false);
   };
 
