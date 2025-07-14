@@ -73,10 +73,8 @@ export default function Messages() {
   // Мутация для создания разговора
   const createConversationMutation = useMutation({
     mutationFn: async (data: { buyerId: number; sellerId: number; listingId: number }) => {
-      return apiRequest('/api/conversations', {
-        method: 'POST',
-        body: JSON.stringify(data),
-      });
+      const res = await apiRequest('POST', '/api/conversations', data);
+      return res.json();
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["/api/conversations", user?.userId] });
@@ -100,7 +98,10 @@ export default function Messages() {
   // Получение списка переписок
   const { data: conversations, isLoading: conversationsLoading } = useQuery<ConversationData[]>({
     queryKey: ["/api/conversations", user?.userId],
-    queryFn: () => apiRequest(`/api/conversations?userId=${user?.userId}`),
+    queryFn: async () => {
+      const res = await apiRequest('GET', `/api/conversations?userId=${user?.userId}`);
+      return res.json();
+    },
     enabled: !!user?.userId,
   });
 
@@ -118,17 +119,14 @@ export default function Messages() {
   // Получение сообщений для выбранной переписки
   const { data: messages, isLoading: messagesLoading } = useQuery<Message[]>({
     queryKey: ["/api/conversations", selectedConversation, "messages"],
-    queryFn: () => apiRequest(`/api/conversations/${selectedConversation}/messages`),
     enabled: !!selectedConversation,
   });
 
   // Мутация для отправки сообщения
   const sendMessageMutation = useMutation({
     mutationFn: async (data: { conversationId: number; content: string }) => {
-      return apiRequest(`/api/conversations/${data.conversationId}/messages`, {
-        method: 'POST',
-        body: JSON.stringify({ content: data.content }),
-      });
+      const res = await apiRequest('POST', `/api/conversations/${data.conversationId}/messages`, { content: data.content });
+      return res.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/conversations", selectedConversation, "messages"] });
