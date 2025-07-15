@@ -2710,37 +2710,58 @@ async function sendSMSCode(phoneNumber: string, code: string): Promise<{success:
   const SMS_SENDER = process.env.SMS_SENDER;
   const SMS_SERVER = process.env.SMS_SERVER;
   
+  // Детальная отладка переменных окружения
+  console.log('[SMS ENV] Проверка переменных окружения:');
+  console.log(`[SMS ENV] SMS_LOGIN: ${SMS_LOGIN ? 'определена' : 'НЕ определена'} (значение: ${SMS_LOGIN || 'undefined'})`);
+  console.log(`[SMS ENV] SMS_HASH: ${SMS_HASH ? 'определена' : 'НЕ определена'} (значение: ${SMS_HASH || 'undefined'})`);
+  console.log(`[SMS ENV] SMS_SENDER: ${SMS_SENDER ? 'определена' : 'НЕ определена'} (значение: ${SMS_SENDER || 'undefined'})`);
+  console.log(`[SMS ENV] SMS_SERVER: ${SMS_SERVER ? 'определена' : 'НЕ определена'} (значение: ${SMS_SERVER || 'undefined'})`);
+  
   // Если нет учетных данных, используем демо-режим
   if (!SMS_LOGIN || !SMS_HASH || !SMS_SENDER || !SMS_SERVER) {
     console.log(`[SMS DEMO] Отправка SMS на ${phoneNumber}: ${code}`);
     return { success: true, message: "SMS отправлен (демо-режим)" };
   }
+
+
   
   try {
     // Генерируем уникальный txn_id для каждого SMS
     const txn_id = `autobid_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     
-    // Формируем сообщение
-    const message = `Ваш код подтверждения AUTOBID.TJ: ${code}`;
+    // Формируем сообщение (простое английское для тестирования)
+    const message = `Your verification code: ${code}`;
+    
+    // Очищаем номер телефона от всех символов кроме цифр и + в начале
+    const cleanPhoneNumber = phoneNumber.replace(/[^\d+]/g, '');
     
     // Генерируем подпись согласно формуле oson sms
     // hash = sha256(txn_id + ";" + login + ";" + from + ";" + phone_number + ";" + pass_salt_hash)
-    const signatureString = `${txn_id};${SMS_LOGIN};${SMS_SENDER};${phoneNumber};${SMS_HASH}`;
+    const signatureString = `${txn_id};${SMS_LOGIN};${SMS_SENDER};${cleanPhoneNumber};${SMS_HASH}`;
     const signature = createHash('sha256').update(signatureString).digest('hex');
     
-    // Формируем данные для отправки
-    const postData = new URLSearchParams({
-      txn_id: txn_id,
-      login: SMS_LOGIN,
-      from: SMS_SENDER,
-      phone_number: phoneNumber,
-      message: message,
-      hash: signature
-    });
+    // Формируем POST данные через URLSearchParams для правильной кодировки
+    const formData = new URLSearchParams();
+    formData.append('txn_id', txn_id);
+    formData.append('login', SMS_LOGIN);
+    formData.append('from', SMS_SENDER);
+    formData.append('phone_number', cleanPhoneNumber);
+    formData.append('msg', message);
+    formData.append('str_hash', signature);
     
-    console.log(`[SMS OSON] Отправка SMS на ${phoneNumber}:`);
+    const postBody = formData.toString();
+    
+    console.log(`[SMS OSON] Отправка SMS на ${phoneNumber} (очищенный: ${cleanPhoneNumber}):`);
     console.log(`[SMS OSON] Сервер: ${SMS_SERVER}`);
     console.log(`[SMS OSON] Подпись: ${signature}`);
+    console.log(`[SMS OSON] Все параметры:`);
+    console.log(`  - txn_id: "${txn_id}"`);
+    console.log(`  - login: "${SMS_LOGIN}"`);
+    console.log(`  - from: "${SMS_SENDER}"`);
+    console.log(`  - phone_number: "${cleanPhoneNumber}"`);
+    console.log(`  - msg: "${message}"`);
+    console.log(`  - str_hash: "${signature}"`);
+    console.log(`[SMS OSON] Данные для отправки:`, postBody);
     
     // Отправляем запрос к oson sms API
     const response = await fetch(SMS_SERVER, {
@@ -2749,7 +2770,7 @@ async function sendSMSCode(phoneNumber: string, code: string): Promise<{success:
         'Content-Type': 'application/x-www-form-urlencoded',
         'User-Agent': 'AUTOBID.TJ SMS Client'
       },
-      body: postData.toString()
+      body: postBody
     });
     
     const responseText = await response.text();
@@ -2792,19 +2813,21 @@ async function sendSMSNotification(phoneNumber: string, message: string): Promis
     const signatureString = `${txn_id};${SMS_LOGIN};${SMS_SENDER};${phoneNumber};${SMS_HASH}`;
     const signature = createHash('sha256').update(signatureString).digest('hex');
     
-    // Формируем данные для отправки
-    const postData = new URLSearchParams({
-      txn_id: txn_id,
-      login: SMS_LOGIN,
-      from: SMS_SENDER,
-      phone_number: phoneNumber,
-      message: message,
-      hash: signature
-    });
+    // Очищаем номер телефона от всех символов кроме цифр и + в начале
+    const cleanPhoneNumber = phoneNumber.replace(/[^\d+]/g, '');
+    const postBody = [
+      `txn_id=${txn_id}`,
+      `login=${SMS_LOGIN}`,
+      `from=${SMS_SENDER}`,
+      `phone_number=${cleanPhoneNumber}`, // Оставляем + в начале
+      `msg=${encodeURIComponent(message)}`,
+      `str_hash=${signature}`
+    ].join('&');
     
-    console.log(`[SMS NOTIFICATION] Отправка SMS уведомления на ${phoneNumber}:`);
+    console.log(`[SMS NOTIFICATION] Отправка SMS уведомления на ${phoneNumber} (очищенный: ${cleanPhoneNumber}):`);
     console.log(`[SMS NOTIFICATION] Текст: ${message}`);
     console.log(`[SMS NOTIFICATION] Подпись: ${signature}`);
+    console.log(`[SMS NOTIFICATION] Данные для отправки:`, postBody);
     
     // Отправляем запрос к oson sms API
     const response = await fetch(SMS_SERVER, {
@@ -2813,7 +2836,7 @@ async function sendSMSNotification(phoneNumber: string, message: string): Promis
         'Content-Type': 'application/x-www-form-urlencoded',
         'User-Agent': 'AUTOBID.TJ SMS Client'
       },
-      body: postData.toString()
+      body: postBody
     });
     
     const responseText = await response.text();

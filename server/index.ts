@@ -4,6 +4,20 @@ import { registerRoutes } from "./routes";
 import { initializeDatabaseWithSampleData } from "./initDatabase";
 import { createTables } from "./createTables";
 import { setupVite, serveStatic, log } from "./vite";
+import fs from "fs";
+import path from "path";
+
+// Загрузка переменных окружения из .env файла
+const envPath = path.join(process.cwd(), '.env');
+if (fs.existsSync(envPath)) {
+  const envContent = fs.readFileSync(envPath, 'utf8');
+  envContent.split('\n').forEach(line => {
+    const [key, value] = line.split('=');
+    if (key && value) {
+      process.env[key] = value;
+    }
+  });
+}
 
 const app = express();
 
