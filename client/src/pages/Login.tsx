@@ -33,8 +33,7 @@ export default function Login() {
       // Отправляем запрос на сервер для отправки SMS
       const data = await apiRequest('/api/auth/send-sms', {
         method: 'POST',
-        body: JSON.stringify({ phoneNumber }),
-        headers: { 'Content-Type': 'application/json' }
+        body: { phoneNumber }
       });
       
       if (data.success) {
@@ -65,8 +64,7 @@ export default function Login() {
       // Проверяем SMS код на сервере
       const data = await apiRequest('/api/auth/verify-sms', {
         method: 'POST',
-        body: JSON.stringify({ phoneNumber, code: verificationCode }),
-        headers: { 'Content-Type': 'application/json' }
+        body: { phoneNumber, code: verificationCode }
       });
       
       if (data.success) {
