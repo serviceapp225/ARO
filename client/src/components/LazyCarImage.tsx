@@ -13,12 +13,12 @@ interface LazyCarImageProps {
 export function LazyCarImage({ listingId, make, model, year, className = "" }: LazyCarImageProps) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
-  // Используем React Query для кэширования фотографий
+  // Используем React Query для МАКСИМАЛЬНОГО кэширования фотографий
   const { data: photoData, isLoading: loading, error } = useQuery({
     queryKey: [`/api/listings/${listingId}/photos`],
-    staleTime: 10 * 60 * 1000, // 10 минут кэширования фотографий
-    gcTime: 30 * 60 * 1000, // 30 минут в памяти
-    retry: 1,
+    staleTime: 60 * 60 * 1000, // 1 час кэширования фотографий
+    gcTime: 2 * 60 * 60 * 1000, // 2 часа в памяти
+    retry: 0, // Не повторять запросы для скорости
   });
 
   const photos = photoData?.photos || [];

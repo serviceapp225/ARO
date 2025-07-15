@@ -22,14 +22,14 @@ export default function HomePage() {
   // Предзагрузка критических данных для быстрой загрузки
   const { data: bannerData, isLoading: bannerLoading } = useQuery({
     queryKey: ['/api/sell-car-banner'],
-    staleTime: 15 * 60 * 1000, // 15 минут кэширования для статичных данных
+    staleTime: 60 * 60 * 1000, // 1 час кэширования для статичных данных
   });
 
   // Карусель загружается внутри компонента AdvertisementCarousel
 
   const { data: listingsData, isLoading: listingsLoading } = useQuery({
     queryKey: ['/api/listings'],
-    staleTime: 2 * 60 * 1000, // 2 минуты кэширования для списка аукционов
+    staleTime: 60 * 60 * 1000, // 1 час кэширования для списка аукционов
   });
 
   // Показываем страницу сразу после загрузки основных данных (без ожидания фотографий)

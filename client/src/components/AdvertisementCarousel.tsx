@@ -35,7 +35,8 @@ export function AdvertisementCarousel() {
 
   const { data: advertisements = [], isLoading } = useQuery<AdvertisementItem[]>({
     queryKey: ['/api/advertisement-carousel'],
-    staleTime: 30 * 60 * 1000, // 30 минут - максимальное кэширование
+    staleTime: 2 * 60 * 60 * 1000, // 2 часа - максимальное кэширование
+    gcTime: 4 * 60 * 60 * 1000, // 4 часа в памяти
     refetchInterval: false, // Отключаем автообновление для скорости
     refetchOnWindowFocus: false, // Не обновляем при возвращении в окно
     refetchOnMount: false, // НЕ обновляем при монтировании - используем кэш

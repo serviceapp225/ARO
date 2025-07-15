@@ -39,12 +39,12 @@ const AuctionContext = createContext<AuctionContextType | undefined>(undefined);
 export function AuctionProvider({ children }: { children: ReactNode }) {
   const [selectedAuction, setSelectedAuction] = useState<Auction | null>(null);
 
-  // Use TanStack Query for data fetching with aggressive caching
+  // Use TanStack Query for data fetching with МАКСИМАЛЬНОЕ кэширование
   const { data: listings = [], isLoading, refetch } = useQuery<any[]>({
     queryKey: ['/api/listings'],
     refetchInterval: false, // Отключаем автообновление полностью
-    staleTime: 10 * 60 * 1000, // Данные свежи 10 минут для максимальной скорости
-    gcTime: 30 * 60 * 1000, // Кэшируем 30 минут для мгновенного возврата
+    staleTime: 60 * 60 * 1000, // 1 час кэширования для максимальной скорости
+    gcTime: 2 * 60 * 60 * 1000, // 2 часа в памяти для мгновенного возврата
     refetchOnWindowFocus: false, // НЕ обновлять при фокусе - используем кэш
     refetchOnMount: false, // НЕ обновлять при монтировании - используем кэш
     refetchOnReconnect: false, // НЕ обновлять при переподключении
