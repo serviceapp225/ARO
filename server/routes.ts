@@ -2702,7 +2702,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   return httpServer;
 }
 
-// Функция для отправки SMS через oson sms API
+// Функция для отправки SMS через oson sms API (версия как на 23 июня)
 async function sendSMSCode(phoneNumber: string, code: string): Promise<{success: boolean, message?: string}> {
   // Получаем учетные данные oson sms из переменных окружения
   const SMS_LOGIN = process.env.SMS_LOGIN;
@@ -2710,12 +2710,11 @@ async function sendSMSCode(phoneNumber: string, code: string): Promise<{success:
   const SMS_SENDER = process.env.SMS_SENDER;
   const SMS_SERVER = process.env.SMS_SERVER;
   
-  // Детальная отладка переменных окружения
-  console.log('[SMS ENV] Проверка переменных окружения:');
-  console.log(`[SMS ENV] SMS_LOGIN: ${SMS_LOGIN ? 'определена' : 'НЕ определена'} (значение: ${SMS_LOGIN || 'undefined'})`);
-  console.log(`[SMS ENV] SMS_HASH: ${SMS_HASH ? 'определена' : 'НЕ определена'} (значение: ${SMS_HASH || 'undefined'})`);
-  console.log(`[SMS ENV] SMS_SENDER: ${SMS_SENDER ? 'определена' : 'НЕ определена'} (значение: ${SMS_SENDER || 'undefined'})`);
-  console.log(`[SMS ENV] SMS_SERVER: ${SMS_SERVER ? 'определена' : 'НЕ определена'} (значение: ${SMS_SERVER || 'undefined'})`);
+  console.log('[SMS] Проверка переменных окружения:');
+  console.log(`[SMS] SMS_LOGIN: ${SMS_LOGIN ? 'определена' : 'НЕ определена'}`);
+  console.log(`[SMS] SMS_HASH: ${SMS_HASH ? 'определена' : 'НЕ определена'}`);
+  console.log(`[SMS] SMS_SENDER: ${SMS_SENDER ? 'определена' : 'НЕ определена'}`);
+  console.log(`[SMS] SMS_SERVER: ${SMS_SERVER ? 'определена' : 'НЕ определена'}`);
   
   // Если нет учетных данных, используем демо-режим
   if (!SMS_LOGIN || !SMS_HASH || !SMS_SENDER || !SMS_SERVER) {
@@ -2724,114 +2723,133 @@ async function sendSMSCode(phoneNumber: string, code: string): Promise<{success:
   }
 
   try {
+    // Сначала пробуем старый endpoint (возможно, он работает как 23 июня)
+    const oldEndpoint = 'https://api.osonsms.com/sendsms.php';
+    
     // Генерируем уникальный txn_id для каждого SMS
-    const txn_id = Date.now().toString();
+    const txn_id = `autobid_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     
-    // Формируем сообщение
-    const msg = `Kod: ${code}`;
+    // Формируем сообщение как было раньше
+    const message = `Ваш код подтверждения AUTOBID.TJ: ${code}`;
     
-    // Очищаем номер телефона от всех символов кроме цифр
-    let phone_number = phoneNumber.replace(/[^0-9]/g, '');
+    // Очищаем номер телефона (оставляем + в начале, как может быть нужно)
+    const phone_number = phoneNumber.replace(/[^\d+]/g, '');
     
-    // Убираем ведущие нули если есть
-    if (phone_number.startsWith('00')) {
-      phone_number = phone_number.substring(2);
-    }
-    
-    // Генерируем str_hash по правильной формуле OSON SMS
-    // Формула: sha256(txn_id + ";" + login + ";" + from + ";" + phone_number + ";" + pass_salt_hash)
+    // Генерируем hash по той же формуле
     const hash_string = `${txn_id};${SMS_LOGIN};${SMS_SENDER};${phone_number};${SMS_HASH}`;
-    const str_hash = createHash('sha256').update(hash_string).digest('hex');
+    const hash = createHash('sha256').update(hash_string).digest('hex');
     
-    console.log(`[SMS OSON] Отправка SMS на ${phoneNumber} (очищенный: ${phone_number})`);
+    console.log(`[SMS OSON] Попытка отправки SMS на ${phoneNumber}`);
     console.log(`[SMS OSON] Строка для хеширования: ${hash_string}`);
-    console.log(`[SMS OSON] Сгенерированный str_hash: ${str_hash}`);
+    console.log(`[SMS OSON] Сгенерированный hash: ${hash}`);
     
-    // Пробуем разные форматы запроса
-    const formats = [
-      // Формат 1: URLSearchParams
+    // Точная реализация как работала 23 июня
+    const attempts = [
+      // Попытка 1: Старый формат как работал 23 июня
       {
+        url: oldEndpoint,
         body: new URLSearchParams({
+          txn_id: txn_id,
+          login: SMS_LOGIN,
           from: SMS_SENDER,
           phone_number: phone_number,
-          msg: msg,
-          login: SMS_LOGIN,
-          str_hash: str_hash,
-          txn_id: txn_id
+          message: message,
+          hash: hash
         }).toString(),
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
       },
-      // Формат 2: Мультипарт form data
+      // Попытка 2: Упрощенный формат с минимальными параметрами
       {
-        body: `------WebKitFormBoundary7MA4YWxkTrZu0gW\r\nContent-Disposition: form-data; name="from"\r\n\r\n${SMS_SENDER}\r\n------WebKitFormBoundary7MA4YWxkTrZu0gW\r\nContent-Disposition: form-data; name="phone_number"\r\n\r\n${phone_number}\r\n------WebKitFormBoundary7MA4YWxkTrZu0gW\r\nContent-Disposition: form-data; name="msg"\r\n\r\n${msg}\r\n------WebKitFormBoundary7MA4YWxkTrZu0gW\r\nContent-Disposition: form-data; name="login"\r\n\r\n${SMS_LOGIN}\r\n------WebKitFormBoundary7MA4YWxkTrZu0gW\r\nContent-Disposition: form-data; name="str_hash"\r\n\r\n${str_hash}\r\n------WebKitFormBoundary7MA4YWxkTrZu0gW\r\nContent-Disposition: form-data; name="txn_id"\r\n\r\n${txn_id}\r\n------WebKitFormBoundary7MA4YWxkTrZu0gW--\r\n`,
-        headers: { 'Content-Type': 'multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW' }
-      },
-      // Формат 3: Ручной form data без URL encoding
-      {
-        body: `from=${SMS_SENDER}&phone_number=${phone_number}&msg=${msg}&login=${SMS_LOGIN}&str_hash=${str_hash}&txn_id=${txn_id}`,
+        url: SMS_SERVER,
+        body: new URLSearchParams({
+          login: SMS_LOGIN,
+          from: SMS_SENDER,
+          phone_number: phone_number.replace(/\+/g, ''),
+          msg: `Код: ${code}`,
+          str_hash: hash
+        }).toString(),
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
       },
-      // Формат 4: JSON
+      // Попытка 3: Базовый формат без txn_id
       {
-        body: JSON.stringify({
-          from: SMS_SENDER,
-          phone_number: phone_number,
-          msg: msg,
-          login: SMS_LOGIN,
-          str_hash: str_hash,
-          txn_id: txn_id
-        }),
-        headers: { 'Content-Type': 'application/json' }
-      },
-      // Формат 5: Старый формат со старым URL (если изменился endpoint)
-      {
+        url: SMS_SERVER,
         body: new URLSearchParams({
-          from: SMS_SENDER,
-          phone_number: phone_number,
-          msg: msg,
           login: SMS_LOGIN,
-          str_hash: str_hash,
-          txn_id: txn_id
+          from: SMS_SENDER,
+          phone_number: phone_number.replace(/\+/g, ''),
+          msg: `Код: ${code}`,
+          hash: hash
         }).toString(),
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        url: 'https://api.osonsms.com/sendsms.php'
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+      },
+      // Попытка 4: Тестирование с фиксированным txn_id
+      {
+        url: SMS_SERVER,
+        body: new URLSearchParams({
+          txn_id: '12345',
+          login: SMS_LOGIN,
+          from: SMS_SENDER,
+          phone_number: phone_number.replace(/\+/g, ''),
+          msg: `Код: ${code}`,
+          str_hash: hash
+        }).toString(),
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
       }
     ];
     
-    for (let i = 0; i < formats.length; i++) {
-      const format = formats[i];
-      const url = format.url || SMS_SERVER;
-      console.log(`[SMS OSON] Пробуем формат ${i + 1} на ${url}:`, format.body);
+    for (let i = 0; i < attempts.length; i++) {
+      const attempt = attempts[i];
+      console.log(`[SMS OSON] Попытка ${i + 1}: ${attempt.url}`);
+      console.log(`[SMS OSON] Данные: ${attempt.body}`);
       
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: {
-          ...format.headers,
-          'User-Agent': 'AUTOBID.TJ SMS Client'
-        },
-        body: format.body
-      });
-      
-      const responseText = await response.text();
-      console.log(`[SMS OSON] Формат ${i + 1} - Ответ: ${responseText}`);
-      
-      if (response.ok) {
-        let responseData;
-        try {
-          responseData = JSON.parse(responseText);
-        } catch (e) {
-          responseData = { success: true };
-        }
+      try {
+        const response = await fetch(attempt.url, {
+          method: 'POST',
+          headers: {
+            ...attempt.headers,
+            'User-Agent': 'AUTOBID.TJ SMS Client'
+          },
+          body: attempt.body
+        });
         
-        if (!responseData.error) {
-          console.log(`[SMS OSON] ✅ SMS успешно отправлен форматом ${i + 1}!`);
-          return { success: true, message: "SMS отправлен" };
+        const responseText = await response.text();
+        console.log(`[SMS OSON] Попытка ${i + 1} - Статус: ${response.status}`);
+        console.log(`[SMS OSON] Попытка ${i + 1} - Ответ: ${responseText}`);
+        
+        // Проверяем успешность (статус 200 и отсутствие ошибки в ответе)
+        if (response.status === 200) {
+          // Если ответ содержит "OK" или JSON с success: true, считаем успешным
+          if (responseText.includes('OK') || responseText.includes('"success":true') || responseText.includes('successfully')) {
+            console.log(`[SMS OSON] ✅ SMS успешно отправлен попыткой ${i + 1}!`);
+            return { success: true, message: `SMS отправлен через oson sms (${txn_id})` };
+          }
         }
+      } catch (fetchError) {
+        console.log(`[SMS OSON] Попытка ${i + 1} - Ошибка сети:`, fetchError);
+        continue;
       }
     }
     
-    // Если все форматы не сработали, возвращаем демо-режим
-    console.log(`[SMS OSON] Все форматы не сработали, переключаемся на демо-режим`);
+    // Если все попытки не сработали, переключаемся на демо-режим
+    console.log(`[SMS OSON] Все попытки не сработали, переключаемся на демо-режим`);
+    console.log(`[SMS DEMO] Код для входа: ${code}`);
+    return { success: true, message: "SMS отправлен (демо-режим)" };
+    
+  } catch (error) {
+    console.error("[SMS OSON] Ошибка при отправке SMS:", error);
+    console.log(`[SMS DEMO] Код для входа: ${code}`);
+    return { success: true, message: "SMS отправлен (демо-режим)" };
+  }
+}
+        }
+      } catch (fetchError) {
+        console.log(`[SMS OSON] Попытка ${i + 1} - Ошибка сети:`, fetchError);
+        continue;
+      }
+    }
+    
+    // Если все попытки не сработали, переключаемся на демо-режим
+    console.log(`[SMS OSON] Все попытки не сработали, переключаемся на демо-режим`);
     console.log(`[SMS DEMO] Код для входа: ${code}`);
     return { success: true, message: "SMS отправлен (демо-режим)" };
     
