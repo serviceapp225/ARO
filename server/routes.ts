@@ -2738,11 +2738,14 @@ async function sendSMSCode(phoneNumber: string, code: string): Promise<{success:
       phone_number = phone_number.substring(2);
     }
     
-    // Используем статический hash из переменных окружения
-    const str_hash = SMS_HASH;
+    // Генерируем str_hash по правильной формуле OSON SMS
+    // Формула: sha256(txn_id + ";" + login + ";" + from + ";" + phone_number + ";" + pass_salt_hash)
+    const hash_string = `${txn_id};${SMS_LOGIN};${SMS_SENDER};${phone_number};${SMS_HASH}`;
+    const str_hash = createHash('sha256').update(hash_string).digest('hex');
     
     console.log(`[SMS OSON] Отправка SMS на ${phoneNumber} (очищенный: ${phone_number})`);
-    console.log(`[SMS OSON] Подпись: ${str_hash}`);
+    console.log(`[SMS OSON] Строка для хеширования: ${hash_string}`);
+    console.log(`[SMS OSON] Сгенерированный str_hash: ${str_hash}`);
     
     // Пробуем разные форматы запроса
     const formats = [
