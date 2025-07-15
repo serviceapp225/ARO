@@ -31,13 +31,11 @@ export default function Login() {
     
     try {
       // Отправляем запрос на сервер для отправки SMS
-      const response = await fetch('/api/auth/send-sms', {
+      const data = await apiRequest('/api/auth/send-sms', {
         method: 'POST',
         body: JSON.stringify({ phoneNumber }),
         headers: { 'Content-Type': 'application/json' }
       });
-      
-      const data = await response.json();
       
       if (data.success) {
         setStep('code');
@@ -65,13 +63,11 @@ export default function Login() {
 
     try {
       // Проверяем SMS код на сервере
-      const response = await fetch('/api/auth/verify-sms', {
+      const data = await apiRequest('/api/auth/verify-sms', {
         method: 'POST',
         body: JSON.stringify({ phoneNumber, code: verificationCode }),
         headers: { 'Content-Type': 'application/json' }
       });
-      
-      const data = await response.json();
       
       if (data.success) {
         // Создаем пользователя в localStorage только после успешной проверки кода
