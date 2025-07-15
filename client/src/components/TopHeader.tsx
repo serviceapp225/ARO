@@ -99,6 +99,7 @@ export function TopHeader({
     gcTime: 4 * 60 * 60 * 1000, // Держим в памяти 4 часа
     refetchOnWindowFocus: false, // НЕ обновлять при фокусе
     refetchOnMount: false, // НЕ обновлять при монтировании - используем кэш
+    // НО! WebSocket может принудительно обновить счетчик мгновенно через invalidateQueries
     enabled: !shouldHideNotifications() && !!currentUserId
   });
 

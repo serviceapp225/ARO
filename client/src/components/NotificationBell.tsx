@@ -68,6 +68,7 @@ export function NotificationBell({ userId }: NotificationBellProps) {
     gcTime: 4 * 60 * 60 * 1000, // Кэшируем 4 часа в памяти
     refetchOnWindowFocus: false, // НЕ обновлять при фокусе
     refetchOnMount: false, // НЕ обновлять при монтировании - используем кэш
+    // НО! WebSocket может принудительно обновить уведомления мгновенно через invalidateQueries
   });
 
   // НЕ очищаем удаленные уведомления автоматически
