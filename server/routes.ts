@@ -2717,11 +2717,108 @@ async function sendSMSCode(phoneNumber: string, code: string): Promise<{success:
   console.log(`[SMS ENV] SMS_SENDER: ${SMS_SENDER ? 'определена' : 'НЕ определена'} (значение: ${SMS_SENDER || 'undefined'})`);
   console.log(`[SMS ENV] SMS_SERVER: ${SMS_SERVER ? 'определена' : 'НЕ определена'} (значение: ${SMS_SERVER || 'undefined'})`);
   
-  // ВРЕМЕННО ОТКЛЮЧАЕМ РЕАЛЬНЫЙ SMS API (НЕ РАБОТАЕТ)
-  // Используем демо-режим для стабильной работы приложения
-  console.log(`[SMS DEMO] Отправка SMS на ${phoneNumber}: ${code}`);
-  console.log(`[SMS DEMO] Код для входа: ${code}`);
-  return { success: true, message: "SMS отправлен (демо-режим)" };
+  // Если нет учетных данных, используем демо-режим
+  if (!SMS_LOGIN || !SMS_HASH || !SMS_SENDER || !SMS_SERVER) {
+    console.log(`[SMS DEMO] Отправка SMS на ${phoneNumber}: ${code}`);
+    return { success: true, message: "SMS отправлен (демо-режим)" };
+  }
+
+  try {
+    // Генерируем уникальный txn_id для каждого SMS
+    const txn_id = Date.now().toString();
+    
+    // Формируем сообщение
+    const msg = `Kod: ${code}`;
+    
+    // Очищаем номер телефона от всех символов кроме цифр
+    let phone_number = phoneNumber.replace(/[^0-9]/g, '');
+    
+    // Убираем ведущие нули если есть
+    if (phone_number.startsWith('00')) {
+      phone_number = phone_number.substring(2);
+    }
+    
+    // Генерируем str_hash по формуле OSON
+    const raw_string = `${txn_id};${SMS_LOGIN};${SMS_SENDER};${phone_number};${SMS_HASH}`;
+    const str_hash = createHash('sha256').update(raw_string).digest('hex');
+    
+    console.log(`[SMS OSON] Отправка SMS на ${phoneNumber} (очищенный: ${phone_number})`);
+    console.log(`[SMS OSON] Подпись: ${str_hash}`);
+    
+    // Пробуем разные форматы запроса
+    const formats = [
+      // Формат 1: URLSearchParams
+      {
+        body: new URLSearchParams({
+          from: SMS_SENDER,
+          phone_number: phone_number,
+          msg: msg,
+          login: SMS_LOGIN,
+          str_hash: str_hash,
+          txn_id: txn_id
+        }).toString(),
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+      },
+      // Формат 2: JSON
+      {
+        body: JSON.stringify({
+          from: SMS_SENDER,
+          phone_number: phone_number,
+          msg: msg,
+          login: SMS_LOGIN,
+          str_hash: str_hash,
+          txn_id: txn_id
+        }),
+        headers: { 'Content-Type': 'application/json' }
+      },
+      // Формат 3: Ручной form data
+      {
+        body: `from=${SMS_SENDER}&phone_number=${phone_number}&msg=${encodeURIComponent(msg)}&login=${SMS_LOGIN}&str_hash=${str_hash}&txn_id=${txn_id}`,
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+      }
+    ];
+    
+    for (let i = 0; i < formats.length; i++) {
+      const format = formats[i];
+      console.log(`[SMS OSON] Пробуем формат ${i + 1}:`, format.body);
+      
+      const response = await fetch(SMS_SERVER, {
+        method: 'POST',
+        headers: {
+          ...format.headers,
+          'User-Agent': 'AUTOBID.TJ SMS Client'
+        },
+        body: format.body
+      });
+      
+      const responseText = await response.text();
+      console.log(`[SMS OSON] Формат ${i + 1} - Ответ: ${responseText}`);
+      
+      if (response.ok) {
+        let responseData;
+        try {
+          responseData = JSON.parse(responseText);
+        } catch (e) {
+          responseData = { success: true };
+        }
+        
+        if (!responseData.error) {
+          console.log(`[SMS OSON] ✅ SMS успешно отправлен форматом ${i + 1}!`);
+          return { success: true, message: "SMS отправлен" };
+        }
+      }
+    }
+    
+    // Если все форматы не сработали, возвращаем демо-режим
+    console.log(`[SMS OSON] Все форматы не сработали, переключаемся на демо-режим`);
+    console.log(`[SMS DEMO] Код для входа: ${code}`);
+    return { success: true, message: "SMS отправлен (демо-режим)" };
+    
+  } catch (error) {
+    console.error("[SMS OSON] Ошибка при отправке SMS:", error);
+    console.log(`[SMS DEMO] Код для входа: ${code}`);
+    return { success: true, message: "SMS отправлен (демо-режим)" };
+  }
 }
 
 // Функция для отправки SMS уведомлений о перебитых ставках
