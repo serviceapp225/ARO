@@ -94,9 +94,11 @@ export function TopHeader({
   // Получаем количество непрочитанных сообщений
   const { data: unreadCount } = useQuery({
     queryKey: [`/api/messages/unread-count/${currentUserId}`],
-    refetchInterval: 5 * 60 * 1000, // Обновляем каждые 5 минут для максимальной экономии ресурсов
-    staleTime: 5 * 60 * 1000, // Кэшируем данные на 5 минут
-    gcTime: 10 * 60 * 1000, // Держим в памяти 10 минут
+    refetchInterval: false, // Отключаем автообновление для скорости
+    staleTime: 2 * 60 * 60 * 1000, // Кэшируем данные на 2 часа
+    gcTime: 4 * 60 * 60 * 1000, // Держим в памяти 4 часа
+    refetchOnWindowFocus: false, // НЕ обновлять при фокусе
+    refetchOnMount: false, // НЕ обновлять при монтировании - используем кэш
     enabled: !shouldHideNotifications() && !!currentUserId
   });
 
