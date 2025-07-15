@@ -31,10 +31,8 @@ export default function Login() {
     
     try {
       // Отправляем запрос на сервер для отправки SMS
-      const data = await apiRequest('/api/auth/send-sms', {
-        method: 'POST',
-        body: { phoneNumber }
-      });
+      const response = await apiRequest('POST', '/api/auth/send-sms', { phoneNumber });
+      const data = await response.json();
       
       if (data.success) {
         setStep('code');
@@ -62,10 +60,8 @@ export default function Login() {
 
     try {
       // Проверяем SMS код на сервере
-      const data = await apiRequest('/api/auth/verify-sms', {
-        method: 'POST',
-        body: { phoneNumber, code: verificationCode }
-      });
+      const response = await apiRequest('POST', '/api/auth/verify-sms', { phoneNumber, code: verificationCode });
+      const data = await response.json();
       
       if (data.success) {
         // Создаем пользователя в localStorage только после успешной проверки кода
