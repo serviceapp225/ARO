@@ -31,17 +31,19 @@ export default function Login() {
     
     try {
       // Отправляем запрос на сервер для отправки SMS
-      const response = await apiRequest('/api/auth/send-sms', {
+      const response = await fetch('/api/auth/send-sms', {
         method: 'POST',
         body: JSON.stringify({ phoneNumber }),
         headers: { 'Content-Type': 'application/json' }
       });
       
-      if (response.success) {
+      const data = await response.json();
+      
+      if (data.success) {
         setStep('code');
         console.log('SMS отправлен на номер:', phoneNumber);
       } else {
-        alert('Ошибка отправки SMS');
+        alert('Ошибка отправки SMS: ' + (data.error || 'Неизвестная ошибка'));
       }
     } catch (error) {
       console.error('Ошибка отправки SMS:', error);
@@ -63,30 +65,32 @@ export default function Login() {
 
     try {
       // Проверяем SMS код на сервере
-      const response = await apiRequest('/api/auth/verify-sms', {
+      const response = await fetch('/api/auth/verify-sms', {
         method: 'POST',
         body: JSON.stringify({ phoneNumber, code: verificationCode }),
         headers: { 'Content-Type': 'application/json' }
       });
       
-      if (response.success) {
+      const data = await response.json();
+      
+      if (data.success) {
         // Создаем пользователя в localStorage только после успешной проверки кода
         const demoUser = {
           email: phoneNumber + "@autoauction.tj",
           phoneNumber: phoneNumber,
           uid: "demo-user-" + Date.now(),
-          isActive: response.user.isActive,
+          isActive: data.user?.isActive || false,
           invitedBy: referrerPhone || null,
           isInvited: !!referrerPhone,
           role: 'buyer',
-          userId: response.user.id
+          userId: data.user?.id || null
         };
         localStorage.setItem('demo-user', JSON.stringify(demoUser));
         
         // Переходим на главную страницу только после успешной авторизации
         window.location.href = '/home';
       } else {
-        setCodeError(response.error || 'Неверный код');
+        setCodeError(data.error || 'Неверный код');
       }
     } catch (error) {
       console.error('Ошибка проверки кода:', error);
