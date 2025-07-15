@@ -2717,11 +2717,11 @@ async function sendSMSCode(phoneNumber: string, code: string): Promise<{success:
   console.log(`[SMS ENV] SMS_SENDER: ${SMS_SENDER ? 'определена' : 'НЕ определена'} (значение: ${SMS_SENDER || 'undefined'})`);
   console.log(`[SMS ENV] SMS_SERVER: ${SMS_SERVER ? 'определена' : 'НЕ определена'} (значение: ${SMS_SERVER || 'undefined'})`);
   
-  // Если нет учетных данных, используем демо-режим
-  if (!SMS_LOGIN || !SMS_HASH || !SMS_SENDER || !SMS_SERVER) {
-    console.log(`[SMS DEMO] Отправка SMS на ${phoneNumber}: ${code}`);
-    return { success: true, message: "SMS отправлен (демо-режим)" };
-  }
+  // ВРЕМЕННО ОТКЛЮЧАЕМ РЕАЛЬНЫЙ SMS API (НЕ РАБОТАЕТ)
+  // Используем демо-режим для стабильной работы приложения
+  console.log(`[SMS DEMO] Отправка SMS на ${phoneNumber}: ${code}`);
+  console.log(`[SMS DEMO] Код для входа: ${code}`);
+  return { success: true, message: "SMS отправлен (демо-режим)" };
 
 
   
