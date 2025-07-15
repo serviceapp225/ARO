@@ -2738,9 +2738,8 @@ async function sendSMSCode(phoneNumber: string, code: string): Promise<{success:
       phone_number = phone_number.substring(2);
     }
     
-    // Генерируем str_hash по формуле OSON
-    const raw_string = `${txn_id};${SMS_LOGIN};${SMS_SENDER};${phone_number};${SMS_HASH}`;
-    const str_hash = createHash('sha256').update(raw_string).digest('hex');
+    // Используем статический hash из переменных окружения
+    const str_hash = SMS_HASH;
     
     console.log(`[SMS OSON] Отправка SMS на ${phoneNumber} (очищенный: ${phone_number})`);
     console.log(`[SMS OSON] Подпись: ${str_hash}`);
