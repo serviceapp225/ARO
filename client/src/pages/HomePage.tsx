@@ -19,24 +19,24 @@ export default function HomePage() {
   const [, setLocation] = useLocation();
   const { user } = useAuth();
 
-  // Предзагрузка всех данных для синхронного отображения
+  // Поэтапная загрузка для мгновенного отображения основных элементов
   const { data: bannerData, isLoading: bannerLoading } = useQuery({
     queryKey: ['/api/sell-car-banner'],
-    staleTime: 5 * 60 * 1000,
+    staleTime: 30 * 60 * 1000, // 30 минут кэширования для статических данных
   });
 
   const { data: carouselData, isLoading: carouselLoading } = useQuery({
     queryKey: ['/api/advertisement-carousel'],
-    staleTime: 5 * 60 * 1000,
+    staleTime: 15 * 60 * 1000, // 15 минут кэширования для рекламы
   });
 
   const { data: listingsData, isLoading: listingsLoading } = useQuery({
     queryKey: ['/api/listings'],
-    staleTime: 30 * 1000,
+    staleTime: 30 * 1000, // Объявления остаются свежими
   });
 
-  // Показываем скелетон пока не загрузятся все критические данные
-  const isPageLoading = bannerLoading || carouselLoading || listingsLoading;
+  // Показываем скелетон только пока критические данные (объявления) не загрузились
+  const isPageLoading = listingsLoading;
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -83,7 +83,7 @@ export default function HomePage() {
       <TopHeader />
       
       <main className="container mx-auto px-4 py-6 space-y-6">
-        {/* Search Section */}
+        {/* Search Section - всегда показываем первым */}
         <div className="bg-white rounded-2xl p-4 shadow-sm">
           <form onSubmit={handleSearch} className="relative">
             <div className="relative">
@@ -99,13 +99,21 @@ export default function HomePage() {
           </form>
         </div>
 
-        {/* Dynamic Sell Car Banner */}
-        <DynamicSellCarBanner />
+        {/* Dynamic Sell Car Banner - показываем с плейсхолдером */}
+        {bannerLoading ? (
+          <div className="h-44 rounded-2xl bg-gray-200 animate-pulse"></div>
+        ) : (
+          <DynamicSellCarBanner />
+        )}
 
-        {/* Advertisement Carousel - в том же контейнере */}
-        <AdvertisementCarousel />
+        {/* Advertisement Carousel - показываем с плейсхолдером */}
+        {carouselLoading ? (
+          <div className="h-44 rounded-2xl bg-gray-200 animate-pulse"></div>
+        ) : (
+          <AdvertisementCarousel />
+        )}
 
-        {/* Security Banner */}
+        {/* Security Banner - статическое содержимое, всегда показываем */}
         <div className="bg-green-50 border border-green-200 rounded-xl p-4">
           <div className="flex items-center space-x-3">
             <Shield className="w-6 h-6 text-green-600" />
@@ -115,7 +123,7 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* Active Auctions Section */}
+        {/* Active Auctions Section - критическое содержимое */}
         <section>
           <h2 className="text-xl font-bold text-gray-900 mb-4">
             Активные аукционы

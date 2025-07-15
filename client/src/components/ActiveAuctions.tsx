@@ -124,7 +124,7 @@ export function ActiveAuctions({ searchQuery = "", customListings }: ActiveAucti
       clearTimeout(hoverTimeout);
     }
     
-    // Устанавливаем новый timeout с задержкой
+    // Устанавливаем новый timeout с увеличенной задержкой для лучшей производительности
     const timeout = setTimeout(() => {
       // Предзагружаем данные аукциона в фоновом режиме
       queryClient.prefetchQuery({
@@ -133,7 +133,7 @@ export function ActiveAuctions({ searchQuery = "", customListings }: ActiveAucti
           const response = await fetch(`/api/listings/${auctionId}`);
           return response.json();
         },
-        staleTime: 10000, // 10 секунд
+        staleTime: 30000, // Увеличиваем до 30 секунд
       });
       
       // Предзагружаем ставки
@@ -143,9 +143,9 @@ export function ActiveAuctions({ searchQuery = "", customListings }: ActiveAucti
           const response = await fetch(`/api/listings/${auctionId}/bids`);
           return response.json();
         },
-        staleTime: 5000, // 5 секунд
+        staleTime: 15000, // Увеличиваем до 15 секунд
       });
-    }, 300); // Задержка 300мс для оптимизации
+    }, 500); // Увеличиваем задержку до 500мс для меньшего количества запросов
     
     setHoverTimeout(timeout);
   };

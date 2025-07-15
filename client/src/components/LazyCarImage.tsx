@@ -27,8 +27,8 @@ export function LazyCarImage({ listingId, make, model, year, className = "" }: L
         const cacheTime = cachedData.timestamp;
         const now = Date.now();
         
-        // Если кэш свежий (менее 5 минут), используем его
-        if (now - cacheTime < 300000) {
+        // Увеличиваем время кэширования до 10 минут для лучшей производительности
+        if (now - cacheTime < 600000) {
           setPhotos(cachedData.photos || []);
           setLoading(false);
           return;
@@ -38,7 +38,7 @@ export function LazyCarImage({ listingId, make, model, year, className = "" }: L
       }
     }
 
-    // Загружаем фотографии с задержкой для ленивой загрузки
+    // Загружаем фотографии с оптимизированной задержкой
     const timer = setTimeout(async () => {
       try {
         const response = await fetch(`/api/listings/${listingId}/photos`);
@@ -62,7 +62,7 @@ export function LazyCarImage({ listingId, make, model, year, className = "" }: L
       } finally {
         setLoading(false);
       }
-    }, Math.random() * 500 + 100); // Случайная задержка от 100 до 600мс
+    }, Math.random() * 200 + 50); // Уменьшенная задержка от 50 до 250мс
 
     return () => clearTimeout(timer);
   }, [listingId]);
