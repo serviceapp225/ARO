@@ -126,8 +126,8 @@ export default function Messages() {
       return res.json();
     },
     enabled: !!user?.userId,
-    staleTime: 1000, // Кэш на 1 секунду для быстрой загрузки
-    gcTime: 30000, // Держим в памяти 30 секунд
+    staleTime: 10000, // Кэш на 10 секунд
+    gcTime: 300000, // Держим в памяти 5 минут
     refetchOnWindowFocus: false, // Не перезапрашиваем при фокусе окна
   });
 
@@ -165,8 +165,8 @@ export default function Messages() {
       return result;
     },
     enabled: !!selectedConversation,
-    staleTime: 500, // Кэш на 500мс для быстрого отклика
-    gcTime: 15000, // Держим в памяти 15 секунд
+    staleTime: 2000, // Кэш на 2 секунды
+    gcTime: 30000, // Держим в памяти 30 секунд
   });
 
   // Автоматическое отмечение сообщений как прочитанных при открытии переписки
@@ -251,13 +251,13 @@ export default function Messages() {
     }
   };
 
-  // Состояние загрузки - показываем только первые 100мс
+  // Состояние загрузки
   if (conversationsLoading) {
     return (
       <div className="flex items-center justify-center min-h-[400px] pb-24">
         <div className="text-center">
-          <MessageCircle className="w-12 h-12 mx-auto mb-4 text-blue-500 animate-spin" />
-          <p className="text-gray-600 font-medium">Загрузка...</p>
+          <MessageCircle className="w-12 h-12 mx-auto mb-4 text-gray-400 animate-pulse" />
+          <p className="text-gray-500">Загрузка сообщений...</p>
         </div>
       </div>
     );

@@ -1011,15 +1011,15 @@ export class SQLiteStorage implements IStorage {
         }
       }
       
-      // Отключаем отладочные логи для производительности
-      // if (row.id === 31 || row.id === 32 || row.id === 35) {
-      //   console.log(`🔍 Отладка для объявления ${row.id}:`);
-      //   console.log(`Raw photos type: ${typeof row.photos}`);
-      //   console.log(`Raw photos length: ${row.photos?.length || 0}`);
-      //   console.log(`Parsed photos count: ${photos.length}`);
-      //   console.log(`First photo preview: ${photos[0] ? photos[0].substring(0, 50) + '...' : 'none'}`);
-      //   console.log(`💰 ОТЛАДКА ЦЕН: starting_price=${row.starting_price}, current_bid=${row.current_bid}`);
-      // }
+      // Только для объявления ID 31, 32 и 35 показываем отладку
+      if (row.id === 31 || row.id === 32 || row.id === 35) {
+        console.log(`🔍 Отладка для объявления ${row.id}:`);
+        console.log(`Raw photos type: ${typeof row.photos}`);
+        console.log(`Raw photos length: ${row.photos?.length || 0}`);
+        console.log(`Parsed photos count: ${photos.length}`);
+        console.log(`First photo preview: ${photos[0] ? photos[0].substring(0, 50) + '...' : 'none'}`);
+        console.log(`💰 ОТЛАДКА ЦЕН: starting_price=${row.starting_price}, current_bid=${row.current_bid}`);
+      }
     } catch (error) {
       console.error(`❌ Error parsing photos for listing ${row.id}:`, error);
       photos = [];
@@ -1064,12 +1064,12 @@ export class SQLiteStorage implements IStorage {
       createdAt: new Date(row.created_at)
     };
 
-    // ОТКЛЮЧАЕМ ОТЛАДКУ для производительности
-    // if (row.id === 32) {
-    //   console.log(`🔍 mapListing РЕЗУЛЬТАТ: current_bid=${row.current_bid} → currentBid="${result.currentBid}"`);
-    //   console.log(`🔍 mapListing ТИП: typeof current_bid=${typeof row.current_bid}, значение="${row.current_bid}"`);
-    //   console.log(`🔍 mapListing СТРОКА: currentBid строка = "${row.current_bid ? row.current_bid.toString() : null}"`);
-    // }
+    // КРИТИЧЕСКАЯ ОТЛАДКА для аукциона 32
+    if (row.id === 32) {
+      console.log(`🔍 mapListing РЕЗУЛЬТАТ: current_bid=${row.current_bid} → currentBid="${result.currentBid}"`);
+      console.log(`🔍 mapListing ТИП: typeof current_bid=${typeof row.current_bid}, значение="${row.current_bid}"`);
+      console.log(`🔍 mapListing СТРОКА: currentBid строка = "${row.current_bid ? row.current_bid.toString() : null}"`);
+    }
 
     return result;
   }
@@ -1883,7 +1883,7 @@ export class SQLiteStorage implements IStorage {
         ORDER BY uw.won_at DESC
       `);
       const rows: any[] = stmt.all(userId);
-      // console.log(`🏆 Найдено ${rows.length} выигрышей для пользователя ${userId}`);
+      console.log(`🏆 Найдено ${rows.length} выигрышей для пользователя ${userId}`);
       
       return rows.map((row: any) => ({
         id: row.id,
@@ -2022,7 +2022,7 @@ export class SQLiteStorage implements IStorage {
       const rows = stmt.all(timeLimit);
       const listings = rows.map(row => this.mapListing(row));
       
-      // console.log(`🏆 Найдено ${listings.length} выигранных аукционов за последние ${hoursLimit} часов`);
+      console.log(`🏆 Найдено ${listings.length} выигранных аукционов за последние ${hoursLimit} часов`);
       return listings;
     } catch (error) {
       console.error('Error fetching recent won listings:', error);

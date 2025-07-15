@@ -19,7 +19,7 @@ export default function HomePage() {
   const [, setLocation] = useLocation();
   const { user } = useAuth();
 
-  // Предзагрузка критических данных для быстрой загрузки
+  // Предзагрузка всех данных для синхронного отображения
   const { data: bannerData, isLoading: bannerLoading } = useQuery({
     queryKey: ['/api/sell-car-banner'],
     staleTime: 5 * 60 * 1000,
@@ -35,7 +35,7 @@ export default function HomePage() {
     staleTime: 30 * 1000,
   });
 
-  // Показываем страницу сразу после загрузки основных данных (без ожидания фотографий)
+  // Показываем скелетон пока не загрузятся все критические данные
   const isPageLoading = bannerLoading || carouselLoading || listingsLoading;
 
   const handleSearch = (e: React.FormEvent) => {
