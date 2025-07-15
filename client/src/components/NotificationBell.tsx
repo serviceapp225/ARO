@@ -63,12 +63,10 @@ export function NotificationBell({ userId }: NotificationBellProps) {
       return data;
     },
     enabled: true,
-    refetchInterval: false, // Отключаем автообновление для скорости
-    staleTime: 2 * 60 * 60 * 1000, // Данные свежи 2 часа для максимальной скорости
-    gcTime: 4 * 60 * 60 * 1000, // Кэшируем 4 часа в памяти
+    refetchInterval: 5 * 60 * 1000, // Обновляем каждые 5 минут для экономии ресурсов
+    staleTime: 5 * 60 * 1000, // Данные свежи 5 минут для быстрой загрузки
     refetchOnWindowFocus: false, // НЕ обновлять при фокусе
-    refetchOnMount: false, // НЕ обновлять при монтировании - используем кэш
-    // НО! WebSocket может принудительно обновить уведомления мгновенно через invalidateQueries
+    refetchOnMount: true, // Обновлять при монтировании для свежих данных
   });
 
   // НЕ очищаем удаленные уведомления автоматически

@@ -23,16 +23,16 @@ export function LazyCarImage({ listingId, make, model, year, className = "" }: L
 
   const photos = photoData?.photos || [];
 
-  // Автоматическая ротация отключена для максимальной производительности
-  // useEffect(() => {
-  //   if (photos.length <= 1) return;
-  //   
-  //   const intervalId = setInterval(() => {
-  //     setCurrentImageIndex((prevIndex) => (prevIndex + 1) % photos.length);
-  //   }, 3000); // 3 секунды
-  //
-  //   return () => clearInterval(intervalId);
-  // }, [photos.length]);
+  // Автоматическая ротация фотографий каждые 3 секунды
+  useEffect(() => {
+    if (photos.length <= 1) return;
+    
+    const intervalId = setInterval(() => {
+      setCurrentImageIndex((prevIndex) => (prevIndex + 1) % photos.length);
+    }, 3000); // 3 секунды
+
+    return () => clearInterval(intervalId);
+  }, [photos.length]);
 
   if (loading || error || photos.length === 0) {
     return (
