@@ -9,8 +9,8 @@ export function DynamicSellCarBanner() {
   // Загружаем данные баннера из API
   const { data: banner, isLoading } = useQuery<SellCarBanner>({
     queryKey: ['/api/sell-car-banner'],
-    staleTime: 5 * 60 * 1000, // 5 минут
-    gcTime: 10 * 60 * 1000, // 10 минут
+    staleTime: 15 * 60 * 1000, // 15 минут - дольше кэширование для статичных данных
+    gcTime: 30 * 60 * 1000, // 30 минут в памяти
   });
 
   // Не показываем баннер если он неактивен или загружается

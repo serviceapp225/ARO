@@ -43,18 +43,7 @@ function Router() {
   
   // Предзагружаем критически важные данные для мгновенной загрузки
   useEffect(() => {
-    // Предзагружаем рекламную карусель
-    queryClient.prefetchQuery({
-      queryKey: ['/api/advertisement-carousel'],
-      queryFn: async () => {
-        const response = await fetch('/api/advertisement-carousel');
-        if (response.ok) return response.json();
-        return [];
-      },
-      staleTime: Infinity,
-    });
-    
-    // Предзагружаем основные аукционы для быстрого переключения
+    // Предзагружаем только критически важные данные
     queryClient.prefetchQuery({
       queryKey: ['/api/listings'],
       queryFn: async () => {
@@ -62,10 +51,20 @@ function Router() {
         if (response.ok) return response.json();
         return [];
       },
-      staleTime: 300000, // 5 минут
+      staleTime: 120000, // 2 минуты
     });
     
-    // Предзагружаем секцию продажи авто
+    // Статичные данные кэшируем надолго
+    queryClient.prefetchQuery({
+      queryKey: ['/api/advertisement-carousel'],
+      queryFn: async () => {
+        const response = await fetch('/api/advertisement-carousel');
+        if (response.ok) return response.json();
+        return [];
+      },
+      staleTime: 15 * 60 * 1000, // 15 минут
+    });
+    
     queryClient.prefetchQuery({
       queryKey: ['/api/sell-car-section'],
       queryFn: async () => {
@@ -73,7 +72,7 @@ function Router() {
         if (response.ok) return response.json();
         return {};
       },
-      staleTime: Infinity,
+      staleTime: 15 * 60 * 1000, // 15 минут
     });
   }, []);
   

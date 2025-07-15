@@ -229,7 +229,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // console.log("Listings endpoint called, cache size:", cachedListings.length); // Убрано для производительности
       
       // HTTP кэширование с ETag для обновления при изменениях
-      res.setHeader('Cache-Control', 'public, max-age=30, s-maxage=30'); // 30 секунд кэш для быстрой загрузки
+      res.setHeader('Cache-Control', 'public, max-age=120, s-maxage=120'); // 2 минуты кэш для быстрой загрузки
       res.setHeader('ETag', `"listings-${lastCacheUpdate}"`);
       
       // Оптимизируем данные для скорости но сохраняем важные поля

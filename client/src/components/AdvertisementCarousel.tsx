@@ -35,9 +35,9 @@ export function AdvertisementCarousel() {
 
   const { data: advertisements = [], isLoading } = useQuery<AdvertisementItem[]>({
     queryKey: ['/api/advertisement-carousel'],
-    staleTime: 1 * 1000, // 1 секунда - максимально быстрое обновление
-    refetchInterval: 5 * 1000, // Обновляем каждые 5 секунд
-    refetchOnWindowFocus: true, // Обновляем при возвращении в окно
+    staleTime: 10 * 60 * 1000, // 10 минут - значительно дольше кэширование
+    refetchInterval: false, // Отключаем автообновление для скорости
+    refetchOnWindowFocus: false, // Не обновляем при возвращении в окно
     refetchOnMount: true, // Обновляем при монтировании
   });
 
