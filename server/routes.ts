@@ -2759,7 +2759,17 @@ async function sendSMSCode(phoneNumber: string, code: string): Promise<{success:
         }).toString(),
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
       },
-      // Формат 2: JSON
+      // Формат 2: Мультипарт form data
+      {
+        body: `------WebKitFormBoundary7MA4YWxkTrZu0gW\r\nContent-Disposition: form-data; name="from"\r\n\r\n${SMS_SENDER}\r\n------WebKitFormBoundary7MA4YWxkTrZu0gW\r\nContent-Disposition: form-data; name="phone_number"\r\n\r\n${phone_number}\r\n------WebKitFormBoundary7MA4YWxkTrZu0gW\r\nContent-Disposition: form-data; name="msg"\r\n\r\n${msg}\r\n------WebKitFormBoundary7MA4YWxkTrZu0gW\r\nContent-Disposition: form-data; name="login"\r\n\r\n${SMS_LOGIN}\r\n------WebKitFormBoundary7MA4YWxkTrZu0gW\r\nContent-Disposition: form-data; name="str_hash"\r\n\r\n${str_hash}\r\n------WebKitFormBoundary7MA4YWxkTrZu0gW\r\nContent-Disposition: form-data; name="txn_id"\r\n\r\n${txn_id}\r\n------WebKitFormBoundary7MA4YWxkTrZu0gW--\r\n`,
+        headers: { 'Content-Type': 'multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW' }
+      },
+      // Формат 3: Ручной form data без URL encoding
+      {
+        body: `from=${SMS_SENDER}&phone_number=${phone_number}&msg=${msg}&login=${SMS_LOGIN}&str_hash=${str_hash}&txn_id=${txn_id}`,
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+      },
+      // Формат 4: JSON
       {
         body: JSON.stringify({
           from: SMS_SENDER,
@@ -2771,18 +2781,27 @@ async function sendSMSCode(phoneNumber: string, code: string): Promise<{success:
         }),
         headers: { 'Content-Type': 'application/json' }
       },
-      // Формат 3: Ручной form data
+      // Формат 5: Старый формат со старым URL (если изменился endpoint)
       {
-        body: `from=${SMS_SENDER}&phone_number=${phone_number}&msg=${encodeURIComponent(msg)}&login=${SMS_LOGIN}&str_hash=${str_hash}&txn_id=${txn_id}`,
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+        body: new URLSearchParams({
+          from: SMS_SENDER,
+          phone_number: phone_number,
+          msg: msg,
+          login: SMS_LOGIN,
+          str_hash: str_hash,
+          txn_id: txn_id
+        }).toString(),
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        url: 'https://api.osonsms.com/sendsms.php'
       }
     ];
     
     for (let i = 0; i < formats.length; i++) {
       const format = formats[i];
-      console.log(`[SMS OSON] Пробуем формат ${i + 1}:`, format.body);
+      const url = format.url || SMS_SERVER;
+      console.log(`[SMS OSON] Пробуем формат ${i + 1} на ${url}:`, format.body);
       
-      const response = await fetch(SMS_SERVER, {
+      const response = await fetch(url, {
         method: 'POST',
         headers: {
           ...format.headers,
