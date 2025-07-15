@@ -25,10 +25,7 @@ export default function HomePage() {
     staleTime: 15 * 60 * 1000, // 15 минут кэширования для статичных данных
   });
 
-  const { data: carouselData, isLoading: carouselLoading } = useQuery({
-    queryKey: ['/api/advertisement-carousel'],
-    staleTime: 15 * 60 * 1000, // 15 минут кэширования для статичных данных
-  });
+  // Карусель загружается внутри компонента AdvertisementCarousel
 
   const { data: listingsData, isLoading: listingsLoading } = useQuery({
     queryKey: ['/api/listings'],
@@ -36,7 +33,7 @@ export default function HomePage() {
   });
 
   // Показываем страницу сразу после загрузки основных данных (без ожидания фотографий)
-  const isPageLoading = bannerLoading || carouselLoading || listingsLoading;
+  const isPageLoading = bannerLoading || listingsLoading;
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
