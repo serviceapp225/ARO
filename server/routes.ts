@@ -2723,9 +2723,6 @@ async function sendSMSCode(phoneNumber: string, code: string): Promise<{success:
     return { success: true, message: "SMS отправлен (демо-режим)" };
   }
 
-  // ТЕСТИРОВАНИЕ: Принудительно вызываем API для тестирования
-  console.log(`[SMS TEST] Тестирование реального API OSON SMS с корректными параметрами...`);
-
 
   
   try {
@@ -2733,26 +2730,31 @@ async function sendSMSCode(phoneNumber: string, code: string): Promise<{success:
     const txn_id = Date.now().toString();
     
     // Формируем сообщение (простое английское для тестирования)
-    const msg = `Your verification code: ${code}`;
+    const msg = `Kod: ${code}`;
     
     // Очищаем номер телефона от всех символов кроме цифр
-    const phone_number = phoneNumber.replace(/[^0-9]/g, '');
+    let phone_number = phoneNumber.replace(/[^0-9]/g, '');
+    
+    // Убираем ведущие нули если есть
+    if (phone_number.startsWith('00')) {
+      phone_number = phone_number.substring(2);
+    }
     
     // Генерируем str_hash по формуле OSON (точно как в PHP)
     const raw_string = `${txn_id};${SMS_LOGIN};${SMS_SENDER};${phone_number};${SMS_HASH}`;
     const str_hash = createHash('sha256').update(raw_string).digest('hex');
     
-    // Подготовка POST-данных (точно как в PHP с правильным порядком)
-    const postData = [
-      `from=${SMS_SENDER}`,
-      `phone_number=${phone_number}`,
-      `msg=${encodeURIComponent(msg)}`,
-      `login=${SMS_LOGIN}`,
-      `str_hash=${str_hash}`,
-      `txn_id=${txn_id}`
-    ];
+    // Подготовка POST-данных в правильном формате для OSON SMS API
+    const postData = {
+      from: SMS_SENDER,
+      phone_number: phone_number,
+      msg: msg,
+      login: SMS_LOGIN,
+      str_hash: str_hash,
+      txn_id: txn_id
+    };
     
-    const postBody = postData.join('&');
+    const postBody = new URLSearchParams(postData).toString();
     
     console.log(`[SMS OSON] Отправка SMS на ${phoneNumber} (очищенный: ${phone_number}):`);
     console.log(`[SMS OSON] Сервер: ${SMS_SERVER}`);
