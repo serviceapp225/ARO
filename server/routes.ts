@@ -2723,44 +2723,48 @@ async function sendSMSCode(phoneNumber: string, code: string): Promise<{success:
     return { success: true, message: "SMS отправлен (демо-режим)" };
   }
 
+  // ТЕСТИРОВАНИЕ: Принудительно вызываем API для тестирования
+  console.log(`[SMS TEST] Тестирование реального API OSON SMS с корректными параметрами...`);
+
 
   
   try {
-    // Генерируем уникальный txn_id для каждого SMS
-    const txn_id = `autobid_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    // Генерируем уникальный txn_id для каждого SMS (точно как в PHP)
+    const txn_id = Date.now().toString();
     
     // Формируем сообщение (простое английское для тестирования)
-    const message = `Your verification code: ${code}`;
+    const msg = `Your verification code: ${code}`;
     
-    // Очищаем номер телефона от всех символов кроме цифр и + в начале
-    const cleanPhoneNumber = phoneNumber.replace(/[^\d+]/g, '');
+    // Очищаем номер телефона от всех символов кроме цифр
+    const phone_number = phoneNumber.replace(/[^0-9]/g, '');
     
-    // Генерируем подпись согласно формуле oson sms
-    // hash = sha256(txn_id + ";" + login + ";" + from + ";" + phone_number + ";" + pass_salt_hash)
-    const signatureString = `${txn_id};${SMS_LOGIN};${SMS_SENDER};${cleanPhoneNumber};${SMS_HASH}`;
-    const signature = createHash('sha256').update(signatureString).digest('hex');
+    // Генерируем str_hash по формуле OSON (точно как в PHP)
+    const raw_string = `${txn_id};${SMS_LOGIN};${SMS_SENDER};${phone_number};${SMS_HASH}`;
+    const str_hash = createHash('sha256').update(raw_string).digest('hex');
     
-    // Формируем POST данные через URLSearchParams для правильной кодировки
-    const formData = new URLSearchParams();
-    formData.append('txn_id', txn_id);
-    formData.append('login', SMS_LOGIN);
-    formData.append('from', SMS_SENDER);
-    formData.append('phone_number', cleanPhoneNumber);
-    formData.append('msg', message);
-    formData.append('str_hash', signature);
+    // Подготовка POST-данных (точно как в PHP с правильным порядком)
+    const postData = [
+      `from=${SMS_SENDER}`,
+      `phone_number=${phone_number}`,
+      `msg=${encodeURIComponent(msg)}`,
+      `login=${SMS_LOGIN}`,
+      `str_hash=${str_hash}`,
+      `txn_id=${txn_id}`
+    ];
     
-    const postBody = formData.toString();
+    const postBody = postData.join('&');
     
-    console.log(`[SMS OSON] Отправка SMS на ${phoneNumber} (очищенный: ${cleanPhoneNumber}):`);
+    console.log(`[SMS OSON] Отправка SMS на ${phoneNumber} (очищенный: ${phone_number}):`);
     console.log(`[SMS OSON] Сервер: ${SMS_SERVER}`);
-    console.log(`[SMS OSON] Подпись: ${signature}`);
+    console.log(`[SMS OSON] Подпись: ${str_hash}`);
     console.log(`[SMS OSON] Все параметры:`);
     console.log(`  - txn_id: "${txn_id}"`);
     console.log(`  - login: "${SMS_LOGIN}"`);
     console.log(`  - from: "${SMS_SENDER}"`);
-    console.log(`  - phone_number: "${cleanPhoneNumber}"`);
-    console.log(`  - msg: "${message}"`);
-    console.log(`  - str_hash: "${signature}"`);
+    console.log(`  - phone_number: "${phone_number}"`);
+    console.log(`  - msg: "${msg}"`);
+    console.log(`  - str_hash: "${str_hash}"`);
+    console.log(`[SMS OSON] raw_string: "${raw_string}"`);
     console.log(`[SMS OSON] Данные для отправки:`, postBody);
     
     // Отправляем запрос к oson sms API
