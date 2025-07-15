@@ -1,180 +1,142 @@
-# SMS Integration Guide for AUTOBID.TJ
+# SMS Integration Guide - OSON SMS Service
 
-## Overview
-Инфраструктура для отправки SMS-кодов подтверждения готова. Система включает API endpoints для отправки и проверки SMS-кодов с защитой от злоупотреблений.
+## Обзор
 
-## Current Status
-- ✅ SMS API endpoints созданы (`/api/auth/send-sms`, `/api/auth/verify-sms`)
-- ✅ Система генерации и хранения 6-значных кодов
-- ✅ Защита от спама (ограничение попыток, TTL кодов)
-- ✅ Кэширование кодов в памяти сервера
-- ⏳ Готово к интеграции с реальными SMS-провайдерами
+Система полностью интегрирована с SMS-сервисом OSON SMS для отправки:
+- Кодов подтверждения при входе в систему
+- Уведомлений о перебитых ставках с текстом "Ваша ставка перебита"
 
-## API Endpoints
+## Настройка в продакшене
 
-### POST /api/auth/send-sms
-Отправляет SMS-код на указанный номер телефона.
+### 1. Переменные окружения
 
-**Request:**
-```json
-{
-  "phoneNumber": "+992 (22) 222-22-22"
-}
-```
+Добавьте следующие переменные в ваш продакшн environment:
 
-**Response (success):**
-```json
-{
-  "success": true,
-  "message": "SMS код отправлен",
-  "code": "123456" // Только в development режиме
-}
-```
-
-### POST /api/auth/verify-sms
-Проверяет введенный SMS-код.
-
-**Request:**
-```json
-{
-  "phoneNumber": "+992 (22) 222-22-22",
-  "code": "123456"
-}
-```
-
-**Response (success):**
-```json
-{
-  "success": true,
-  "message": "Код подтвержден",
-  "phoneNumber": "+992 (22) 222-22-22"
-}
-```
-
-## Security Features
-- **TTL кодов**: 5 минут с момента генерации
-- **Ограничение попыток**: максимум 3 попытки ввода кода
-- **Кэширование**: коды хранятся в памяти сервера
-- **Защита от спама**: можно добавить rate limiting
-
-## SMS Providers for Tajikistan
-
-### Recommended Providers:
-
-1. **Tcell SMS API**
-   - Основной мобильный оператор Таджикистана
-   - Высокая скорость доставки
-   - Требует контракт с оператором
-
-2. **Beeline SMS Gateway**
-   - Второй по величине оператор
-   - Хорошее покрытие
-   - API-интеграция доступна
-
-3. **Megafon SMS API**
-   - Третий оператор на рынке
-   - Стандартная интеграция
-
-4. **Twilio (International)**
-   - Международный провайдер
-   - Простая интеграция
-   - Может быть дороже
-
-## Integration Steps
-
-### 1. Получение API ключей
 ```bash
-# Добавить в переменные окружения:
-TWILIO_ACCOUNT_SID=your_account_sid
-TWILIO_AUTH_TOKEN=your_auth_token
-TWILIO_PHONE_NUMBER=your_twilio_number
-
-# Или для локального провайдера:
-SMS_GATEWAY_URL=http://localhost:8080
-SMS_GATEWAY_API_KEY=your_api_key
+SMS_LOGIN=zarex
+SMS_HASH=a6d5d8b47551199899862d6d768a4cb1
+SMS_SENDER=OsonSMS
+SMS_SERVER=https://api.osonsms.com/sendsms_v1.php
 ```
 
-### 2. Установка зависимостей
-```bash
-# Для Twilio:
-npm install twilio
+### 2. Автоматическая активация
 
-# Для других провайдеров обычно достаточно fetch
-```
+При наличии всех переменных окружения:
+- SMS отправляются через реальный OSON SMS API
+- Используется sha256 подпись для безопасности
 
-### 3. Обновление sendSMSCode функции
-В файле `server/routes.ts` раскомментируйте и настройте нужную интеграцию:
+При отсутствии переменных:
+- Система автоматически переключается в демо-режим
+- Коды логируются в консоль
+- Никакие реальные SMS не отправляются
+
+## Техническая реализация
+
+### Аутентификация (sendSMSCode)
 
 ```typescript
-// Пример для Twilio:
-const accountSid = process.env.TWILIO_ACCOUNT_SID;
-const authToken = process.env.TWILIO_AUTH_TOKEN;
-const client = require('twilio')(accountSid, authToken);
-
-const message = await client.messages.create({
-  body: `Ваш код подтверждения AUTOBID.TJ: ${code}`,
-  from: process.env.TWILIO_PHONE_NUMBER,
-  to: phoneNumber
-});
+// Функция для отправки кодов подтверждения
+async function sendSMSCode(phoneNumber: string, code: string)
 ```
 
-### 4. Обновление Frontend
-В `client/src/pages/Login.tsx` обновите handleSubmit для использования SMS API:
+**Текст SMS:** `Ваш код подтверждения AUTOBID.TJ: {code}`
+
+### Уведомления о ставках (sendSMSNotification)
 
 ```typescript
-const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
-  setIsLoading(true);
-
-  try {
-    const response = await fetch('/api/auth/send-sms', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ phoneNumber })
-    });
-
-    const data = await response.json();
-    
-    if (data.success) {
-      // Перейти на страницу ввода кода
-      navigate('/verify-code', { state: { phoneNumber } });
-    } else {
-      alert(data.error || 'Ошибка отправки SMS');
-    }
-  } catch (error) {
-    alert('Ошибка сети');
-  } finally {
-    setIsLoading(false);
-  }
-};
+// Функция для отправки уведомлений
+async function sendSMSNotification(phoneNumber: string, message: string)
 ```
 
-## Testing
+**Текст SMS:** `Ваша ставка перебита! {carTitle} - новая ставка {amount} сомони. Сделайте новую ставку на AUTOBID.TJ`
 
-### Development Mode
-В режиме разработки коды выводятся в консоль сервера:
+### Генерация подписи
+
+Согласно спецификации OSON SMS:
 ```
-[SMS DEMO] Отправка SMS на +992 (22) 222-22-22: 123456
+hash = sha256(txn_id + ";" + login + ";" + from + ";" + phone_number + ";" + pass_salt_hash)
 ```
 
-### Production Testing
-1. Проверьте работу с тестовым номером
-2. Убедитесь в корректности форматирования номеров
-3. Проверьте TTL и ограничения попыток
-4. Мониторьте логи отправки
+### Параметры запроса
 
-## Cost Considerations
-- **Tcell/Beeline**: ~0.01-0.05 сомони за SMS
-- **Twilio**: ~$0.05-0.10 за SMS
-- **Объем**: при 1000 регистраций в месяц = ~10-50 сомони
+```javascript
+{
+  txn_id: "autobid_" + timestamp + "_" + random,
+  login: SMS_LOGIN,
+  from: SMS_SENDER,
+  phone_number: phoneNumber,
+  message: message,
+  hash: sha256_signature
+}
+```
 
-## Next Steps
-1. Выбрать SMS-провайдера
-2. Получить API ключи
-3. Обновить функцию sendSMSCode
-4. Создать страницу ввода кода
-5. Протестировать интеграцию
-6. Добавить мониторинг и логирование
+## Интеграция в систему аукционов
 
-## Support
-При возникновении вопросов по интеграции SMS обращайтесь к документации выбранного провайдера или к разработчикам системы.
+### Места отправки SMS
+
+1. **Аутентификация** (server/routes.ts):
+   - POST /api/auth/send-sms
+   - Отправка 6-значного кода подтверждения
+
+2. **Уведомления о ставках** (server/routes.ts):
+   - POST /api/listings/:id/bids
+   - Отправка SMS всем участникам, чьи ставки перебиты
+
+### Обработка ошибок
+
+```javascript
+// Логирование в консоль
+console.log('[SMS OSON] Отправка SMS на +99290...');
+console.log('[SMS OSON] Подпись: a1b2c3d4...');
+console.log('[SMS OSON] Ответ сервера: OK');
+
+// Обработка ошибок
+if (!response.ok) {
+  console.error('[SMS OSON] Ошибка отправки:', response.status);
+  return { success: false, message: 'Ошибка SMS сервиса' };
+}
+```
+
+## Демонстрация работы
+
+### Демо-режим (без переменных окружения)
+
+```
+[SMS DEMO] Отправка SMS на +992903331332: 123456
+[SMS DEMO] Отправка SMS уведомления на +992903331332: Ваша ставка перебита...
+```
+
+### Продакшн-режим (с переменными окружения)
+
+```
+[SMS OSON] Отправка SMS на +992903331332:
+[SMS OSON] Сервер: https://api.osonsms.com/sendsms_v1.php
+[SMS OSON] Подпись: a1b2c3d4e5f6...
+[SMS OSON] Ответ сервера: OK
+✅ SMS отправлен через oson sms (autobid_1752567123456_abc123)
+```
+
+## Безопасность
+
+1. **Генерация подписи** - каждый SMS имеет уникальную подпись
+2. **Уникальный txn_id** - предотвращает повторную отправку
+3. **Переменные окружения** - учетные данные не хранятся в коде
+4. **Обработка ошибок** - не раскрывает внутренние детали API
+
+## Статистика использования
+
+- **Коды подтверждения**: 6-значные коды, TTL 5 минут
+- **Попытки входа**: Максимум 3 попытки на номер
+- **Уведомления о ставках**: Отправляются всем участникам аукциона
+- **Формат номеров**: +992XXXXXXXXX (таджикские номера)
+
+## Готовность к продакшену
+
+✅ Полная интеграция с OSON SMS API  
+✅ Автоматическое переключение демо/продакшн режимов  
+✅ Обработка ошибок и логирование  
+✅ Безопасная генерация подписей  
+✅ Интеграция в систему аукционов  
+✅ Поддержка как аутентификации, так и уведомлений  
+
+Система готова к использованию с реальными SMS-сообщениями при установке переменных окружения.

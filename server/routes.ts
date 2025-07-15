@@ -8,6 +8,7 @@ import sharp from "sharp";
 import { insertCarListingSchema, insertBidSchema, insertFavoriteSchema, insertNotificationSchema, insertCarAlertSchema, insertBannerSchema, type CarAlert } from "@shared/schema";
 import { z } from "zod";
 import AuctionWebSocketManager from "./websocket";
+import { createHash } from "crypto";
 
 // Input validation schemas
 const idParamSchema = z.object({
@@ -862,6 +863,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
               console.log(`📲 ✅ ЗАВЕРШЕНА попытка отправки WebSocket уведомления пользователю ${participantId}`);
             } else {
               console.log(`❌ wsManager не инициализирован - WebSocket уведомления недоступны`);
+            }
+            
+            // Отправляем SMS уведомление
+            try {
+              const participantUser = await storage.getUser(participantId);
+              if (participantUser && participantUser.phoneNumber) {
+                const smsMessage = `Ваша ставка перебита! ${carTitle} - новая ставка ${formattedAmount} сомони. Сделайте новую ставку на AUTOBID.TJ`;
+                console.log(`📱 Отправляем SMS уведомление пользователю ${participantId} (${participantUser.phoneNumber})`);
+                const smsResult = await sendSMSNotification(participantUser.phoneNumber, smsMessage);
+                if (smsResult.success) {
+                  console.log(`✅ SMS уведомление отправлено пользователю ${participantId}: ${smsResult.message}`);
+                } else {
+                  console.error(`❌ Ошибка отправки SMS пользователю ${participantId}: ${smsResult.message}`);
+                }
+              } else {
+                console.log(`⚠️ Не удалось найти телефон пользователя ${participantId} для SMS уведомления`);
+              }
+            } catch (smsError) {
+              console.error(`❌ Ошибка при отправке SMS уведомления пользователю ${participantId}:`, smsError);
             }
           } catch (notificationError) {
             console.error(`❌ Ошибка создания уведомления для пользователя ${participantId}:`, notificationError);
@@ -2682,56 +2702,133 @@ export async function registerRoutes(app: Express): Promise<Server> {
   return httpServer;
 }
 
-// Функция для отправки SMS (заменить на реальную интеграцию)
+// Функция для отправки SMS через oson sms API
 async function sendSMSCode(phoneNumber: string, code: string): Promise<{success: boolean, message?: string}> {
-  // В production здесь будет реальная интеграция с SMS-провайдером
-  // Примеры популярных провайдеров в Таджикистане:
+  // Получаем учетные данные oson sms из переменных окружения
+  const SMS_LOGIN = process.env.SMS_LOGIN;
+  const SMS_HASH = process.env.SMS_HASH;
+  const SMS_SENDER = process.env.SMS_SENDER;
+  const SMS_SERVER = process.env.SMS_SERVER;
   
-  // 1. Tcell SMS API
-  // 2. Beeline SMS Gateway  
-  // 3. Megafon SMS API
-  // 4. Twilio (международный)
-  
-  try {
-    // Имитация задержки отправки SMS
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    // В production раскомментируйте нужную интеграцию:
-    
-    /* Пример интеграции с Twilio:
-    const accountSid = process.env.TWILIO_ACCOUNT_SID;
-    const authToken = process.env.TWILIO_AUTH_TOKEN;
-    const client = require('twilio')(accountSid, authToken);
-    
-    const message = await client.messages.create({
-      body: `Ваш код подтверждения AUTOBID.TJ: ${code}`,
-      from: process.env.TWILIO_PHONE_NUMBER,
-      to: phoneNumber
-    });
-    
-    return { success: true, message: message.sid };
-    */
-    
-    /* Пример с локальным SMS-шлюзом:
-    const response = await fetch('http://localhost:8080/send-sms', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        phone: phoneNumber,
-        text: `Код подтверждения AUTOBID.TJ: ${code}`
-      })
-    });
-    
-    return response.ok ? { success: true } : { success: false };
-    */
-    
-    // Текущая заглушка для разработки
+  // Если нет учетных данных, используем демо-режим
+  if (!SMS_LOGIN || !SMS_HASH || !SMS_SENDER || !SMS_SERVER) {
     console.log(`[SMS DEMO] Отправка SMS на ${phoneNumber}: ${code}`);
     return { success: true, message: "SMS отправлен (демо-режим)" };
+  }
+  
+  try {
+    // Генерируем уникальный txn_id для каждого SMS
+    const txn_id = `autobid_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    
+    // Формируем сообщение
+    const message = `Ваш код подтверждения AUTOBID.TJ: ${code}`;
+    
+    // Генерируем подпись согласно формуле oson sms
+    // hash = sha256(txn_id + ";" + login + ";" + from + ";" + phone_number + ";" + pass_salt_hash)
+    const signatureString = `${txn_id};${SMS_LOGIN};${SMS_SENDER};${phoneNumber};${SMS_HASH}`;
+    const signature = createHash('sha256').update(signatureString).digest('hex');
+    
+    // Формируем данные для отправки
+    const postData = new URLSearchParams({
+      txn_id: txn_id,
+      login: SMS_LOGIN,
+      from: SMS_SENDER,
+      phone_number: phoneNumber,
+      message: message,
+      hash: signature
+    });
+    
+    console.log(`[SMS OSON] Отправка SMS на ${phoneNumber}:`);
+    console.log(`[SMS OSON] Сервер: ${SMS_SERVER}`);
+    console.log(`[SMS OSON] Подпись: ${signature}`);
+    
+    // Отправляем запрос к oson sms API
+    const response = await fetch(SMS_SERVER, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'User-Agent': 'AUTOBID.TJ SMS Client'
+      },
+      body: postData.toString()
+    });
+    
+    const responseText = await response.text();
+    console.log(`[SMS OSON] Ответ сервера: ${responseText}`);
+    
+    if (response.ok) {
+      // Успешная отправка
+      return { success: true, message: `SMS отправлен через oson sms (${txn_id})` };
+    } else {
+      // Ошибка отправки
+      console.error(`[SMS OSON] Ошибка отправки: ${response.status} ${response.statusText}`);
+      return { success: false, message: `Ошибка отправки SMS: ${responseText}` };
+    }
     
   } catch (error) {
-    console.error("SMS sending failed:", error);
-    return { success: false, message: error instanceof Error ? error.message : "Unknown error" };
+    console.error("[SMS OSON] Ошибка при отправке SMS:", error);
+    return { success: false, message: error instanceof Error ? error.message : "Неизвестная ошибка" };
+  }
+}
+
+// Функция для отправки SMS уведомлений о перебитых ставках
+async function sendSMSNotification(phoneNumber: string, message: string): Promise<{success: boolean, message?: string}> {
+  // Получаем учетные данные oson sms из переменных окружения
+  const SMS_LOGIN = process.env.SMS_LOGIN;
+  const SMS_HASH = process.env.SMS_HASH;
+  const SMS_SENDER = process.env.SMS_SENDER;
+  const SMS_SERVER = process.env.SMS_SERVER;
+  
+  // Если нет учетных данных, используем демо-режим
+  if (!SMS_LOGIN || !SMS_HASH || !SMS_SENDER || !SMS_SERVER) {
+    console.log(`[SMS DEMO] Отправка SMS уведомления на ${phoneNumber}: ${message}`);
+    return { success: true, message: "SMS уведомление отправлено (демо-режим)" };
+  }
+  
+  try {
+    // Генерируем уникальный txn_id для каждого SMS
+    const txn_id = `notification_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    
+    // Генерируем подпись согласно формуле oson sms
+    const signatureString = `${txn_id};${SMS_LOGIN};${SMS_SENDER};${phoneNumber};${SMS_HASH}`;
+    const signature = createHash('sha256').update(signatureString).digest('hex');
+    
+    // Формируем данные для отправки
+    const postData = new URLSearchParams({
+      txn_id: txn_id,
+      login: SMS_LOGIN,
+      from: SMS_SENDER,
+      phone_number: phoneNumber,
+      message: message,
+      hash: signature
+    });
+    
+    console.log(`[SMS NOTIFICATION] Отправка SMS уведомления на ${phoneNumber}:`);
+    console.log(`[SMS NOTIFICATION] Текст: ${message}`);
+    console.log(`[SMS NOTIFICATION] Подпись: ${signature}`);
+    
+    // Отправляем запрос к oson sms API
+    const response = await fetch(SMS_SERVER, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'User-Agent': 'AUTOBID.TJ SMS Client'
+      },
+      body: postData.toString()
+    });
+    
+    const responseText = await response.text();
+    console.log(`[SMS NOTIFICATION] Ответ сервера: ${responseText}`);
+    
+    if (response.ok) {
+      return { success: true, message: `SMS уведомление отправлено (${txn_id})` };
+    } else {
+      console.error(`[SMS NOTIFICATION] Ошибка отправки: ${response.status} ${response.statusText}`);
+      return { success: false, message: `Ошибка отправки SMS: ${responseText}` };
+    }
+    
+  } catch (error) {
+    console.error("[SMS NOTIFICATION] Ошибка при отправке SMS:", error);
+    return { success: false, message: error instanceof Error ? error.message : "Неизвестная ошибка" };
   }
 }
 
