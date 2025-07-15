@@ -87,17 +87,17 @@ let wsManager: AuctionWebSocketManager;
 let lastBidUpdate = Date.now();
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Отладка всех входящих POST запросов
-  app.use((req, res, next) => {
-    if (req.method === 'POST') {
-      console.log(`🔍 POST запрос: ${req.path}`);
-      console.log(`📦 Body:`, req.body);
-      if (req.path.includes('/bids')) {
-        console.log(`🚨 КРИТИЧНО: Это запрос ставки! Путь: ${req.path}`);
-      }
-    }
-    next();
-  });
+  // Убираем отладочные логи для повышения производительности
+  // app.use((req, res, next) => {
+  //   if (req.method === 'POST') {
+  //     console.log(`🔍 POST запрос: ${req.path}`);
+  //     console.log(`📦 Body:`, req.body);
+  //     if (req.path.includes('/bids')) {
+  //       console.log(`🚨 КРИТИЧНО: Это запрос ставки! Путь: ${req.path}`);
+  //     }
+  //   }
+  //   next();
+  // });
 
   // Статический кэш для максимальной скорости
   let cachedListings: any[] = [];
@@ -175,14 +175,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Предзагружаем кэш при старте
   await updateListingsCache();
   
-  // Обновляем кэш каждые 5 секунд для мгновенных обновлений ставок
-  setInterval(updateListingsCache, 5000);
+  // Обновляем кэш каждые 30 секунд для экономии ресурсов
+  setInterval(updateListingsCache, 30000);
   
-  // Принудительно обновляем кэш для электромобилей
-  setTimeout(() => {
-    console.log('🔄 Принудительное обновление кэша для электромобилей');
-    updateListingsCache();
-  }, 5000);
+  // Убираем принудительное обновление для ускорения
+  // setTimeout(() => {
+  //   console.log('🔄 Принудительное обновление кэша для электромобилей');
+  //   updateListingsCache();
+  // }, 5000);
   
   // Clear all caches when listings change
   function clearAllCaches() {
@@ -195,7 +195,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     // Принудительно обновляем кэш при изменении данных
     updateListingsCache();
     
-    console.log('🧹 ПРИНУДИТЕЛЬНО ОЧИЩЕН ВЕСЬ КЭША ПОСЛЕ НОВОЙ СТАВКИ');
+    // console.log('🧹 ПРИНУДИТЕЛЬНО ОЧИЩЕН ВЕСЬ КЭША ПОСЛЕ НОВОЙ СТАВКИ');
   }
   
   // Test endpoint для проверки скорости
@@ -215,7 +215,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Возвращаем ВСЕ фотографии для автоматической ротации
       const photos = Array.isArray(listing.photos) ? listing.photos : [];
-      console.log(`📸 Отправляю ${photos.length} фотографий для аукциона ${id}`);
+      // console.log(`📸 Отправляю ${photos.length} фотографий для аукциона ${id}`);
       res.json({ photos });
     } catch (error) {
       console.error("Error getting photos:", error);
@@ -492,7 +492,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: "Listing not found" });
       }
       
-      console.log(`🆕 СВЕЖИЙ аукцион ${listingId} currentBid=${listing.currentBid}`);
+      // console.log(`🆕 СВЕЖИЙ аукцион ${listingId} currentBid=${listing.currentBid}`);
       
       // Cache for 30 seconds
       setCache(cacheKey, listing);
@@ -553,7 +553,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               const compressedSize = compressedBuffer.length;
               const compressionRatio = ((originalSize - compressedSize) / originalSize * 100).toFixed(1);
               
-              console.log(`✅ Сжато: ${(originalSize/1024).toFixed(1)}KB → ${(compressedSize/1024).toFixed(1)}KB (${compressionRatio}% экономия)`);
+              // console.log(`✅ Сжато: ${(originalSize/1024).toFixed(1)}KB → ${(compressedSize/1024).toFixed(1)}KB (${compressionRatio}% экономия)`);
               
               // Конвертируем обратно в base64
               const compressedBase64 = `data:image/jpeg;base64,${compressedBuffer.toString('base64')}`;
@@ -707,12 +707,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.post("/api/listings/:id/bids", async (req, res) => {
-    console.log(`🚨🚨🚨 КРИТИЧНО: POST запрос ставки достиг роута! ID: ${req.params.id}`);
-    console.log(`🚨🚨🚨 КРИТИЧНО: Тело запроса:`, req.body);
+    // console.log(`🚨🚨🚨 КРИТИЧНО: POST запрос ставки достиг роута! ID: ${req.params.id}`);
+    // console.log(`🚨🚨🚨 КРИТИЧНО: Тело запроса:`, req.body);
     try {
       const listingId = parseInt(req.params.id);
-      console.log(`🎯 ПОЛУЧЕН POST запрос ставки для аукциона ${listingId}:`, req.body);
-      console.log(`🎯 НАЧАЛО ОБРАБОТКИ СТАВКИ для аукциона ${listingId} от пользователя ${req.body.bidderId}`);
+      // console.log(`🎯 ПОЛУЧЕН POST запрос ставки для аукциона ${listingId}:`, req.body);
+      // console.log(`🎯 НАЧАЛО ОБРАБОТКИ СТАВКИ для аукциона ${listingId} от пользователя ${req.body.bidderId}`);
       
       // Check if auction exists and is still active
       const listing = await storage.getListing(listingId);
@@ -2617,11 +2617,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/demo/mark-messages-visited", async (req, res) => {
     try {
       const { userId } = req.body;
-      console.log(`📖 ДЕМО: Пользователь ${userId} зашел на страницу сообщений`);
+      // console.log(`📖 ДЕМО: Пользователь ${userId} зашел на страницу сообщений`);
       
       if (userId === 3 || userId === 4) {
         messagesPageVisited[userId] = true;
-        console.log(`✅ ДЕМО: Отмечено посещение страницы сообщений для пользователя ${userId}`);
+        // console.log(`✅ ДЕМО: Отмечено посещение страницы сообщений для пользователя ${userId}`);
       }
       
       res.json({ success: true });
