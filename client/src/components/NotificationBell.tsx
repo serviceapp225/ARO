@@ -3,6 +3,7 @@ import { Bell, X, Car, Trash2, Gavel } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useLocation } from 'wouter';
 import type { Notification } from '@shared/schema';
+import { useAuctionWebSocket } from '@/hooks/useAuctionWebSocket';
 
 interface NotificationBellProps {
   userId: number;
@@ -10,6 +11,10 @@ interface NotificationBellProps {
 
 export function NotificationBell({ userId }: NotificationBellProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const queryClient = useQueryClient();
+  
+  // Подключаемся к WebSocket для мгновенного обновления уведомлений
+  useAuctionWebSocket();
   
   // Загружаем список удаленных уведомлений из localStorage с временными метками
   const [deletedNotificationIds, setDeletedNotificationIds] = useState<Set<number>>(() => {
@@ -51,7 +56,6 @@ export function NotificationBell({ userId }: NotificationBellProps) {
     }
   };
 
-  const queryClient = useQueryClient();
   const [, setLocation] = useLocation();
 
   const { data: allNotifications = [], isLoading } = useQuery<Notification[]>({
@@ -63,10 +67,11 @@ export function NotificationBell({ userId }: NotificationBellProps) {
       return data;
     },
     enabled: true,
-    refetchInterval: 1000, // Обновляем каждую секунду для мгновенных уведомлений
+    refetchInterval: 250, // Обновляем каждые 250мс для максимальной скорости уведомлений
     staleTime: 0, // Данные сразу устаревают для немедленного обновления после удаления
     refetchOnWindowFocus: false, // НЕ обновлять при фокусе
     refetchOnMount: true, // Обновлять при монтировании для свежих данных
+    gcTime: 0, // Полностью отключаем кэширование для максимальной скорости
   });
 
   // НЕ очищаем удаленные уведомления автоматически

@@ -294,10 +294,13 @@ export function useAuctionWebSocket(): AuctionWebSocketHook {
           queryClient.removeQueries({ queryKey: [`/api/notifications/${currentUserId}`] });
           queryClient.invalidateQueries({ queryKey: [`/api/notifications/${currentUserId}`] });
           
-          // Принудительно обновляем данные через 100мс для гарантии
+          // Принудительно обновляем данные НЕМЕДЛЕННО для максимальной скорости
+          queryClient.refetchQueries({ queryKey: [`/api/notifications/${currentUserId}`] });
+          
+          // Дополнительное обновление через 50мс для гарантии
           setTimeout(() => {
             queryClient.refetchQueries({ queryKey: [`/api/notifications/${currentUserId}`] });
-          }, 100);
+          }, 50);
         }
         
         // Показываем браузерное уведомление если разрешено

@@ -1393,6 +1393,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = parseInt(req.params.userId);
       console.log(`🔔 Получение уведомлений для пользователя ${userId}`);
+      
+      // Отключаем кэширование для мгновенных уведомлений
+      res.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+      res.set('Pragma', 'no-cache');
+      res.set('Expires', '0');
+      
       const notifications = await storage.getNotificationsByUser(userId);
       console.log(`📩 Найдено ${notifications.length} уведомлений для пользователя ${userId}`);
       res.json(notifications);
@@ -1406,6 +1412,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const validatedData = insertNotificationSchema.parse(req.body);
       const notification = await storage.createNotification(validatedData);
+      
+      // Очищаем кэш для мгновенной доставки уведомлений
+      if (notification.userId) {
+        console.log(`🚀 Очищаем кэш уведомлений для пользователя ${notification.userId} после создания`);
+        clearCachePattern(`notifications_${notification.userId}`);
+      }
+      
       res.status(201).json(notification);
     } catch (error) {
       if (error instanceof z.ZodError) {
