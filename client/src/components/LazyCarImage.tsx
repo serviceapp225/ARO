@@ -11,17 +11,61 @@ interface LazyCarImageProps {
 }
 
 export function LazyCarImage({ listingId, make, model, year, className = "" }: LazyCarImageProps) {
+  const [photos, setPhotos] = useState<string[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
-  // Используем React Query для МАКСИМАЛЬНОГО кэширования фотографий
-  const { data: photoData, isLoading: loading, error } = useQuery({
-    queryKey: [`/api/listings/${listingId}/photos`],
-    staleTime: 60 * 60 * 1000, // 1 час кэширования фотографий
-    gcTime: 2 * 60 * 60 * 1000, // 2 часа в памяти
-    retry: 0, // Не повторять запросы для скорости
-  });
+  useEffect(() => {
+    // Проверяем кэш в localStorage
+    const cacheKey = `photos_${listingId}`;
+    const cached = localStorage.getItem(cacheKey);
+    
+    if (cached) {
+      try {
+        const cachedData = JSON.parse(cached);
+        const cacheTime = cachedData.timestamp;
+        const now = Date.now();
+        
+        // Если кэш свежий (менее 5 минут), используем его
+        if (now - cacheTime < 300000) {
+          setPhotos(cachedData.photos || []);
+          setLoading(false);
+          return;
+        }
+      } catch (e) {
+        // Игнорируем ошибки парсинга кэша
+      }
+    }
 
-  const photos = photoData?.photos || [];
+    // Загружаем фотографии с задержкой для ленивой загрузки
+    const timer = setTimeout(async () => {
+      try {
+        const response = await fetch(`/api/listings/${listingId}/photos`);
+        if (response.ok) {
+          const data = await response.json();
+          if (data.photos && data.photos.length > 0) {
+            setPhotos(data.photos);
+            // Сохраняем в кэш
+            localStorage.setItem(cacheKey, JSON.stringify({
+              photos: data.photos,
+              timestamp: Date.now()
+            }));
+          } else {
+            setError(true);
+          }
+        } else {
+          setError(true);
+        }
+      } catch (err) {
+        setError(true);
+      } finally {
+        setLoading(false);
+      }
+    }, Math.random() * 500 + 100); // Случайная задержка от 100 до 600мс
+
+    return () => clearTimeout(timer);
+  }, [listingId]);
 
   // Автоматическая ротация фотографий каждые 3 секунды
   useEffect(() => {

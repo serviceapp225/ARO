@@ -22,18 +22,21 @@ export default function HomePage() {
   // Предзагрузка критических данных для быстрой загрузки
   const { data: bannerData, isLoading: bannerLoading } = useQuery({
     queryKey: ['/api/sell-car-banner'],
-    staleTime: 60 * 60 * 1000, // 1 час кэширования для статичных данных
+    staleTime: 5 * 60 * 1000,
   });
 
-  // Карусель загружается внутри компонента AdvertisementCarousel
+  const { data: carouselData, isLoading: carouselLoading } = useQuery({
+    queryKey: ['/api/advertisement-carousel'],
+    staleTime: 5 * 60 * 1000,
+  });
 
   const { data: listingsData, isLoading: listingsLoading } = useQuery({
     queryKey: ['/api/listings'],
-    staleTime: 60 * 60 * 1000, // 1 час кэширования для списка аукционов
+    staleTime: 30 * 1000,
   });
 
   // Показываем страницу сразу после загрузки основных данных (без ожидания фотографий)
-  const isPageLoading = bannerLoading || listingsLoading;
+  const isPageLoading = bannerLoading || carouselLoading || listingsLoading;
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
