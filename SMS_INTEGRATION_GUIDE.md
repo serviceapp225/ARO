@@ -6,6 +6,10 @@
 - Кодов подтверждения при входе в систему
 - Уведомлений о перебитых ставках с текстом "Ваша ставка перебита"
 
+## ⚠️ ОБНОВЛЕНИЕ API (Январь 2025)
+
+OSON SMS изменили формат API с POST на GET запросы. Система обновлена для работы с новым форматом.
+
 ## Настройка в продакшене
 
 ### 1. Переменные окружения
@@ -16,8 +20,22 @@
 SMS_LOGIN=zarex
 SMS_HASH=a6d5d8b47551199899862d6d768a4cb1
 SMS_SENDER=OsonSMS
-SMS_SERVER=https://api.osonsms.com/sendsms_v1.php
+SMS_SERVER=https://api.osonsms.com/sendsms.php
 ```
+
+### 2. Новый формат API
+
+API теперь использует GET запросы с параметрами в URL:
+
+```
+GET https://api.osonsms.com/sendsms.php?from=OsonSMS&phone_number=903331332&msg=Kod:%20123456&str_hash=8ac95b524e5cca4a115c691e31f6726068f77881d9f7ba4075392b755a152d56&txn_id=autobid_1752660001234&login=zarex
+```
+
+### 3. Формат номера телефона
+
+Номера теперь должны быть в 9-значном формате без кода страны:
+- Входящий: `+992903331332` → Отправляемый: `903331332`
+- Входящий: `992903331332` → Отправляемый: `903331332`
 
 ### 2. Автоматическая активация
 
@@ -52,22 +70,22 @@ async function sendSMSNotification(phoneNumber: string, message: string)
 
 ### Генерация подписи
 
-Согласно спецификации OSON SMS:
+Согласно спецификации OSON SMS (формула не изменилась):
 ```
-hash = sha256(txn_id + ";" + login + ";" + from + ";" + phone_number + ";" + pass_salt_hash)
+str_hash = sha256(txn_id + ";" + login + ";" + from + ";" + phone_number + ";" + pass_salt_hash)
 ```
 
-### Параметры запроса
+### Параметры GET запроса
 
 ```javascript
-{
-  txn_id: "autobid_" + timestamp + "_" + random,
-  login: SMS_LOGIN,
-  from: SMS_SENDER,
-  phone_number: phoneNumber,
-  message: message,
-  hash: sha256_signature
-}
+// Новый формат - GET с параметрами в URL
+const apiUrl = new URL(SMS_SERVER);
+apiUrl.searchParams.set('from', SMS_SENDER);
+apiUrl.searchParams.set('phone_number', phone_number); // 9-значный формат
+apiUrl.searchParams.set('msg', message);
+apiUrl.searchParams.set('str_hash', str_hash);
+apiUrl.searchParams.set('txn_id', txn_id);
+apiUrl.searchParams.set('login', SMS_LOGIN);
 ```
 
 ## Интеграция в систему аукционов
@@ -109,11 +127,11 @@ if (!response.ok) {
 ### Продакшн-режим (с переменными окружения)
 
 ```
-[SMS OSON] Отправка SMS на +992903331332:
-[SMS OSON] Сервер: https://api.osonsms.com/sendsms_v1.php
-[SMS OSON] Подпись: a1b2c3d4e5f6...
+[SMS OSON] Отправка SMS на +992903331332 (очищенный: 903331332)
+[SMS OSON] Новый GET формат API
+[SMS OSON] Полный URL: https://api.osonsms.com/sendsms.php?from=OsonSMS&phone_number=903331332&msg=Kod%3A%20123456&str_hash=abc123...&txn_id=autobid_1752567123456_abc123&login=zarex
 [SMS OSON] Ответ сервера: OK
-✅ SMS отправлен через oson sms (autobid_1752567123456_abc123)
+✅ SMS отправлен через новый API oson sms (autobid_1752567123456_abc123)
 ```
 
 ## Безопасность
