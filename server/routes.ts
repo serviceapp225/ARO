@@ -2782,17 +2782,7 @@ async function sendSMSCode(phoneNumber: string, code: string): Promise<{success:
       console.error(`[SMS OSON] Ошибка отправки: ${response.status} ${response.statusText}`);
       console.error(`[SMS OSON] Ответ сервера: ${responseText}`);
       
-      // Проверяем, является ли ошибка проблемой с IP в белом списке
-      if (responseText.includes('whitelist') || responseText.includes('Host is not in whitelist')) {
-        console.log(`[SMS DEMO FALLBACK] IP не в белом списке. Отправка SMS на ${phoneNumber}: ${code}`);
-        return { 
-          success: true, 
-          message: "SMS отправлен (демо-режим - IP не в белом списке OSON SMS)",
-          code: code // Добавляем код для демо-режима
-        };
-      }
-      
-      // Если другая ошибка, переходим в демо-режим
+      // Если новый API не работает, переходим в демо-режим
       console.log(`[SMS DEMO FALLBACK] Отправка SMS на ${phoneNumber}: ${code}`);
       return { success: true, message: "SMS отправлен (демо-режим - API недоступен)" };
     }

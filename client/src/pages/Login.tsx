@@ -37,11 +37,6 @@ export default function Login() {
       if (data.success) {
         setStep('code');
         console.log('SMS отправлен на номер:', phoneNumber);
-        
-        // Если это демо-режим и есть код, показываем его
-        if (data.message && data.message.includes('демо-режим') && data.code) {
-          alert(`SMS отправлен в демо-режиме. Код для входа: ${data.code}`);
-        }
       } else {
         alert('Ошибка отправки SMS: ' + (data.error || 'Неизвестная ошибка'));
       }
