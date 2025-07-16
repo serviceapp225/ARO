@@ -22,20 +22,17 @@ export default function HomePage() {
   // Поэтапная загрузка для мгновенного отображения основных элементов
   const { data: bannerData, isLoading: bannerLoading } = useQuery({
     queryKey: ['/api/sell-car-banner'],
-    staleTime: 60 * 60 * 1000, // 1 час кэширования для статических данных
-    gcTime: 2 * 60 * 60 * 1000, // 2 часа в памяти
+    staleTime: 30 * 60 * 1000, // 30 минут кэширования для статических данных
   });
 
   const { data: carouselData, isLoading: carouselLoading } = useQuery({
     queryKey: ['/api/advertisement-carousel'],
-    staleTime: 30 * 60 * 1000, // 30 минут кэширования для рекламы
-    gcTime: 60 * 60 * 1000, // 1 час в памяти
+    staleTime: 15 * 60 * 1000, // 15 минут кэширования для рекламы
   });
 
   const { data: listingsData, isLoading: listingsLoading } = useQuery({
     queryKey: ['/api/listings'],
-    staleTime: 10 * 1000, // Объявления остаются свежими 10 секунд
-    gcTime: 2 * 60 * 1000, // 2 минуты в памяти для быстрого возврата
+    staleTime: 30 * 1000, // Объявления остаются свежими
   });
 
   // Показываем скелетон только пока критические данные (объявления) не загрузились

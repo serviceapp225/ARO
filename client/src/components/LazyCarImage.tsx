@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { Car } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 
@@ -15,34 +15,8 @@ export function LazyCarImage({ listingId, make, model, year, className = "" }: L
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [isVisible, setIsVisible] = useState(false);
-  const imgRef = useRef<HTMLDivElement>(null);
-
-  // Intersection Observer для ленивой загрузки
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setIsVisible(true);
-          observer.disconnect();
-        }
-      },
-      { 
-        threshold: 0.1,
-        rootMargin: '50px' // Предзагрузка за 50px до появления в области видимости
-      }
-    );
-
-    if (imgRef.current) {
-      observer.observe(imgRef.current);
-    }
-
-    return () => observer.disconnect();
-  }, []);
 
   useEffect(() => {
-    if (!isVisible) return;
-
     // Проверяем кэш в localStorage
     const cacheKey = `photos_${listingId}`;
     const cached = localStorage.getItem(cacheKey);
@@ -53,8 +27,8 @@ export function LazyCarImage({ listingId, make, model, year, className = "" }: L
         const cacheTime = cachedData.timestamp;
         const now = Date.now();
         
-        // Увеличиваем время кэширования до 30 минут для лучшей производительности
-        if (now - cacheTime < 1800000) {
+        // Увеличиваем время кэширования до 10 минут для лучшей производительности
+        if (now - cacheTime < 600000) {
           setPhotos(cachedData.photos || []);
           setLoading(false);
           return;
@@ -64,57 +38,34 @@ export function LazyCarImage({ listingId, make, model, year, className = "" }: L
       }
     }
 
-    // Загружаем фотографии с минимальной задержкой
+    // Загружаем фотографии с оптимизированной задержкой
     const timer = setTimeout(async () => {
       try {
-        // Сначала быстро загружаем миниатюру для первого показа
-        const thumbnailResponse = await fetch(`/api/listings/${listingId}/thumbnail`);
-        if (thumbnailResponse.ok) {
-          const thumbnailBlob = await thumbnailResponse.blob();
-          const thumbnailUrl = URL.createObjectURL(thumbnailBlob);
-          setPhotos([thumbnailUrl]);
-          setLoading(false);
-          
-          // Затем загружаем остальные фотографии в фоне
-          const response = await fetch(`/api/listings/${listingId}/photos`);
-          if (response.ok) {
-            const data = await response.json();
-            if (data.photos && data.photos.length > 0) {
-              setPhotos(data.photos);
-              // Сохраняем в кэш
-              localStorage.setItem(cacheKey, JSON.stringify({
-                photos: data.photos,
-                timestamp: Date.now()
-              }));
-            }
-          }
-        } else {
-          // Fallback к обычной загрузке фотографий
-          const response = await fetch(`/api/listings/${listingId}/photos`);
-          if (response.ok) {
-            const data = await response.json();
-            if (data.photos && data.photos.length > 0) {
-              setPhotos(data.photos);
-              localStorage.setItem(cacheKey, JSON.stringify({
-                photos: data.photos,
-                timestamp: Date.now()
-              }));
-            } else {
-              setError(true);
-            }
+        const response = await fetch(`/api/listings/${listingId}/photos`);
+        if (response.ok) {
+          const data = await response.json();
+          if (data.photos && data.photos.length > 0) {
+            setPhotos(data.photos);
+            // Сохраняем в кэш
+            localStorage.setItem(cacheKey, JSON.stringify({
+              photos: data.photos,
+              timestamp: Date.now()
+            }));
           } else {
             setError(true);
           }
+        } else {
+          setError(true);
         }
       } catch (err) {
         setError(true);
       } finally {
         setLoading(false);
       }
-    }, Math.random() * 50 + 5); // Еще более быстрая загрузка от 5 до 55мс
+    }, Math.random() * 200 + 50); // Уменьшенная задержка от 50 до 250мс
 
     return () => clearTimeout(timer);
-  }, [listingId, isVisible]);
+  }, [listingId]);
 
   // Автоматическая ротация фотографий каждые 3 секунды
   useEffect(() => {
@@ -129,19 +80,18 @@ export function LazyCarImage({ listingId, make, model, year, className = "" }: L
 
   if (loading || error || photos.length === 0) {
     return (
-      <div ref={imgRef} className={`bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center ${className}`}>
+      <div className={`bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center ${className}`}>
         <Car className="w-12 h-12 text-gray-400" />
       </div>
     );
   }
 
   return (
-    <div ref={imgRef} className={`relative ${className}`}>
+    <div className={`relative ${className}`}>
       <img 
         src={photos[currentImageIndex]} 
         alt={`${year} ${make} ${model}`}
         className="w-full h-full object-cover transition-opacity duration-500"
-        loading="lazy"
         onError={() => setError(true)}
       />
       {/* Индикатор количества фотографий */}

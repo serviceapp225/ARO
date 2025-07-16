@@ -9,7 +9,7 @@ import { ReservePriceIndicator } from './ReservePriceIndicator';
 import { useAuctions } from '@/contexts/AuctionContext';
 import { useFavorites } from '@/contexts/FavoritesContext';
 import { useLocation } from 'wouter';
-import { useState, useEffect, useMemo, memo, useCallback } from 'react';
+import { useState, useEffect, useMemo, memo } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuctionWebSocket } from '@/hooks/useAuctionWebSocket';
 import { useSimpleSync } from '@/hooks/useSimpleSync';

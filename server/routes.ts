@@ -217,79 +217,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Возвращаем ВСЕ фотографии для автоматической ротации
       const photos = Array.isArray(listing.photos) ? listing.photos : [];
       console.log(`📸 Отправляю ${photos.length} фотографий для аукциона ${id}`);
-      
-      // Установка кэширования для быстрого доступа
-      res.set('Cache-Control', 'public, max-age=1800'); // 30 минут кэш для списка фото
       res.json({ photos });
     } catch (error) {
       console.error("Error getting photos:", error);
-      res.status(500).json({ error: "Server error" });
-    }
-  });
-
-  // Новый endpoint для получения миниатюр (для быстрой загрузки карточек)
-  app.get("/api/listings/:id/thumbnail", async (req, res) => {
-    try {
-      const id = parseInt(req.params.id);
-      const cacheKey = `thumbnail_${id}`;
-      
-      // Проверяем кэш миниатюр
-      if (photoCache.has(cacheKey)) {
-        const buffer = photoCache.get(cacheKey)!;
-        res.set('Content-Type', 'image/jpeg');
-        res.set('Cache-Control', 'public, max-age=2592000'); // 30 дней кэш для миниатюр
-        res.send(buffer);
-        return;
-      }
-      
-      const listing = await storage.getListing(id);
-      if (!listing) {
-        return res.status(404).json({ error: "Listing not found" });
-      }
-      
-      const photos = Array.isArray(listing.photos) ? listing.photos : [];
-      if (photos.length === 0) {
-        return res.status(404).json({ error: "No photos found" });
-      }
-      
-      // Берем первую фотографию и создаем миниатюру
-      const firstPhoto = photos[0];
-      if (firstPhoto && firstPhoto.startsWith('data:image/')) {
-        const matches = firstPhoto.match(/data:image\/([^;]+);base64,(.+)/);
-        if (matches) {
-          const base64Data = matches[2];
-          const originalBuffer = Buffer.from(base64Data, 'base64');
-          
-          try {
-            // Создаем агрессивно сжатую миниатюру для карточек
-            const thumbnailBuffer = await sharp(originalBuffer)
-              .jpeg({ 
-                quality: 60,
-                progressive: true,
-                mozjpeg: true
-              })
-              .resize(400, 300, {
-                fit: 'cover',
-                position: 'center'
-              })
-              .toBuffer();
-            
-            // Кэшируем миниатюру
-            photoCache.set(cacheKey, thumbnailBuffer);
-            
-            res.set('Content-Type', 'image/jpeg');
-            res.set('Cache-Control', 'public, max-age=2592000'); // 30 дней кэш для миниатюр
-            res.send(thumbnailBuffer);
-            return;
-          } catch (error) {
-            console.error('Thumbnail generation failed:', error);
-          }
-        }
-      }
-      
-      res.status(404).json({ error: "Thumbnail not found" });
-    } catch (error) {
-      console.error("Error generating thumbnail:", error);
       res.status(500).json({ error: "Server error" });
     }
   });
@@ -356,7 +286,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const mimeType = photoCacheTypes.get(cacheKey) || 'image/jpeg';
         
         res.set('Content-Type', mimeType);
-        res.set('Cache-Control', 'public, max-age=2592000'); // 30 дней кэш для фото
+        res.set('Cache-Control', 'public, max-age=604800'); // 7 дней кэш для фото
         res.send(buffer);
         return;
       }
@@ -402,17 +332,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
             try {
               const originalSize = originalBuffer.length;
               
-              // Compress images larger than 100KB for better performance
-              if (originalSize > 100 * 1024) {
-                // More aggressive compression for faster loading
-                let quality = 80;
-                let maxWidth = 1000;
-                let maxHeight = 700;
+              // Compress images larger than 150KB for better performance
+              if (originalSize > 150 * 1024) {
+                // Determine optimal settings based on image size
+                let quality = 85;
+                let maxWidth = 1200;
+                let maxHeight = 800;
                 
                 if (originalSize > 2 * 1024 * 1024) { // > 2MB - aggressive compression
-                  quality = 70;
-                  maxWidth = 900;
-                  maxHeight = 600;
+                  quality = 75;
+                  maxWidth = 1000;
+                  maxHeight = 667;
                 } else if (originalSize > 1 * 1024 * 1024) { // > 1MB - moderate compression
                   quality = 80;
                   maxWidth = 1100;
@@ -452,7 +382,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             photoCacheTypes.set(cacheKey, outputMimeType);
             
             res.set('Content-Type', outputMimeType);
-            res.set('Cache-Control', 'public, max-age=2592000'); // 30 дней кэш для фото
+            res.set('Cache-Control', 'public, max-age=604800'); // 7 дней кэш для фото
             res.send(compressedBuffer);
             return;
           }
