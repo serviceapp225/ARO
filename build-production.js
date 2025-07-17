@@ -11,14 +11,18 @@ import { execSync } from 'child_process';
 
 console.log('🚀 Начинаем сборку для продакшн развертывания...');
 
-// 1. Сборка фронтенда и бэкенда
-console.log('📦 Сборка фронтенда и бэкенда...');
-try {
-  execSync('vite build', { stdio: 'inherit' });
-  execSync('esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist', { stdio: 'inherit' });
-} catch (error) {
-  console.error('❌ Ошибка при сборке:', error.message);
-  process.exit(1);
+// 1. Сборка фронтенда и бэкенда (только если файлы не существуют)
+if (fs.existsSync('dist/index.js') && fs.existsSync('dist/public/index.html')) {
+  console.log('✅ Сборка уже выполнена, пропускаем...');
+} else {
+  console.log('📦 Сборка фронтенда и бэкенда...');
+  try {
+    execSync('vite build', { stdio: 'inherit' });
+    execSync('esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist', { stdio: 'inherit' });
+  } catch (error) {
+    console.error('❌ Ошибка при сборке:', error.message);
+    process.exit(1);
+  }
 }
 
 // 2. Копирование базы данных

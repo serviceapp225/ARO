@@ -12,12 +12,24 @@ console.log('🚀 Запуск Replit deployment процесса...');
 
 // Проверяем, есть ли уже собранные файлы
 if (!existsSync('dist')) {
-  console.log('📦 Запуск production сборки...');
+  console.log('📦 Запуск стандартной сборки...');
   try {
-    execSync('node build-production.js', { stdio: 'inherit' });
-    console.log('✅ Сборка завершена');
+    execSync('npm run build', { stdio: 'inherit' });
+    console.log('✅ Стандартная сборка завершена');
   } catch (error) {
     console.error('❌ Ошибка при сборке:', error.message);
+    process.exit(1);
+  }
+}
+
+// Проверяем, есть ли база данных в папке dist
+if (!existsSync('dist/autoauction.db')) {
+  console.log('📦 Копирование базы данных...');
+  try {
+    execSync('node build-production.js', { stdio: 'inherit' });
+    console.log('✅ База данных скопирована');
+  } catch (error) {
+    console.error('❌ Ошибка при копировании базы данных:', error.message);
     process.exit(1);
   }
 }
