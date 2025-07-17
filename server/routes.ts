@@ -2287,30 +2287,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Phone number is required" });
       }
 
+      // Нормализуем номер телефона (убираем все символы кроме цифр и +)
+      const normalizedPhone = phoneNumber.replace(/[^\d+]/g, '');
+      console.log(`📱 Нормализация номера: ${phoneNumber} → ${normalizedPhone}`);
+
       // Генерируем 6-значный код
       const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
       
-      // Сохраняем код в кэше с TTL 5 минут
-      const cacheKey = `sms_code_${phoneNumber}`;
+      // Сохраняем код в кэше с нормализованным номером
+      const cacheKey = `sms_code_${normalizedPhone}`;
       cache.set(cacheKey, { 
         code: verificationCode, 
         timestamp: Date.now(),
         attempts: 0
       });
+      
+      console.log(`💾 Код сохранен в кэше с ключом: ${cacheKey}`);
 
       // В production здесь будет интеграция с SMS-провайдером
       // Например: Twilio, Nexmo, или локальный SMS-шлюз
       console.log(`SMS Code for ${phoneNumber}: ${verificationCode}`);
       
       // Имитация отправки SMS (в production заменить на реальный SMS API)
-      const smsResult = await sendSMSCode(phoneNumber, verificationCode);
+      const smsResult = await sendSMSCode(normalizedPhone, verificationCode);
       
       if (smsResult.success) {
         res.json({ 
           success: true, 
           message: "SMS код отправлен",
-          // В production не возвращайте код в ответе!
-          ...(process.env.NODE_ENV === 'development' && { code: verificationCode })
+          // В development режиме или при проблемах с IP возвращаем код
+          ...(process.env.NODE_ENV === 'development' || smsResult.message?.includes('демо-режим') ? { code: verificationCode } : {})
         });
       } else {
         res.status(500).json({ error: "Ошибка отправки SMS" });
@@ -2330,7 +2336,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Phone number and code are required" });
       }
 
-      const cacheKey = `sms_code_${phoneNumber}`;
+      // Нормализуем номер телефона так же, как при отправке
+      const normalizedPhone = phoneNumber.replace(/[^\d+]/g, '');
+      console.log(`📱 Нормализация номера при проверке: ${phoneNumber} → ${normalizedPhone}`);
+
+      const cacheKey = `sms_code_${normalizedPhone}`;
+      console.log(`🔍 Поиск кода в кэше с ключом: ${cacheKey}`);
       const cachedData = cache.get(cacheKey);
       
       if (!cachedData) {
