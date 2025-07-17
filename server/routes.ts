@@ -2314,9 +2314,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (smsResult.success) {
         res.json({ 
           success: true, 
-          message: "SMS код отправлен",
-          // В development режиме или при проблемах с IP возвращаем код
-          ...(process.env.NODE_ENV === 'development' || smsResult.message?.includes('демо-режим') ? { code: verificationCode } : {})
+          message: "SMS код отправлен"
         });
       } else {
         res.status(500).json({ error: "Ошибка отправки SMS" });
@@ -2375,15 +2373,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       cache.delete(cacheKey);
       
       // Проверяем, существует ли пользователь в базе данных
-      const emailFromPhone = phoneNumber.replace(/\D/g, '') + '@autoauction.tj';
+      const emailFromPhone = normalizedPhone.replace(/\D/g, '') + '@autoauction.tj';
       let user = await storage.getUserByEmail(emailFromPhone);
       
       // Если пользователь не существует, создаем его как неактивного
       if (!user) {
-        console.log(`Creating new inactive user for phone: ${phoneNumber}`);
+        console.log(`Creating new inactive user for phone: ${normalizedPhone}`);
         user = await storage.createUser({
           email: emailFromPhone,
-          username: phoneNumber,
+          username: normalizedPhone,
           fullName: null,
           isActive: false, // По умолчанию все новые пользователи неактивны
           role: 'buyer'
@@ -2394,7 +2392,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ 
         success: true, 
         message: "Код подтвержден",
-        phoneNumber: phoneNumber,
+        phoneNumber: normalizedPhone,
         user: {
           id: user.id,
           email: user.email,
