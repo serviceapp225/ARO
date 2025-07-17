@@ -1,0 +1,119 @@
+2025-07-17 16:39:14.47
+c63e9c83
+User
+code: 'XX000',
+2025-07-17 16:39:14.47
+c63e9c83
+User
+detail: undefined,
+2025-07-17 16:39:14.47
+c63e9c83
+User
+hint: undefined,
+2025-07-17 16:39:14.47
+c63e9c83
+User
+position: undefined,
+2025-07-17 16:39:14.47
+c63e9c83
+User
+internalPosition: undefined,
+2025-07-17 16:39:14.47
+c63e9c83
+User
+internalQuery: undefined,
+2025-07-17 16:39:14.47
+c63e9c83
+User
+where: undefined,
+2025-07-17 16:39:14.47
+c63e9c83
+User
+schema: undefined,
+2025-07-17 16:39:14.47
+c63e9c83
+User
+table: undefined,
+2025-07-17 16:39:14.47
+c63e9c83
+User
+column: undefined,
+2025-07-17 16:39:14.47
+c63e9c83
+User
+dataType: undefined,
+2025-07-17 16:39:14.47
+c63e9c83
+User
+constraint: undefined,
+2025-07-17 16:39:14.47
+c63e9c83
+User
+file: undefined,
+2025-07-17 16:39:14.47
+c63e9c83
+User
+line: undefined,
+2025-07-17 16:39:14.47
+c63e9c83
+User
+routine: undefined
+2025-07-17 16:39:14.47
+c63e9c83
+User
+}
+2025-07-17 16:39:14.47
+c63e9c83
+User
+2025-07-17 16:39:14.47
+c63e9c83
+User
+Node.js v20.18.1
+2025-07-17 16:39:14.49
+c63e9c83
+System
+command finished with error [npm run start]: exit status 1
+2025-07-17 16:39:14.81
+c63e9c83
+System
+error proxying request error=dial tcp 127.0.0.1:5000: connect: connection refused
+2025-07-17 16:39:16.41
+c63e9c83
+System
+error proxying request error=dial tcp 127.0.0.1:5000: connect: connection refused
+2025-07-17 16:39:17.73
+c63e9c83
+System
+error proxying request error=dial tcp 127.0.0.1:5000: connect: connection refused
+2025-07-17 16:39:18.81
+c63e9c83
+System
+error proxying request error=dial tcp 127.0.0.1:5000: connect: connection refused
+2025-07-17 16:39:19.90
+c63e9c83
+System
+error proxying request error=dial tcp 127.0.0.1:5000: connect: connection refused
+2025-07-17 16:39:21.35
+c63e9c83
+System
+error proxying request error=dial tcp 127.0.0.1:5000: connect: connection refused
+2025-07-17 16:39:22.32
+c63e9c83
+System
+error proxying request error=dial tcp 127.0.0.1:5000: connect: connection refused
+2025-07-17 16:39:22.65
+c63e9c83
+System
+error proxying request error=dial tcp 127.0.0.1:5000: connect: connection refused
+2025-07-17 16:39:23.08
+c63e9c83
+System
+crash loop detected
+2025-07-17 16:39:23.42
+c63e9c83
+System
+error proxying request error=dial tcp 127.0.0.1:5000: connect: connection refused
+2025-07-17 16:39:25.00
+c63e9c83
+System
+error proxying request error=dial tcp 127.0.0.1:5000: connect: connection refused
