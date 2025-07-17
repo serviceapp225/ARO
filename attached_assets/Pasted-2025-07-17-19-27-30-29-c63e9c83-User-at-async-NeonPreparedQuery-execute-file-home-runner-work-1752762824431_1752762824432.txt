@@ -1,0 +1,111 @@
+2025-07-17 19:27:30.29
+c63e9c83
+User
+at async NeonPreparedQuery.execute (file:///home/runner/workspace/node_modules/drizzle-orm/neon-serverless/session.js:76:20)
+2025-07-17 19:27:30.29
+c63e9c83
+User
+at async initializeDatabaseWithSampleData (file:///home/runner/workspace/dist/index.js:2058:25)
+2025-07-17 19:27:30.29
+c63e9c83
+User
+at async file:///home/runner/workspace/dist/index.js:2391:3 {
+2025-07-17 19:27:30.29
+c63e9c83
+User
+length: 75,
+2025-07-17 19:27:30.29
+c63e9c83
+User
+severity: 'ERROR',
+2025-07-17 19:27:30.29
+c63e9c83
+User
+code: 'XX000',
+2025-07-17 19:27:30.29
+c63e9c83
+User
+detail: undefined,
+2025-07-17 19:27:30.29
+c63e9c83
+User
+hint: undefined,
+2025-07-17 19:27:30.29
+c63e9c83
+User
+position: undefined,
+2025-07-17 19:27:30.29
+c63e9c83
+User
+internalPosition: undefined,
+2025-07-17 19:27:30.29
+c63e9c83
+User
+internalQuery: undefined,
+2025-07-17 19:27:30.29
+c63e9c83
+User
+where: undefined,
+2025-07-17 19:27:30.29
+c63e9c83
+User
+schema: undefined,
+2025-07-17 19:27:30.29
+c63e9c83
+User
+table: undefined,
+2025-07-17 19:27:30.29
+c63e9c83
+User
+column: undefined,
+2025-07-17 19:27:30.29
+c63e9c83
+User
+dataType: undefined,
+2025-07-17 19:27:30.29
+c63e9c83
+User
+constraint: undefined,
+2025-07-17 19:27:30.29
+c63e9c83
+User
+file: undefined,
+2025-07-17 19:27:30.29
+c63e9c83
+User
+line: undefined,
+2025-07-17 19:27:30.29
+c63e9c83
+User
+routine: undefined
+2025-07-17 19:27:30.29
+c63e9c83
+User
+}
+2025-07-17 19:27:30.29
+c63e9c83
+User
+2025-07-17 19:27:30.29
+c63e9c83
+User
+Node.js v20.18.1
+2025-07-17 19:27:30.32
+c63e9c83
+System
+command finished with error [npm run start]: exit status 1
+2025-07-17 19:27:31.33
+c63e9c83
+System
+error proxying request error=dial tcp 127.0.0.1:5000: connect: connection refused
+2025-07-17 19:27:31.98
+c63e9c83
+System
+error proxying request error=dial tcp 127.0.0.1:5000: connect: connection refused
+2025-07-17 19:27:32.20
+c63e9c83
+System
+crash loop detected
+2025-07-17 19:27:33.26
+c63e9c83
+System
+error proxying request error=dial tcp 127.0.0.1:5000: connect: connection refused
