@@ -114,7 +114,7 @@ app.use((req, res, next) => {
   // Отключаем автоматическое архивирование для лучшей производительности
   // Архивирование доступно через админ панель по требованию
 
-  const port = process.env.PORT || (process.env.NODE_ENV === 'production' ? 3000 : 5000);
+  const port = process.env.PORT || 5000;
   server.listen({
     port: Number(port),
     host: "0.0.0.0",
