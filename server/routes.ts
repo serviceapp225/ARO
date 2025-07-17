@@ -41,6 +41,7 @@ function getCached(key: string) {
 
 function setCache(key: string, data: any) {
   cache.set(key, { data, timestamp: Date.now() });
+  // Логируем только ключ без данных для безопасности
   console.log(`💾 Кэш сохранен для ключа: ${key}`);
 }
 
@@ -60,10 +61,20 @@ function clearCachePattern(pattern: string) {
   console.log(`✅ Очищено ${deletedCount} ключей кэша`);
 }
 
-// Middleware для защиты админских маршрутов - упрощенная версия для разработки
+// Middleware для защиты админских маршрутов
 const adminAuth = async (req: any, res: any, next: any) => {
-  // Временно упрощаем проверку для разработки - пропускаем всех авторизованных пользователей
-  // TODO: В продакшене нужно проверять роли и права
+  // Проверка авторизации пользователя
+  const user = req.user;
+  if (!user || !user.isActive) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+  
+  // Проверка админских прав по номеру телефона
+  const adminPhones = ['+992903331332', '+992 (90) 333-13-32'];
+  if (!adminPhones.includes(user.phoneNumber)) {
+    return res.status(403).json({ error: 'Forbidden: Admin access required' });
+  }
+  
   next();
 };
 
@@ -71,8 +82,12 @@ const adminAuth = async (req: any, res: any, next: any) => {
 const externalAdminAuth = (req: any, res: any, next: any) => {
   const adminKey = req.headers['x-admin-key'];
   
-  // В production используйте переменную окружения ADMIN_API_KEY
-  const validAdminKey = process.env.ADMIN_API_KEY || 'retool-admin-key-2024';
+  // Только переменная окружения для безопасности
+  const validAdminKey = process.env.ADMIN_API_KEY;
+  
+  if (!validAdminKey) {
+    return res.status(500).json({ error: 'Admin API key not configured' });
+  }
   
   if (!adminKey || adminKey !== validAdminKey) {
     return res.status(403).json({ error: 'Unauthorized: Invalid admin key' });
