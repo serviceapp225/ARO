@@ -1,7 +1,7 @@
 import express, { type Request, Response, NextFunction } from "express";
 import compression from "compression";
 import { registerRoutes } from "./routes";
-import { initializeDatabaseWithSampleData } from "./initDatabase";
+import { deploymentSafeInit } from "./deploymentSafeInit";
 import { createTables } from "./createTables";
 import { setupVite, serveStatic, log } from "./vite";
 import fs from "fs";
@@ -78,8 +78,16 @@ app.use((req, res, next) => {
 });
 
 (async () => {
-  // Приложение использует память для хранения данных
-  console.log("✅ Приложение запущено с функциональными данными в памяти");
+  // Безопасная инициализация базы данных для деплоя
+  console.log("🚀 Запуск приложения с безопасной инициализацией...");
+  
+  try {
+    await deploymentSafeInit();
+    console.log("✅ DEPLOYMENT: Инициализация завершена успешно");
+  } catch (error) {
+    console.error("⚠️ DEPLOYMENT: Ошибка инициализации БД:", error);
+    console.log("📝 DEPLOYMENT: Продолжаем запуск приложения...");
+  }
   
   const server = await registerRoutes(app);
 

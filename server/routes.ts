@@ -9,6 +9,7 @@ import { insertCarListingSchema, insertBidSchema, insertFavoriteSchema, insertNo
 import { z } from "zod";
 import AuctionWebSocketManager from "./websocket";
 import { createHash } from "crypto";
+import { getDatabaseStatus } from "./deploymentSafeInit";
 
 // Input validation schemas
 const idParamSchema = z.object({
@@ -2791,6 +2792,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // API для проверки последних обновлений
   app.get('/api/bid-updates/timestamp', (req, res) => {
     res.json({ timestamp: lastBidUpdate });
+  });
+
+  // Endpoint для проверки статуса базы данных во время деплоя
+  app.get("/api/database-status", async (req, res) => {
+    try {
+      console.log("🔍 DEPLOYMENT: Проверка статуса базы данных...");
+      
+      const dbStatus = await getDatabaseStatus();
+      
+      console.log("📊 DEPLOYMENT: Статус базы данных:", dbStatus);
+      
+      res.json({
+        success: true,
+        timestamp: new Date().toISOString(),
+        ...dbStatus
+      });
+    } catch (error) {
+      console.error("❌ DEPLOYMENT: Ошибка проверки статуса базы данных:", error);
+      
+      res.status(500).json({
+        success: false,
+        timestamp: new Date().toISOString(),
+        connected: false,
+        listingsCount: 0,
+        message: "Ошибка проверки статуса базы данных",
+        error: error instanceof Error ? error.message : "Неизвестная ошибка"
+      });
+    }
+  });
+
+  // Health check endpoint для деплоя
+  app.get("/api/health", (req, res) => {
+    res.json({
+      status: "OK",
+      timestamp: new Date().toISOString(),
+      message: "Сервер работает нормально"
+    });
   });
   
   return httpServer;
