@@ -7,7 +7,7 @@ channel = "stable-24_05"
 packages = ["flutter", "sqlite"]
 
 [deployment]
-deploymentTarget = "autoscale"
+deploymentTarget = "gce"
 build = ["npm", "run", "build"]
 run = ["npm", "run", "start"]
 

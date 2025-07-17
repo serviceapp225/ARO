@@ -187,6 +187,14 @@ AUTOBID.TJ is a full-stack car auction platform built with React, Express.js, an
 - Статус: ✅ Приложение готово для развертывания на любой платформе
 
 ## Changelog
+- July 17, 2025: ✅ ОКОНЧАТЕЛЬНАЯ НАСТРОЙКА ПОРТОВ ДЛЯ REPLIT DEPLOYMENT:
+  • Изменен порт по умолчанию с 5000 на 3000 в server/index.ts (строка 120)
+  • Сервер теперь использует: const port = process.env.PORT || 3000
+  • Успешно пересобран проект с новым портом: dist/index.js (265KB)
+  • База данных скопирована в dist/autoauction.db (15.9MB)
+  • Сервер корректно запускается на порту 3000 (видно в логах)
+  • Приложение готово для Reserved VM deployment с правильными портами
+  • Статус: ✅ ПОРТЫ НАСТРОЕНЫ ПРАВИЛЬНО - готово к развертыванию
 - July 17, 2025: ✅ ОКОНЧАТЕЛЬНО РЕШЕНА ПРОБЛЕМА DEPLOYMENT - СОЗДАНА ИНСТРУКЦИЯ ДЛЯ RESERVED VM:
   • Выявлена главная причина proxy ошибок: использование Static deployment вместо Reserved VM
   • Проверена корректность настройки порта: const port = process.env.PORT || 5000 (строка 117)
