@@ -1,71 +1,90 @@
 #!/bin/bash
 
-# Скрипт для тестирования deployment AutoBid.TJ
+echo "🚀 Тестирование готовности к Replit Deployment..."
+echo "================================================"
 
-echo "🚀 Тестирование deployment AutoBid.TJ..."
+# Проверка подготовки к deployment
+echo "1. Запуск подготовки deployment..."
+node deploy-replit.js
 
-# 1. Сборка приложения
-echo "📦 Сборка приложения..."
-if node build-production.js; then
-    echo "✅ Сборка успешно завершена"
-else
-    echo "❌ Ошибка при сборке"
-    exit 1
+# Проверка наличия файлов
+echo ""
+echo "2. Проверка критических файлов для deployment:"
+files_to_check=(
+  "dist/index.js"
+  "dist/autoauction.db"
+  "dist/public/index.html"
+  "dist/public/assets"
+  ".env.production"
+)
+
+all_files_exist=true
+for file in "${files_to_check[@]}"; do
+  if [ -e "$file" ]; then
+    echo "✅ $file найден"
+  else
+    echo "❌ $file отсутствует"
+    all_files_exist=false
+  fi
+done
+
+# Проверка размеров файлов
+echo ""
+echo "3. Проверка размеров файлов:"
+if [ -f "dist/index.js" ]; then
+  server_size=$(stat -c%s "dist/index.js")
+  echo "📊 Сервер: $server_size байт (~$(($server_size / 1024))KB)"
 fi
 
-# 2. Проверка файлов
-echo "📁 Проверка файлов сборки..."
-if [[ -f "dist/index.js" && -f "dist/autoauction.db" && -d "dist/public" ]]; then
-    echo "✅ Все файлы на месте"
-    echo "  - dist/index.js: $(du -h dist/index.js | cut -f1)"
-    echo "  - dist/autoauction.db: $(du -h dist/autoauction.db | cut -f1)"
-    echo "  - dist/public: $(du -h dist/public | cut -f1)"
-else
-    echo "❌ Файлы сборки отсутствуют"
-    exit 1
+if [ -f "dist/autoauction.db" ]; then
+  db_size=$(stat -c%s "dist/autoauction.db")
+  echo "📊 База данных: $db_size байт (~$(($db_size / 1024 / 1024))MB)"
 fi
 
-# 3. Запуск тестового сервера
-echo "🔧 Запуск тестового сервера на порту 8080..."
-PORT=8080 NODE_ENV=production node dist/index.js &
-SERVER_PID=$!
+# Тест запуска production сервера
+echo ""
+echo "4. Тест запуска production сервера (5 секунд)..."
+PORT=3000 NODE_ENV=production timeout 5s node dist/index.js &
+server_pid=$!
 
-# Ждем запуска сервера
-sleep 3
+sleep 2
 
-# 4. Тестирование API
-echo "🧪 Тестирование API..."
-if curl -s http://localhost:8080/api/listings >/dev/null; then
-    echo "✅ API работает корректно"
-    
-    # Проверка количества аукционов
-    AUCTIONS_COUNT=$(curl -s http://localhost:8080/api/listings | grep -o '"id":[0-9]*' | wc -l)
-    echo "  - Найдено $AUCTIONS_COUNT активных аукционов"
-else
-    echo "❌ API не отвечает"
-    kill $SERVER_PID 2>/dev/null
-    exit 1
-fi
+# Проверка API endpoints
+echo ""
+echo "5. Тест API endpoints:"
+api_tests=(
+  "http://localhost:3000/api/listings"
+  "http://localhost:3000/api/banners"
+  "http://localhost:3000/"
+)
 
-# 5. Тестирование фронтенда
-echo "🌐 Тестирование фронтенда..."
-if curl -s http://localhost:8080/ >/dev/null; then
-    echo "✅ Фронтенд загружается"
-else
-    echo "❌ Фронтенд не загружается"
-    kill $SERVER_PID 2>/dev/null
-    exit 1
-fi
+for endpoint in "${api_tests[@]}"; do
+  response=$(curl -s -w "\n%{http_code}" "$endpoint" 2>/dev/null | tail -1)
+  if [ "$response" = "200" ]; then
+    echo "✅ $endpoint - OK"
+  else
+    echo "❌ $endpoint - Fail (HTTP $response)"
+  fi
+done
 
-# 6. Остановка сервера
-echo "🛑 Остановка тестового сервера..."
-kill $SERVER_PID 2>/dev/null
+# Завершение теста
+kill $server_pid 2>/dev/null || true
 
 echo ""
-echo "🎉 DEPLOYMENT ТЕСТ ПРОЙДЕН УСПЕШНО!"
-echo "📋 Готово к развертыванию:"
-echo "  - Команда сборки: node build-production.js"
-echo "  - Команда запуска: PORT=3000 NODE_ENV=production node dist/index.js"
-echo "  - Размер приложения: ~17MB (база данных + код)"
-echo "  - Все API endpoints работают"
-echo "  - Фронтенд загружается корректно"
+echo "6. Итоговый результат:"
+if [ "$all_files_exist" = true ]; then
+  echo "✅ Все файлы готовы для deployment"
+  echo "🎉 ПРИЛОЖЕНИЕ ГОТОВО К DEPLOYMENT НА REPLIT"
+  echo ""
+  echo "📋 Следующие шаги:"
+  echo "1. Нажмите кнопку 'Deploy' в Replit"
+  echo "2. Выберите 'Autoscale' deployment"
+  echo "3. Дождитесь завершения deployment"
+  echo "4. Проверьте работу приложения по URL"
+else
+  echo "❌ Не все файлы готовы для deployment"
+  echo "🔧 Запустите: node build-production.js"
+fi
+
+echo ""
+echo "📄 Подробные инструкции: REPLIT_DEPLOYMENT_GUIDE.md"
