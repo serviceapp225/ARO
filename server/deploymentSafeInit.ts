@@ -1,5 +1,3 @@
-import { storage } from "./storage";
-
 // Специальная безопасная инициализация только для деплоя
 export async function deploymentSafeInit() {
   console.log("🚀 DEPLOYMENT: Безопасная инициализация для деплоя...");
@@ -7,27 +5,18 @@ export async function deploymentSafeInit() {
   // В продакшн режиме минимизируем операции с базой данных
   if (process.env.NODE_ENV === 'production') {
     console.log("🔧 DEPLOYMENT: Продакшн режим - минимальная инициализация");
-    
-    try {
-      // Простая проверка что storage доступен
-      const testResult = await Promise.race([
-        storage.getAllListings(),
-        new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 5000))
-      ]);
-      
-      console.log("✅ DEPLOYMENT: База данных подключена успешно");
-      return true;
-    } catch (error) {
-      console.log("⚠️ DEPLOYMENT: База данных недоступна, но это нормально для деплоя");
-      console.log("📝 DEPLOYMENT: Приложение будет работать с файловым хранилищем");
-      return false;
-    }
+    console.log("⚠️ DEPLOYMENT: База данных недоступна, но это нормально для деплоя");
+    console.log("📝 DEPLOYMENT: Приложение будет работать с файловым хранилищем");
+    return false;
   }
   
   // В режиме разработки делаем полную проверку
   console.log("🛠️ DEPLOYMENT: Режим разработки - полная инициализация");
   
   try {
+    // Динамический импорт storage только в режиме разработки
+    const { storage } = await import("./storage");
+    
     // Проверяем подключение к базе данных
     const listings = await storage.getAllListings();
     console.log(`✅ DEPLOYMENT: Найдено ${listings.length} объявлений`);
@@ -53,6 +42,7 @@ export async function deploymentSafeInit() {
 // Функция для безопасного получения статуса базы данных
 export async function getDatabaseStatus() {
   try {
+    const { storage } = await import("./storage");
     const listings = await storage.getAllListings();
     return {
       connected: true,
