@@ -19,7 +19,7 @@ const path = require('path');
 const { createServer } = require('http');
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 3000;
 
 // Basic middleware
 app.use(express.json({ limit: '50mb' }));
@@ -41,7 +41,7 @@ app.get('*', (req, res) => {
 
 const server = createServer(app);
 server.listen(PORT, '0.0.0.0', () => {
-  console.log('Server running on port ' + PORT);
+  console.log(\`Server running on port \${PORT}\`);
 });
 `;
 

@@ -41,22 +41,34 @@ function getCached(key: string) {
 }
 
 function setCache(key: string, data: any) {
+  // Валидация ключа кэша для предотвращения injection
+  if (typeof key !== 'string' || key.length > 100 || /[<>'"&]/.test(key)) {
+    console.warn('Отклонен небезопасный ключ кэша');
+    return;
+  }
+  
   cache.set(key, { data, timestamp: Date.now() });
-  // Логируем только ключ без данных для безопасности
-  console.log(`💾 Кэш сохранен для ключа: ${key}`);
+  // Логируем только безопасную версию ключа
+  const safeKey = key.replace(/[<>'"&]/g, '');
+  console.log(`💾 Кэш сохранен для ключа: ${safeKey}`);
 }
 
 function clearCachePattern(pattern: string) {
+  // Безопасная валидация паттерна
+  if (typeof pattern !== 'string' || pattern.length > 50 || /[<>'"&]/.test(pattern)) {
+    console.warn('Отклонен небезопасный паттерн очистки кэша');
+    return;
+  }
+  
   const keys = Array.from(cache.keys());
-  console.log(`🗑️ Очистка кэша по паттерну "${pattern}". Найдено ключей: ${keys.length}`);
-  console.log(`🔍 Существующие ключи кэша: ${keys.join(', ')}`);
+  const safePattern = pattern.replace(/[<>'"&]/g, '');
+  console.log(`🗑️ Очистка кэша по паттерну "${safePattern}". Найдено ключей: ${keys.length}`);
   
   let deletedCount = 0;
   keys.forEach(key => {
-    if (key.includes(pattern)) {
+    if (typeof key === 'string' && key.includes(pattern)) {
       cache.delete(key);
       deletedCount++;
-      console.log(`🗑️ Удален ключ кэша: ${key}`);
     }
   });
   console.log(`✅ Очищено ${deletedCount} ключей кэша`);
@@ -70,9 +82,13 @@ const adminAuth = async (req: any, res: any, next: any) => {
     return res.status(401).json({ error: 'Unauthorized' });
   }
   
-  // Проверка админских прав по номеру телефона
-  const adminPhones = ['+992903331332', '+992 (90) 333-13-32'];
-  if (!adminPhones.includes(user.phoneNumber)) {
+  // Проверка админских прав по номеру телефона из переменных окружения
+  const adminPhone = process.env.ADMIN_PHONE || '+992903331332';
+  const adminPhones = [adminPhone, '+992 (90) 333-13-32'];
+  
+  // Безопасная проверка номера телефона
+  const userPhone = user.phoneNumber?.toString().trim();
+  if (!userPhone || !adminPhones.includes(userPhone)) {
     return res.status(403).json({ error: 'Forbidden: Admin access required' });
   }
   

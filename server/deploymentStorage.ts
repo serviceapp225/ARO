@@ -34,17 +34,21 @@ export async function migrateToPostgreSQL() {
     const allBanners = await devStorage.getBanners();
     const allDocuments = await devStorage.getDocuments();
 
-    console.log(`📊 Данные для миграции:
-      - Пользователи: ${allUsers.length}
-      - Объявления: ${allListings.length}
-      - Ставки: ${allBids.length}
-      - Избранное: ${allFavorites.length}
-      - Диалоги: ${allConversations.length}
-      - Сообщения: ${allMessages.length}
-      - Уведомления: ${allNotifications.length}
-      - Алерты: ${allCarAlerts.length}
-      - Баннеры: ${allBanners.length}
-      - Документы: ${allDocuments.length}`);
+    // Безопасное логирование статистики без чувствительных данных
+    const stats = {
+      users: allUsers?.length || 0,
+      listings: allListings?.length || 0,
+      bids: allBids?.length || 0,
+      favorites: allFavorites?.length || 0,
+      conversations: allConversations?.length || 0,
+      messages: allMessages?.length || 0,
+      notifications: allNotifications?.length || 0,
+      alerts: allCarAlerts?.length || 0,
+      banners: allBanners?.length || 0,
+      documents: allDocuments?.length || 0
+    };
+    
+    console.log('📊 Статистика миграции:', JSON.stringify(stats));
 
     // Создаем таблицы в PostgreSQL
     await db.execute(`
