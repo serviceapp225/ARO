@@ -2,9 +2,11 @@ import { Plus } from "lucide-react";
 import { useLocation } from "wouter";
 import carBannerSvg from "@/assets/car-banner.svg";
 import { useState, useEffect } from "react";
+import { useAuth } from "@/contexts/AuthContext";
 
 export function SellCarBanner() {
   const [, setLocation] = useLocation();
+  const { user } = useAuth();
   
   // Красивые фотографии автомобилей для ротации
   const carImages = [
@@ -27,6 +29,14 @@ export function SellCarBanner() {
   
   const handleClick = () => {
     console.log('КЛИК РАБОТАЕТ! Переход на /sell');
+    
+    // Проверяем авторизацию перед переходом на страницу продажи
+    if (!user) {
+      console.log('Пользователь не авторизован, перенаправляем на /login');
+      setLocation('/login');
+      return;
+    }
+    
     setLocation('/sell');
   };
 
