@@ -68,10 +68,21 @@ export function SellCarSection() {
 
   // Функция для программного клика по кнопке "Продать" в навигации
   const handleSellClick = () => {
-    // Находим кнопку "Продать" в навигации и кликаем по ней
-    const sellButton = document.querySelector('nav a[href="/sell"]');
+    console.log('🔥 Баннер: программный клик по кнопке "Продать" в навигации');
+    
+    // Находим кнопку "Продать" в навигации и кликаем по ней программно
+    const sellButton = document.querySelector('nav a[href="/sell"]') as HTMLElement;
     if (sellButton) {
-      (sellButton as HTMLElement).click();
+      console.log('✅ Найдена кнопка "Продать" в навигации, активируем ее');
+      sellButton.click();
+    } else {
+      console.log('❌ Кнопка "Продать" не найдена в навигации, fallback к прямому переходу');
+      // Fallback: если не найдена навигация, используем прямой переход
+      if (!user) {
+        setLocation('/login');
+      } else {
+        setLocation('/sell');
+      }
     }
   };
 
@@ -129,7 +140,7 @@ export function SellCarSection() {
             }}
           >
             <Plus className="w-4 h-4" />
-            {sectionData.buttonText} →
+{sectionData.buttonText} →
           </span>
         </div>
       </div>
