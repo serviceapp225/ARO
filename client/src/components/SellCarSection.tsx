@@ -1,7 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
-import { Link } from "wouter";
+import { useLocation } from "wouter";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface SellCarSectionData {
   id: number;
@@ -18,6 +19,8 @@ interface SellCarSectionData {
 }
 
 export function SellCarSection() {
+  const { user } = useAuth();
+  const [, setLocation] = useLocation();
   const { data: section, isLoading } = useQuery<SellCarSectionData>({
     queryKey: ['/api/sell-car-section'],
     queryFn: async () => {
