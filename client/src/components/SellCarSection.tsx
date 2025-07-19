@@ -66,6 +66,15 @@ export function SellCarSection() {
 
   const sectionData = section || defaultSection;
 
+  // Функция для программного клика по кнопке "Продать" в навигации
+  const handleSellClick = () => {
+    // Находим кнопку "Продать" в навигации и кликаем по ней
+    const sellButton = document.querySelector('nav a[href="/sell"]');
+    if (sellButton) {
+      (sellButton as HTMLElement).click();
+    }
+  };
+
   if (!sectionData.isActive) {
     return null;
   }
@@ -111,18 +120,17 @@ export function SellCarSection() {
           {sectionData.subtitle}
         </p>
         <div className="mt-4">
-          <Link href={sectionData.linkUrl}>
-            <span 
-              className={`px-4 py-2 rounded-full text-sm font-bold hover:opacity-90 transition-all duration-300 cursor-pointer inline-flex items-center gap-1`}
-              style={{ 
-                backgroundColor: getColorValue(sectionData.buttonColor),
-                color: getColorValue(sectionData.buttonTextColor) 
-              }}
-            >
-              <Plus className="w-4 h-4" />
-              {sectionData.buttonText} →
-            </span>
-          </Link>
+          <span 
+            onClick={handleSellClick}
+            className={`px-4 py-2 rounded-full text-sm font-bold hover:opacity-90 transition-all duration-300 cursor-pointer inline-flex items-center gap-1`}
+            style={{ 
+              backgroundColor: getColorValue(sectionData.buttonColor),
+              color: getColorValue(sectionData.buttonTextColor) 
+            }}
+          >
+            <Plus className="w-4 h-4" />
+            {sectionData.buttonText} →
+          </span>
         </div>
       </div>
     </div>
