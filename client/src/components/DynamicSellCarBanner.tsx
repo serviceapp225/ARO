@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { Plus } from "lucide-react";
 import type { SellCarBanner } from "@shared/schema";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/contexts/AuthContext";
 
 export function DynamicSellCarBanner() {
   const [, setLocation] = useLocation();
