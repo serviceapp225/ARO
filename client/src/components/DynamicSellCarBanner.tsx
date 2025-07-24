@@ -2,9 +2,11 @@ import { useQuery } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { Plus } from "lucide-react";
 import type { SellCarBanner } from "@shared/schema";
+import { useAuth } from "@/hooks/useAuth";
 
 export function DynamicSellCarBanner() {
   const [, setLocation] = useLocation();
+  const { user } = useAuth();
 
   // Загружаем данные баннера из API
   const { data: banner, isLoading } = useQuery<SellCarBanner>({
@@ -19,7 +21,13 @@ export function DynamicSellCarBanner() {
   }
 
   const handleClick = () => {
-    setLocation(banner.linkUrl);
+    // Проверяем авторизацию перед переходом на страницу продажи (как в кнопке "Продать")
+    if (!user) {
+      setLocation('/login');
+      return;
+    }
+    
+    setLocation('/sell');
   };
 
   return (
@@ -52,7 +60,7 @@ export function DynamicSellCarBanner() {
       {/* Content */}
       <div className="relative z-10 h-full flex flex-col justify-center items-center text-center space-y-2">
         <h2 className="text-2xl font-bold drop-shadow-lg text-white h-8 flex items-center">
-          ТЕСТ {banner.title}
+          {banner.title}
         </h2>
         <p className="text-base leading-relaxed opacity-95 drop-shadow-md max-w-md text-white h-12 flex items-center">
           {banner.description}
