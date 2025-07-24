@@ -52,7 +52,7 @@ export function DynamicSellCarBanner() {
       {/* Content */}
       <div className="relative z-10 h-full flex flex-col justify-center items-center text-center space-y-2">
         <h2 className="text-2xl font-bold drop-shadow-lg text-white h-8 flex items-center">
-          {banner.title}
+          ТЕСТ {banner.title}
         </h2>
         <p className="text-base leading-relaxed opacity-95 drop-shadow-md max-w-md text-white h-12 flex items-center">
           {banner.description}
