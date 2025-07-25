@@ -6,7 +6,16 @@ import { useAuth } from "@/contexts/AuthContext";
 
 export function DynamicSellCarBanner() {
   const [, setLocation] = useLocation();
-  const { user } = useAuth();
+  
+  // Безопасная проверка AuthContext - избегаем краша если контекст не готов
+  let user = null;
+  try {
+    const authContext = useAuth();
+    user = authContext?.user;
+  } catch (error) {
+    // AuthProvider еще не готов, работаем без авторизации
+    user = null;
+  }
 
   // Загружаем данные баннера из API
   const { data: banner, isLoading } = useQuery<SellCarBanner>({
