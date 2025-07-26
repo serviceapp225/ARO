@@ -2850,60 +2850,61 @@ export async function registerRoutes(app: Express): Promise<Server> {
   return httpServer;
 }
 
-// Функция для отправки SMS напрямую через OSON SMS API (IP добавлен в белый список)
+// Функция для отправки SMS через VPS прокси (статический IP 188.166.61.86)
 async function sendSMSCode(phoneNumber: string, code: string): Promise<{success: boolean, message?: string}> {
-  console.log(`[OSON SMS] Отправка SMS на ${phoneNumber}: ${code}`);
+  const VPS_PROXY_URL = "http://188.166.61.86:3000/api/send-sms";
+  
+  console.log(`[SMS VPS PROXY] Отправка SMS на ${phoneNumber}: ${code}`);
   
   try {
-    // Подготавливаем данные для OSON SMS API
-    const smsData = new URLSearchParams({
-      'login': process.env.SMS_LOGIN || '',
-      'password': process.env.SMS_HASH || '',
-      'data': JSON.stringify([{
-        'phone': phoneNumber,
-        'text': `Ваш код подтверждения AUTOBID.TJ: ${code}`,
-        'sender': process.env.SMS_SENDER || 'AUTOBID'
-      }])
-    });
-
-    // Отправляем запрос напрямую к OSON SMS API
-    const response = await fetch('https://api.osonsms.com/sendsms.php', {
+    // Отправляем запрос к VPS прокси с правильным форматом
+    const response = await fetch(VPS_PROXY_URL, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
+        'Content-Type': 'application/json',
+        'User-Agent': 'AUTOBID.TJ Replit Client'
       },
-      body: smsData
+      body: JSON.stringify({
+        phoneNumber: phoneNumber,
+        message: `Ваш код подтверждения AUTOBID.TJ: ${code}`
+      })
     });
-
-    const result = await response.text();
-    console.log(`[OSON SMS] Ответ сервера: ${result}`);
     
-    if (result.includes('success') || result.includes('OK') || result.includes('"status":"success"')) {
-      console.log(`✅ SMS успешно отправлен через OSON API`);
+    // Проверяем что ответ в JSON формате
+    const contentType = response.headers.get('content-type');
+    if (!contentType || !contentType.includes('application/json')) {
+      throw new Error(`VPS прокси вернул неправильный формат ответа: ${contentType}`);
+    }
+    
+    const responseData = await response.json();
+    console.log(`[SMS VPS PROXY] Ответ прокси сервера:`, responseData);
+    
+    if (response.ok && responseData.success) {
+      console.log(`✅ SMS успешно отправлен через VPS прокси`);
       return { 
         success: true, 
-        message: "SMS код отправлен"
+        message: "SMS код отправлен через VPS прокси"
       };
     } else {
-      console.error(`[OSON SMS] Ошибка API: ${result}`);
+      console.error(`[SMS VPS PROXY] Ошибка отправки:`, responseData);
       
-      // Fallback в демо-режим при ошибке API
-      console.log(`[SMS DEMO FALLBACK] OSON API ошибка. Отправка SMS на ${phoneNumber}: ${code}`);
+      // Fallback в демо-режим при ошибке VPS
+      console.log(`[SMS DEMO FALLBACK] VPS прокси ошибка. Отправка SMS на ${phoneNumber}: ${code}`);
       return { 
         success: true, 
-        message: "SMS отправлен (демо-режим - ошибка OSON)",
+        message: "SMS отправлен (демо-режим - VPS ошибка)",
         code: code
       };
     }
     
   } catch (error) {
-    console.error("[OSON SMS] Ошибка при отправке SMS:", error);
+    console.error("[SMS VPS PROXY] Ошибка при отправке SMS через VPS:", error);
     
-    // Fallback в демо-режим при ошибке
+    // Fallback в демо-режим при ошибке подключения к VPS
     console.log(`[SMS DEMO FALLBACK] Отправка SMS на ${phoneNumber}: ${code}`);
     return { 
       success: true, 
-      message: "SMS отправлен (демо-режим - ошибка подключения)",
+      message: "SMS отправлен (демо-режим - VPS недоступен)",
       code: code
     };
   }
@@ -2929,6 +2930,12 @@ async function sendSMSNotification(phoneNumber: string, message: string): Promis
         message: message
       })
     });
+    
+    // Проверяем что ответ в JSON формате
+    const contentType = response.headers.get('content-type');
+    if (!contentType || !contentType.includes('application/json')) {
+      throw new Error(`VPS прокси вернул неправильный формат ответа: ${contentType}`);
+    }
     
     const responseData = await response.json();
     console.log(`[SMS VPS PROXY] Ответ прокси сервера:`, responseData);
