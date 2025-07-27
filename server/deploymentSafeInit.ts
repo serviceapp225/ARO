@@ -18,11 +18,12 @@ export async function deploymentSafeInit() {
     const { storage } = await import("./storage");
     
     // Проверяем подключение к базе данных
-    const listings = await storage.getAllListings();
+    const listings = await storage.getListingsByStatus('active');
     console.log(`✅ DEPLOYMENT: Найдено ${listings.length} объявлений`);
     
     // Проверяем пользователей
-    const adminUser = await storage.getUserByPhoneNumber("+992903331332");
+    const users = await storage.getAllUsers();
+    const adminUser = users.find(u => u.phoneNumber === "+992903331332");
     if (adminUser) {
       console.log("✅ DEPLOYMENT: Администратор найден");
     } else {
@@ -43,7 +44,7 @@ export async function deploymentSafeInit() {
 export async function getDatabaseStatus() {
   try {
     const { storage } = await import("./storage");
-    const listings = await storage.getAllListings();
+    const listings = await storage.getListingsByStatus('active');
     return {
       connected: true,
       listingsCount: listings.length,
@@ -63,7 +64,8 @@ export async function createMinimalDataIfNeeded() {
   console.log("🔧 DEPLOYMENT: Проверка минимальных данных...");
   
   try {
-    const listings = await storage.getAllListings();
+    const { storage } = await import("./storage");
+    const listings = await storage.getListingsByStatus('active');
     
     if (listings.length === 0) {
       console.log("📝 DEPLOYMENT: База данных пуста, но не создаем данные во время деплоя");
