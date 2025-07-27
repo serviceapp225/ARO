@@ -49,26 +49,24 @@ app.post('/api/send-sms', async (req, res) => {
   try {
     const txn_id = `autobid_${Date.now()}`;
     
-    // Подготавливаем данные для POST запроса
-    const formData = new URLSearchParams();
-    formData.append('from', sender);
-    formData.append('phone_number', cleanPhone);
-    formData.append('msg', text);
-    formData.append('str_hash', hash);
-    formData.append('txn_id', txn_id);
-    formData.append('login', login);
+    // Создаем GET URL для OSON SMS API v1 
+    const apiUrl = new URL('https://api.osonsms.com/sendsms_v1.php');
+    apiUrl.searchParams.append('from', sender);
+    apiUrl.searchParams.append('phone_number', cleanPhone);
+    apiUrl.searchParams.append('msg', text);
+    apiUrl.searchParams.append('str_hash', hash);
+    apiUrl.searchParams.append('txn_id', txn_id);
+    apiUrl.searchParams.append('login', login);
 
-    console.log(`📋 Отправляем данные:`, Object.fromEntries(formData));
+    console.log(`🌐 GET URL:`, apiUrl.toString());
 
-    // POST запрос к OSON SMS API v1
+    // GET запрос к OSON SMS API v1
     const fetch = (await import('node-fetch')).default;
-    const response = await fetch('https://api.osonsms.com/sendsms_v1.php', {
-      method: 'POST',
+    const response = await fetch(apiUrl.toString(), {
+      method: 'GET',
       headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
         'User-Agent': 'AUTOBID.TJ VPS Proxy v3'
-      },
-      body: formData
+      }
     });
 
     const result = await response.text();
