@@ -2865,10 +2865,10 @@ async function sendSMSCode(phoneNumber: string, code: string): Promise<{success:
         'User-Agent': 'AUTOBID.TJ Replit Client'
       },
       body: JSON.stringify({
-        login: process.env.SMS_LOGIN || "demo_login",
-        hash: process.env.SMS_HASH || "demo_hash", 
-        sender: process.env.SMS_SENDER || "AUTOBID",
-        to: phoneNumber,
+        login: process.env.SMS_LOGIN || "zarex",
+        hash: process.env.SMS_HASH || "8ac95b524e5cca4a115c691e31f6726068f77881d9f7ba4075392b755a152d56",
+        sender: process.env.SMS_SENDER || "OsonSMS",
+        to: phoneNumber.replace(/[^0-9]/g, ''),
         text: `Ваш код подтверждения AUTOBID.TJ: ${code}`
       })
     });
@@ -2929,10 +2929,10 @@ async function sendSMSNotification(phoneNumber: string, message: string): Promis
         'User-Agent': 'AUTOBID.TJ Replit Client'
       },
       body: JSON.stringify({
-        login: process.env.SMS_LOGIN || "demo_login",
-        hash: process.env.SMS_HASH || "demo_hash",
-        sender: process.env.SMS_SENDER || "AUTOBID", 
-        to: phoneNumber,
+        login: process.env.SMS_LOGIN || "zarex",
+        hash: process.env.SMS_HASH || "8ac95b524e5cca4a115c691e31f6726068f77881d9f7ba4075392b755a152d56",
+        sender: process.env.SMS_SENDER || "OsonSMS",
+        to: phoneNumber.replace(/[^0-9]/g, ''),
         text: message
       })
     });
