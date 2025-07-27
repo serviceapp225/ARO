@@ -2850,187 +2850,98 @@ export async function registerRoutes(app: Express): Promise<Server> {
   return httpServer;
 }
 
-// Функция для отправки SMS через oson sms API
+// Функция для отправки SMS через VPS сервер
 async function sendSMSCode(phoneNumber: string, code: string): Promise<{success: boolean, message?: string}> {
-  // Получаем учетные данные oson sms из переменных окружения
-  const SMS_LOGIN = process.env.SMS_LOGIN;
-  const SMS_HASH = process.env.SMS_HASH;
-  const SMS_SENDER = process.env.SMS_SENDER;
-  const SMS_SERVER = process.env.SMS_SERVER;
-  
-  // Детальная отладка переменных окружения
-  console.log('[SMS ENV] Проверка переменных окружения:');
-  console.log(`[SMS ENV] SMS_LOGIN: ${SMS_LOGIN ? 'определена' : 'НЕ определена'} (значение: ${SMS_LOGIN || 'undefined'})`);
-  console.log(`[SMS ENV] SMS_HASH: ${SMS_HASH ? 'определена' : 'НЕ определена'} (значение: ${SMS_HASH || 'undefined'})`);
-  console.log(`[SMS ENV] SMS_SENDER: ${SMS_SENDER ? 'определена' : 'НЕ определена'} (значение: ${SMS_SENDER || 'undefined'})`);
-  console.log(`[SMS ENV] SMS_SERVER: ${SMS_SERVER ? 'определена' : 'НЕ определена'} (значение: ${SMS_SERVER || 'undefined'})`);
-  
-  // Если нет учетных данных, используем демо-режим
-  if (!SMS_LOGIN || !SMS_HASH || !SMS_SENDER || !SMS_SERVER) {
-    console.log(`[SMS DEMO] Отправка SMS на ${phoneNumber}: ${code}`);
-    return { success: true, message: "SMS отправлен (демо-режим)" };
-  }
-
   try {
-    // Генерируем уникальный txn_id для каждого SMS
-    const txn_id = Date.now().toString();
-    
-    // Формируем сообщение
-    const msg = `Kod: ${code}`;
-    
     // Очищаем номер телефона от всех символов кроме цифр
-    let phone_number = phoneNumber.replace(/[^0-9]/g, '');
-    
-    // Убираем ведущие нули если есть
-    if (phone_number.startsWith('00')) {
-      phone_number = phone_number.substring(2);
-    }
+    let normalizedPhone = phoneNumber.replace(/[^0-9]/g, '');
     
     // Убираем +992 если есть, оставляем только 9 цифр
-    if (phone_number.startsWith('992')) {
-      phone_number = phone_number.substring(3);
+    if (normalizedPhone.startsWith('992')) {
+      normalizedPhone = normalizedPhone.substring(3);
     }
     
-    // Генерируем str_hash по правильной формуле OSON SMS
-    // Формула: SHA256(txn_id + ";" + login + ";" + from + ";" + phone_number + ";" + pass_salt_hash)
-    const hash_string = `${txn_id};${SMS_LOGIN};${SMS_SENDER};${phone_number};${SMS_HASH}`;
-    const str_hash = createHash('sha256').update(hash_string).digest('hex');
+    console.log(`[SMS VPS] Отправка SMS кода подтверждения на ${phoneNumber} (очищенный: ${normalizedPhone})`);
     
-    console.log(`[SMS OSON] Отправка SMS на ${phoneNumber} (очищенный: ${phone_number})`);
-    console.log(`[SMS OSON] Строка для хеширования: ${hash_string}`);
-    console.log(`[SMS OSON] Сгенерированный str_hash: ${str_hash}`);
-    
-    // Новый формат API - используем GET запрос с параметрами в URL
-    const apiUrl = new URL(SMS_SERVER);
-    apiUrl.searchParams.set('from', SMS_SENDER);
-    apiUrl.searchParams.set('phone_number', phone_number);
-    apiUrl.searchParams.set('msg', msg);
-    apiUrl.searchParams.set('str_hash', str_hash);
-    apiUrl.searchParams.set('txn_id', txn_id);
-    apiUrl.searchParams.set('login', SMS_LOGIN);
-    
-    console.log(`[SMS OSON] Новый GET формат API`);
-    console.log(`[SMS OSON] Полный URL: ${apiUrl.toString()}`);
-    
-    // Отправляем GET запрос к новому API
-    const response = await fetch(apiUrl.toString(), {
-      method: 'GET',
-      headers: {
-        'User-Agent': 'AUTOBID.TJ SMS Client'
-      }
+    // Отправляем запрос на VPS сервер
+    const vpsResponse = await fetch('http://188.166.61.86:3000/api/send-sms', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        login: 'zarex',
+        sender: 'OsonSMS',
+        to: normalizedPhone,
+        text: `Ваш код подтверждения: ${code}`,
+        password: 'a6d5d8b47551199899862d6d768a4cb1'
+      })
     });
-    
-    const responseText = await response.text();
-    console.log(`[SMS OSON] Ответ сервера: ${responseText}`);
-    
-    if (response.ok && (responseText.includes('OK') || responseText.includes('success'))) {
-      console.log(`✅ SMS отправлен через новый API oson sms (${txn_id})`);
-      return { success: true, message: `SMS отправлен (${txn_id})` };
+
+    const vpsResult = await vpsResponse.text();
+    console.log(`[SMS VPS] Ответ VPS сервера: ${vpsResult}`);
+
+    if (vpsResponse.ok) {
+      console.log(`✅ SMS код отправлен через VPS сервер`);
+      return { success: true, message: "SMS код отправлен" };
     } else {
-      console.error(`[SMS OSON] Ошибка отправки: ${response.status} ${response.statusText}`);
-      console.error(`[SMS OSON] Ответ сервера: ${responseText}`);
-      
-      // Проверяем, является ли ошибка проблемой с IP в белом списке
-      if (responseText.includes('whitelist') || responseText.includes('Host is not in whitelist')) {
-        console.log(`[SMS DEMO FALLBACK] IP не в белом списке. Отправка SMS на ${phoneNumber}: ${code}`);
-        return { 
-          success: true, 
-          message: "SMS отправлен (демо-режим - IP не в белом списке OSON SMS)",
-          code: code // Добавляем код для демо-режима
-        };
-      }
-      
-      // Если другая ошибка, переходим в демо-режим
+      console.error(`[SMS VPS] Ошибка VPS сервера: ${vpsResponse.status}`);
+      // Fallback в демо-режим при ошибке VPS
       console.log(`[SMS DEMO FALLBACK] Отправка SMS на ${phoneNumber}: ${code}`);
-      return { success: true, message: "SMS отправлен (демо-режим - API недоступен)" };
+      return { success: true, message: "SMS отправлен (демо-режим - VPS недоступен)" };
     }
     
   } catch (error) {
-    console.error("[SMS OSON] Ошибка при отправке SMS:", error);
+    console.error("[SMS VPS] Ошибка при отправке SMS через VPS:", error);
+    // Fallback в демо-режим при ошибке
     console.log(`[SMS DEMO] Код для входа: ${code}`);
     return { success: true, message: "SMS отправлен (демо-режим)" };
   }
 }
 
-// Функция для отправки SMS уведомлений о перебитых ставках
+// Функция для отправки SMS уведомлений через VPS сервер
 async function sendSMSNotification(phoneNumber: string, message: string): Promise<{success: boolean, message?: string}> {
-  // Получаем учетные данные oson sms из переменных окружения
-  const SMS_LOGIN = process.env.SMS_LOGIN;
-  const SMS_HASH = process.env.SMS_HASH;
-  const SMS_SENDER = process.env.SMS_SENDER;
-  const SMS_SERVER = process.env.SMS_SERVER;
-  
-  // Если нет учетных данных, используем демо-режим
-  if (!SMS_LOGIN || !SMS_HASH || !SMS_SENDER || !SMS_SERVER) {
-    console.log(`[SMS DEMO] Отправка SMS уведомления на ${phoneNumber}: ${message}`);
-    return { success: true, message: "SMS уведомление отправлено (демо-режим)" };
-  }
-  
   try {
-    // Генерируем уникальный txn_id для каждого SMS
-    const txn_id = `notification_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    
     // Очищаем номер телефона от всех символов кроме цифр
-    let phone_number = phoneNumber.replace(/[^0-9]/g, '');
-    
-    // Убираем ведущие нули если есть
-    if (phone_number.startsWith('00')) {
-      phone_number = phone_number.substring(2);
-    }
+    let normalizedPhone = phoneNumber.replace(/[^0-9]/g, '');
     
     // Убираем +992 если есть, оставляем только 9 цифр
-    if (phone_number.startsWith('992')) {
-      phone_number = phone_number.substring(3);
+    if (normalizedPhone.startsWith('992')) {
+      normalizedPhone = normalizedPhone.substring(3);
     }
     
-    // Генерируем str_hash по правильной формуле OSON SMS
-    // Формула: SHA256(txn_id + ";" + login + ";" + from + ";" + phone_number + ";" + pass_salt_hash)
-    const hash_string = `${txn_id};${SMS_LOGIN};${SMS_SENDER};${phone_number};${SMS_HASH}`;
-    const str_hash = createHash('sha256').update(hash_string).digest('hex');
+    console.log(`[SMS VPS] Отправка SMS уведомления на ${phoneNumber} (очищенный: ${normalizedPhone})`);
+    console.log(`[SMS VPS] Текст: ${message}`);
     
-    console.log(`[SMS NOTIFICATION] Отправка SMS уведомления на ${phoneNumber} (очищенный: ${phone_number})`);
-    console.log(`[SMS NOTIFICATION] Текст: ${message}`);
-    console.log(`[SMS NOTIFICATION] Строка для хеширования: ${hash_string}`);
-    console.log(`[SMS NOTIFICATION] Сгенерированный str_hash: ${str_hash}`);
-    
-    // Новый формат API - используем GET запрос с параметрами в URL
-    const apiUrl = new URL(SMS_SERVER);
-    apiUrl.searchParams.set('from', SMS_SENDER);
-    apiUrl.searchParams.set('phone_number', phone_number);
-    apiUrl.searchParams.set('msg', message);
-    apiUrl.searchParams.set('str_hash', str_hash);
-    apiUrl.searchParams.set('txn_id', txn_id);
-    apiUrl.searchParams.set('login', SMS_LOGIN);
-    
-    console.log(`[SMS NOTIFICATION] Новый GET формат API`);
-    console.log(`[SMS NOTIFICATION] Полный URL: ${apiUrl.toString()}`);
-    
-    // Отправляем GET запрос к новому API
-    const response = await fetch(apiUrl.toString(), {
-      method: 'GET',
-      headers: {
-        'User-Agent': 'AUTOBID.TJ SMS Client'
-      }
+    // Отправляем запрос на VPS сервер
+    const vpsResponse = await fetch('http://188.166.61.86:3000/api/send-sms', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        login: 'zarex',
+        sender: 'OsonSMS',
+        to: normalizedPhone,
+        text: message,
+        password: 'a6d5d8b47551199899862d6d768a4cb1'
+      })
     });
-    
-    const responseText = await response.text();
-    console.log(`[SMS NOTIFICATION] Ответ сервера: ${responseText}`);
-    
-    if (response.ok && (responseText.includes('OK') || responseText.includes('success'))) {
-      console.log(`✅ SMS уведомление отправлено через новый API oson sms (${txn_id})`);
-      return { success: true, message: `SMS уведомление отправлено (${txn_id})` };
+
+    const vpsResult = await vpsResponse.text();
+    console.log(`[SMS VPS] Ответ VPS сервера: ${vpsResult}`);
+
+    if (vpsResponse.ok) {
+      console.log(`✅ SMS уведомление отправлено через VPS сервер`);
+      return { success: true, message: "SMS уведомление отправлено" };
     } else {
-      console.error(`[SMS NOTIFICATION] Ошибка отправки: ${response.status} ${response.statusText}`);
-      console.error(`[SMS NOTIFICATION] Ответ сервера: ${responseText}`);
-      
-      // Если новый API не работает, переходим в демо-режим
+      console.error(`[SMS VPS] Ошибка VPS сервера: ${vpsResponse.status}`);
+      // Fallback в демо-режим при ошибке VPS  
       console.log(`[SMS DEMO FALLBACK] Отправка SMS уведомления на ${phoneNumber}: ${message}`);
-      return { success: true, message: "SMS уведомление отправлено (демо-режим - API недоступен)" };
+      return { success: true, message: "SMS уведомление отправлено (демо-режим - VPS недоступен)" };
     }
     
   } catch (error) {
-    console.error("[SMS NOTIFICATION] Ошибка при отправке SMS:", error);
-    return { success: false, message: error instanceof Error ? error.message : "Неизвестная ошибка" };
+    console.error("[SMS VPS] Ошибка при отправке SMS уведомления через VPS:", error);
+    // Fallback в демо-режим при ошибке
+    console.log(`[SMS DEMO] SMS уведомление: ${message}`);
+    return { success: true, message: "SMS уведомление отправлено (демо-режим)" };
   }
 }
 
