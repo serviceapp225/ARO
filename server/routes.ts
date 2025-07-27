@@ -2857,7 +2857,7 @@ async function sendSMSCode(phoneNumber: string, code: string): Promise<{success:
   console.log(`[SMS VPS PROXY] Отправка SMS на ${phoneNumber}: ${code}`);
   
   try {
-    // Отправляем запрос к VPS прокси с правильным форматом для OSON SMS
+    // Отправляем запрос к VPS прокси с правильными параметрами для OSON SMS API v1
     const response = await fetch(VPS_PROXY_URL, {
       method: 'POST',
       headers: {
@@ -2866,7 +2866,7 @@ async function sendSMSCode(phoneNumber: string, code: string): Promise<{success:
       },
       body: JSON.stringify({
         login: process.env.SMS_LOGIN || "zarex",
-        hash: process.env.SMS_HASH || "8ac95b524e5cca4a115c691e31f6726068f77881d9f7ba4075392b755a152d56",
+        password: process.env.SMS_PASSWORD || "a6d5d8b47551199899862d6d768a4cb1",
         sender: process.env.SMS_SENDER || "OsonSMS",
         to: phoneNumber.replace(/[^0-9]/g, ''),
         text: `Ваш код подтверждения AUTOBID.TJ: ${code}`
@@ -2921,7 +2921,7 @@ async function sendSMSNotification(phoneNumber: string, message: string): Promis
   console.log(`[SMS VPS PROXY] Отправка SMS уведомления на ${phoneNumber}: ${message}`);
   
   try {
-    // Отправляем запрос к VPS прокси с правильным форматом для OSON SMS
+    // Отправляем запрос к VPS прокси с правильными параметрами для OSON SMS API v1
     const response = await fetch(VPS_PROXY_URL, {
       method: 'POST',
       headers: {
@@ -2930,7 +2930,7 @@ async function sendSMSNotification(phoneNumber: string, message: string): Promis
       },
       body: JSON.stringify({
         login: process.env.SMS_LOGIN || "zarex",
-        hash: process.env.SMS_HASH || "8ac95b524e5cca4a115c691e31f6726068f77881d9f7ba4075392b755a152d56",
+        password: process.env.SMS_PASSWORD || "a6d5d8b47551199899862d6d768a4cb1",
         sender: process.env.SMS_SENDER || "OsonSMS",
         to: phoneNumber.replace(/[^0-9]/g, ''),
         text: message
