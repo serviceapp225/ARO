@@ -1,8 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
-import { useLocation } from "wouter";
-import { useAuth } from "@/contexts/AuthContext";
+import { Link } from "wouter";
 
 interface SellCarSectionData {
   id: number;
@@ -19,8 +18,6 @@ interface SellCarSectionData {
 }
 
 export function SellCarSection() {
-  const { user } = useAuth();
-  const [, setLocation] = useLocation();
   const { data: section, isLoading } = useQuery<SellCarSectionData>({
     queryKey: ['/api/sell-car-section'],
     queryFn: async () => {
@@ -65,26 +62,6 @@ export function SellCarSection() {
   };
 
   const sectionData = section || defaultSection;
-
-  // Функция для программного клика по кнопке "Продать" в навигации
-  const handleSellClick = () => {
-    console.log('🔥 Баннер: программный клик по кнопке "Продать" в навигации');
-    
-    // Находим кнопку "Продать" в навигации и кликаем по ней программно
-    const sellButton = document.querySelector('nav a[href="/sell"]') as HTMLElement;
-    if (sellButton) {
-      console.log('✅ Найдена кнопка "Продать" в навигации, активируем ее');
-      sellButton.click();
-    } else {
-      console.log('❌ Кнопка "Продать" не найдена в навигации, fallback к прямому переходу');
-      // Fallback: если не найдена навигация, используем прямой переход
-      if (!user) {
-        setLocation('/login');
-      } else {
-        setLocation('/sell');
-      }
-    }
-  };
 
   if (!sectionData.isActive) {
     return null;
@@ -131,17 +108,18 @@ export function SellCarSection() {
           {sectionData.subtitle}
         </p>
         <div className="mt-4">
-          <span 
-            onClick={handleSellClick}
-            className={`px-4 py-2 rounded-full text-sm font-bold hover:opacity-90 transition-all duration-300 cursor-pointer inline-flex items-center gap-1`}
-            style={{ 
-              backgroundColor: getColorValue(sectionData.buttonColor),
-              color: getColorValue(sectionData.buttonTextColor) 
-            }}
-          >
-            <Plus className="w-4 h-4" />
-{sectionData.buttonText} →
-          </span>
+          <Link href={sectionData.linkUrl}>
+            <span 
+              className={`px-4 py-2 rounded-full text-sm font-bold hover:opacity-90 transition-all duration-300 cursor-pointer inline-flex items-center gap-1`}
+              style={{ 
+                backgroundColor: getColorValue(sectionData.buttonColor),
+                color: getColorValue(sectionData.buttonTextColor) 
+              }}
+            >
+              <Plus className="w-4 h-4" />
+              {sectionData.buttonText} →
+            </span>
+          </Link>
         </div>
       </div>
     </div>

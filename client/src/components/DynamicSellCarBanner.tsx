@@ -2,20 +2,9 @@ import { useQuery } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { Plus } from "lucide-react";
 import type { SellCarBanner } from "@shared/schema";
-import { useAuth } from "@/contexts/AuthContext";
 
 export function DynamicSellCarBanner() {
   const [, setLocation] = useLocation();
-  
-  // Безопасная проверка AuthContext - избегаем краша если контекст не готов
-  let user = null;
-  try {
-    const authContext = useAuth();
-    user = authContext?.user;
-  } catch (error) {
-    // AuthProvider еще не готов, работаем без авторизации
-    user = null;
-  }
 
   // Загружаем данные баннера из API
   const { data: banner, isLoading } = useQuery<SellCarBanner>({
@@ -30,13 +19,7 @@ export function DynamicSellCarBanner() {
   }
 
   const handleClick = () => {
-    // Проверяем авторизацию перед переходом на страницу продажи (как в кнопке "Продать")
-    if (!user) {
-      setLocation('/login');
-      return;
-    }
-    
-    setLocation('/sell');
+    setLocation(banner.linkUrl);
   };
 
   return (

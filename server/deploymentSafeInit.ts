@@ -18,12 +18,16 @@ export async function deploymentSafeInit() {
     const { storage } = await import("./storage");
     
     // Проверяем подключение к базе данных
-    const listings = await storage.getListingsByStatus('active', 5);
-    console.log(`✅ DEPLOYMENT: Найдено ${listings.length} активных объявлений`);
+    const listings = await storage.getAllListings();
+    console.log(`✅ DEPLOYMENT: Найдено ${listings.length} объявлений`);
     
     // Проверяем пользователей
-    const allUsers = await storage.getAllUsers();
-    console.log(`✅ DEPLOYMENT: Найдено ${allUsers.length} пользователей в системе`);
+    const adminUser = await storage.getUserByPhoneNumber("+992903331332");
+    if (adminUser) {
+      console.log("✅ DEPLOYMENT: Администратор найден");
+    } else {
+      console.log("⚠️ DEPLOYMENT: Администратор не найден, но это нормально");
+    }
     
     return true;
   } catch (error) {
@@ -39,7 +43,7 @@ export async function deploymentSafeInit() {
 export async function getDatabaseStatus() {
   try {
     const { storage } = await import("./storage");
-    const listings = await storage.getListingsByStatus('active', 10);
+    const listings = await storage.getAllListings();
     return {
       connected: true,
       listingsCount: listings.length,
