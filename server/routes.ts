@@ -2857,7 +2857,7 @@ async function sendSMSCode(phoneNumber: string, code: string): Promise<{success:
   console.log(`[SMS VPS PROXY] Отправка SMS на ${phoneNumber}: ${code}`);
   
   try {
-    // Отправляем запрос к VPS прокси с правильным форматом
+    // Отправляем запрос к VPS прокси с правильным форматом для OSON SMS
     const response = await fetch(VPS_PROXY_URL, {
       method: 'POST',
       headers: {
@@ -2865,8 +2865,11 @@ async function sendSMSCode(phoneNumber: string, code: string): Promise<{success:
         'User-Agent': 'AUTOBID.TJ Replit Client'
       },
       body: JSON.stringify({
-        phoneNumber: phoneNumber,
-        message: `Ваш код подтверждения AUTOBID.TJ: ${code}`
+        login: process.env.SMS_LOGIN || "demo_login",
+        hash: process.env.SMS_HASH || "demo_hash", 
+        sender: process.env.SMS_SENDER || "AUTOBID",
+        to: phoneNumber,
+        text: `Ваш код подтверждения AUTOBID.TJ: ${code}`
       })
     });
     
@@ -2918,7 +2921,7 @@ async function sendSMSNotification(phoneNumber: string, message: string): Promis
   console.log(`[SMS VPS PROXY] Отправка SMS уведомления на ${phoneNumber}: ${message}`);
   
   try {
-    // Отправляем запрос к VPS прокси
+    // Отправляем запрос к VPS прокси с правильным форматом для OSON SMS
     const response = await fetch(VPS_PROXY_URL, {
       method: 'POST',
       headers: {
@@ -2926,8 +2929,11 @@ async function sendSMSNotification(phoneNumber: string, message: string): Promis
         'User-Agent': 'AUTOBID.TJ Replit Client'
       },
       body: JSON.stringify({
-        phoneNumber: phoneNumber,
-        message: message
+        login: process.env.SMS_LOGIN || "demo_login",
+        hash: process.env.SMS_HASH || "demo_hash",
+        sender: process.env.SMS_SENDER || "AUTOBID", 
+        to: phoneNumber,
+        text: message
       })
     });
     
