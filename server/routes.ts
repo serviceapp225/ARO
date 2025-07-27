@@ -2916,7 +2916,7 @@ async function sendSMSCode(phoneNumber: string, code: string): Promise<{success:
 // Функция для отправки SMS уведомлений через VPS прокси
 async function sendSMSNotification(phoneNumber: string, message: string): Promise<{success: boolean, message?: string}> {
   // URL VPS прокси сервера
-  const VPS_PROXY_URL = "http://188.166.61.86:3000/api/send-sms";
+  const VPS_PROXY_URL = "http://188.166.61.86:3001/api/send-sms";
   
   console.log(`[SMS VPS PROXY] Отправка SMS уведомления на ${phoneNumber}: ${message}`);
   
