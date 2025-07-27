@@ -2594,10 +2594,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Добавляем роуты для управления резервными копиями и rollback
-  const rollbackRoutes = await import('./rollbackRoutes');
-  app.use(rollbackRoutes.default);
-
   const httpServer = createServer(app);
   
   // Инициализируем WebSocket для real-time обновлений
