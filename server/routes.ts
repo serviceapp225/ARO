@@ -77,9 +77,15 @@ function clearCachePattern(pattern: string) {
 // Middleware для защиты админских маршрутов
 const adminAuth = async (req: any, res: any, next: any) => {
   console.log('🔐 adminAuth middleware вызван для:', req.url);
+  console.log('🔐 adminAuth заголовки запроса:', {
+    'x-user-id': req.headers['x-user-id'],
+    'x-user-email': req.headers['x-user-email'],
+    'content-type': req.headers['content-type']
+  });
   
   // Сначала проверяем req.user установленный getUserFromContext
   let user = req.user;
+  console.log('🔍 adminAuth: req.user из getUserFromContext:', user ? { id: user.id, email: user.email } : 'NOT SET');
   
   // Если user не установлен, пытаемся получить из заголовков
   if (!user) {
@@ -105,21 +111,31 @@ const adminAuth = async (req: any, res: any, next: any) => {
     }
   }
   
-  // Fallback для админа
+  // Fallback для админа - принудительно устанавливаем админа для номера 992903331332
   if (!user) {
+    console.log('🔐 adminAuth: Применяем fallback для админа...');
     try {
       user = await storage.getUserByEmail('+992 (90) 333-13-32@autoauction.tj');
-      console.log('🔐 adminAuth: Fallback админ найден:', user?.id);
+      if (user) {
+        console.log('🔐 adminAuth: Fallback админ найден:', { id: user.id, role: user.role, isActive: user.isActive });
+      } else {
+        console.log('❌ adminAuth: Fallback админ НЕ найден в базе');
+      }
     } catch (error) {
       console.error('❌ Ошибка получения админа fallback:', error);
     }
   }
   
-  console.log('🔍 adminAuth user:', user ? { id: user.id, role: user.role, email: user.email } : 'NOT FOUND');
+  console.log('🔍 adminAuth ИТОГОВЫЙ user:', user ? { id: user.id, role: user.role, email: user.email, isActive: user.isActive } : 'NOT FOUND');
   
-  if (!user || !user.isActive) {
-    console.log('❌ adminAuth: Пользователь не найден или неактивен');
-    return res.status(401).json({ error: 'Unauthorized' });
+  if (!user) {
+    console.log('❌ adminAuth: Пользователь НЕ НАЙДЕН - возвращаем 401');
+    return res.status(401).json({ error: 'User not found' });
+  }
+  
+  if (!user.isActive) {
+    console.log('❌ adminAuth: Пользователь найден, но НЕАКТИВЕН - возвращаем 401');
+    return res.status(401).json({ error: 'User not active' });
   }
 
   // Проверяем админские права по номеру телефона
@@ -129,15 +145,15 @@ const adminAuth = async (req: any, res: any, next: any) => {
   const adminPhones = ['+992903331332', '+992 (90) 333-13-32'];
   const isAdminByPhone = adminPhones.includes(fullPhone || '') || adminPhones.some(phone => user.email.includes(phone));
   
-  console.log('🔍 adminAuth phone check:', fullPhone, 'isAdmin:', isAdminByPhone, 'userRole:', user.role);
+  console.log('🔍 adminAuth phone check:', { fullPhone, isAdminByPhone, userRole: user.role, email: user.email });
 
   // Проверяем права доступа: роль admin ИЛИ номер телефона админа
   if (user.role !== 'admin' && !isAdminByPhone) {
     console.log('❌ adminAuth: Недостаточно прав доступа', { role: user.role, isAdminByPhone, email: user.email });
-    return res.status(403).json({ error: 'Access denied' });
+    return res.status(403).json({ error: 'Access denied - insufficient permissions' });
   }
 
-  console.log('✅ adminAuth: Доступ разрешен');
+  console.log('✅ adminAuth: Доступ РАЗРЕШЕН для пользователя', user.id);
   req.user = user;
   next();
 };
@@ -1554,33 +1570,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // API роут для перезапуска архивированного аукциона
-  app.post("/api/restart-listing/:id", adminAuth, async (req, res) => {
-    try {
-      const listingId = parseInt(req.params.id);
-      console.log(`🔄 Запрос на перезапуск аукциона ${listingId}`);
-      
-      const restartedListing = await storage.restartListing(listingId);
-      
-      if (!restartedListing) {
-        console.log(`❌ Не удалось перезапустить аукцион ${listingId} - возможно неправильный статус или ошибка`);
-        return res.status(400).json({ error: "Failed to restart listing. Make sure the listing exists and is archived." });
-      }
-      
-      console.log(`✅ Аукцион ${listingId} успешно перезапущен как новый аукцион ${restartedListing.id}`);
-      
-      // Очищаем все кэши после перезапуска
-      clearAllCaches();
-      
-      res.json({ 
-        message: "Listing restarted successfully", 
-        newListing: restartedListing 
-      });
-    } catch (error) {
-      console.error("Error restarting listing:", error);
-      res.status(500).json({ error: "Failed to restart listing" });
-    }
-  });
+
 
   app.put("/api/admin/listings/:id/status", async (req, res) => {
     try {
@@ -2688,21 +2678,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Перезапустить аукцион
-  app.post('/api/restart-listing/:id', async (req, res) => {
+  // Перезапустить аукцион - только для админов
+  app.post('/api/restart-listing/:id', getUserFromContext, adminAuth, async (req, res) => {
     try {
+      console.log('🔄 Запрос на перезапуск аукциона', req.params.id);
       const { id } = req.params;
-      const newListing = await storage.restartListing(parseInt(id));
+      const listingId = parseInt(id);
+      
+      console.log('🔄 Вызываем storage.restartListing для ID:', listingId);
+      console.log('🔍 Тип storage:', typeof storage);
+      console.log('🔍 Тип storage.restartListing:', typeof storage.restartListing);
+      const newListing = await storage.restartListing(listingId);
+      console.log('🔍 Результат storage.restartListing:', newListing);
       
       if (!newListing) {
-        return res.status(404).json({ message: 'Listing not found or not archived' });
+        console.log('❌ Не удалось перезапустить аукцион', listingId, '- возможно неправильный статус или ошибка');
+        return res.status(400).json({ error: 'Failed to restart listing. Make sure the listing exists and is archived.' });
       }
 
+      console.log('✅ Аукцион успешно перезапущен:', { oldId: listingId, newId: newListing.id, lotNumber: newListing.lotNumber });
       clearCachePattern('listings');
       res.json(newListing);
     } catch (error) {
-      console.error('Error restarting listing:', error);
-      res.status(500).json({ message: 'Failed to restart listing' });
+      console.error('❌ Критическая ошибка при перезапуске аукциона:', error);
+      res.status(500).json({ error: 'Failed to restart listing due to server error' });
     }
   });
 

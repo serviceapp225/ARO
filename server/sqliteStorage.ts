@@ -1606,15 +1606,31 @@ export class SQLiteStorage implements IStorage {
   // Перезапуск аукциона
   async restartListing(id: number): Promise<CarListing | undefined> {
     try {
+      console.log('🔄 restartListing: Начинаем перезапуск аукциона', id);
+      
       const originalListing = await this.getListing(id);
-      if (!originalListing || originalListing.status !== 'archived') {
+      console.log('🔍 restartListing: Оригинальный аукцион:', originalListing ? { id: originalListing.id, status: originalListing.status, make: originalListing.make, model: originalListing.model } : 'НЕ НАЙДЕН');
+      
+      // Дополнительная проверка прямо из базы данных
+      const directDBCheck = this.db.prepare('SELECT id, status, make, model FROM car_listings WHERE id = ?').get(id);
+      console.log('🔍 restartListing: Прямая проверка БД:', directDBCheck);
+      
+      if (!originalListing) {
+        console.log('❌ restartListing: Аукцион не найден');
+        return undefined;
+      }
+      
+      if (originalListing.status !== 'archived' && originalListing.status !== 'ended') {
+        console.log('❌ restartListing: Неправильный статус аукциона:', originalListing.status, '(ожидается archived или ended)');
         return undefined;
       }
 
       // Генерируем новый номер лота
       const newLotNumber = Date.now().toString();
+      console.log('🆔 restartListing: Генерируем новый номер лота:', newLotNumber);
       
       // Создаем новый аукцион с данными оригинала
+      console.log('➕ restartListing: Создаем новый аукцион с данными оригинала...');
       const listing = await this.createListing({
         sellerId: originalListing.sellerId,
         lotNumber: newLotNumber,
@@ -1643,11 +1659,23 @@ export class SQLiteStorage implements IStorage {
         tintingDate: originalListing.tintingDate
       });
 
+      console.log('✅ restartListing: Новый аукцион создан:', listing ? { id: listing.id, lotNumber: listing.lotNumber, status: listing.status } : 'ОШИБКА СОЗДАНИЯ');
+
+      if (!listing) {
+        console.log('❌ restartListing: Не удалось создать новый аукцион');
+        return undefined;
+      }
+
       // Устанавливаем статус 'active' отдельно
+      console.log('🔄 restartListing: Устанавливаем статус active для аукциона', listing.id);
       await this.updateListingStatus(listing.id, 'active');
-      return this.getListing(listing.id);
+      
+      const finalListing = await this.getListing(listing.id);
+      console.log('🎉 restartListing: УСПЕХ! Финальный результат:', finalListing ? { id: finalListing.id, status: finalListing.status, lotNumber: finalListing.lotNumber } : 'ОШИБКА ПОЛУЧЕНИЯ');
+      
+      return finalListing;
     } catch (error) {
-      console.error('Error restarting listing:', error);
+      console.error('❌ restartListing: Критическая ошибка при перезапуске аукциона:', error);
       return undefined;
     }
   }
