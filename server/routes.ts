@@ -76,9 +76,30 @@ function clearCachePattern(pattern: string) {
 
 // Middleware для защиты админских маршрутов
 const adminAuth = async (req: any, res: any, next: any) => {
-  // Проверка авторизации пользователя
-  const user = req.user;
+  console.log('🔐 adminAuth middleware вызван для:', req.path);
+  
+  // Пытаемся получить пользователя из сессии или заголовка
+  let user = req.user;
+  
+  // Если нет req.user, пытаемся найти по userId из сессии/cookie/header
+  if (!user) {
+    const userId = req.session?.userId || req.headers['x-user-id'];
+    console.log('🔍 Попытка найти пользователя по userId:', userId);
+    
+    if (userId) {
+      try {
+        user = await storage.getUser(parseInt(userId));
+        console.log('🔍 Найден пользователь из БД:', user ? `${user.id}/${user.phoneNumber}` : 'null');
+      } catch (error) {
+        console.error('❌ Ошибка получения пользователя:', error);
+      }
+    }
+  }
+  
+  console.log('🔍 adminAuth user check:', user ? `ID:${user.id}, phone:${user.phoneNumber}, active:${user.isActive}` : 'NO USER');
+  
   if (!user || !user.isActive) {
+    console.log('❌ adminAuth: Пользователь не найден или неактивен');
     return res.status(401).json({ error: 'Unauthorized' });
   }
   
@@ -88,10 +109,21 @@ const adminAuth = async (req: any, res: any, next: any) => {
   
   // Безопасная проверка номера телефона
   const userPhone = user.phoneNumber?.toString().trim();
-  if (!userPhone || !adminPhones.includes(userPhone)) {
+  const userEmail = user.email?.toString().trim();
+  console.log('🔍 adminAuth phone check:', userPhone, 'vs', adminPhones);
+  console.log('🔍 adminAuth email check:', userEmail);
+  
+  // Проверяем админские права по номеру телефона или email
+  const isAdminByPhone = userPhone && adminPhones.includes(userPhone);
+  const isAdminByEmail = userEmail && adminPhones.some(phone => userEmail.includes(phone.replace(/\s/g, '').replace(/\(/g, '').replace(/\)/g, '')));
+  
+  if (!isAdminByPhone && !isAdminByEmail) {
+    console.log('❌ adminAuth: Нет админских прав');
     return res.status(403).json({ error: 'Forbidden: Admin access required' });
   }
   
+  console.log('✅ adminAuth: Доступ разрешен');
+  req.user = user; // Устанавливаем пользователя в req для других middleware
   next();
 };
 
