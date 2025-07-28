@@ -264,6 +264,7 @@ export default function Favorites() {
                       make={car.make}
                       model={car.model}
                       year={car.year}
+                      photos={car.photos || []}
                       className="w-full h-48 object-cover"
                     />
                     <div className="absolute top-3 right-3 flex gap-2">

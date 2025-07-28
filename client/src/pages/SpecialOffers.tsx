@@ -108,6 +108,7 @@ export default function SpecialOffers() {
                       make={offer.make}
                       model={offer.model}
                       year={offer.year}
+                      photos={offer.photos || []}
                       className="w-full h-48 object-cover"
                     />
                     

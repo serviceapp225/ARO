@@ -273,6 +273,7 @@ export function ActiveAuctions({ searchQuery = "", customListings }: ActiveAucti
                 make={auction.make}
                 model={auction.model}
                 year={auction.year}
+                photos={auction.photos || []}
                 className="h-48 object-cover group-hover:scale-105 transition-transform duration-300"
               />
               <div className="absolute inset-0 bg-black bg-opacity-20 group-hover:bg-opacity-10 transition-all duration-300"></div>

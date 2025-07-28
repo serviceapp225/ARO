@@ -1,21 +1,19 @@
 import { useState, useEffect, useRef } from 'react';
 import { Car } from 'lucide-react';
-import { useQuery } from '@tanstack/react-query';
 
 interface LazyCarImageProps {
   listingId: string;
   make: string;
   model: string;
   year: number;
+  photos?: string[]; // Фотографии приходят прямо из props
   className?: string;
 }
 
-export function LazyCarImage({ listingId, make, model, year, className = "" }: LazyCarImageProps) {
-  const [photos, setPhotos] = useState<string[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
+export function LazyCarImage({ listingId, make, model, year, photos = [], className = "" }: LazyCarImageProps) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isVisible, setIsVisible] = useState(false);
+  const [imageLoaded, setImageLoaded] = useState(false);
   const imgRef = useRef<HTMLDivElement>(null);
 
   // Intersection Observer для ленивой загрузки
@@ -29,7 +27,7 @@ export function LazyCarImage({ listingId, make, model, year, className = "" }: L
       },
       { 
         threshold: 0.1,
-        rootMargin: '50px' // Предзагрузка за 50px до появления в области видимости
+        rootMargin: '50px'
       }
     );
 
@@ -40,94 +38,19 @@ export function LazyCarImage({ listingId, make, model, year, className = "" }: L
     return () => observer.disconnect();
   }, []);
 
+  // Автоматическая ротация фотографий каждые 3 секунды (только если есть фотографии)
   useEffect(() => {
-    if (!isVisible) return;
-
-    // Проверяем кэш в localStorage
-    const cacheKey = `photos_${listingId}`;
-    const cached = localStorage.getItem(cacheKey);
-    
-    if (cached) {
-      try {
-        const cachedData = JSON.parse(cached);
-        const cacheTime = cachedData.timestamp;
-        const now = Date.now();
-        
-        // Увеличиваем время кэширования до 30 минут для лучшей производительности
-        if (now - cacheTime < 1800000) {
-          setPhotos(cachedData.photos || []);
-          setLoading(false);
-          return;
-        }
-      } catch (e) {
-        // Игнорируем ошибки парсинга кэша
-      }
-    }
-
-    // Загружаем фотографии с минимальной задержкой
-    const timer = setTimeout(async () => {
-      try {
-        // Сначала быстро загружаем миниатюру для первого показа
-        const thumbnailResponse = await fetch(`/api/listings/${listingId}/thumbnail`);
-        if (thumbnailResponse.ok) {
-          const thumbnailBlob = await thumbnailResponse.blob();
-          const thumbnailUrl = URL.createObjectURL(thumbnailBlob);
-          setPhotos([thumbnailUrl]);
-          setLoading(false);
-          
-          // Затем загружаем остальные фотографии в фоне
-          const response = await fetch(`/api/listings/${listingId}/photos`);
-          if (response.ok) {
-            const data = await response.json();
-            if (data.photos && data.photos.length > 0) {
-              setPhotos(data.photos);
-              // Сохраняем в кэш
-              localStorage.setItem(cacheKey, JSON.stringify({
-                photos: data.photos,
-                timestamp: Date.now()
-              }));
-            }
-          }
-        } else {
-          // Fallback к обычной загрузке фотографий
-          const response = await fetch(`/api/listings/${listingId}/photos`);
-          if (response.ok) {
-            const data = await response.json();
-            if (data.photos && data.photos.length > 0) {
-              setPhotos(data.photos);
-              localStorage.setItem(cacheKey, JSON.stringify({
-                photos: data.photos,
-                timestamp: Date.now()
-              }));
-            } else {
-              setError(true);
-            }
-          } else {
-            setError(true);
-          }
-        }
-      } catch (err) {
-        setError(true);
-      } finally {
-        setLoading(false);
-      }
-    }, Math.random() * 50 + 5); // Еще более быстрая загрузка от 5 до 55мс
-
-    return () => clearTimeout(timer);
-  }, [listingId, isVisible]);
-
-  // Автоматическая ротация фотографий каждые 3 секунды
-  useEffect(() => {
-    if (photos.length <= 1) return;
+    if (!isVisible || photos.length <= 1) return;
     
     const intervalId = setInterval(() => {
       setCurrentImageIndex((prevIndex) => (prevIndex + 1) % photos.length);
-    }, 3000); // 3 секунды
+    }, 3000);
 
     return () => clearInterval(intervalId);
-  }, [photos.length]);
+  }, [photos.length, isVisible]);
 
-  if (loading || error || photos.length === 0) {
+  // Показываем placeholder если нет фотографий или еще не видимо
+  if (!isVisible || photos.length === 0) {
     return (
       <div ref={imgRef} className={`bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center ${className}`}>
         <Car className="w-12 h-12 text-gray-400" />
@@ -140,12 +63,23 @@ export function LazyCarImage({ listingId, make, model, year, className = "" }: L
       <img 
         src={photos[currentImageIndex]} 
         alt={`${year} ${make} ${model}`}
-        className="w-full h-full object-cover transition-opacity duration-500"
+        className={`w-full h-full object-cover transition-opacity duration-500 ${
+          imageLoaded ? 'opacity-100' : 'opacity-0'
+        }`}
         loading="lazy"
-        onError={() => setError(true)}
+        onLoad={() => setImageLoaded(true)}
+        onError={() => console.error(`Ошибка загрузки фото ${currentImageIndex} для ${make} ${model}`)}
       />
+      
+      {/* Индикатор загрузки */}
+      {!imageLoaded && (
+        <div className="absolute inset-0 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
+          <Car className="w-12 h-12 text-gray-400 animate-pulse" />
+        </div>
+      )}
+      
       {/* Индикатор количества фотографий */}
-      {photos.length > 1 && (
+      {photos.length > 1 && imageLoaded && (
         <div className="absolute bottom-2 right-2 bg-black/50 text-white text-xs px-2 py-1 rounded-full">
           {currentImageIndex + 1}/{photos.length}
         </div>
