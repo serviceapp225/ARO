@@ -828,8 +828,8 @@ export class SQLiteStorage implements IStorage {
       }
       
       // Отладка результата для проверки
-      if (row.id === 44 && photos.length > 0) {
-        console.log(`✅ ФОТОГРАФИИ ИСПРАВЛЕНЫ! Объявление ${row.id}: ${photos.length} фотографий`);
+      if (photos.length > 0) {
+        console.log(`✅ ФОТОГРАФИИ ОБРАБОТАНЫ! Объявление ${row.id} (${row.make} ${row.model}): ${photos.length} фотографий`);
       }
     } catch (error) {
       console.error(`❌ Error parsing photos for listing ${row.id}:`, error);
