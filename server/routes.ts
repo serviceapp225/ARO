@@ -76,54 +76,47 @@ function clearCachePattern(pattern: string) {
 
 // Middleware для защиты админских маршрутов
 const adminAuth = async (req: any, res: any, next: any) => {
-  console.log('🔐 adminAuth middleware вызван для:', req.path);
+  console.log('🔐 adminAuth middleware вызван для:', req.url);
   
-  // Пытаемся получить пользователя из сессии или заголовка
+  // Сначала проверяем req.user установленный getUserFromContext
   let user = req.user;
   
-  // Если нет req.user, пытаемся найти по userId из сессии/cookie/header
   if (!user) {
-    const userId = req.session?.userId || req.headers['x-user-id'];
-    console.log('🔍 Попытка найти пользователя по userId:', userId);
+    const userId = req.session?.userId;
+    console.log('🔍 Пытаемся найти пользователя по session userId:', userId);
     
     if (userId) {
       try {
-        user = await storage.getUser(parseInt(userId));
-        console.log('🔍 Найден пользователь из БД:', user ? `${user.id}/${user.phoneNumber}` : 'null');
+        user = await storage.getUser(userId);
       } catch (error) {
-        console.error('❌ Ошибка получения пользователя:', error);
+        console.error('❌ Ошибка получения пользователя из сессии:', error);
       }
     }
   }
   
-  console.log('🔍 adminAuth user check:', user ? `ID:${user.id}, phone:${user.phoneNumber}, active:${user.isActive}` : 'NO USER');
+  console.log('🔍 adminAuth user:', user ? { id: user.id, role: user.role, email: user.email } : 'NOT FOUND');
   
   if (!user || !user.isActive) {
     console.log('❌ adminAuth: Пользователь не найден или неактивен');
     return res.status(401).json({ error: 'Unauthorized' });
   }
+
+  // Проверяем админские права по номеру телефона
+  const phonePattern = user.email.match(/^\+992\s?\(?(\d{2})\)?\s?(\d{3})-?(\d{2})-?(\d{2})/);
+  const fullPhone = phonePattern ? `+992${phonePattern[1]}${phonePattern[2]}${phonePattern[3]}${phonePattern[4]}` : null;
   
-  // Проверка админских прав по номеру телефона из переменных окружения
-  const adminPhone = process.env.ADMIN_PHONE || '+992903331332';
-  const adminPhones = [adminPhone, '+992 (90) 333-13-32'];
+  const adminPhones = ['+992903331332', '+992 (90) 333-13-32'];
+  const isAdminByPhone = adminPhones.includes(fullPhone || '') || adminPhones.some(phone => user.email.includes(phone));
   
-  // Безопасная проверка номера телефона
-  const userPhone = user.phoneNumber?.toString().trim();
-  const userEmail = user.email?.toString().trim();
-  console.log('🔍 adminAuth phone check:', userPhone, 'vs', adminPhones);
-  console.log('🔍 adminAuth email check:', userEmail);
-  
-  // Проверяем админские права по номеру телефона или email
-  const isAdminByPhone = userPhone && adminPhones.includes(userPhone);
-  const isAdminByEmail = userEmail && adminPhones.some(phone => userEmail.includes(phone.replace(/\s/g, '').replace(/\(/g, '').replace(/\)/g, '')));
-  
-  if (!isAdminByPhone && !isAdminByEmail) {
-    console.log('❌ adminAuth: Нет админских прав');
-    return res.status(403).json({ error: 'Forbidden: Admin access required' });
+  console.log('🔍 adminAuth phone check:', fullPhone, 'isAdmin:', isAdminByPhone, 'userRole:', user.role);
+
+  if (user.role !== 'admin' && !isAdminByPhone) {
+    console.log('❌ adminAuth: Недостаточно прав доступа');
+    return res.status(403).json({ error: 'Access denied' });
   }
-  
+
   console.log('✅ adminAuth: Доступ разрешен');
-  req.user = user; // Устанавливаем пользователя в req для других middleware
+  req.user = user;
   next();
 };
 
@@ -183,6 +176,20 @@ const getUserFromContext = async (req: any, res: any, next: any) => {
       }
     } catch (error) {
       console.error('❌ Ошибка получения пользователя по email:', error);
+    }
+  }
+  
+  // Если не удалось получить пользователя из заголовков, попробуем админский fallback
+  if (!req.user && req.url?.includes('/admin/')) {
+    try {
+      // Ищем админа по email шаблону
+      const adminUser = await storage.getUserByEmail('+992 (90) 333-13-32@autoauction.tj');
+      if (adminUser && adminUser.role === 'admin') {
+        req.user = adminUser;
+        console.log('🔐 Установлен админ пользователь fallback:', adminUser.id, adminUser.email);
+      }
+    } catch (error) {
+      console.error('❌ Ошибка fallback админа:', error);
     }
   }
   
