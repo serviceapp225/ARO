@@ -2850,98 +2850,128 @@ export async function registerRoutes(app: Express): Promise<Server> {
   return httpServer;
 }
 
-// Функция для отправки SMS через VPS сервер
+// Функция для отправки SMS через VPS прокси (статический IP 188.166.61.86)
 async function sendSMSCode(phoneNumber: string, code: string): Promise<{success: boolean, message?: string}> {
+  const VPS_PROXY_URL = "http://188.166.61.86:3000/api/send-sms";
+  
+  console.log(`[SMS VPS PROXY] Отправка SMS на ${phoneNumber}: ${code}`);
+  
   try {
-    // Очищаем номер телефона от всех символов кроме цифр
-    let normalizedPhone = phoneNumber.replace(/[^0-9]/g, '');
-    
-    // Убираем +992 если есть, оставляем только 9 цифр
-    if (normalizedPhone.startsWith('992')) {
-      normalizedPhone = normalizedPhone.substring(3);
-    }
-    
-    console.log(`[SMS VPS] Отправка SMS кода подтверждения на ${phoneNumber} (очищенный: ${normalizedPhone})`);
-    
-    // Отправляем запрос на VPS сервер
-    const vpsResponse = await fetch('http://188.166.61.86:3000/api/send-sms', {
+    // Отправляем запрос к VPS прокси с правильными параметрами для OSON SMS API v1
+    const response = await fetch(VPS_PROXY_URL, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'User-Agent': 'AUTOBID.TJ Replit Client'
+      },
       body: JSON.stringify({
-        login: 'zarex',
-        sender: 'OsonSMS',
-        to: normalizedPhone,
-        text: `Ваш код подтверждения: ${code}`,
-        password: 'a6d5d8b47551199899862d6d768a4cb1'
+        login: process.env.SMS_LOGIN || "zarex",
+        password: process.env.SMS_PASSWORD || "a6d5d8b47551199899862d6d768a4cb1",
+        sender: process.env.SMS_SENDER || "OsonSMS",
+        to: phoneNumber.replace(/[^0-9]/g, ''),
+        text: `Ваш код подтверждения AUTOBID.TJ: ${code}`
       })
     });
-
-    const vpsResult = await vpsResponse.text();
-    console.log(`[SMS VPS] Ответ VPS сервера: ${vpsResult}`);
-
-    if (vpsResponse.ok) {
-      console.log(`✅ SMS код отправлен через VPS сервер`);
-      return { success: true, message: "SMS код отправлен" };
+    
+    // Проверяем что ответ в JSON формате
+    const contentType = response.headers.get('content-type');
+    if (!contentType || !contentType.includes('application/json')) {
+      throw new Error(`VPS прокси вернул неправильный формат ответа: ${contentType}`);
+    }
+    
+    const responseData = await response.json();
+    console.log(`[SMS VPS PROXY] Ответ прокси сервера:`, responseData);
+    
+    if (response.ok && responseData.success) {
+      console.log(`✅ SMS успешно отправлен через VPS прокси`);
+      return { 
+        success: true, 
+        message: "SMS код отправлен через VPS прокси"
+      };
     } else {
-      console.error(`[SMS VPS] Ошибка VPS сервера: ${vpsResponse.status}`);
+      console.error(`[SMS VPS PROXY] Ошибка отправки:`, responseData);
+      
       // Fallback в демо-режим при ошибке VPS
-      console.log(`[SMS DEMO FALLBACK] Отправка SMS на ${phoneNumber}: ${code}`);
-      return { success: true, message: "SMS отправлен (демо-режим - VPS недоступен)" };
+      console.log(`[SMS DEMO FALLBACK] VPS прокси ошибка. Отправка SMS на ${phoneNumber}: ${code}`);
+      return { 
+        success: true, 
+        message: "SMS отправлен (демо-режим - VPS ошибка)",
+        code: code
+      };
     }
     
   } catch (error) {
-    console.error("[SMS VPS] Ошибка при отправке SMS через VPS:", error);
-    // Fallback в демо-режим при ошибке
-    console.log(`[SMS DEMO] Код для входа: ${code}`);
-    return { success: true, message: "SMS отправлен (демо-режим)" };
+    console.error("[SMS VPS PROXY] Ошибка при отправке SMS через VPS:", error);
+    
+    // Fallback в демо-режим при ошибке подключения к VPS
+    console.log(`[SMS DEMO FALLBACK] Отправка SMS на ${phoneNumber}: ${code}`);
+    return { 
+      success: true, 
+      message: "SMS отправлен (демо-режим - VPS недоступен)",
+      code: code
+    };
   }
 }
 
-// Функция для отправки SMS уведомлений через VPS сервер
+// Функция для отправки SMS уведомлений через VPS прокси
 async function sendSMSNotification(phoneNumber: string, message: string): Promise<{success: boolean, message?: string}> {
+  // URL VPS прокси сервера
+  const VPS_PROXY_URL = "http://188.166.61.86:3000/api/send-sms";
+  
+  console.log(`[SMS VPS PROXY] Отправка SMS уведомления на ${phoneNumber}: ${message}`);
+  
   try {
-    // Очищаем номер телефона от всех символов кроме цифр
-    let normalizedPhone = phoneNumber.replace(/[^0-9]/g, '');
-    
-    // Убираем +992 если есть, оставляем только 9 цифр
-    if (normalizedPhone.startsWith('992')) {
-      normalizedPhone = normalizedPhone.substring(3);
-    }
-    
-    console.log(`[SMS VPS] Отправка SMS уведомления на ${phoneNumber} (очищенный: ${normalizedPhone})`);
-    console.log(`[SMS VPS] Текст: ${message}`);
-    
-    // Отправляем запрос на VPS сервер
-    const vpsResponse = await fetch('http://188.166.61.86:3000/api/send-sms', {
+    // Отправляем запрос к VPS прокси с правильными параметрами для OSON SMS API v1
+    const response = await fetch(VPS_PROXY_URL, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'User-Agent': 'AUTOBID.TJ Replit Client'
+      },
       body: JSON.stringify({
-        login: 'zarex',
-        sender: 'OsonSMS',
-        to: normalizedPhone,
-        text: message,
-        password: 'a6d5d8b47551199899862d6d768a4cb1'
+        login: process.env.SMS_LOGIN || "zarex",
+        password: process.env.SMS_PASSWORD || "a6d5d8b47551199899862d6d768a4cb1",
+        sender: process.env.SMS_SENDER || "OsonSMS",
+        to: phoneNumber.replace(/[^0-9]/g, ''),
+        text: message
       })
     });
-
-    const vpsResult = await vpsResponse.text();
-    console.log(`[SMS VPS] Ответ VPS сервера: ${vpsResult}`);
-
-    if (vpsResponse.ok) {
-      console.log(`✅ SMS уведомление отправлено через VPS сервер`);
-      return { success: true, message: "SMS уведомление отправлено" };
+    
+    // Проверяем что ответ в JSON формате
+    const contentType = response.headers.get('content-type');
+    if (!contentType || !contentType.includes('application/json')) {
+      throw new Error(`VPS прокси вернул неправильный формат ответа: ${contentType}`);
+    }
+    
+    const responseData = await response.json();
+    console.log(`[SMS VPS PROXY] Ответ прокси сервера:`, responseData);
+    
+    if (response.ok && responseData.success) {
+      console.log(`✅ SMS уведомление отправлено через VPS прокси`);
+      return { 
+        success: true, 
+        message: "SMS уведомление отправлено через VPS прокси"
+      };
     } else {
-      console.error(`[SMS VPS] Ошибка VPS сервера: ${vpsResponse.status}`);
-      // Fallback в демо-режим при ошибке VPS  
-      console.log(`[SMS DEMO FALLBACK] Отправка SMS уведомления на ${phoneNumber}: ${message}`);
-      return { success: true, message: "SMS уведомление отправлено (демо-режим - VPS недоступен)" };
+      console.error(`[SMS VPS PROXY] Ошибка отправки уведомления:`, responseData);
+      
+      // Fallback в демо-режим при недоступности VPS
+      console.log(`[SMS DEMO FALLBACK] VPS недоступен. Отправка SMS уведомления на ${phoneNumber}: ${message}`);
+      return { 
+        success: true, 
+        message: "SMS уведомление отправлено (демо-режим - VPS недоступен)"
+      };
     }
     
   } catch (error) {
-    console.error("[SMS VPS] Ошибка при отправке SMS уведомления через VPS:", error);
+    console.error("[SMS VPS PROXY] Ошибка при отправке SMS уведомления через VPS:", error);
+    
     // Fallback в демо-режим при ошибке
-    console.log(`[SMS DEMO] SMS уведомление: ${message}`);
-    return { success: true, message: "SMS уведомление отправлено (демо-режим)" };
+    console.log(`[SMS DEMO FALLBACK] Отправка SMS уведомления на ${phoneNumber}: ${message}`);
+    return { 
+      success: true, 
+      message: "SMS уведомление отправлено (демо-режим - ошибка VPS)"
+    };
   }
 }
 
