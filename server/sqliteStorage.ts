@@ -1627,8 +1627,10 @@ export class SQLiteStorage implements IStorage {
       }
 
       // Генерируем новый номер лота в едином формате
-      const { generateLotNumber } = await import('../utils/lotNumberGenerator.js');
-      const newLotNumber = generateLotNumber();
+      const { generateUniqueLotNumber } = await import('./utils/lotNumberGenerator');
+      const existingListings = await this.getListingsByStatus('', 1000); // Get all to check lot numbers
+      const existingLotNumbers = existingListings.map(l => l.lotNumber);
+      const newLotNumber = generateUniqueLotNumber(existingLotNumbers);
       console.log('🆔 restartListing: Генерируем новый номер лота:', newLotNumber);
       
       // Создаем новый аукцион с данными оригинала
@@ -1905,8 +1907,10 @@ export class SQLiteStorage implements IStorage {
       deleteBidsStmt.run(listing.id);
       
       // Генерируем новый номер лота в едином формате
-      const { generateLotNumber } = await import('../utils/lotNumberGenerator.js');
-      const newLotNumber = generateLotNumber();
+      const { generateUniqueLotNumber } = await import('./utils/lotNumberGenerator');
+      const existingListings = await this.getListingsByStatus('', 1000); // Get all to check lot numbers
+      const existingLotNumbers = existingListings.map(l => l.lotNumber);
+      const newLotNumber = generateUniqueLotNumber(existingLotNumbers);
       console.log(`🆔 autoRestartListing: Генерируем новый номер лота: ${newLotNumber}`);
       
       // Обновляем аукцион: новые даты, новый номер лота, сбрасываем текущую ставку
