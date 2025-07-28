@@ -2419,6 +2419,9 @@ function ArchiveManagement() {
   // Мутация для перезапуска аукциона
   const restartListingMutation = useMutation({
     mutationFn: async (listingId: number) => {
+      console.log('🔄 АДМИН: Начинаем перезапуск аукциона ID:', listingId);
+      console.log('🔄 АДМИН: User данные:', user);
+      
       const response = await fetch(`/api/restart-listing/${listingId}`, {
         method: 'POST',
         headers: { 
@@ -2427,8 +2430,18 @@ function ArchiveManagement() {
           'x-user-email': user?.email || '+992 (90) 333-13-32@autoauction.tj'
         }
       });
-      if (!response.ok) throw new Error('Failed to restart listing');
-      return response.json();
+      
+      console.log('🔄 АДМИН: Ответ от сервера:', response.status, response.statusText);
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('❌ АДМИН: Ошибка от сервера:', errorText);
+        throw new Error(`Failed to restart listing: ${response.status} ${errorText}`);
+      }
+      
+      const result = await response.json();
+      console.log('✅ АДМИН: Успешный ответ:', result);
+      return result;
     },
     onSuccess: () => {
       toast({
