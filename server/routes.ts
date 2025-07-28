@@ -1532,6 +1532,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // API роут для перезапуска архивированного аукциона
+  app.post("/api/restart-listing/:id", adminAuth, async (req, res) => {
+    try {
+      const listingId = parseInt(req.params.id);
+      console.log(`🔄 Запрос на перезапуск аукциона ${listingId}`);
+      
+      const restartedListing = await storage.restartListing(listingId);
+      
+      if (!restartedListing) {
+        console.log(`❌ Не удалось перезапустить аукцион ${listingId} - возможно неправильный статус или ошибка`);
+        return res.status(400).json({ error: "Failed to restart listing. Make sure the listing exists and is archived." });
+      }
+      
+      console.log(`✅ Аукцион ${listingId} успешно перезапущен как новый аукцион ${restartedListing.id}`);
+      
+      // Очищаем все кэши после перезапуска
+      clearAllCaches();
+      
+      res.json({ 
+        message: "Listing restarted successfully", 
+        newListing: restartedListing 
+      });
+    } catch (error) {
+      console.error("Error restarting listing:", error);
+      res.status(500).json({ error: "Failed to restart listing" });
+    }
+  });
+
   app.put("/api/admin/listings/:id/status", async (req, res) => {
     try {
       const listingId = parseInt(req.params.id);
