@@ -2378,6 +2378,7 @@ function ArchiveManagement() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [deletingArchived, setDeletingArchived] = useState<any>(null);
+  const { user } = useAuth(); // Добавляем доступ к пользователю
   
   // Запросы для получения данных
   const { data: archivedListings, isLoading: isLoadingArchived } = useQuery({
