@@ -151,7 +151,48 @@ let wsManager: AuctionWebSocketManager;
 // Простая система принудительного обновления
 let lastBidUpdate = Date.now();
 
+// Middleware для получения пользователя из контекста
+const getUserFromContext = async (req: any, res: any, next: any) => {
+  // Пытаемся получить userId из различных источников
+  const authHeader = req.headers.authorization;
+  const userIdHeader = req.headers['x-user-id'];
+  const userEmailHeader = req.headers['x-user-email'];
+  
+  console.log('🔍 getUserFromContext headers:', {
+    authorization: authHeader ? 'present' : 'missing',
+    'x-user-id': userIdHeader,
+    'x-user-email': userEmailHeader
+  });
+  
+  if (userIdHeader) {
+    try {
+      const user = await storage.getUser(parseInt(userIdHeader));
+      if (user) {
+        req.user = user;
+        console.log('✅ Установлен пользователь из x-user-id:', user.id, user.email);
+      }
+    } catch (error) {
+      console.error('❌ Ошибка получения пользователя по ID:', error);
+    }
+  } else if (userEmailHeader) {
+    try {
+      const user = await storage.getUserByEmail(userEmailHeader);
+      if (user) {
+        req.user = user;
+        console.log('✅ Установлен пользователь из x-user-email:', user.id, user.email);
+      }
+    } catch (error) {
+      console.error('❌ Ошибка получения пользователя по email:', error);
+    }
+  }
+  
+  next();
+};
+
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Добавляем middleware для получения контекста пользователя
+  app.use(getUserFromContext);
+  
   // Отладка всех входящих POST запросов
   app.use((req, res, next) => {
     if (req.method === 'POST') {

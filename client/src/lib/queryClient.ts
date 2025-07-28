@@ -12,9 +12,27 @@ export async function apiRequest(
   url: string,
   data?: unknown | undefined,
 ): Promise<Response> {
+  // Получаем информацию о пользователе из localStorage для аутентификации
+  const userStr = localStorage.getItem('demo-user') || localStorage.getItem('currentUser');
+  const headers: HeadersInit = data ? { "Content-Type": "application/json" } : {};
+  
+  if (userStr) {
+    try {
+      const user = JSON.parse(userStr);
+      if (user.userId) {
+        headers['x-user-id'] = user.userId.toString();
+      }
+      if (user.email) {
+        headers['x-user-email'] = user.email;
+      }
+    } catch (error) {
+      console.warn('Ошибка парсинга пользователя из localStorage:', error);
+    }
+  }
+
   const res = await fetch(url, {
     method,
-    headers: data ? { "Content-Type": "application/json" } : {},
+    headers,
     body: data ? JSON.stringify(data) : undefined,
     credentials: "include",
   });
@@ -29,7 +47,26 @@ export const getQueryFn: <T>(options: {
 }) => QueryFunction<T> =
   ({ on401: unauthorizedBehavior }) =>
   async ({ queryKey }) => {
+    // Получаем информацию о пользователе для GET запросов
+    const userStr = localStorage.getItem('demo-user') || localStorage.getItem('currentUser');
+    const headers: HeadersInit = {};
+    
+    if (userStr) {
+      try {
+        const user = JSON.parse(userStr);
+        if (user.userId) {
+          headers['x-user-id'] = user.userId.toString();
+        }
+        if (user.email) {
+          headers['x-user-email'] = user.email;
+        }
+      } catch (error) {
+        console.warn('Ошибка парсинга пользователя из localStorage в getQueryFn:', error);
+      }
+    }
+
     const res = await fetch(queryKey[0] as string, {
+      headers,
       credentials: "include",
     });
 
