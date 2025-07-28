@@ -815,20 +815,21 @@ export class SQLiteStorage implements IStorage {
     try {
       if (row.photos) {
         if (typeof row.photos === 'string') {
-          photos = JSON.parse(row.photos);
+          // Проверяем двойное экранирование JSON
+          let parsedPhotos = JSON.parse(row.photos);
+          if (typeof parsedPhotos === 'string') {
+            // Если результат все еще строка, парсим еще раз
+            parsedPhotos = JSON.parse(parsedPhotos);
+          }
+          photos = Array.isArray(parsedPhotos) ? parsedPhotos : [];
         } else if (Array.isArray(row.photos)) {
           photos = row.photos;
         }
       }
       
-      // Только для объявления ID 31, 32 и 35 показываем отладку
-      if (row.id === 31 || row.id === 32 || row.id === 35) {
-        console.log(`🔍 Отладка для объявления ${row.id}:`);
-        console.log(`Raw photos type: ${typeof row.photos}`);
-        console.log(`Raw photos length: ${row.photos?.length || 0}`);
-        console.log(`Parsed photos count: ${photos.length}`);
-        console.log(`First photo preview: ${photos[0] ? photos[0].substring(0, 50) + '...' : 'none'}`);
-        console.log(`💰 ОТЛАДКА ЦЕН: starting_price=${row.starting_price}, current_bid=${row.current_bid}`);
+      // Отладка результата для проверки
+      if (row.id === 44 && photos.length > 0) {
+        console.log(`✅ ФОТОГРАФИИ ИСПРАВЛЕНЫ! Объявление ${row.id}: ${photos.length} фотографий`);
       }
     } catch (error) {
       console.error(`❌ Error parsing photos for listing ${row.id}:`, error);

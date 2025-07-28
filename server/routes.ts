@@ -311,8 +311,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         location: listing.location,
         batteryCapacity: listing.batteryCapacity,
         electricRange: listing.electricRange,
-        bidCount: bidCountsCache.get(listing.id) || 0
-        // Убираем фотографии из кэша для экономии памяти
+        bidCount: bidCountsCache.get(listing.id) || 0,
+        photos: listing.photos || [] // Добавляем фотографии в кэш для отображения
       }));
       
       cachedListings = fastListings;
@@ -466,7 +466,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         status: listing.status,
         auctionEndTime: listing.auctionEndTime,
         auctionStartTime: listing.auctionStartTime,
-        photos: [], // Убираем фотографии из списка для скорости
+        photos: listing.photos || [], // Возвращаем фотографии для отображения в карточках
         customsCleared: listing.customsCleared,
         recycled: listing.recycled,
         technicalInspectionValid: listing.technicalInspectionValid,
