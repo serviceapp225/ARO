@@ -131,8 +131,9 @@ const adminAuth = async (req: any, res: any, next: any) => {
   
   console.log('🔍 adminAuth phone check:', fullPhone, 'isAdmin:', isAdminByPhone, 'userRole:', user.role);
 
+  // Проверяем права доступа: роль admin ИЛИ номер телефона админа
   if (user.role !== 'admin' && !isAdminByPhone) {
-    console.log('❌ adminAuth: Недостаточно прав доступа');
+    console.log('❌ adminAuth: Недостаточно прав доступа', { role: user.role, isAdminByPhone, email: user.email });
     return res.status(403).json({ error: 'Access denied' });
   }
 
