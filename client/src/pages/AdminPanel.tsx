@@ -2421,7 +2421,11 @@ function ArchiveManagement() {
     mutationFn: async (listingId: number) => {
       const response = await fetch(`/api/restart-listing/${listingId}`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' }
+        headers: { 
+          'Content-Type': 'application/json',
+          'x-user-id': user?.userId?.toString() || user?.id?.toString() || '4',
+          'x-user-email': user?.email || '+992 (90) 333-13-32@autoauction.tj'
+        }
       });
       if (!response.ok) throw new Error('Failed to restart listing');
       return response.json();

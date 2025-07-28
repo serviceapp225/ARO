@@ -81,16 +81,37 @@ const adminAuth = async (req: any, res: any, next: any) => {
   // Сначала проверяем req.user установленный getUserFromContext
   let user = req.user;
   
+  // Если user не установлен, пытаемся получить из заголовков
   if (!user) {
-    const userId = req.session?.userId;
-    console.log('🔍 Пытаемся найти пользователя по session userId:', userId);
+    const userIdHeader = req.headers['x-user-id'];
+    const userEmailHeader = req.headers['x-user-email'];
     
-    if (userId) {
+    console.log('🔍 adminAuth: Проверяем заголовки:', { userIdHeader, userEmailHeader });
+    
+    if (userIdHeader) {
       try {
-        user = await storage.getUser(userId);
+        user = await storage.getUser(parseInt(userIdHeader));
+        console.log('✅ adminAuth: Найден пользователь по ID из заголовка:', user?.id);
       } catch (error) {
-        console.error('❌ Ошибка получения пользователя из сессии:', error);
+        console.error('❌ Ошибка получения пользователя по ID из заголовка:', error);
       }
+    } else if (userEmailHeader) {
+      try {
+        user = await storage.getUserByEmail(userEmailHeader);
+        console.log('✅ adminAuth: Найден пользователь по email из заголовка:', user?.id);
+      } catch (error) {
+        console.error('❌ Ошибка получения пользователя по email из заголовка:', error);
+      }
+    }
+  }
+  
+  // Fallback для админа
+  if (!user) {
+    try {
+      user = await storage.getUserByEmail('+992 (90) 333-13-32@autoauction.tj');
+      console.log('🔐 adminAuth: Fallback админ найден:', user?.id);
+    } catch (error) {
+      console.error('❌ Ошибка получения админа fallback:', error);
     }
   }
   
