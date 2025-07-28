@@ -1626,8 +1626,9 @@ export class SQLiteStorage implements IStorage {
         return undefined;
       }
 
-      // Генерируем новый номер лота
-      const newLotNumber = Date.now().toString();
+      // Генерируем новый номер лота в едином формате
+      const { generateLotNumber } = await import('../utils/lotNumberGenerator.js');
+      const newLotNumber = generateLotNumber();
       console.log('🆔 restartListing: Генерируем новый номер лота:', newLotNumber);
       
       // Создаем новый аукцион с данными оригинала
@@ -1903,7 +1904,12 @@ export class SQLiteStorage implements IStorage {
       const deleteBidsStmt = this.db.prepare('DELETE FROM bids WHERE listing_id = ?');
       deleteBidsStmt.run(listing.id);
       
-      // Обновляем аукцион: новые даты, сбрасываем текущую ставку
+      // Генерируем новый номер лота в едином формате
+      const { generateLotNumber } = await import('../utils/lotNumberGenerator.js');
+      const newLotNumber = generateLotNumber();
+      console.log(`🆔 autoRestartListing: Генерируем новый номер лота: ${newLotNumber}`);
+      
+      // Обновляем аукцион: новые даты, новый номер лота, сбрасываем текущую ставку
       const newStartTime = new Date();
       const newEndTime = new Date(newStartTime.getTime() + (listing.auctionDuration || 7) * 24 * 60 * 60 * 1000);
       
@@ -1912,6 +1918,7 @@ export class SQLiteStorage implements IStorage {
         SET auction_start_time = ?, 
             auction_end_time = ?, 
             current_bid = ?, 
+            lot_number = ?,
             status = 'active'
         WHERE id = ?
       `);
@@ -1920,6 +1927,7 @@ export class SQLiteStorage implements IStorage {
         newStartTime.toISOString(),
         newEndTime.toISOString(),
         listing.startingPrice,
+        newLotNumber,
         listing.id
       );
       
@@ -1929,12 +1937,12 @@ export class SQLiteStorage implements IStorage {
         await this.createNotification({
           userId,
           type: 'auction_restarted',
-          message: `Аукцион ${listing.make} ${listing.model} ${listing.year} перезапущен`,
+          message: `Аукцион ${listing.make} ${listing.model} ${listing.year} перезапущен с новым номером лота ${newLotNumber}`,
           data: { listingId: listing.id }
         });
       }
       
-      console.log(`🔄 Аукцион ${listing.id} успешно перезапущен`);
+      console.log(`🔄 Аукцион ${listing.id} успешно перезапущен с новым номером лота ${newLotNumber}`);
     } catch (error) {
       console.error(`❌ Ошибка при перезапуске аукциона ${listing.id}:`, error);
       throw error;
