@@ -105,15 +105,23 @@ export default function Messages() {
     },
     onSuccess: (data) => {
       console.log(`✅ Разговор создан с ID: ${data.id}`);
-      queryClient.invalidateQueries({ queryKey: ["/api/conversations", user?.userId] });
+      
+      // МГНОВЕННО устанавливаем selectedConversation для немедленного отображения поля ввода
       setSelectedConversation(data.id);
       console.log(`🔧 selectedConversation установлен в: ${data.id}`);
+      
+      // Обновляем кэш асинхронно, не блокируя UI
+      setTimeout(() => {
+        queryClient.invalidateQueries({ queryKey: ["/api/conversations", user?.userId] });
+      }, 100);
+      
       // Очищаем URL параметры
       window.history.replaceState({}, '', window.location.pathname);
+      
       toast({
-        title: "Разговор создан",
-        description: "Теперь вы можете написать сообщение ниже",
-        duration: 2000,
+        title: "Готово к общению",
+        description: "Поле ввода сообщений активировано",
+        duration: 1500,
       });
     },
     onError: (error: any) => {
@@ -140,7 +148,8 @@ export default function Messages() {
 
   // Эффект для автоматического создания разговора при наличии параметров
   useEffect(() => {
-    if (buyerId && sellerId && listingId && user && !createConversationMutation.isPending) {
+    if (buyerId && sellerId && listingId && user && !createConversationMutation.isPending && !createConversationMutation.isSuccess) {
+      console.log(`🚀 Создаем разговор: buyerId=${buyerId}, sellerId=${sellerId}, listingId=${listingId}`);
       createConversationMutation.mutate({
         buyerId: parseInt(buyerId),
         sellerId: parseInt(sellerId),
@@ -154,6 +163,7 @@ export default function Messages() {
     if (conversationId && conversations) {
       const targetConversation = conversations.find(c => c.id === parseInt(conversationId));
       if (targetConversation) {
+        console.log(`🎯 Автоматически выбираем разговор ${conversationId} из URL`);
         setSelectedConversation(targetConversation.id);
         // Очищаем URL параметры
         window.history.replaceState({}, '', window.location.pathname);
@@ -330,18 +340,12 @@ export default function Messages() {
 
           
           <div className="p-4 space-y-4">
-            {conversations.map((conversation) => {
-              console.log(`🔍 Отображение переписки ${conversation.id}, selectedConversation=${selectedConversation}, равны=${selectedConversation === conversation.id}`);
-              return (
+            {conversations.map((conversation) => (
               <div key={conversation.id} className="bg-white/70 backdrop-blur-sm rounded-2xl shadow-lg overflow-hidden">
                 {/* Заголовок переписки */}
                 <div
                   className="p-4 cursor-pointer hover:bg-white/90 transition-all duration-300"
-                  onClick={() => {
-                    const newSelection = selectedConversation === conversation.id ? null : conversation.id;
-                    console.log(`🔧 Клик по переписке ${conversation.id}, устанавливаем selectedConversation=${newSelection}`);
-                    setSelectedConversation(newSelection);
-                  }}
+                  onClick={() => setSelectedConversation(selectedConversation === conversation.id ? null : conversation.id)}
                 >
                   <div className="flex items-center gap-3">
                     <div className="relative">
@@ -464,8 +468,7 @@ export default function Messages() {
                   </div>
                 )}
               </div>
-              );
-            })}
+            ))}
           </div>
         </div>
       </div>
