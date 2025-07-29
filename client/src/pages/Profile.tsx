@@ -73,7 +73,7 @@ export default function Profile() {
     { icon: Globe, label: "Поменять язык", action: () => setLocation("/language") },
     { icon: HelpCircle, label: "Правила и условия", action: () => setLocation("/terms") },
     { icon: FileText, label: "Политика конфиденциальности", action: () => setLocation("/privacy") },
-    { icon: MessageCircle, label: "Связаться с оператором", action: () => window.open("https://wa.me/992900000000", "_blank") },
+    { icon: MessageCircle, label: "Связаться с оператором", action: () => window.open("https://wa.me/992903331332", "_blank") },
   ];
 
   if (!user) {
@@ -185,11 +185,11 @@ export default function Profile() {
                 </div>
                 <h3 className="font-medium text-yellow-800 mb-2">Аккаунт не активирован</h3>
                 <p className="text-sm text-yellow-700 mb-4">
-                  Для активации аккаунта необходимо пройти верификацию. Обратитесь в службу поддержки через WhatsApp или по номеру 9000000.
+                  Для активации аккаунта необходимо пройти верификацию. Обратитесь в службу поддержки через WhatsApp или по номеру +992903331332.
                 </p>
                 <div className="flex gap-2">
                   <button
-                    onClick={() => window.open("https://wa.me/992000000000?text=Здравствуйте! Мне нужно активировать аккаунт на AUTOBID.TJ", "_blank")}
+                    onClick={() => window.open("https://wa.me/992903331332?text=Здравствуйте! Мне нужно активировать аккаунт на AUTOBID.TJ", "_blank")}
                     className="bg-yellow-600 text-white px-6 py-2 rounded-lg text-sm font-medium hover:bg-yellow-700 transition-colors"
                   >
                     Связаться с поддержкой
