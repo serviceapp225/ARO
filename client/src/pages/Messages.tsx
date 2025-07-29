@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "wouter";
+import { useAuctionWebSocket } from "@/hooks/useAuctionWebSocket";
 
 interface ConversationData {
   id: number;
@@ -64,6 +65,9 @@ export default function Messages() {
   const [messageText, setMessageText] = useState("");
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  
+  // WebSocket подключение для мгновенных уведомлений о сообщениях
+  const { isConnected } = useAuctionWebSocket();
 
   // Автоматическое обновление счетчика непрочитанных сообщений при открытии страницы
   useEffect(() => {

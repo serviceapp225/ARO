@@ -114,6 +114,13 @@ class AuctionWebSocketManager {
           this.handleBidPlacement(message.listingId, message.bidderId, message.amount, client);
         }
         break;
+      case 'new_message':
+        // НОВАЯ СИСТЕМА: Мгновенное уведомление о новом сообщении
+        if (message.recipientId && message.messageData) {
+          console.log(`💬 WebSocket уведомление о новом сообщении для пользователя ${message.recipientId}`);
+          this.notifyNewMessage(message.recipientId, message.messageData);
+        }
+        break;
     }
   }
 
@@ -379,6 +386,26 @@ class AuctionWebSocketManager {
     });
     
     console.log(`📬 Уведомление отправлено пользователю ${userId} на ${sentCount} устройств`);
+  }
+
+  // НОВЫЙ МЕТОД: Мгновенное уведомление о новом сообщении
+  public notifyNewMessage(recipientId: number, messageData: any) {
+    let sentCount = 0;
+    
+    // Ищем всех клиентов получателя
+    this.clients.forEach(client => {
+      if (client.userId === recipientId && client.ws.readyState === WebSocket.OPEN) {
+        this.sendMessage(client, {
+          type: 'new_message_notification',
+          messageData,
+          timestamp: Date.now()
+        });
+        sentCount++;
+      }
+    });
+    
+    console.log(`💬 Уведомление о новом сообщении отправлено пользователю ${recipientId} на ${sentCount} устройств`);
+    return sentCount > 0;
   }
 
   public getStats() {

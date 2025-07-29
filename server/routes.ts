@@ -2728,6 +2728,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Инициализируем WebSocket для real-time обновлений
   wsManager = new AuctionWebSocketManager(httpServer);
   
+  // Делаем wsManager доступным глобально для использования в других местах
+  (global as any).wsManager = wsManager;
+  
   // Запускаем автоматическую обработку просроченных аукционов каждые 5 минут
   setInterval(async () => {
     try {
@@ -2820,6 +2823,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const message = await storage.createMessage({ conversationId, senderId, content });
       console.log(`✅ Сообщение создано успешно:`, message);
+      
+      // Получаем информацию о переписке для определения получателя
+      const conversation = await storage.getConversationById(conversationId);
+      if (conversation) {
+        // Определяем получателя (не отправителя)
+        const recipientId = conversation.buyerId === senderId ? conversation.sellerId : conversation.buyerId;
+        
+        // Отправляем мгновенное WebSocket уведомление получателю
+        if (global.wsManager) {
+          console.log(`💬 Отправляем WebSocket уведомление о новом сообщении пользователю ${recipientId}`);
+          global.wsManager.notifyNewMessage(recipientId, {
+            conversationId,
+            message,
+            senderName: message.senderName || 'Пользователь'
+          });
+        }
+      }
       
       // ДЕМО: Сбрасываем флаг посещения страницы сообщений для появления красного значка
       resetMessageVisitedFlag();

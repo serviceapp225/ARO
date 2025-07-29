@@ -322,6 +322,35 @@ export function useAuctionWebSocket(): AuctionWebSocketHook {
         }
         break;
         
+      case 'new_message_notification':
+        // НОВАЯ СИСТЕМА: Мгновенные уведомления о новых сообщениях
+        console.log('💬 Получено уведомление о новом сообщении:', message);
+        
+        if (currentUserId && typeof currentUserId === 'number') {
+          // Мгновенно обновляем кэш переписок
+          queryClient.invalidateQueries({ queryKey: [`/api/conversations/user/${currentUserId}`] });
+          
+          // Если текущая переписка открыта, обновляем сообщения
+          if (message.messageData?.conversationId) {
+            queryClient.invalidateQueries({ 
+              queryKey: [`/api/conversations/${message.messageData.conversationId}/messages`] 
+            });
+          }
+          
+          // Обновляем счетчик непрочитанных сообщений
+          queryClient.invalidateQueries({ queryKey: [`/api/messages/unread-count/${currentUserId}`] });
+          
+          // Динамически импортируем toast для показа уведомления
+          import('@/hooks/use-toast').then(({ toast }) => {
+            toast({
+              title: "💬 Новое сообщение",
+              description: `От ${message.messageData?.senderName || 'пользователя'}`,
+              duration: 3000,
+            });
+          });
+        }
+        break;
+        
       case 'hot_auction_mode':
         setIsHotAuction(message.data?.isHot || false);
         console.log(`🔥 Режим горячего аукциона: ${message.data?.isHot ? 'ВКЛЮЧЕН' : 'отключен'}`);
