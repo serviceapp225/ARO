@@ -2847,21 +2847,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
             // ШАГ 3: Определяем получателя и отправляем WebSocket уведомление
             const recipientId = conversation.buyerId === senderId ? conversation.sellerId : conversation.buyerId;
             console.log(`🔄 ШАГ 3: Отправляем WebSocket уведомление получателю ${recipientId}`);
+            console.log(`📊 Данные переписки: buyerId=${conversation.buyerId}, sellerId=${conversation.sellerId}, senderId=${senderId}`);
             
             try {
               if (global.wsManager) {
-                global.wsManager.notifyNewMessage(recipientId, {
+                const notificationSent = global.wsManager.notifyNewMessage(recipientId, {
                   conversationId,
                   message,
                   senderName: message.senderName || 'Пользователь'
                 });
-                console.log(`✅ ШАГ 3 ЗАВЕРШЕН: WebSocket уведомление отправлено`);
+                console.log(`✅ ШАГ 3 ЗАВЕРШЕН: WebSocket уведомление отправлено=${notificationSent} получателю ${recipientId}`);
               } else {
                 console.log(`⚠️ ШАГ 3: global.wsManager недоступен, пропускаем WebSocket уведомление`);
               }
             } catch (wsError) {
               console.error(`❌ ШАГ 3 ОШИБКА WebSocket:`, wsError);
             }
+          } else {
+            console.log(`❌ ШАГ 2: Переписка не найдена для conversationId=${conversationId}, senderId=${senderId}`);
           }
         } catch (conversationError) {
           console.error(`❌ ШАГ 2 ОШИБКА получения переписки:`, conversationError);

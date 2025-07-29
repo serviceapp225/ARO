@@ -349,6 +349,10 @@ export function useAuctionWebSocket(): AuctionWebSocketHook {
           // Обновляем счетчик непрочитанных сообщений
           queryClient.invalidateQueries({ queryKey: [`/api/messages/unread-count/${currentUserId}`] });
           
+          // КРИТИЧНО: Сигнализируем странице сообщений об обновлении через localStorage
+          console.log('🔄 REAL-TIME: Отправляем сигнал странице сообщений для принудительного обновления');
+          localStorage.setItem('force-refresh-messages', Date.now().toString());
+          
           // Динамически импортируем toast для показа уведомления
           import('@/hooks/use-toast').then(({ toast }) => {
             toast({

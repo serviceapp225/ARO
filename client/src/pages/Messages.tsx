@@ -68,6 +68,41 @@ export default function Messages() {
   
   // WebSocket подключение для мгновенных уведомлений о сообщениях
   const { isConnected } = useAuctionWebSocket();
+  
+  // Принудительное обновление данных при получении WebSocket уведомлений
+  useEffect(() => {
+    if (!user?.userId) return;
+    
+    console.log('🔄 REAL-TIME: Настройка слушателя WebSocket для принудительного обновления сообщений');
+    
+    const handleStorageChange = (event: StorageEvent) => {
+      if (event.key === 'force-refresh-messages') {
+        console.log('🔄 REAL-TIME: Получен сигнал обновления сообщений, принудительно обновляем данные');
+        
+        // Принудительно обновляем переписки
+        queryClient.invalidateQueries({ queryKey: ["/api/conversations", user.userId] });
+        
+        // Принудительно обновляем счетчик непрочитанных
+        queryClient.invalidateQueries({ queryKey: [`/api/messages/unread-count/${user.userId}`] });
+        
+        // Если есть выбранная переписка, обновляем её сообщения
+        if (selectedConversation) {
+          queryClient.invalidateQueries({ 
+            queryKey: [`/api/conversations/${selectedConversation}/messages`] 
+          });
+        }
+        
+        // Убираем сигнал
+        localStorage.removeItem('force-refresh-messages');
+      }
+    };
+    
+    window.addEventListener('storage', handleStorageChange);
+    
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
+  }, [user?.userId, selectedConversation, queryClient]);
 
   // Автоматическое обновление счетчика непрочитанных сообщений при открытии страницы
   useEffect(() => {
