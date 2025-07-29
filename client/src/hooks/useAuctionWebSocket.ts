@@ -45,11 +45,17 @@ export function useAuctionWebSocket(): AuctionWebSocketHook {
       "+992 (22) 222-22-22": 18,
       "+992 (41) 111-11-11": 15,
       "+992 (88) 888-88-88": 17,
+      "+992 (88) 747-77-00": 19,  // Пользователь 19
+      "+992 (93) 805-88-33": 20,  // Пользователь 20
+      "+992 (98) 766-77-39": 22,  // Пользователь 22
       "+992903331332": 4,
       "+992111111111": 3,
       "+992222222222": 18,
       "+992411111111": 15,
-      "+992888888888": 17
+      "+992888888888": 17,
+      "+992887477700": 19,
+      "+992938058833": 20,
+      "+992987667739": 22
     };
     
     return phoneToUserIdMap[user?.phoneNumber || ''] || null;
@@ -327,11 +333,14 @@ export function useAuctionWebSocket(): AuctionWebSocketHook {
         console.log('💬 Получено уведомление о новом сообщении:', message);
         
         if (currentUserId && typeof currentUserId === 'number') {
-          // Мгновенно обновляем кэш переписок
-          queryClient.invalidateQueries({ queryKey: [`/api/conversations/user/${currentUserId}`] });
+          console.log('🔄 REAL-TIME: Обновляем кэш сообщений для пользователя', currentUserId);
+          
+          // Мгновенно обновляем кэш переписок (правильный queryKey)
+          queryClient.invalidateQueries({ queryKey: ["/api/conversations", currentUserId] });
           
           // Если текущая переписка открыта, обновляем сообщения
           if (message.messageData?.conversationId) {
+            console.log('🔄 REAL-TIME: Обновляем сообщения переписки', message.messageData.conversationId);
             queryClient.invalidateQueries({ 
               queryKey: [`/api/conversations/${message.messageData.conversationId}/messages`] 
             });
