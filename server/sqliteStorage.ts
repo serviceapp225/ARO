@@ -1989,6 +1989,7 @@ export class SQLiteStorage implements IStorage {
 
   // Messaging methods
   async getConversationsByUser(userId: number): Promise<Conversation[]> {
+    console.log(`🔍 SQLite getConversationsByUser: userId=${userId}`);
     const stmt = this.db.prepare(`
       SELECT c.*, 
              u1.full_name as buyer_name, u1.email as buyer_email,
@@ -2006,6 +2007,8 @@ export class SQLiteStorage implements IStorage {
       ORDER BY c.created_at DESC
     `);
     const rows = stmt.all(userId, userId, userId);
+    console.log(`🔍 SQL результат для пользователя ${userId}: ${rows.length} строк`);
+    console.log(`🔍 Первая строка:`, rows[0] ? { id: rows[0].id, buyer_id: rows[0].buyer_id, seller_id: rows[0].seller_id, listing_id: rows[0].listing_id } : 'отсутствует');
     return rows.map(row => {
       const isUserBuyer = row.buyer_id === userId;
       const otherUserName = isUserBuyer ? row.seller_name : row.buyer_name;
