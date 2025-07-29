@@ -104,13 +104,16 @@ export default function Messages() {
       return res.json();
     },
     onSuccess: (data) => {
+      console.log(`✅ Разговор создан с ID: ${data.id}`);
       queryClient.invalidateQueries({ queryKey: ["/api/conversations", user?.userId] });
       setSelectedConversation(data.id);
+      console.log(`🔧 selectedConversation установлен в: ${data.id}`);
       // Очищаем URL параметры
       window.history.replaceState({}, '', window.location.pathname);
       toast({
         title: "Разговор создан",
-        description: "Вы можете начать общение с продавцом",
+        description: "Теперь вы можете написать сообщение ниже",
+        duration: 2000,
       });
     },
     onError: (error: any) => {
@@ -327,12 +330,18 @@ export default function Messages() {
 
           
           <div className="p-4 space-y-4">
-            {conversations.map((conversation) => (
+            {conversations.map((conversation) => {
+              console.log(`🔍 Отображение переписки ${conversation.id}, selectedConversation=${selectedConversation}, равны=${selectedConversation === conversation.id}`);
+              return (
               <div key={conversation.id} className="bg-white/70 backdrop-blur-sm rounded-2xl shadow-lg overflow-hidden">
                 {/* Заголовок переписки */}
                 <div
                   className="p-4 cursor-pointer hover:bg-white/90 transition-all duration-300"
-                  onClick={() => setSelectedConversation(selectedConversation === conversation.id ? null : conversation.id)}
+                  onClick={() => {
+                    const newSelection = selectedConversation === conversation.id ? null : conversation.id;
+                    console.log(`🔧 Клик по переписке ${conversation.id}, устанавливаем selectedConversation=${newSelection}`);
+                    setSelectedConversation(newSelection);
+                  }}
                 >
                   <div className="flex items-center gap-3">
                     <div className="relative">
@@ -455,7 +464,8 @@ export default function Messages() {
                   </div>
                 )}
               </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </div>
