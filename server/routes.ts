@@ -2821,32 +2821,61 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Message content is required" });
       }
       
+      // ШАГ 1: Создаем сообщение
+      console.log(`🔄 ШАГ 1: Создаем сообщение в базе данных`);
       const message = await storage.createMessage({ conversationId, senderId, content });
-      console.log(`✅ Сообщение создано успешно:`, message);
+      console.log(`✅ ШАГ 1 ЗАВЕРШЕН: Сообщение создано успешно:`, message);
       
-      // Получаем информацию о переписке для определения получателя
-      const conversation = await storage.getConversationById(conversationId);
-      if (conversation) {
-        // Определяем получателя (не отправителя)
-        const recipientId = conversation.buyerId === senderId ? conversation.sellerId : conversation.buyerId;
+      // ШАГ 2: Получаем информацию о переписке
+      console.log(`🔄 ШАГ 2: Получаем информацию о переписке ${conversationId}`);
+      try {
+        const conversation = await storage.getConversationById(conversationId);
+        console.log(`✅ ШАГ 2 ЗАВЕРШЕН: Получена переписка:`, conversation);
         
-        // Отправляем мгновенное WebSocket уведомление получателю
-        if (global.wsManager) {
-          console.log(`💬 Отправляем WebSocket уведомление о новом сообщении пользователю ${recipientId}`);
-          global.wsManager.notifyNewMessage(recipientId, {
-            conversationId,
-            message,
-            senderName: message.senderName || 'Пользователь'
-          });
+        if (conversation) {
+          // ШАГ 3: Определяем получателя и отправляем WebSocket уведомление
+          const recipientId = conversation.buyerId === senderId ? conversation.sellerId : conversation.buyerId;
+          console.log(`🔄 ШАГ 3: Отправляем WebSocket уведомление получателю ${recipientId}`);
+          
+          try {
+            if (global.wsManager) {
+              global.wsManager.notifyNewMessage(recipientId, {
+                conversationId,
+                message,
+                senderName: message.senderName || 'Пользователь'
+              });
+              console.log(`✅ ШАГ 3 ЗАВЕРШЕН: WebSocket уведомление отправлено`);
+            } else {
+              console.log(`⚠️ ШАГ 3: global.wsManager недоступен, пропускаем WebSocket уведомление`);
+            }
+          } catch (wsError) {
+            console.error(`❌ ШАГ 3 ОШИБКА WebSocket:`, wsError);
+            // Не прерываем выполнение, продолжаем
+          }
         }
+      } catch (conversationError) {
+        console.error(`❌ ШАГ 2 ОШИБКА получения переписки:`, conversationError);
+        // Не прерываем выполнение, продолжаем
       }
       
-      // ДЕМО: Сбрасываем флаг посещения страницы сообщений для появления красного значка
-      resetMessageVisitedFlag();
+      // ШАГ 4: Сбрасываем демо флаг
+      console.log(`🔄 ШАГ 4: Сбрасываем демо флаг посещения страницы сообщений`);
+      try {
+        resetMessageVisitedFlag();
+        console.log(`✅ ШАГ 4 ЗАВЕРШЕН: Демо флаг сброшен`);
+      } catch (demoError) {
+        console.error(`❌ ШАГ 4 ОШИБКА демо функции:`, demoError);
+        // Не прерываем выполнение, продолжаем
+      }
       
+      // ШАГ 5: Возвращаем успешный ответ
+      console.log(`🔄 ШАГ 5: Возвращаем успешный ответ клиенту`);
       res.status(201).json(message);
+      console.log(`✅ ШАГ 5 ЗАВЕРШЕН: Ответ 201 отправлен клиенту успешно`);
+      
     } catch (error) {
-      console.error("❌ Ошибка создания сообщения:", error);
+      console.error("❌ КРИТИЧЕСКАЯ ОШИБКА создания сообщения:", error);
+      console.error("❌ Stack trace:", error.stack);
       res.status(500).json({ error: "Failed to send message" });
     }
   });
