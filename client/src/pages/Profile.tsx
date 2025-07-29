@@ -100,24 +100,8 @@ export default function Profile() {
       {/* Header */}
       <header className="bg-white shadow-sm border-b border-gray-200">
         <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-center">
             <h1 className="text-2xl font-bold text-gray-900">Профиль</h1>
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={() => {
-                refetchUser();
-                refreshUserStatus();
-                toast({
-                  title: "Данные обновлены",
-                  description: "Информация профиля обновлена",
-                  duration: 1000
-                });
-              }}
-            >
-              <Edit className="w-4 h-4 mr-2" />
-              Обновить
-            </Button>
           </div>
         </div>
       </header>
