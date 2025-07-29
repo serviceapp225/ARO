@@ -108,13 +108,11 @@ app.use((req, res, next) => {
     serveStatic(app);
   }
 
-  // ALWAYS serve the app on port 5000
-  // this serves both the API and the client.
-  // It is the only port that is not firewalled.
-  // Отключаем автоматическое архивирование для лучшей производительности
-  // Архивирование доступно через админ панель по требованию
-
-  const port = process.env.PORT || 5000;
+  // DEPLOYMENT: Use PORT from environment or fallback to 3000 for Replit deployment
+  // Replit deployment expects port 3000 to be the primary port
+  // Development mode uses 5000 as configured in workflow
+  
+  const port = process.env.PORT || (process.env.NODE_ENV === 'production' ? 3000 : 5000);
   server.listen({
     port: Number(port),
     host: "0.0.0.0",
