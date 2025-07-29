@@ -709,18 +709,7 @@ export default function AuctionDetail() {
                 </p>
               </div>
 
-              {/* Car Description */}
-              {auction.description && (
-                <>
-                  <Separator />
-                  <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
-                    <h4 className="font-medium text-blue-700 mb-2">Описание</h4>
-                    <p className="text-sm text-blue-900 leading-relaxed whitespace-pre-wrap">
-                      {auction.description}
-                    </p>
-                  </div>
-                </>
-              )}
+
 
               <Separator />
 

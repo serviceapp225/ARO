@@ -1235,17 +1235,6 @@ export default function AuctionDetail() {
                     <span className="text-green-700 font-medium">Текущая цена</span>
                     <span className="font-semibold text-green-900">{getCurrentBid().toLocaleString()} Сомони</span>
                   </div>
-                  {/* Описание автомобиля */}
-                  {auction.description && (
-                    <div className="col-span-full py-3 px-4 rounded-lg bg-blue-50 border border-blue-200">
-                      <div className="mb-2">
-                        <span className="text-blue-700 font-medium">Описание</span>
-                      </div>
-                      <div className="text-blue-900 text-sm leading-relaxed whitespace-pre-wrap">
-                        {auction.description}
-                      </div>
-                    </div>
-                  )}
                   {/* Характеристики электромобиля */}
                   {(auction.fuelType === 'Электро' || auction.fuelType === 'electric') && (
                     <>
@@ -1300,6 +1289,21 @@ export default function AuctionDetail() {
                   <span className="font-semibold text-gray-900">{auction.location || 'Не указан'}</span>
                 </div>
               </div>
+
+              {/* Описание автомобиля */}
+              {auction.description && (
+                <div className="mb-6">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                    <Car className="w-5 h-5 text-blue-600" />
+                    Описание
+                  </h3>
+                  <div className="py-3 px-4 rounded-lg bg-blue-50 border border-blue-200">
+                    <p className="text-blue-900 text-sm leading-relaxed whitespace-pre-wrap">
+                      {auction.description}
+                    </p>
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>
