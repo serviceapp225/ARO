@@ -2838,10 +2838,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       setTimeout(async () => {
         try {
           console.log(`🔄 ШАГ 2: Получаем информацию о переписке ${conversationId}`);
-          // Получаем переписку через существующий метод
-          const conversations = await storage.getConversationsByUser(senderId);
-          const conversation = conversations.find(c => c.id === conversationId);
+          // Получаем переписку напрямую по ID
+          const conversation = await storage.getConversationById(conversationId);
           console.log(`✅ ШАГ 2 ЗАВЕРШЕН: Получена переписка`, conversation ? 'найдена' : 'не найдена');
+          console.log(`📊 Переписка:`, conversation ? {id: conversation.id, buyerId: conversation.buyerId, sellerId: conversation.sellerId} : 'null');
           
           if (conversation) {
             // ШАГ 3: Определяем получателя и отправляем WebSocket уведомление
