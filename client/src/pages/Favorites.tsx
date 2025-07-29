@@ -201,14 +201,11 @@ export default function Favorites() {
       {/* Header */}
       <header className="bg-white shadow-sm border-b border-neutral-200">
         <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold text-neutral-900">Избранное</h1>
-              <p className="text-neutral-600 mt-1">
-                {favoriteAuctions.length} {favoriteAuctions.length === 1 ? 'автомобиль' : 'автомобилей'}
-              </p>
-            </div>
-            <Heart className="w-6 h-6 text-red-500 fill-current" />
+          <div className="flex flex-col items-center justify-center text-center">
+            <h1 className="text-2xl font-bold text-neutral-900">Избранное</h1>
+            <p className="text-neutral-600 mt-1">
+              {favoriteAuctions.length} {favoriteAuctions.length === 1 ? 'автомобиль' : 'автомобилей'}
+            </p>
           </div>
         </div>
       </header>
