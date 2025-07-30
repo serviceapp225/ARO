@@ -2534,6 +2534,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         user = await storage.createUser({
           email: emailFromPhone,
           username: normalizedPhone,
+          phoneNumber: normalizedPhone, // Добавляем номер телефона в отдельное поле
           fullName: null,
           isActive: false, // По умолчанию все новые пользователи неактивны
           role: 'buyer'
