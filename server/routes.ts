@@ -2528,6 +2528,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const emailFromPhone = normalizedPhone.replace(/\D/g, '') + '@autoauction.tj';
       let user = await storage.getUserByEmail(emailFromPhone);
       
+      // Дополнительная проверка на дубликаты по номеру телефона
+      if (!user) {
+        // Проверяем, нет ли уже пользователя с таким номером телефона
+        const cleanPhone = normalizedPhone.replace(/\D/g, '');
+        const allUsers = await storage.getAllUsers();
+        const existingUserByPhone = allUsers.find(u => {
+          if (!u.phoneNumber) return false;
+          const existingCleanPhone = u.phoneNumber.replace(/\D/g, '');
+          return existingCleanPhone === cleanPhone;
+        });
+        
+        if (existingUserByPhone) {
+          console.log(`⚠️ Найден существующий пользователь с номером ${normalizedPhone}: ID ${existingUserByPhone.id}`);
+          return res.json({ 
+            success: true, 
+            message: "Код подтвержден",
+            phoneNumber: normalizedPhone,
+            user: {
+              id: existingUserByPhone.id,
+              email: existingUserByPhone.email,
+              isActive: existingUserByPhone.isActive
+            }
+          });
+        }
+      }
+      
       // Если пользователь не существует, создаем его как неактивного
       if (!user) {
         // Защита от создания дубликата админского номера
