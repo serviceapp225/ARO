@@ -18,6 +18,33 @@ import { UserDetailModal } from '@/components/UserDetailModal';
 import { ListingEditModal } from '@/components/ListingEditModal';
 import type { User, CarListing, Notification, AdvertisementCarousel } from '@shared/schema';
 
+// Функция для форматирования номера телефона
+function formatPhoneNumber(phoneNumber: string | null | undefined): string {
+  if (!phoneNumber) return 'Не указан';
+  
+  // Если номер уже отформатирован, возвращаем как есть
+  if (phoneNumber.includes('(') && phoneNumber.includes(')')) {
+    return phoneNumber;
+  }
+  
+  // Убираем все символы кроме цифр
+  const cleanNumber = phoneNumber.replace(/\D/g, '');
+  
+  // Если номер начинается с 992, форматируем как таджикский номер
+  if (cleanNumber.startsWith('992') && cleanNumber.length >= 12) {
+    const number = cleanNumber.substring(3); // убираем 992
+    return `+992 (${number.substring(0, 2)}) ${number.substring(2, 5)}-${number.substring(5, 7)}-${number.substring(7, 9)}`;
+  }
+  
+  // Если номер 9 цифр (без кода страны), добавляем +992
+  if (cleanNumber.length === 9) {
+    return `+992 (${cleanNumber.substring(0, 2)}) ${cleanNumber.substring(2, 5)}-${cleanNumber.substring(5, 7)}-${cleanNumber.substring(7, 9)}`;
+  }
+  
+  // Если номер не соответствует ожидаемому формату, возвращаем исходный
+  return phoneNumber;
+}
+
 export default function AdminPanel() {
   const { user, loading } = useAuth();
   const { toast } = useToast();
@@ -796,9 +823,9 @@ function UsersManagement() {
                 <div className="flex-1">
                   <div className="flex items-center gap-3">
                     <div>
-                      <p className="font-medium">{user.fullName || user?.phoneNumber}</p>
+                      <p className="font-medium">{user.fullName || formatPhoneNumber(user?.phoneNumber)}</p>
                       <p className="text-sm text-gray-600 dark:text-gray-300">
-                        {user?.phoneNumber} • {user.role}
+                        {formatPhoneNumber(user?.phoneNumber)} • {user.role}
                       </p>
                       {(user as any).isInvited && (
                         <p className="text-xs text-green-600">
