@@ -1,6 +1,8 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
+import fs from "fs";
+import path from "path";
 import { db } from "./db";
 import { carListings, notifications, alertViews, carAlerts } from "../shared/schema";
 import { eq, sql } from "drizzle-orm";
@@ -3079,6 +3081,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
       timestamp: new Date().toISOString(),
       message: "Сервер работает нормально"
     });
+  });
+
+  // 🔧 ИСПРАВЛЕНИЕ DEPLOYMENT ROUTING: Catch-all роут для SPA (Single Page Application)
+  // Все запросы которые НЕ начинаются с /api/ должны возвращать index.html
+  // Это позволяет клиентскому роутингу (React Router / Wouter) обрабатывать пути вроде /auction/123
+  app.get("*", (req, res, next) => {
+    // Если это API запрос, пропускаем его к следующему middleware 
+    if (req.path.startsWith("/api/")) {
+      return next();
+    }
+    
+    // В development режиме статические файлы обслуживаются через Vite
+    // SPA fallback нужен только в production режиме
+    if (process.env.NODE_ENV !== "production") {
+      console.log(`🔧 SPA FALLBACK (DEVELOPMENT): ${req.path} → пропускаем к Vite`);
+      return next();
+    }
+    
+    // Для всех остальных путей (/auction/123, /profile, /admin, etc.) 
+    // возвращаем index.html чтобы клиентский роутинг мог обработать путь
+    console.log(`🔧 SPA FALLBACK (PRODUCTION): ${req.path} → index.html (для клиентского роутинга)`);
+    
+    // В production режиме путь к index.html
+    const publicPath = path.resolve(import.meta.dirname, "public");
+    const indexPath = path.resolve(publicPath, "index.html");
+    
+    if (fs.existsSync(indexPath)) {
+      res.sendFile(indexPath);
+    } else {
+      // Если файл не найден, отправляем 404
+      res.status(404).json({ 
+        error: "Page not found",
+        message: "Клиентские файлы не найдены. Убедитесь что приложение собрано правильно."
+      });
+    }
   });
   
   return httpServer;
