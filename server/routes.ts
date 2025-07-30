@@ -2530,6 +2530,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Если пользователь не существует, создаем его как неактивного
       if (!user) {
+        // Защита от создания дубликата админского номера
+        const adminPhoneNumbers = ['+992903331332', '+992 (90) 333-13-32'];
+        const isAdminPhone = adminPhoneNumbers.some(adminPhone => 
+          normalizedPhone.replace(/\D/g, '') === adminPhone.replace(/\D/g, '')
+        );
+        
+        if (isAdminPhone) {
+          console.log(`⚠️ Попытка создания аккаунта с админским номером: ${normalizedPhone}`);
+          return res.status(400).json({ 
+            error: "Этот номер зарезервирован для администрации" 
+          });
+        }
+        
         console.log(`Creating new inactive user for phone: ${normalizedPhone}`);
         user = await storage.createUser({
           email: emailFromPhone,
