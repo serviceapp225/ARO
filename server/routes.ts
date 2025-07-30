@@ -2806,6 +2806,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       })));
       res.json(conversations);
     } catch (error) {
+      const userId = parseInt(req.query.userId as string) || 'unknown';
       console.error(`❌ Ошибка получения переписок для пользователя ${userId}:`, error);
       res.status(500).json({ error: "Failed to fetch conversations" });
     }
