@@ -754,8 +754,13 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getSellCarSection(): Promise<SellCarSection | undefined> {
-    const [section] = await db.select().from(sellCarSection).limit(1);
-    return section || undefined;
+    try {
+      const [section] = await db.select().from(sellCarSection).limit(1);
+      return section || undefined;
+    } catch (error) {
+      console.error('Error getting sell car section:', error);
+      return undefined;
+    }
   }
 
   async updateSellCarSection(data: Partial<InsertSellCarSection>): Promise<SellCarSection | undefined> {
@@ -926,8 +931,8 @@ export class DatabaseStorage implements IStorage {
         .from(messages)
         .where(
           and(
-            eq(messages.receiverId, userId),
-            eq(messages.isRead, false)
+            sql`receiver_id = ${userId}`,
+            sql`is_read = false`
           )
         );
       return result?.count || 0;
