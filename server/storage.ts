@@ -410,9 +410,17 @@ export class DatabaseStorage implements IStorage {
   async updateListingStatus(id: number, status: string): Promise<CarListing | undefined> {
     const updateData: any = { status };
     
-    // When activating a listing, set auction start time
+    // When activating a listing, set auction start and end times
     if (status === "active") {
-      updateData.auctionStartTime = new Date();
+      const now = new Date();
+      updateData.auctionStartTime = now;
+      
+      // Get the listing to find auction duration
+      const [existingListing] = await db.select().from(carListings).where(eq(carListings.id, id));
+      const auctionDuration = existingListing?.auctionDuration || 7; // Default 7 days
+      
+      // Calculate auction end time (duration in days * 24 hours * 60 minutes * 60 seconds * 1000 milliseconds)
+      updateData.auctionEndTime = new Date(now.getTime() + (auctionDuration * 24 * 60 * 60 * 1000));
     }
     
     const [listing] = await db
