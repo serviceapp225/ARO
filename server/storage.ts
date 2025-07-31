@@ -867,11 +867,136 @@ export class DatabaseStorage implements IStorage {
       return false;
     }
   }
+
+  async getRecentWonListings(hoursLimit: number): Promise<CarListing[]> {
+    const cutoffDate = new Date(Date.now() - hoursLimit * 60 * 60 * 1000);
+    return await db.select().from(carListings).where(
+      and(
+        eq(carListings.status, 'ended'),
+        sql`${carListings.endTime} >= ${cutoffDate}`
+      )
+    );
+  }
+
+  async processExpiredListings(): Promise<number> {
+    const now = new Date();
+    const result = await db
+      .update(carListings)
+      .set({ status: 'ended' })
+      .where(
+        and(
+          eq(carListings.status, 'active'),
+          sql`${carListings.endTime} <= ${now}`
+        )
+      );
+    return result.rowCount || 0;
+  }
+
+  async getWonListingWinnerInfo(listingId: number): Promise<{userId: number, fullName: string, currentBid: string} | undefined> {
+    const [listing] = await db.select().from(carListings).where(eq(carListings.id, listingId));
+    if (!listing || !listing.winnerId) return undefined;
+    
+    const [winner] = await db.select().from(users).where(eq(users.id, listing.winnerId));
+    if (!winner) return undefined;
+    
+    return {
+      userId: winner.id,
+      fullName: winner.fullName || 'Неизвестно',
+      currentBid: listing.currentBid || '0'
+    };
+  }
+
+  async getAdminStats(): Promise<{pendingListings: number; activeAuctions: number; totalUsers: number; bannedUsers: number}> {
+    const [pendingResult] = await db.select({ count: sql<number>`count(*)` }).from(carListings).where(eq(carListings.status, 'pending'));
+    const [activeResult] = await db.select({ count: sql<number>`count(*)` }).from(carListings).where(eq(carListings.status, 'active'));
+    const [totalUsersResult] = await db.select({ count: sql<number>`count(*)` }).from(users);
+    const [bannedUsersResult] = await db.select({ count: sql<number>`count(*)` }).from(users).where(eq(users.isActive, false));
+    
+    return {
+      pendingListings: pendingResult.count,
+      activeAuctions: activeResult.count,
+      totalUsers: totalUsersResult.count,
+      bannedUsers: bannedUsersResult.count
+    };
+  }
+
+  async getUnreadMessageCount(userId: number): Promise<number> {
+    const [result] = await db.select({ count: sql<number>`count(*)` })
+      .from(messages)
+      .where(
+        and(
+          eq(messages.receiverId, userId),
+          eq(messages.isRead, false)
+        )
+      );
+    return result.count;
+  }
+
+  async getUserConversations(userId: number): Promise<(Conversation & { listing: CarListing; otherUser: User; lastMessage?: Message; unreadCount: number })[]> {
+    return [];
+  }
+
+  async getConversationsByUser(userId: number): Promise<any[]> {
+    return [];
+  }
+
+  async getConversation(listingId: number, buyerId: number, sellerId: number): Promise<Conversation | undefined> {
+    const [conversation] = await db.select().from(conversations).where(
+      and(
+        eq(conversations.listingId, listingId),
+        eq(conversations.buyerId, buyerId),
+        eq(conversations.sellerId, sellerId)
+      )
+    );
+    return conversation;
+  }
+
+  async getConversationByParticipants(buyerId: number, sellerId: number, listingId: number): Promise<Conversation | undefined> {
+    return this.getConversation(listingId, buyerId, sellerId);
+  }
+
+  async createConversation(conversation: InsertConversation): Promise<Conversation> {
+    const [newConversation] = await db.insert(conversations).values(conversation).returning();
+    return newConversation;
+  }
+
+  async getConversationMessages(conversationId: number): Promise<(Message & { sender: User })[]> {
+    return [];
+  }
+
+  async getMessagesByConversation(conversationId: number): Promise<any[]> {
+    return [];
+  }
+
+  async sendMessage(message: InsertMessage): Promise<Message> {
+    return this.createMessage(message);
+  }
+
+  async createMessage(message: InsertMessage): Promise<Message> {
+    const [newMessage] = await db.insert(messages).values(message).returning();
+    return newMessage;
+  }
+
+  async markMessagesAsRead(conversationId: number, userId: number): Promise<void> {
+    await db.update(messages)
+      .set({ isRead: true })
+      .where(
+        and(
+          eq(messages.conversationId, conversationId),
+          eq(messages.receiverId, userId)
+        )
+      );
+  }
+
+  async markMessageAsRead(messageId: number): Promise<boolean> {
+    const result = await db.update(messages)
+      .set({ isRead: true })
+      .where(eq(messages.id, messageId));
+    return (result.rowCount || 0) > 0;
+  }
 }
 
-// PostgreSQL-only storage implementation
-class PostgreSQLStorage implements IStorage {
-  // Implement interface methods using db instance
-}
+// PostgreSQL-only storage implementation - use the Database class
+const storage = new DatabaseStorage();
 
-export const storage = new PostgreSQLStorage();
+export { storage };
