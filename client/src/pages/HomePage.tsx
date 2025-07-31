@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { ActiveAuctions } from "@/components/ActiveAuctions";
-import { DynamicSellCarBanner } from "@/components/DynamicSellCarBanner";
+import { SellCarBanner } from "@/components/SellCarBanner";
 import { AdvertisementCarousel } from "@/components/AdvertisementCarousel";
 import { TopHeader } from "@/components/TopHeader";
 import { Link } from "wouter";
@@ -20,11 +20,7 @@ export default function HomePage() {
   const { user } = useAuth();
 
   // Поэтапная загрузка для мгновенного отображения основных элементов
-  const { data: bannerData, isLoading: bannerLoading } = useQuery({
-    queryKey: ['/api/sell-car-banner'],
-    staleTime: 60 * 60 * 1000, // 1 час кэширования для статических данных
-    gcTime: 2 * 60 * 60 * 1000, // 2 часа в памяти
-  });
+  // Убрали загрузку sell-car-banner, используем статический компонент
 
   const { data: carouselData, isLoading: carouselLoading } = useQuery({
     queryKey: ['/api/advertisement-carousel'],
@@ -102,12 +98,8 @@ export default function HomePage() {
           </form>
         </div>
 
-        {/* Dynamic Sell Car Banner - показываем с плейсхолдером */}
-        {bannerLoading ? (
-          <div className="h-44 rounded-2xl bg-gray-200 animate-pulse"></div>
-        ) : (
-          <DynamicSellCarBanner />
-        )}
+        {/* Sell Car Banner - статический банер с красивыми фото */}
+        <SellCarBanner />
 
         {/* Advertisement Carousel - показываем с плейсхолдером */}
         {carouselLoading ? (
