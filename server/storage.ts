@@ -305,7 +305,13 @@ export class DatabaseStorage implements IStorage {
         currentBid: row.current_bid,
         status: row.status,
         auctionEndTime: row.auction_end_time,
-        photos: [`/api/listings/${row.id}/photo/0`],
+        photos: [
+          `/api/listings/${row.id}/photo/0`,
+          `/api/listings/${row.id}/photo/1`,
+          `/api/listings/${row.id}/photo/2`,
+          `/api/listings/${row.id}/photo/3`,
+          `/api/listings/${row.id}/photo/4`
+        ],
         createdAt: new Date(),
         updatedAt: null,
         customsCleared: row.customs_cleared || false,
