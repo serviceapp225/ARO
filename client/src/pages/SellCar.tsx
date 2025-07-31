@@ -412,7 +412,7 @@ export default function SellCar() {
         startingPrice: formData.price,
         reservePrice: formData.reservePrice || null,
         photos: uploadedImages, // Array of photo URLs
-        auctionDuration: parseInt(formData.auctionDuration) * 24, // Convert days to hours
+        auctionDuration: parseInt(formData.auctionDuration), // Keep as days
         customsCleared: formData.customsCleared === 'yes',
         recycled: formData.recycled === 'yes',
         technicalInspectionValid: formData.technicalInspectionValid === 'yes',
