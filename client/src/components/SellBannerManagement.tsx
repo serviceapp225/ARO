@@ -13,24 +13,18 @@ import { z } from "zod";
 import { Car, Save, Eye } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-
-interface Banner {
-  id: number;
-  title: string;
-  description?: string;
-  imageUrl: string;
-  linkUrl?: string;
-  position: string;
-  isActive: boolean;
-  order: number;
-  createdAt: string;
-}
+import type { SellCarBanner } from "@shared/schema";
 
 const sellBannerSchema = z.object({
   title: z.string().min(1, "Название обязательно"),
   description: z.string().optional(),
-  imageUrl: z.string().url("Некорректный URL изображения"),
+  buttonText: z.string().optional(),
   linkUrl: z.string().optional(),
+  backgroundImageUrl: z.string().url("Некорректный URL изображения").optional(),
+  gradientFrom: z.string().optional(),
+  gradientTo: z.string().optional(),
+  textColor: z.string().optional(),
+  overlayOpacity: z.number().min(0).max(1).optional(),
   isActive: z.boolean(),
 });
 
@@ -40,52 +34,51 @@ export function SellBannerManagement() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Загружаем банер "Начать продажу" (тот что с order = 0)
-  const { data: banners = [], isLoading } = useQuery<Banner[]>({
-    queryKey: ['/api/banners'],
+  // Загружаем банер "Продай свое авто" из таблицы sell_car_banner
+  const { data: sellBanner = null, isLoading } = useQuery<SellCarBanner | null>({
+    queryKey: ['/api/sell-car-banner'],
     queryFn: async () => {
-      const response = await fetch('/api/banners?position=main');
-      if (!response.ok) throw new Error('Failed to fetch banners');
+      const response = await fetch('/api/sell-car-banner');
+      if (!response.ok) throw new Error('Failed to fetch sell car banner');
       return response.json();
     }
   });
 
-  const sellBanner = banners.find(banner => banner.order === 0) || null;
-
   const form = useForm<SellBannerFormData>({
     resolver: zodResolver(sellBannerSchema),
     defaultValues: {
-      title: sellBanner?.title || "Начать продажу",
-      description: sellBanner?.description || "Продайте свой автомобиль быстро и выгодно на AUTOBID.TJ",
-      imageUrl: sellBanner?.imageUrl || "https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?w=800&h=300&fit=crop",
-      linkUrl: sellBanner?.linkUrl || "/sell-car",
+      title: sellBanner?.title || "Продай свое авто",
+      description: sellBanner?.description || "Получи максимальную цену за свой автомобиль на нашем аукционе",
+      buttonText: sellBanner?.buttonText || "Начать продажу",
+      linkUrl: sellBanner?.linkUrl || "/sell",
+      backgroundImageUrl: sellBanner?.backgroundImageUrl || "https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?w=800&h=300&fit=crop",
+      gradientFrom: sellBanner?.gradientFrom || "#059669",
+      gradientTo: sellBanner?.gradientTo || "#047857",
+      textColor: sellBanner?.textColor || "#ffffff",
+      overlayOpacity: sellBanner?.overlayOpacity || 0.6,
       isActive: sellBanner?.isActive ?? true,
     },
     values: sellBanner ? {
       title: sellBanner.title,
       description: sellBanner.description || "",
-      imageUrl: sellBanner.imageUrl,
+      buttonText: sellBanner.buttonText || "",
       linkUrl: sellBanner.linkUrl || "",
+      backgroundImageUrl: sellBanner.backgroundImageUrl || "",
+      gradientFrom: sellBanner.gradientFrom || "",
+      gradientTo: sellBanner.gradientTo || "",
+      textColor: sellBanner.textColor || "",
+      overlayOpacity: sellBanner.overlayOpacity || 0.6,
       isActive: sellBanner.isActive,
     } : undefined,
   });
 
   const updateMutation = useMutation({
     mutationFn: (data: SellBannerFormData) => {
-      if (sellBanner) {
-        return apiRequest('PUT', `/api/admin/banners/${sellBanner.id}`, data);
-      } else {
-        return apiRequest('POST', '/api/admin/banners', {
-          ...data,
-          position: "main",
-          order: 0
-        });
-      }
+      return apiRequest('PUT', '/api/admin/sell-car-banner', data);
     },
     onSuccess: () => {
-      // Обновляем все кеши связанные с банерами
-      queryClient.invalidateQueries({ queryKey: ['/api/banners'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/banners', 'main'] });
+      // Обновляем кеш для sell car banner
+      queryClient.invalidateQueries({ queryKey: ['/api/sell-car-banner'] });
       toast({ title: "Банер обновлен", description: "Изменения сохранены успешно" });
     },
     onError: (error: any) => {
@@ -148,7 +141,7 @@ export function SellBannerManagement() {
               <h4 className="font-medium mb-3">Предпросмотр банера:</h4>
               <div className="relative overflow-hidden rounded-lg">
                 <img 
-                  src={form.watch("imageUrl")} 
+                  src={form.watch("backgroundImageUrl")} 
                   alt="Предпросмотр"
                   className="w-full h-32 object-cover"
                   onError={(e) => {
@@ -156,12 +149,18 @@ export function SellBannerManagement() {
                     target.src = "https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?w=800&h=300&fit=crop";
                   }}
                 />
-                <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-                  <div className="text-center text-white space-y-2">
+                <div 
+                  className="absolute inset-0 flex items-center justify-center"
+                  style={{
+                    background: `linear-gradient(135deg, ${form.watch("gradientFrom")}, ${form.watch("gradientTo")})`,
+                    opacity: form.watch("overlayOpacity")
+                  }}
+                >
+                  <div className="text-center space-y-2" style={{ color: form.watch("textColor") }}>
                     <h3 className="font-bold">{form.watch("title")}</h3>
                     <p className="text-sm opacity-90">{form.watch("description")}</p>
                     <div className="bg-white text-gray-900 px-4 py-2 rounded text-sm font-medium">
-                      Начать продажу
+                      {form.watch("buttonText")}
                     </div>
                   </div>
                 </div>
@@ -202,12 +201,90 @@ export function SellBannerManagement() {
 
             <FormField
               control={form.control}
-              name="imageUrl"
+              name="buttonText"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>URL изображения</FormLabel>
+                  <FormLabel>Текст кнопки</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Начать продажу" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="backgroundImageUrl"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>URL фонового изображения</FormLabel>
                   <FormControl>
                     <Input placeholder="https://example.com/image.jpg" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="gradientFrom"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Начальный цвет градиента</FormLabel>
+                  <FormControl>
+                    <Input placeholder="#059669" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="gradientTo"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Конечный цвет градиента</FormLabel>
+                  <FormControl>
+                    <Input placeholder="#047857" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="textColor"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Цвет текста</FormLabel>
+                  <FormControl>
+                    <Input placeholder="#ffffff" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="overlayOpacity"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Прозрачность оверлея (0-1)</FormLabel>
+                  <FormControl>
+                    <Input 
+                      type="number" 
+                      step="0.1" 
+                      min="0" 
+                      max="1" 
+                      placeholder="0.6" 
+                      {...field} 
+                      onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

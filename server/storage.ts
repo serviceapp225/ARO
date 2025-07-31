@@ -1,4 +1,4 @@
-import { users, carListings, bids, favorites, notifications, carAlerts, banners, sellCarSection, advertisementCarousel, documents, alertViews, userWins, conversations, messages, type User, type InsertUser, type CarListing, type InsertCarListing, type Bid, type InsertBid, type Favorite, type InsertFavorite, type Notification, type InsertNotification, type CarAlert, type InsertCarAlert, type Banner, type InsertBanner, type SellCarSection, type InsertSellCarSection, type AdvertisementCarousel, type InsertAdvertisementCarousel, type Document, type InsertDocument, type AlertView, type InsertAlertView, type UserWin, type InsertUserWin, type Conversation, type InsertConversation, type Message, type InsertMessage } from "@shared/schema";
+import { users, carListings, bids, favorites, notifications, carAlerts, banners, sellCarSection, sellCarBanner, advertisementCarousel, documents, alertViews, userWins, conversations, messages, type User, type InsertUser, type CarListing, type InsertCarListing, type Bid, type InsertBid, type Favorite, type InsertFavorite, type Notification, type InsertNotification, type CarAlert, type InsertCarAlert, type Banner, type InsertBanner, type SellCarSection, type InsertSellCarSection, type SellCarBanner, type InsertSellCarBanner, type AdvertisementCarousel, type InsertAdvertisementCarousel, type Document, type InsertDocument, type AlertView, type InsertAlertView, type UserWin, type InsertUserWin, type Conversation, type InsertConversation, type Message, type InsertMessage } from "@shared/schema";
 import { db, pool } from "./db";
 import { eq, and, desc, sql, or, ilike, inArray, isNull, gte, lte } from "drizzle-orm";
 
@@ -67,6 +67,11 @@ export interface IStorage {
   // Sell Car Section operations
   getSellCarSection(): Promise<SellCarSection | undefined>;
   updateSellCarSection(data: Partial<InsertSellCarSection>): Promise<SellCarSection | undefined>;
+
+  // Sell Car Banner operations
+  getSellCarBanner(): Promise<SellCarBanner | undefined>;
+  createSellCarBanner(data: InsertSellCarBanner): Promise<SellCarBanner>;
+  updateSellCarBanner(data: Partial<InsertSellCarBanner>): Promise<SellCarBanner | undefined>;
 
   // Advertisement Carousel operations
   getAdvertisementCarousel(): Promise<AdvertisementCarousel[]>;
@@ -1092,6 +1097,42 @@ export class DatabaseStorage implements IStorage {
       winningBid: lastBid.amount.toString(),
       createdAt: lastBid.createdAt || new Date()
     } as UserWin;
+  }
+
+  // Sell Car Banner operations
+  async getSellCarBanner(): Promise<SellCarBanner | undefined> {
+    const [banner] = await db.select().from(sellCarBanner).limit(1);
+    return banner;
+  }
+
+  async createSellCarBanner(data: InsertSellCarBanner): Promise<SellCarBanner> {
+    const [created] = await db
+      .insert(sellCarBanner)
+      .values(data)
+      .returning();
+    return created;
+  }
+
+  async updateSellCarBanner(data: Partial<InsertSellCarBanner>): Promise<SellCarBanner | undefined> {
+    // Сначала проверяем, есть ли уже запись
+    const existing = await this.getSellCarBanner();
+    
+    if (existing) {
+      // Обновляем существующую запись
+      const [updated] = await db
+        .update(sellCarBanner)
+        .set({ ...data, updatedAt: new Date() })
+        .where(eq(sellCarBanner.id, existing.id))
+        .returning();
+      return updated;
+    } else {
+      // Создаем новую запись
+      const [created] = await db
+        .insert(sellCarBanner)
+        .values(data as InsertSellCarBanner)
+        .returning();
+      return created;
+    }
   }
 }
 

@@ -7,7 +7,7 @@ import { db } from "./db";
 import { carListings, notifications, alertViews, carAlerts } from "../shared/schema";
 import { eq, sql } from "drizzle-orm";
 import sharp from "sharp";
-import { insertCarListingSchema, insertBidSchema, insertFavoriteSchema, insertNotificationSchema, insertCarAlertSchema, insertBannerSchema, type CarAlert } from "@shared/schema";
+import { insertCarListingSchema, insertBidSchema, insertFavoriteSchema, insertNotificationSchema, insertCarAlertSchema, insertBannerSchema, insertSellCarBannerSchema, type CarAlert } from "@shared/schema";
 import { z } from "zod";
 import AuctionWebSocketManager from "./websocket";
 import { createHash } from "crypto";
@@ -1868,6 +1868,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+
+
   // Sell Car Section routes
   app.get("/api/sell-car-section", async (req, res) => {
     try {
@@ -2009,17 +2011,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
       setCache(cacheKey, banner);
       res.json(banner);
     } catch (error) {
+      console.error("💥 Ошибка загрузки банера sell-car-banner:", error);
       res.status(500).json({ error: "Failed to fetch sell car banner" });
     }
   });
 
   app.put("/api/admin/sell-car-banner", async (req, res) => {
     try {
-      const bannerData = req.body; // Will validate in storage
+      console.log("🔧 Обновление банера sell-car-banner:", req.body);
+      
+      const bannerData = req.body;
       const banner = await storage.updateSellCarBanner(bannerData);
+      
+      if (!banner) {
+        console.log("❌ Не удалось обновить банер sell-car-banner");
+        return res.status(404).json({ error: "Failed to update sell car banner" });
+      }
+      
+      console.log("✅ Банер sell-car-banner успешно обновлен:", banner);
       clearCachePattern('sell_car_banner');
       res.json(banner);
     } catch (error) {
+      console.error("💥 Ошибка обновления банера sell-car-banner:", error);
       res.status(500).json({ error: "Failed to update sell car banner" });
     }
   });
