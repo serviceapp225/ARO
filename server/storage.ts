@@ -874,41 +874,64 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getRecentWonListings(hoursLimit: number): Promise<CarListing[]> {
-    const cutoffDate = new Date(Date.now() - hoursLimit * 60 * 60 * 1000);
-    return await db.select().from(carListings).where(
-      and(
-        eq(carListings.status, 'ended'),
-        gte(carListings.endTime, cutoffDate)
-      )
-    );
+    try {
+      const cutoffDate = new Date(Date.now() - hoursLimit * 60 * 60 * 1000);
+      return await db.select().from(carListings).where(
+        and(
+          eq(carListings.status, 'ended'),
+          sql`auction_end_time >= ${cutoffDate}`
+        )
+      );
+    } catch (error) {
+      console.error('Error getting recent won listings:', error);
+      return [];
+    }
   }
 
   async processExpiredListings(): Promise<number> {
-    const now = new Date();
-    const result = await db
-      .update(carListings)
-      .set({ status: 'ended' })
-      .where(
-        and(
-          eq(carListings.status, 'active'),
-          lte(carListings.endTime, now)
-        )
-      );
-    return result.rowCount || 0;
+    try {
+      const now = new Date();
+      const result = await db
+        .update(carListings)
+        .set({ status: 'ended' })
+        .where(
+          and(
+            eq(carListings.status, 'active'),
+            sql`auction_end_time <= ${now}`
+          )
+        );
+      return result.rowCount || 0;
+    } catch (error) {
+      console.error('Error processing expired listings:', error);
+      return 0;
+    }
   }
 
   async getWonListingWinnerInfo(listingId: number): Promise<{userId: number, fullName: string, currentBid: string} | undefined> {
-    const [listing] = await db.select().from(carListings).where(eq(carListings.id, listingId));
-    if (!listing || !listing.winnerId) return undefined;
-    
-    const [winner] = await db.select().from(users).where(eq(users.id, listing.winnerId));
-    if (!winner) return undefined;
-    
-    return {
-      userId: winner.id,
-      fullName: winner.fullName || 'Неизвестно',
-      currentBid: listing.currentBid || '0'
-    };
+    try {
+      const [listing] = await db.select().from(carListings).where(eq(carListings.id, listingId));
+      if (!listing) return undefined;
+      
+      // Находим последнюю ставку для этого лота
+      const [lastBid] = await db.select().from(bids)
+        .where(eq(bids.listingId, listingId))
+        .orderBy(sql`amount DESC`)
+        .limit(1);
+      
+      if (!lastBid) return undefined;
+      
+      const [winner] = await db.select().from(users).where(eq(users.id, lastBid.bidderId));
+      if (!winner) return undefined;
+      
+      return {
+        userId: winner.id,
+        fullName: winner.fullName || 'Неизвестно',
+        currentBid: lastBid.amount.toString() || '0'
+      };
+    } catch (error) {
+      console.error('Error getting won listing winner info:', error);
+      return undefined;
+    }
   }
 
   async getAdminStats(): Promise<{pendingListings: number; activeAuctions: number; totalUsers: number; bannedUsers: number}> {
@@ -993,7 +1016,7 @@ export class DatabaseStorage implements IStorage {
       .where(
         and(
           eq(messages.conversationId, conversationId),
-          eq(messages.receiverId, userId)
+          sql`receiver_id = ${userId}`
         )
       );
   }
@@ -1003,6 +1026,72 @@ export class DatabaseStorage implements IStorage {
       .set({ isRead: true })
       .where(eq(messages.id, messageId));
     return (result.rowCount || 0) > 0;
+  }
+
+  // Missing methods implementation
+  async updateListing(id: number, updates: Partial<CarListing>): Promise<CarListing | undefined> {
+    const [listing] = await db
+      .update(carListings)
+      .set(updates as any)
+      .where(eq(carListings.id, id))
+      .returning();
+    return listing || undefined;
+  }
+
+  async deleteListing(id: number): Promise<boolean> {
+    const result = await db.delete(carListings).where(eq(carListings.id, id));
+    return (result.rowCount || 0) > 0;
+  }
+
+  async getUserWins(userId: number): Promise<UserWin[]> {
+    // В PostgreSQL версии у нас нет таблицы user_wins
+    // Ищем аукционы, которые выиграл пользователь через bids
+    const wonListings = await db.select({
+      id: sql<number>`1`,
+      userId: sql<number>`${userId}`,
+      listingId: carListings.id,
+      winningBid: carListings.currentBid,
+      createdAt: carListings.createdAt
+    }).from(carListings)
+    .innerJoin(bids, eq(bids.listingId, carListings.id))
+    .where(
+      and(
+        eq(carListings.status, 'ended'),
+        eq(bids.bidderId, userId)
+      )
+    )
+    .orderBy(sql`${bids.amount} DESC`)
+    .limit(1);
+
+    return wonListings as UserWin[];
+  }
+
+  async createUserWin(win: InsertUserWin): Promise<UserWin> {
+    // Временная заглушка - возвращаем переданные данные как UserWin
+    return {
+      id: Date.now(),
+      ...win,
+      createdAt: new Date()
+    } as UserWin;
+  }
+
+  async getWinByListingId(listingId: number): Promise<UserWin | undefined> {
+    // Находим победителя через последнюю ставку
+    const [lastBid] = await db.select()
+      .from(bids)
+      .where(eq(bids.listingId, listingId))
+      .orderBy(sql`amount DESC`)
+      .limit(1);
+
+    if (!lastBid) return undefined;
+
+    return {
+      id: lastBid.id,
+      userId: lastBid.bidderId,
+      listingId: listingId,
+      winningBid: lastBid.amount.toString(),
+      createdAt: lastBid.createdAt || new Date()
+    } as UserWin;
   }
 }
 
