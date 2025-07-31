@@ -501,7 +501,7 @@ function EditListingModal({ listing, onClose, onUpdate, isUpdating }: {
     description: listing.description,
     startingPrice: listing.startingPrice,
     reservePrice: listing.reservePrice ? String(listing.reservePrice) : '',
-    auctionDuration: Math.round((listing.auctionDuration || 168) / 24),
+    auctionDuration: listing.auctionDuration || 7,
     condition: listing.condition || 'good',
     location: listing.location || '',
     engine: listing.engine || '',
@@ -519,10 +519,10 @@ function EditListingModal({ listing, onClose, onUpdate, isUpdating }: {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Конвертируем дни обратно в часы для сохранения в базе данных
+    // Отправляем данные как есть - база данных теперь хранит дни
     const dataToSend = {
       ...formData,
-      auctionDuration: formData.auctionDuration * 24
+      auctionDuration: formData.auctionDuration
     };
     onUpdate(dataToSend);
   };
