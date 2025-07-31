@@ -231,6 +231,7 @@ export class DatabaseStorage implements IStorage {
         mileage: carListings.mileage,
         description: carListings.description,
         startingPrice: carListings.startingPrice,
+        reservePrice: carListings.reservePrice,
         currentBid: carListings.currentBid,
         auctionDuration: carListings.auctionDuration,
         status: carListings.status,
