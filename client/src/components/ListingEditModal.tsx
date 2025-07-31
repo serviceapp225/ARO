@@ -28,6 +28,8 @@ export function ListingEditModal({ listingId, isOpen, onClose }: ListingEditModa
   const [mileage, setMileage] = useState('');
   const [description, setDescription] = useState('');
   const [startingPrice, setStartingPrice] = useState('');
+  const [reservePrice, setReservePrice] = useState('');
+  const [auctionDuration, setAuctionDuration] = useState('');
   const [status, setStatus] = useState('');
   const [location, setLocation] = useState('');
   
@@ -68,6 +70,8 @@ export function ListingEditModal({ listingId, isOpen, onClose }: ListingEditModa
       setMileage(listing.mileage?.toString() || '');
       setDescription(listing.description || '');
       setStartingPrice(listing.startingPrice || '');
+      setReservePrice(listing.reservePrice || '');
+      setAuctionDuration(listing.auctionDuration?.toString() || '7');
       setStatus(listing.status || '');
       setLocation(listing.location || '');
       
@@ -104,6 +108,8 @@ export function ListingEditModal({ listingId, isOpen, onClose }: ListingEditModa
       setMileage('');
       setDescription('');
       setStartingPrice('');
+      setReservePrice('');
+      setAuctionDuration('7');
       setStatus('');
       setLocation('');
       
@@ -140,6 +146,8 @@ export function ListingEditModal({ listingId, isOpen, onClose }: ListingEditModa
       mileage: number;
       description: string;
       startingPrice: string;
+      reservePrice?: string;
+      auctionDuration?: number;
       status: string;
       location: string;
       // Additional specifications
@@ -208,6 +216,8 @@ export function ListingEditModal({ listingId, isOpen, onClose }: ListingEditModa
       mileage: parseInt(mileage) || 0,
       description: description.trim(),
       startingPrice: startingPrice.trim(),
+      reservePrice: reservePrice.trim() || undefined,
+      auctionDuration: parseInt(auctionDuration) || 7,
       status: status,
       location: location.trim(),
       // Additional specifications
@@ -297,7 +307,7 @@ export function ListingEditModal({ listingId, isOpen, onClose }: ListingEditModa
                 />
               </div>
               <div>
-                <Label htmlFor="startingPrice">Начальная цена *</Label>
+                <Label htmlFor="startingPrice">Начальная цена (сомони) *</Label>
                 <Input
                   id="startingPrice"
                   value={startingPrice}
@@ -305,6 +315,32 @@ export function ListingEditModal({ listingId, isOpen, onClose }: ListingEditModa
                   placeholder="10000"
                   required
                 />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="reservePrice">Резервная цена (сомони)</Label>
+                <Input
+                  id="reservePrice"
+                  value={reservePrice}
+                  onChange={(e) => setReservePrice(e.target.value)}
+                  placeholder="15000"
+                />
+              </div>
+              <div>
+                <Label htmlFor="auctionDuration">Продолжительность аукциона (дни)</Label>
+                <Select value={auctionDuration} onValueChange={setAuctionDuration}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Выберите длительность" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="1">1 день</SelectItem>
+                    <SelectItem value="3">3 дня</SelectItem>
+                    <SelectItem value="5">5 дней</SelectItem>
+                    <SelectItem value="7">7 дней</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
 
@@ -321,6 +357,17 @@ export function ListingEditModal({ listingId, isOpen, onClose }: ListingEditModa
                   <SelectItem value="rejected">Отклонен</SelectItem>
                 </SelectContent>
               </Select>
+            </div>
+
+            <div>
+              <Label htmlFor="description">Описание</Label>
+              <Textarea
+                id="description"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder="Подробное описание автомобиля..."
+                rows={4}
+              />
             </div>
 
             <div>
