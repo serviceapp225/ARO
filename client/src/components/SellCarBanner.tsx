@@ -70,7 +70,7 @@ export function SellCarBanner() {
             }}
           >
             <Plus className="w-4 h-4" />
-ТЕСТ - ЭТО ПРАВИЛЬНЫЙ БАННЕР! →
+            Начать продажу
           </span>
         </div>
       </div>
