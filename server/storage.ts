@@ -1,6 +1,6 @@
 import { users, carListings, bids, favorites, notifications, carAlerts, banners, sellCarSection, advertisementCarousel, documents, alertViews, userWins, conversations, messages, type User, type InsertUser, type CarListing, type InsertCarListing, type Bid, type InsertBid, type Favorite, type InsertFavorite, type Notification, type InsertNotification, type CarAlert, type InsertCarAlert, type Banner, type InsertBanner, type SellCarSection, type InsertSellCarSection, type AdvertisementCarousel, type InsertAdvertisementCarousel, type Document, type InsertDocument, type AlertView, type InsertAlertView, type UserWin, type InsertUserWin, type Conversation, type InsertConversation, type Message, type InsertMessage } from "@shared/schema";
 import { db, pool } from "./db";
-import { eq, and, desc, sql, or, ilike, inArray, isNull } from "drizzle-orm";
+import { eq, and, desc, sql, or, ilike, inArray, isNull, gte, lte } from "drizzle-orm";
 
 export interface IStorage {
   // User operations
@@ -873,7 +873,7 @@ export class DatabaseStorage implements IStorage {
     return await db.select().from(carListings).where(
       and(
         eq(carListings.status, 'ended'),
-        sql`${carListings.endTime} >= ${cutoffDate}`
+        gte(carListings.endTime, cutoffDate)
       )
     );
   }
@@ -886,7 +886,7 @@ export class DatabaseStorage implements IStorage {
       .where(
         and(
           eq(carListings.status, 'active'),
-          sql`${carListings.endTime} <= ${now}`
+          lte(carListings.endTime, now)
         )
       );
     return result.rowCount || 0;
@@ -921,15 +921,20 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getUnreadMessageCount(userId: number): Promise<number> {
-    const [result] = await db.select({ count: sql<number>`count(*)` })
-      .from(messages)
-      .where(
-        and(
-          eq(messages.receiverId, userId),
-          eq(messages.isRead, false)
-        )
-      );
-    return result.count;
+    try {
+      const [result] = await db.select({ count: sql<number>`count(*)` })
+        .from(messages)
+        .where(
+          and(
+            eq(messages.receiverId, userId),
+            eq(messages.isRead, false)
+          )
+        );
+      return result?.count || 0;
+    } catch (error) {
+      console.error('Error getting unread message count:', error);
+      return 0;
+    }
   }
 
   async getUserConversations(userId: number): Promise<(Conversation & { listing: CarListing; otherUser: User; lastMessage?: Message; unreadCount: number })[]> {
