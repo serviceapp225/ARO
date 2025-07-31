@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -20,11 +20,11 @@ const sellBannerSchema = z.object({
   description: z.string().optional(),
   buttonText: z.string().optional(),
   linkUrl: z.string().optional(),
-  backgroundImageUrl: z.string().url("Некорректный URL изображения").optional(),
+  backgroundImageUrl: z.string().url("Некорректный URL изображения").optional().or(z.literal("")),
   gradientFrom: z.string().optional(),
   gradientTo: z.string().optional(),
   textColor: z.string().optional(),
-  overlayOpacity: z.number().min(0).max(1).optional(),
+  overlayOpacity: z.number().min(0).max(100).optional(),
   isActive: z.boolean(),
 });
 
@@ -41,36 +41,44 @@ export function SellBannerManagement() {
       const response = await fetch('/api/sell-car-banner');
       if (!response.ok) throw new Error('Failed to fetch sell car banner');
       return response.json();
-    }
+    },
+    staleTime: 0,
+    refetchOnMount: true,
   });
 
   const form = useForm<SellBannerFormData>({
     resolver: zodResolver(sellBannerSchema),
     defaultValues: {
-      title: sellBanner?.title || "Продай свое авто",
-      description: sellBanner?.description || "Получи максимальную цену за свой автомобиль на нашем аукционе",
-      buttonText: sellBanner?.buttonText || "Начать продажу",
-      linkUrl: sellBanner?.linkUrl || "/sell",
-      backgroundImageUrl: sellBanner?.backgroundImageUrl || "https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?w=800&h=300&fit=crop",
-      gradientFrom: sellBanner?.gradientFrom || "#059669",
-      gradientTo: sellBanner?.gradientTo || "#047857",
-      textColor: sellBanner?.textColor || "#ffffff",
-      overlayOpacity: sellBanner?.overlayOpacity || 0.6,
-      isActive: sellBanner?.isActive ?? true,
+      title: "Продай свое авто",
+      description: "Получи максимальную цену за свой автомобиль на нашем аукционе",
+      buttonText: "Начать продажу",
+      linkUrl: "/sell",
+      backgroundImageUrl: "https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?w=800&h=300&fit=crop",
+      gradientFrom: "#059669",
+      gradientTo: "#047857",
+      textColor: "#ffffff",
+      overlayOpacity: 60,
+      isActive: true,
     },
-    values: sellBanner ? {
-      title: sellBanner.title,
-      description: sellBanner.description || "",
-      buttonText: sellBanner.buttonText || "",
-      linkUrl: sellBanner.linkUrl || "",
-      backgroundImageUrl: sellBanner.backgroundImageUrl || "",
-      gradientFrom: sellBanner.gradientFrom || "",
-      gradientTo: sellBanner.gradientTo || "",
-      textColor: sellBanner.textColor || "",
-      overlayOpacity: sellBanner.overlayOpacity || 0.6,
-      isActive: sellBanner.isActive,
-    } : undefined,
   });
+
+  // Обновляем форму при изменении данных банера
+  useEffect(() => {
+    if (sellBanner) {
+      form.reset({
+        title: sellBanner.title,
+        description: sellBanner.description || "",
+        buttonText: sellBanner.buttonText || "",
+        linkUrl: sellBanner.linkUrl || "",
+        backgroundImageUrl: sellBanner.backgroundImageUrl || "",
+        gradientFrom: sellBanner.gradientFrom || "",
+        gradientTo: sellBanner.gradientTo || "",
+        textColor: sellBanner.textColor || "",
+        overlayOpacity: sellBanner.overlayOpacity || 60,
+        isActive: sellBanner.isActive ?? true,
+      });
+    }
+  }, [sellBanner, form]);
 
   const updateMutation = useMutation({
     mutationFn: (data: SellBannerFormData) => {
@@ -153,7 +161,7 @@ export function SellBannerManagement() {
                   className="absolute inset-0 flex items-center justify-center"
                   style={{
                     background: `linear-gradient(135deg, ${form.watch("gradientFrom")}, ${form.watch("gradientTo")})`,
-                    opacity: form.watch("overlayOpacity")
+                    opacity: (form.watch("overlayOpacity") || 60) / 100
                   }}
                 >
                   <div className="text-center space-y-2" style={{ color: form.watch("textColor") }}>
@@ -274,16 +282,15 @@ export function SellBannerManagement() {
               name="overlayOpacity"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Прозрачность оверлея (0-1)</FormLabel>
+                  <FormLabel>Прозрачность оверлея (0-100%)</FormLabel>
                   <FormControl>
                     <Input 
                       type="number" 
-                      step="0.1" 
                       min="0" 
-                      max="1" 
-                      placeholder="0.6" 
+                      max="100" 
+                      placeholder="60" 
                       {...field} 
-                      onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                      onChange={(e) => field.onChange(parseInt(e.target.value) || 60)}
                     />
                   </FormControl>
                   <FormMessage />
@@ -340,7 +347,7 @@ export function SellBannerManagement() {
           <div className="mt-6 pt-6 border-t">
             <div className="text-sm text-gray-600 space-y-1">
               <p><strong>ID банера:</strong> {sellBanner.id}</p>
-              <p><strong>Создан:</strong> {new Date(sellBanner.createdAt).toLocaleString('ru-RU')}</p>
+              <p><strong>Создан:</strong> {sellBanner.createdAt ? new Date(sellBanner.createdAt).toLocaleString('ru-RU') : 'Неизвестно'}</p>
               <p><strong>Позиция:</strong> Главная страница (приоритет)</p>
             </div>
           </div>
