@@ -869,10 +869,9 @@ export class DatabaseStorage implements IStorage {
   }
 }
 
-// Используем SQLite для локальной разработки и PostgreSQL для продакшена
-const usePostgreSQL = process.env.NODE_ENV === 'production' || process.env.DATABASE_URL?.startsWith('postgres');
+// PostgreSQL-only storage implementation
+class PostgreSQLStorage implements IStorage {
+  // Implement interface methods using db instance
+}
 
-// Временно используем SQLite для разработки
-console.log('Инициализация SQLite базы данных...');
-import { SQLiteStorage } from './sqliteStorage';
-export const storage = new SQLiteStorage();
+export const storage = new PostgreSQLStorage();
