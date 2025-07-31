@@ -277,10 +277,12 @@ export class DatabaseStorage implements IStorage {
       console.log(`Starting ultra-fast main listings query for status: ${status}`);
       const startTime = Date.now();
       
-      // Ultra-fast raw SQL query with only essential fields + tinting & technical inspection
+      // Complete SQL query with all fields needed for moderation
       const result = await pool.query(`
         SELECT id, seller_id, lot_number, make, model, year, mileage,
-               starting_price, current_bid, status, auction_end_time, condition,
+               starting_price, current_bid, reserve_price, auction_duration, description,
+               status, auction_end_time, condition, engine, transmission, fuel_type,
+               body_type, drive_type, color, vin, location,
                customs_cleared, recycled, technical_inspection_valid, 
                technical_inspection_date, tinted, tinting_date
         FROM car_listings 
@@ -291,18 +293,23 @@ export class DatabaseStorage implements IStorage {
       
       console.log(`Ultra-fast main listings query completed in ${Date.now() - startTime}ms, found ${result.rows.length} listings`);
       
-      // Convert to expected format with minimal processing + real data from database
+      // Convert to expected format with complete data from database
       const listings = result.rows.map((row: any) => ({
         id: row.id,
         sellerId: row.seller_id,
+        customMakeModel: null,
+        endedAt: null,
+        batteryCapacity: null,
+        electricRange: null,
         lotNumber: row.lot_number,
         make: row.make,
         model: row.model,
         year: row.year,
         mileage: row.mileage,
-        description: '',
+        description: row.description || '',
         startingPrice: row.starting_price,
         currentBid: row.current_bid,
+        reservePrice: row.reserve_price,
         status: row.status,
         auctionEndTime: row.auction_end_time,
         photos: [
@@ -321,16 +328,16 @@ export class DatabaseStorage implements IStorage {
         tinted: row.tinted || false,
         tintingDate: row.tinting_date || null,
         condition: row.condition || 'good',
-        auctionDuration: 7,
+        auctionDuration: row.auction_duration || 7,
         auctionStartTime: null,
-        engine: null,
-        transmission: null,
-        fuelType: null,
-        bodyType: null,
-        driveType: null,
-        color: null,
-        vin: null,
-        location: null
+        engine: row.engine,
+        transmission: row.transmission,
+        fuelType: row.fuel_type,
+        bodyType: row.body_type,
+        driveType: row.drive_type,
+        color: row.color,
+        vin: row.vin,
+        location: row.location
       }));
       
       return listings as CarListing[];
