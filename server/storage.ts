@@ -276,10 +276,12 @@ export class DatabaseStorage implements IStorage {
       console.log(`Starting ultra-fast main listings query for status: ${status}`);
       const startTime = Date.now();
       
-      // Ultra-fast raw SQL query with only essential fields
+      // Ultra-fast raw SQL query with only essential fields + tinting & technical inspection
       const result = await pool.query(`
         SELECT id, seller_id, lot_number, make, model, year, mileage,
-               starting_price, current_bid, status, auction_end_time, condition
+               starting_price, current_bid, status, auction_end_time, condition,
+               customs_cleared, recycled, technical_inspection_valid, 
+               technical_inspection_date, tinted, tinting_date
         FROM car_listings 
         WHERE status = $1 
         ORDER BY created_at DESC 
@@ -288,7 +290,7 @@ export class DatabaseStorage implements IStorage {
       
       console.log(`Ultra-fast main listings query completed in ${Date.now() - startTime}ms, found ${result.rows.length} listings`);
       
-      // Convert to expected format with minimal processing
+      // Convert to expected format with minimal processing + real data from database
       const listings = result.rows.map((row: any) => ({
         id: row.id,
         sellerId: row.seller_id,
@@ -305,12 +307,12 @@ export class DatabaseStorage implements IStorage {
         photos: [`/api/listings/${row.id}/photo/0`],
         createdAt: new Date(),
         updatedAt: null,
-        customsCleared: true,
-        recycled: true,
-        technicalInspectionValid: false,
-        technicalInspectionDate: null,
-        tinted: false,
-        tintingDate: null,
+        customsCleared: row.customs_cleared || false,
+        recycled: row.recycled || false,
+        technicalInspectionValid: row.technical_inspection_valid || false,
+        technicalInspectionDate: row.technical_inspection_date || null,
+        tinted: row.tinted || false,
+        tintingDate: row.tinting_date || null,
         condition: row.condition || 'good',
         auctionDuration: 7,
         auctionStartTime: null,
