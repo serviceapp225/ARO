@@ -601,7 +601,22 @@ export default function AuctionDetail() {
                 <div className="flex items-center gap-3">
                   <Settings className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm">Техосмотр:</span>
-                  <span className="font-medium">{auction.technicalInspectionValid ? 'Действителен' : 'Не действителен'}</span>
+                  <span className="font-medium">
+                    {auction.technicalInspectionValid 
+                      ? `Действителен до ${auction.technicalInspectionDate || 'дата не указана'}`
+                      : 'Не действителен'
+                    }
+                  </span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <Settings className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm">Тонировка:</span>
+                  <span className="font-medium">
+                    {auction.tinted 
+                      ? `Да (${auction.tintingDate || 'дата не указана'})`
+                      : 'Нет'
+                    }
+                  </span>
                 </div>
               </div>
             </CardContent>
