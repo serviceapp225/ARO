@@ -128,13 +128,12 @@ export default function MyWins() {
                     <div className="relative w-24 h-16 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
                       {win.listing?.photos && win.listing.photos.length > 0 ? (
                         <LazyCarImage
-                          src={`/api/listings/${win.listingId}/photo/1`}
-                          alt={`${win.listing.make} ${win.listing.model}`}
-                          listingId={win.listingId}
+                          listingId={String(win.listingId)}
                           make={win.listing.make}
                           model={win.listing.model}
                           year={win.listing.year}
-                          className="w-full h-full object-cover"
+                          photos={win.listing.photos}
+                          className="w-full h-full object-cover rounded-lg"
                         />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center">
