@@ -8,12 +8,12 @@ export function SellCarBanner() {
   const [, setLocation] = useLocation();
   const { user } = useAuth();
   
-  // Красивые фотографии автомобилей для ротации
+  // Оптимизированные фотографии автомобилей для быстрой загрузки
   const carImages = [
-    'https://images.unsplash.com/photo-1555215695-3004980ad54e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80', // Modern sports car
-    'https://images.unsplash.com/photo-1502877338535-766e1452684a?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80', // Luxury sedan
-    'https://images.unsplash.com/photo-1567018265282-303944d3c2a8?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D', // White car
-    'https://images.unsplash.com/photo-1552519507-ac11af17dcc8?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D', // Selected car
+    'https://images.unsplash.com/photo-1555215695-3004980ad54e?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=70', // Modern sports car - уменьшен размер
+    'https://images.unsplash.com/photo-1502877338535-766e1452684a?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=70', // Luxury sedan - уменьшен размер
+    'https://images.unsplash.com/photo-1567018265282-303944d3c2a8?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=70', // White car - оптимизирован
+    'https://images.unsplash.com/photo-1552519507-ac11af17dcc8?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=70', // Selected car - оптимизирован
   ];
   
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -45,13 +45,18 @@ export function SellCarBanner() {
       onClick={handleClick}
       className="relative h-44 rounded-2xl p-6 text-white overflow-hidden shadow-2xl cursor-pointer hover:shadow-3xl transition-all duration-300"
     >
-      {/* Background with Rotating Car Photos */}
+      {/* Background with Rotating Car Photos + Preloading */}
       <div 
         className="absolute inset-0 rounded-2xl bg-gradient-to-br from-slate-800 to-slate-900 bg-cover bg-center bg-no-repeat transition-all duration-1000 ease-in-out"
         style={{
           backgroundImage: `linear-gradient(135deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.4) 100%), url('${carImages[currentImageIndex]}'), url('${carBannerSvg}')`
         }}
       ></div>
+      
+      {/* Preload next images for faster switching */}
+      {carImages.map((img, index) => (
+        <link key={index} rel="preload" as="image" href={img} style={{ display: 'none' }} />
+      ))}
       
       {/* Content */}
       <div className="relative z-10 h-full flex flex-col justify-center items-center text-center space-y-2">

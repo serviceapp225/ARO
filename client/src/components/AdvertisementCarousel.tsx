@@ -35,9 +35,9 @@ export function AdvertisementCarousel() {
 
   const { data: advertisements = [], isLoading } = useQuery<AdvertisementItem[]>({
     queryKey: ['/api/advertisement-carousel'],
-    staleTime: 1 * 1000, // 1 секунда - максимально быстрое обновление
-    refetchInterval: 5 * 1000, // Обновляем каждые 5 секунд
-    refetchOnWindowFocus: true, // Обновляем при возвращении в окно
+    staleTime: 30 * 1000, // 30 секунд - оптимизированное кэширование
+    refetchInterval: 30 * 1000, // Обновляем каждые 30 секунд
+    refetchOnWindowFocus: false, // Не обновляем при фокусе
     refetchOnMount: true, // Обновляем при монтировании
   });
 
@@ -49,6 +49,16 @@ export function AdvertisementCarousel() {
   // Отладка для понимания проблемы с обновлением
   console.log('🎠 Загружены объявления карусели:', advertisements);
   console.log('🎯 Активные объявления:', activeAds);
+
+  // Прелоадинг изображений для быстрой загрузки
+  useEffect(() => {
+    activeAds.forEach(ad => {
+      if (ad.imageUrl) {
+        const img = new Image();
+        img.src = ad.imageUrl;
+      }
+    });
+  }, [activeAds]);
 
   // Автоматическое переключение каждые 5 секунд
   useEffect(() => {
