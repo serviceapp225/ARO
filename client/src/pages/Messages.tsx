@@ -318,13 +318,13 @@ export default function Messages() {
   // Нет переписок
   if (!conversations || conversations.length === 0) {
     return (
-      <div className="flex items-center justify-center min-h-[400px] pb-24">
-        <div className="text-center">
+      <div className="flex items-center justify-center min-h-[400px] p-6 pb-24">
+        <div className="bg-white/80 backdrop-blur-lg rounded-3xl shadow-2xl border border-white/20 p-8 text-center max-w-md w-full">
           <MessageCircle className="w-16 h-16 mx-auto mb-4 text-gray-400" />
           <h2 className="text-xl font-semibold text-gray-800 mb-2">
             Нет сообщений
           </h2>
-          <p className="text-gray-500 mb-4">
+          <p className="text-gray-500 mb-6">
             Когда вы начнете общение с продавцами, ваши переписки появятся здесь
           </p>
           <Button
