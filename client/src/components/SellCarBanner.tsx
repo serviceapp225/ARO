@@ -12,8 +12,8 @@ export function SellCarBanner() {
   const carImages = [
     'https://images.unsplash.com/photo-1555215695-3004980ad54e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80', // Modern sports car
     'https://images.unsplash.com/photo-1502877338535-766e1452684a?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80', // Luxury sedan
-    'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80', // Electric car
-    'https://images.unsplash.com/photo-1494976688153-ca3ce1b3c7ee?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80', // Classic car
+    'https://images.unsplash.com/photo-1567018265282-303944d3c2a8?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D', // White car
+    'https://images.unsplash.com/photo-1552519507-ac11af17dcc8?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D', // Selected car
   ];
   
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
