@@ -902,7 +902,7 @@ export class DatabaseStorage implements IStorage {
         FROM car_listings cl
         LEFT JOIN user_wins uw ON cl.id = uw.listing_id
         LEFT JOIN users u ON uw.user_id = u.id
-        WHERE cl.status = 'ended' 
+        WHERE cl.status IN ('ended', 'archived') 
         AND cl.auction_end_time >= $1
         ORDER BY cl.auction_end_time DESC
       `, [cutoffDate]);
@@ -1035,6 +1035,9 @@ export class DatabaseStorage implements IStorage {
             .update(carListings)
             .set({ status: 'ended', updatedAt: now })
             .where(eq(carListings.id, listing.id));
+
+          // Создаем запись о победителе
+          await this.createWinnerRecord(listing.id);
 
           console.log(`🏁 Аукцион ${listing.id} завершен успешно`);
         }
@@ -1330,6 +1333,107 @@ export class DatabaseStorage implements IStorage {
         .values(data as InsertSellCarBanner)
         .returning();
       return created;
+    }
+  }
+
+  // Добавляем функции для работы с победителями
+  async getAllWins(): Promise<UserWin[]> {
+    try {
+      const result = await db.select({
+        id: userWins.id,
+        userId: userWins.userId,
+        listingId: userWins.listingId,
+        winningBid: userWins.winningBid,
+        wonAt: userWins.wonAt,
+        createdAt: sql<Date>`COALESCE(${userWins.wonAt}, NOW())`
+      }).from(userWins);
+      
+      return result as UserWin[];
+    } catch (error) {
+      console.error('Error getting all wins:', error);
+      return [];
+    }
+  }
+
+  async createWinnerRecord(listingId: number): Promise<void> {
+    try {
+      // Находим последнюю ставку для этого аукциона
+      const [lastBid] = await db.select()
+        .from(bids)
+        .where(eq(bids.listingId, listingId))
+        .orderBy(sql`amount DESC`)
+        .limit(1);
+
+      if (!lastBid) {
+        console.log(`⚠️ Нет ставок для аукциона ${listingId}, пропускаем создание записи о победителе`);
+        return;
+      }
+
+      // Проверяем, есть ли уже запись о победителе
+      const [existingWin] = await db.select()
+        .from(userWins)
+        .where(eq(userWins.listingId, listingId))
+        .limit(1);
+
+      if (existingWin) {
+        console.log(`✅ Запись о победителе для аукциона ${listingId} уже существует`);
+        return;
+      }
+
+      // Создаем запись о победителе
+      await db.insert(userWins).values({
+        userId: lastBid.bidderId,
+        listingId: listingId,
+        winningBid: lastBid.amount.toString(),
+        wonAt: new Date()
+      });
+
+      console.log(`🏆 Создана запись о победителе аукциона ${listingId}: пользователь ${lastBid.bidderId}, ставка ${lastBid.amount}`);
+
+      // Отправляем SMS уведомление победителю
+      await this.sendWinnerSMS(lastBid.bidderId, listingId, lastBid.amount.toString());
+
+    } catch (error) {
+      console.error(`❌ Ошибка создания записи о победителе для аукциона ${listingId}:`, error);
+    }
+  }
+
+  async sendWinnerSMS(userId: number, listingId: number, winningBid: string): Promise<void> {
+    try {
+      // Получаем информацию о пользователе
+      const [user] = await db.select().from(users).where(eq(users.id, userId));
+      if (!user) return;
+
+      // Получаем информацию о лоте
+      const [listing] = await db.select().from(carListings).where(eq(carListings.id, listingId));
+      if (!listing) return;
+
+      const phoneNumber = user.phoneNumber;
+      if (!phoneNumber) return;
+
+      // Формируем текст SMS
+      const smsText = `🎉 Поздравляем! Вы выиграли аукцион!\n\nАвтомобиль: ${listing.make} ${listing.model} ${listing.year}\nВаша ставка: ${winningBid} сомони\n\nСвяжитесь с продавцом для завершения сделки.\n\nАВТОБИД.ТЖ`;
+
+      // Отправляем SMS через VPS прокси
+      const response = await fetch('http://your-vps-ip:3001/send-sms', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          to: phoneNumber,
+          text: smsText
+        })
+      });
+
+      if (response.ok) {
+        console.log(`📱 SMS уведомление о победе отправлено пользователю ${userId} (${phoneNumber})`);
+      } else {
+        console.error(`❌ Ошибка отправки SMS победителю ${userId}:`, await response.text());
+      }
+
+    } catch (error) {
+      console.error(`❌ Ошибка отправки SMS победителю ${userId}:`, error);
     }
   }
 }

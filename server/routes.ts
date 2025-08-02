@@ -289,8 +289,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Pending объявления теперь видны только в админ панели
       const activeListings = await storage.getListingsByStatus('active', 15);
       
-      // Получаем выигранные аукционы последних 24 часов для показа
-      const recentWonListings = await storage.getRecentWonListings(24);
+      // Получаем выигранные аукционы последних 7 дней для показа (увеличиваем период)
+      const recentWonListings = await storage.getRecentWonListings(168);
       
       // Добавляем информацию о победителях для выигранных аукционов
       const wonListingsWithWinners = await Promise.all(
@@ -2473,6 +2473,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ sent: notifications.length });
     } catch (error) {
       res.status(500).json({ error: "Failed to send broadcast notification" });
+    }
+  });
+
+  // Получить всех победителей аукционов
+  app.get("/api/admin/wins", adminAuth, async (req, res) => {
+    try {
+      const wins = await storage.getAllWins();
+      res.json(wins);
+    } catch (error: any) {
+      console.error("Failed to fetch wins:", error);
+      res.status(500).json({ error: "Failed to fetch wins" });
     }
   });
 
