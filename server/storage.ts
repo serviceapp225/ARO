@@ -598,52 +598,12 @@ export class DatabaseStorage implements IStorage {
   async getNotificationsByUser(userId: number): Promise<Notification[]> {
     console.log(`🔔 Получение уведомлений для пользователя ${userId}`);
     
-    // For bid_outbid notifications, get them directly without alert_views filtering
-    const bidOutbidNotifications = await db
+    // Get all notifications for the user, ordered by creation time
+    const allNotifications = await db
       .select()
       .from(notifications)
-      .where(
-        and(
-          eq(notifications.userId, userId),
-          eq(notifications.type, 'bid_outbid')
-        )
-      )
+      .where(eq(notifications.userId, userId))
       .orderBy(desc(notifications.createdAt));
-    
-    // For alert_created notifications, use the original filtering logic
-    const alertNotifications = await db
-      .select({
-        id: notifications.id,
-        userId: notifications.userId,
-        type: notifications.type,
-        title: notifications.title,
-        message: notifications.message,
-        isRead: notifications.isRead,
-        listingId: notifications.listingId,
-        alertId: notifications.alertId,
-        createdAt: notifications.createdAt
-      })
-      .from(notifications)
-      .leftJoin(
-        alertViews,
-        and(
-          eq(alertViews.userId, notifications.userId),
-          eq(alertViews.alertId, notifications.alertId),
-          eq(alertViews.listingId, notifications.listingId)
-        )
-      )
-      .where(
-        and(
-          eq(notifications.userId, userId),
-          eq(notifications.type, 'alert_created'),
-          sql`${alertViews.id} IS NULL`
-        )
-      )
-      .orderBy(desc(notifications.createdAt));
-    
-    // Combine both types and sort by creation time
-    const allNotifications = [...bidOutbidNotifications, ...alertNotifications]
-      .sort((a, b) => new Date(b.createdAt!).getTime() - new Date(a.createdAt!).getTime());
     
     console.log(`📩 Найдено ${allNotifications.length} уведомлений для пользователя ${userId}`);
     return allNotifications;
