@@ -59,30 +59,35 @@ export function AuctionProvider({ children }: { children: ReactNode }) {
   });
 
   // Transform listings to auctions format  
-  const auctions: Auction[] = Array.isArray(listings) ? listings.map((listing: any) => ({
-    id: listing.id.toString(),
-    lotNumber: listing.lotNumber || 'N/A',
-    make: listing.make || 'Unknown',
-    model: listing.model || 'Unknown', 
-    year: listing.year || new Date().getFullYear(),
-    mileage: listing.mileage || 0,
-    photos: Array.isArray(listing.photos) ? listing.photos : [],
-    currentBid: parseFloat(listing.currentBid) || parseFloat(listing.startingPrice) || 0,
-    startingPrice: listing.startingPrice || '0',
-    bidCount: listing.bidCount || 0,
-    endTime: new Date(listing.auctionEndTime || Date.now() + 86400000),
-    status: listing.status === 'active' ? 'active' : 'ended',
-    customsCleared: listing.customsCleared || false,
-    recycled: listing.recycled || false,
-    technicalInspectionValid: listing.technicalInspectionValid || false,
-    technicalInspectionDate: listing.technicalInspectionDate,
-    tinted: listing.tinted || false,
-    tintingDate: listing.tintingDate,
-    condition: listing.condition || 'good',
-    fuelType: listing.fuelType,
-    electricRange: listing.electricRange,
-    batteryCapacity: listing.batteryCapacity
-  })) : [];
+  const auctions: Auction[] = Array.isArray(listings) ? listings.map((listing: any) => {
+    const endTime = new Date(listing.auctionEndTime || Date.now() + 86400000);
+    const isExpired = endTime <= new Date();
+    
+    return {
+      id: listing.id.toString(),
+      lotNumber: listing.lotNumber || 'N/A',
+      make: listing.make || 'Unknown',
+      model: listing.model || 'Unknown', 
+      year: listing.year || new Date().getFullYear(),
+      mileage: listing.mileage || 0,
+      photos: Array.isArray(listing.photos) ? listing.photos : [],
+      currentBid: parseFloat(listing.currentBid) || parseFloat(listing.startingPrice) || 0,
+      startingPrice: listing.startingPrice || '0',
+      bidCount: listing.bidCount || 0,
+      endTime: endTime,
+      status: (listing.status === 'ended' || isExpired) ? 'ended' : 'active',
+      customsCleared: listing.customsCleared || false,
+      recycled: listing.recycled || false,
+      technicalInspectionValid: listing.technicalInspectionValid || false,
+      technicalInspectionDate: listing.technicalInspectionDate,
+      tinted: listing.tinted || false,
+      tintingDate: listing.tintingDate,
+      condition: listing.condition || 'good',
+      fuelType: listing.fuelType,
+      electricRange: listing.electricRange,
+      batteryCapacity: listing.batteryCapacity
+    };
+  }) : [];
 
   const refreshAuctions = () => {
     forceUpdate(); // Используем оптимизированное обновление
