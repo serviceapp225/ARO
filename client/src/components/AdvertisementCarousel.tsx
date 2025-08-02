@@ -245,7 +245,7 @@ export function AdvertisementCarousel() {
               {/* Content */}
               <div className="relative z-10 h-full flex flex-col justify-center items-center text-center space-y-3">
                 <h2 className="text-2xl font-bold drop-shadow-lg text-white text-center max-w-md leading-tight">
-                  {ad.title}
+                  {ad.title} тест
                 </h2>
                 {ad.description && (
                   <p className="text-base leading-relaxed opacity-95 drop-shadow-md max-w-md text-white text-center">
