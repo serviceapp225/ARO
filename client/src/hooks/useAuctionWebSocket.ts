@@ -369,21 +369,21 @@ export function useAuctionWebSocket(): AuctionWebSocketHook {
         console.log('💬 Получено уведомление о новом сообщении:', message);
         
         if (currentUserId && typeof currentUserId === 'number') {
-          console.log('🔄 REAL-TIME: Обновляем кэш сообщений для пользователя', currentUserId);
+          console.log('🔄 REAL-TIME: МГНОВЕННО перезагружаем все данные для пользователя', currentUserId);
           
-          // Мгновенно обновляем кэш переписок (правильный queryKey)
-          queryClient.invalidateQueries({ queryKey: ["/api/conversations", currentUserId] });
+          // ПРИНУДИТЕЛЬНО перезагружаем переписки для немедленного обновления
+          queryClient.refetchQueries({ queryKey: ["/api/conversations", currentUserId] });
           
-          // Если текущая переписка открыта, обновляем сообщения
+          // Если текущая переписка открыта, ПРИНУДИТЕЛЬНО перезагружаем сообщения
           if (message.messageData?.conversationId) {
-            console.log('🔄 REAL-TIME: Обновляем сообщения переписки', message.messageData.conversationId);
-            queryClient.invalidateQueries({ 
+            console.log('🔄 REAL-TIME: ПРИНУДИТЕЛЬНО перезагружаем сообщения переписки', message.messageData.conversationId);
+            queryClient.refetchQueries({ 
               queryKey: [`/api/conversations/${message.messageData.conversationId}/messages`] 
             });
           }
           
-          // Обновляем счетчик непрочитанных сообщений
-          queryClient.invalidateQueries({ queryKey: [`/api/messages/unread-count/${currentUserId}`] });
+          // ПРИНУДИТЕЛЬНО перезагружаем счетчик непрочитанных сообщений
+          queryClient.refetchQueries({ queryKey: [`/api/messages/unread-count/${currentUserId}`] });
           
           // КРИТИЧНО: Сигнализируем странице сообщений об обновлении через localStorage
           console.log('🔄 REAL-TIME: Отправляем сигнал странице сообщений для принудительного обновления');
