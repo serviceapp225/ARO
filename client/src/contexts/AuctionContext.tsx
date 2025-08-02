@@ -58,8 +58,13 @@ export function AuctionProvider({ children }: { children: ReactNode }) {
     refetchInterval: isConnected ? false : 5000, // Polling только если WebSocket отключен
   });
 
-  // Transform listings to auctions format  
-  const auctions: Auction[] = Array.isArray(listings) ? listings.map((listing: any) => ({
+  // Transform listings to auctions format with deduplication
+  const auctions: Auction[] = Array.isArray(listings) ? listings
+    .filter((listing: any, index: number, self: any[]) => 
+      // Дедупликация по уникальному ID
+      self.findIndex((l: any) => l.id === listing.id) === index
+    )
+    .map((listing: any) => ({
     id: listing.id.toString(),
     lotNumber: listing.lotNumber || 'N/A',
     make: listing.make || 'Unknown',
