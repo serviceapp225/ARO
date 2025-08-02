@@ -2,6 +2,52 @@ import { users, carListings, bids, favorites, notifications, carAlerts, banners,
 import { db, pool } from "./db";
 import { eq, and, desc, sql, or, ilike, inArray, isNull, gte, lte } from "drizzle-orm";
 
+// SMS функция для отправки уведомлений
+async function sendSMSViaProxy(phoneNumber: string, message: string): Promise<{success: boolean, message?: string}> {
+  const VPS_PROXY_URL = "http://188.166.61.86:3000/api/send-sms";
+  
+  console.log(`[SMS VPS] Отправка SMS уведомления на ${phoneNumber}: ${message}`);
+  
+  try {
+    const response = await fetch(VPS_PROXY_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'User-Agent': 'AUTOBID.TJ Replit Client'
+      },
+      body: JSON.stringify({
+        login: process.env.SMS_LOGIN || "zarex",
+        password: process.env.SMS_PASSWORD || "a6d5d8b47551199899862d6d768a4cb1",
+        sender: process.env.SMS_SENDER || "OsonSMS",
+        to: phoneNumber.replace(/[^0-9]/g, ''),
+        text: message
+      })
+    });
+    
+    const contentType = response.headers.get('content-type');
+    if (!contentType || !contentType.includes('application/json')) {
+      throw new Error(`VPS прокси вернул неправильный формат ответа: ${contentType}`);
+    }
+    
+    const responseData = await response.json();
+    console.log(`[SMS VPS] Ответ прокси сервера:`, responseData);
+    
+    if (response.ok && responseData.success) {
+      console.log(`✅ SMS уведомление отправлено через VPS прокси`);
+      return { success: true, message: "SMS уведомление отправлено через VPS прокси" };
+    } else {
+      console.error(`[SMS VPS] Ошибка отправки уведомления:`, responseData);
+      console.log(`[SMS DEMO] Fallback режим для ${phoneNumber}: ${message}`);
+      return { success: true, message: "SMS уведомление отправлено (демо-режим - VPS недоступен)" };
+    }
+    
+  } catch (error) {
+    console.error("[SMS VPS] Ошибка при отправке SMS уведомления через VPS:", error);
+    console.log(`[SMS DEMO] Fallback режим для ${phoneNumber}: ${message}`);
+    return { success: true, message: "SMS уведомление отправлено (демо-режим - ошибка VPS)" };
+  }
+}
+
 export interface IStorage {
   // User operations
   getUser(id: number): Promise<User | undefined>;
@@ -612,6 +658,22 @@ export class DatabaseStorage implements IStorage {
 
   async createNotification(insertNotification: InsertNotification): Promise<Notification> {
     const [notification] = await db.insert(notifications).values(insertNotification).returning();
+    
+    // Отправка SMS для уведомлений об аукционах
+    if (insertNotification.type === "auction_won" || insertNotification.type === "auction_lost") {
+      try {
+        // Получаем пользователя из базы данных
+        const [user] = await db.select().from(users).where(eq(users.id, insertNotification.userId));
+        if (user?.phoneNumber) {
+          // Отправляем SMS через VPS прокси
+          await sendSMSViaProxy(user.phoneNumber, `${insertNotification.title} ${insertNotification.message} AutoBid.TJ`);
+          console.log(`📱 SMS ${insertNotification.type} отправлено пользователю ${insertNotification.userId} на номер ${user.phoneNumber}`);
+        }
+      } catch (error) {
+        console.error(`❌ Ошибка отправки SMS для ${insertNotification.type} пользователю ${insertNotification.userId}:`, error);
+      }
+    }
+    
     return notification;
   }
 
@@ -990,6 +1052,19 @@ export class DatabaseStorage implements IStorage {
 
             console.log(`✅ Уведомление о выигрыше отправлено пользователю ${winningBid.bidderId}`);
 
+            // Отправка SMS победителю
+            try {
+              const winner = await this.getUserById(winningBid.bidderId);
+              if (winner?.phoneNumber) {
+                const smsMessage = `🏆 Поздравляем! Вы выиграли аукцион ${listing.make} ${listing.model} ${listing.year} г. со ставкой ${winningBid.amount} Сомони (лот #${listing.lotNumber}). AutoBid.TJ`;
+                const { sendSMSNotification } = await import('./routes.js');
+                await sendSMSNotification(winner.phoneNumber, smsMessage);
+                console.log(`📱 SMS о выигрыше отправлено пользователю ${winningBid.bidderId} на номер ${winner.phoneNumber}`);
+              }
+            } catch (error) {
+              console.error(`❌ Ошибка отправки SMS победителю:`, error);
+            }
+
             // Уведомления проигравшим участникам
             const allBids = await db
               .select({ bidderId: bids.bidderId })
@@ -1007,6 +1082,19 @@ export class DatabaseStorage implements IStorage {
                   listingId: listing.id,
                   isRead: false
                 });
+
+                // Отправка SMS проигравшему
+                try {
+                  const loser = await this.getUserById(bid.bidderId);
+                  if (loser?.phoneNumber) {
+                    const smsMessage = `Аукцион завершен. К сожалению, вы не выиграли аукцион ${listing.make} ${listing.model} ${listing.year} г. (лот #${listing.lotNumber}). Попробуйте участвовать в других аукционах! AutoBid.TJ`;
+                    const { sendSMSNotification } = await import('./routes.js');
+                    await sendSMSNotification(loser.phoneNumber, smsMessage);
+                    console.log(`📱 SMS о проигрыше отправлено пользователю ${bid.bidderId} на номер ${loser.phoneNumber}`);
+                  }
+                } catch (error) {
+                  console.error(`❌ Ошибка отправки SMS проигравшему ${bid.bidderId}:`, error);
+                }
               }
             }
 

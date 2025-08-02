@@ -381,6 +381,58 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json({ test: "fast", time: Date.now() });
   });
 
+  // Тест SMS + уведомление для аукциона
+  app.post("/api/test-auction-notification", async (req, res) => {
+    try {
+      const { userId, listingId, type } = req.body;
+      
+      const user = await storage.getUserById(userId);
+      const listing = await storage.getListing(listingId);
+      
+      if (!user || !listing) {
+        return res.status(404).json({ error: "User or listing not found" });
+      }
+
+      let title, message, smsMessage;
+      
+      if (type === "win") {
+        title = "🏆 Поздравляем! Вы выиграли аукцион!";
+        message = `Вы выиграли ${listing.make} ${listing.model} ${listing.year} г. со ставкой 300000 Сомони (лот #${listing.lotNumber})`;
+        smsMessage = `🏆 Поздравляем! Вы выиграли аукцион ${listing.make} ${listing.model} ${listing.year} г. со ставкой 300000 Сомони (лот #${listing.lotNumber}). AutoBid.TJ`;
+      } else {
+        title = "Аукцион завершен";
+        message = `К сожалению, вы не выиграли аукцион ${listing.make} ${listing.model} ${listing.year} г. (лот #${listing.lotNumber}). Попробуйте участвовать в других аукционах!`;
+        smsMessage = `Аукцион завершен. К сожалению, вы не выиграли аукцион ${listing.make} ${listing.model} ${listing.year} г. (лот #${listing.lotNumber}). Попробуйте участвовать в других аукционах! AutoBid.TJ`;
+      }
+
+      // Создаем уведомление в приложении
+      const notification = await storage.createNotification({
+        userId: userId,
+        title: title,
+        message: message,
+        type: type === "win" ? "auction_won" : "auction_lost",
+        listingId: listingId,
+        isRead: false
+      });
+
+      // Отправляем SMS
+      let smsResult = { success: false, message: "No phone number" };
+      if (user.phoneNumber) {
+        smsResult = await sendSMSNotification(user.phoneNumber, smsMessage);
+      }
+
+      res.json({ 
+        notification, 
+        sms: smsResult,
+        user: { id: user.id, phoneNumber: user.phoneNumber, fullName: user.fullName }
+      });
+      
+    } catch (error) {
+      console.error("Error in test auction notification:", error);
+      res.status(500).json({ error: "Failed to send test notification" });
+    }
+  });
+
   // Быстрый endpoint для получения фотографий конкретного объявления
   app.get("/api/listings/:id/photos", async (req, res) => {
     try {
@@ -2428,6 +2480,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         isRead: false
       });
 
+      // Отправка SMS победителю
+      try {
+        const winner = await storage.getUserById(winningBid.bidderId);
+        if (winner?.phoneNumber) {
+          const smsMessage = `🏆 Поздравляем! Вы выиграли аукцион ${listing.make} ${listing.model} ${listing.year} г. со ставкой ${parseFloat(winningBid.amount).toLocaleString()} Сомони (лот #${listing.lotNumber}). AutoBid.TJ`;
+          await sendSMSNotification(winner.phoneNumber, smsMessage);
+          console.log(`📱 SMS о выигрыше отправлено пользователю ${winningBid.bidderId} на номер ${winner.phoneNumber}`);
+        }
+      } catch (error) {
+        console.error(`❌ Ошибка отправки SMS победителю:`, error);
+      }
+
       // Уведомления проигравшим участникам
       const uniqueBidders = [...new Set(bids.map(bid => bid.bidderId))];
       for (const bidderId of uniqueBidders) {
@@ -2440,6 +2504,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
             listingId: listingId,
             isRead: false
           });
+
+          // Отправка SMS проигравшему
+          try {
+            const loser = await storage.getUserById(bidderId);
+            if (loser?.phoneNumber) {
+              const smsMessage = `Аукцион завершен. К сожалению, вы не выиграли аукцион ${listing.make} ${listing.model} ${listing.year} г. (лот #${listing.lotNumber}). Попробуйте участвовать в других аукционах! AutoBid.TJ`;
+              await sendSMSNotification(loser.phoneNumber, smsMessage);
+              console.log(`📱 SMS о проигрыше отправлено пользователю ${bidderId} на номер ${loser.phoneNumber}`);
+            }
+          } catch (error) {
+            console.error(`❌ Ошибка отправки SMS проигравшему ${bidderId}:`, error);
+          }
         }
       }
 

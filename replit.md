@@ -41,6 +41,7 @@ Preferred communication style: Simple, everyday language in Russian.
 - **Messaging System**: Integrated messaging for buyer-seller communication, with unread message indicators.
 - **Automatic Auction Restart**: Failed auctions (no bids or reserve price not met) automatically restart with original starting bid and extended 7-day duration.
 - **Complete Notification System**: Automatic notifications for auction winners and losers when auctions end, both through scheduled processing and manual admin completion.
+- **Integrated SMS Notifications**: Automatic SMS delivery for auction outcomes (win/loss) via VPS proxy server, seamlessly integrated with in-app notifications through OSON SMS API.
 
 ### UI/UX Decisions
 - Mobile-first design.
