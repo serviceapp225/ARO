@@ -596,8 +596,22 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getNotificationsByUser(userId: number): Promise<Notification[]> {
-    // Get notifications and exclude those that have been viewed via alert_views
-    const result = await db
+    console.log(`🔔 Получение уведомлений для пользователя ${userId}`);
+    
+    // For bid_outbid notifications, get them directly without alert_views filtering
+    const bidOutbidNotifications = await db
+      .select()
+      .from(notifications)
+      .where(
+        and(
+          eq(notifications.userId, userId),
+          eq(notifications.type, 'bid_outbid')
+        )
+      )
+      .orderBy(desc(notifications.createdAt));
+    
+    // For alert_created notifications, use the original filtering logic
+    const alertNotifications = await db
       .select({
         id: notifications.id,
         userId: notifications.userId,
@@ -621,13 +635,18 @@ export class DatabaseStorage implements IStorage {
       .where(
         and(
           eq(notifications.userId, userId),
-          // Exclude notifications that have been viewed (alert_views entry exists)
+          eq(notifications.type, 'alert_created'),
           sql`${alertViews.id} IS NULL`
         )
       )
       .orderBy(desc(notifications.createdAt));
     
-    return result;
+    // Combine both types and sort by creation time
+    const allNotifications = [...bidOutbidNotifications, ...alertNotifications]
+      .sort((a, b) => new Date(b.createdAt!).getTime() - new Date(a.createdAt!).getTime());
+    
+    console.log(`📩 Найдено ${allNotifications.length} уведомлений для пользователя ${userId}`);
+    return allNotifications;
   }
 
   async createNotification(insertNotification: InsertNotification): Promise<Notification> {
