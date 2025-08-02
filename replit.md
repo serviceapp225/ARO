@@ -39,6 +39,7 @@ Preferred communication style: Simple, everyday language in Russian.
 - **Performance**: Aggressive image compression (1.2MB to 150-180KB), API response optimization (9MB to 6.3KB), multi-level caching (server, HTTP, browser), lazy loading.
 - **Real-time Communication**: WebSocket manager for instant updates and notifications.
 - **Messaging System**: Integrated messaging for buyer-seller communication, with unread message indicators.
+- **Automatic Auction Restart**: Failed auctions (no bids or reserve price not met) automatically restart with original starting bid and extended 7-day duration.
 
 ### UI/UX Decisions
 - Mobile-first design.

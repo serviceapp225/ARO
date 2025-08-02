@@ -899,16 +899,80 @@ export class DatabaseStorage implements IStorage {
   async processExpiredListings(): Promise<number> {
     try {
       const now = new Date();
-      const result = await db
-        .update(carListings)
-        .set({ status: 'ended' })
+      
+      // Находим просроченные аукционы
+      const expiredListings = await db
+        .select()
+        .from(carListings)
         .where(
           and(
             eq(carListings.status, 'active'),
             sql`auction_end_time <= ${now}`
           )
         );
-      return result.rowCount || 0;
+
+      let processedCount = 0;
+
+      for (const listing of expiredListings) {
+        // Проверяем наличие ставок для этого аукциона
+        const bidsCount = await db
+          .select({ count: sql<number>`count(*)` })
+          .from(bids)
+          .where(eq(bids.listingId, listing.id));
+
+        const hasBids = bidsCount[0]?.count > 0;
+        let shouldRestart = false;
+
+        if (!hasBids) {
+          // Нет ставок вообще - перезапускаем
+          shouldRestart = true;
+          console.log(`🔄 Перезапуск аукциона ${listing.id}: нет ставок`);
+        } else {
+          // Есть ставки - проверяем достижение резервной цены
+          const currentBidAmount = parseFloat(listing.currentBid || '0');
+          const reservePrice = parseFloat(listing.reservePrice || '0');
+
+          if (reservePrice > 0 && currentBidAmount < reservePrice) {
+            // Резервная цена не достигнута - перезапускаем
+            shouldRestart = true;
+            console.log(`🔄 Перезапуск аукциона ${listing.id}: резервная цена ${reservePrice} не достигнута (текущая ставка: ${currentBidAmount})`);
+          }
+        }
+
+        if (shouldRestart) {
+          // Перезапускаем аукцион: сбрасываем на начальную ставку и продлеваем время
+          const newEndTime = new Date(now.getTime() + (7 * 24 * 60 * 60 * 1000)); // +7 дней
+          
+          await db
+            .update(carListings)
+            .set({
+              currentBid: listing.startingPrice, // Возвращаем к начальной ставке
+              auctionEndTime: newEndTime,
+              updatedAt: now
+              // status остается 'active'
+            })
+            .where(eq(carListings.id, listing.id));
+
+          // Удаляем все предыдущие ставки для чистого старта
+          await db
+            .delete(bids)
+            .where(eq(bids.listingId, listing.id));
+
+          console.log(`✅ Аукцион ${listing.id} перезапущен до ${newEndTime.toISOString()}`);
+        } else {
+          // Завершаем аукцион как обычно (резервная цена достигнута)
+          await db
+            .update(carListings)
+            .set({ status: 'ended', updatedAt: now })
+            .where(eq(carListings.id, listing.id));
+
+          console.log(`🏁 Аукцион ${listing.id} завершен успешно`);
+        }
+
+        processedCount++;
+      }
+
+      return processedCount;
     } catch (error) {
       console.error('Error processing expired listings:', error);
       return 0;
