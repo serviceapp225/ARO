@@ -2664,7 +2664,7 @@ function ArchiveManagement() {
 // Компонент кнопки прокрутки наверх
 // Раздел "Выигрыши"
 function WinsSection() {
-  const { data: wins = [], isLoading, refetch } = useQuery({
+  const { data: wins = [], isLoading, refetch } = useQuery<any[]>({
     queryKey: ['/api/admin/wins'],
     staleTime: 1000, // 1 секунда
     refetchInterval: 3000, // Автообновление каждые 3 секунды
@@ -2761,11 +2761,11 @@ function WinsSection() {
                         
                         <div>
                           <p className="font-semibold text-green-600">
-                            Победитель: {win.winnerName}
+                            Победитель: {win.winner.fullName}
                           </p>
-                          {win.winnerPhone && (
+                          {win.winner.phoneNumber && (
                             <p className="text-sm text-gray-600">
-                              📞 {win.winnerPhone}
+                              📞 {win.winner.phoneNumber}
                             </p>
                           )}
                         </div>
