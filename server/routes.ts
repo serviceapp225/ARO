@@ -2806,12 +2806,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Messaging API routes
   app.get("/api/conversations", async (req, res) => {
     try {
-      const user = await getUserFromContext(req);
-      if (!user) {
+      if (!req.user) {
         return res.status(401).json({ error: "Unauthorized" });
       }
       
-      const userId = user.id;
+      const userId = req.user.id;
       console.log(`📨 Получение переписок для пользователя ${userId}`);
       
       const conversations = await storage.getConversationsByUser(userId);
