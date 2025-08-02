@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useOptimizedRealTime } from "@/hooks/useOptimizedRealTime";
 
 interface Auction {
   id: string;
@@ -39,15 +40,22 @@ const AuctionContext = createContext<AuctionContextType | undefined>(undefined);
 export function AuctionProvider({ children }: { children: ReactNode }) {
   const [selectedAuction, setSelectedAuction] = useState<Auction | null>(null);
 
-  // Use TanStack Query for data fetching with aggressive caching for performance
+  // Оптимизированная система real-time обновлений
+  const { isConnected, forceUpdate } = useOptimizedRealTime({
+    enableWebSocket: true,
+    enablePolling: false, // Отключаем polling, так как WebSocket работает
+    pollingInterval: 5000, // Fallback только если WebSocket недоступен
+  });
+
+  // Оптимизированный запрос данных
   const { data: listings = [], isLoading, refetch } = useQuery<any[]>({
     queryKey: ['/api/listings'],
-    refetchInterval: 10000, // Увеличиваем интервал до 10 секунд для лучшей производительности
-    staleTime: 60000, // Данные свежи 1 минуту для максимально быстрого возврата
-    gcTime: 300000, // Кэшируем 5 минут для отличного возврата с детальных страниц
-    refetchOnWindowFocus: false, // Отключаем обновление при фокусе для производительности
-    refetchOnMount: false, // НЕ обновлять при монтировании - используем кэш
+    staleTime: 0, // Всегда считаем данные устаревшими для мгновенного обновления
+    gcTime: 60000, // Кэшируем только 1 минуту для актуальности
+    refetchOnWindowFocus: true, // Обновляем при возврате на страницу
+    refetchOnMount: true, // Всегда получаем свежие данные при загрузке
     refetchOnReconnect: true,
+    refetchInterval: isConnected ? false : 5000, // Polling только если WebSocket отключен
   });
 
   // Transform listings to auctions format  
@@ -77,6 +85,7 @@ export function AuctionProvider({ children }: { children: ReactNode }) {
   })) : [];
 
   const refreshAuctions = () => {
+    forceUpdate(); // Используем оптимизированное обновление
     refetch();
   };
 

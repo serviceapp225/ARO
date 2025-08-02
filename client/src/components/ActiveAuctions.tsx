@@ -11,8 +11,6 @@ import { useFavorites } from '@/contexts/FavoritesContext';
 import { useLocation } from 'wouter';
 import { useState, useEffect, useMemo, memo, useCallback } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { useAuctionWebSocket } from '@/hooks/useAuctionWebSocket';
-import { useSimpleSync } from '@/hooks/useSimpleSync';
 
 
 interface ActiveAuctionsProps {
@@ -25,37 +23,7 @@ export function ActiveAuctions({ searchQuery = "", customListings }: ActiveAucti
   const { isFavorite, addToFavorites, removeFromFavorites } = useFavorites();
   const queryClient = useQueryClient();
   
-  // Простая синхронизация каждую секунду
-  useSimpleSync();
-  
-  // WebSocket для мгновенного обновления
-  const { lastBidUpdate } = useAuctionWebSocket();
-  
-  // Мгновенное обновление при WebSocket событиях
-  useEffect(() => {
-    if (lastBidUpdate) {
-      console.log('🚀 WebSocket: обновление карточек', lastBidUpdate);
-      // Принудительное обновление данных аукционов
-      queryClient.setQueryData(['/api/listings'], (oldData: any[]) => {
-        if (!oldData) return oldData;
-        return oldData.map(listing => {
-          // Приводим оба значения к строкам для сравнения
-          if (listing.id.toString() === lastBidUpdate.listingId.toString()) {
-            console.log('🎯 Обновляем карточку:', listing.id, 'новая ставка:', lastBidUpdate.bid?.amount);
-            return {
-              ...listing,
-              currentBid: lastBidUpdate.bid?.amount || listing.currentBid,
-              bidCount: (listing.bidCount || 0) + 1
-            };
-          }
-          return listing;
-        });
-      });
-      
-      // Также инвалидируем кэш для следующего обновления
-      queryClient.invalidateQueries({ queryKey: ['/api/listings'] });
-    }
-  }, [lastBidUpdate, queryClient]);
+  // Убираем дублирующие системы синхронизации - теперь все управляется через AuctionContext
 
   const [, setLocation] = useLocation();
   const [page, setPage] = useState(1);
