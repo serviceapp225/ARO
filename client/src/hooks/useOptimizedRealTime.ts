@@ -20,9 +20,12 @@ export function useOptimizedRealTime(config: RealTimeConfig = {}) {
   const wsRef = useRef<WebSocket | null>(null);
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const isConnectedRef = useRef(false);
+  const lastDataUpdateRef = useRef(Date.now());
+  const healthCheckIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Оптимизированное обновление данных
+  // Оптимизированное обновление данных с отслеживанием времени
   const invalidateAuctionData = useCallback((listingId?: string) => {
+    lastDataUpdateRef.current = Date.now();
     const keys = listingId 
       ? [`/api/listings/${listingId}`, `/api/listings/${listingId}/bids`]
       : ['/api/listings'];
@@ -31,6 +34,15 @@ export function useOptimizedRealTime(config: RealTimeConfig = {}) {
       queryClient.removeQueries({ queryKey: [key] });
       queryClient.invalidateQueries({ queryKey: [key] });
     });
+  }, [queryClient]);
+
+  // Принудительное обновление при обнаружении "застревания"
+  const forceUpdate = useCallback(() => {
+    console.log('🔄 Принудительное обновление всех данных');
+    lastDataUpdateRef.current = Date.now();
+    queryClient.removeQueries({ queryKey: ['/api/listings'] });
+    queryClient.invalidateQueries({ queryKey: ['/api/listings'] });
+    queryClient.refetchQueries({ queryKey: ['/api/listings'] });
   }, [queryClient]);
 
   // WebSocket подключение
@@ -126,11 +138,7 @@ export function useOptimizedRealTime(config: RealTimeConfig = {}) {
     };
   }, [connectWebSocket, enableWebSocket]);
 
-  // Принудительное обновление
-  const forceUpdate = useCallback(() => {
-    console.log('⚡ Принудительное обновление данных');
-    invalidateAuctionData();
-  }, [invalidateAuctionData]);
+
 
   return {
     isConnected: isConnectedRef.current,

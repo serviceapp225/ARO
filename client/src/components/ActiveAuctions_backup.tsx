@@ -39,9 +39,14 @@ export function ActiveAuctions({ searchQuery = "", customListings }: ActiveAucti
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [sortBy, setSortBy] = useState("recent");
-  const [loadingTimeout, setLoadingTimeout] = useState(false);
 
   const ITEMS_PER_PAGE = 20;
+
+
+
+
+
+
 
   // Use custom listings if provided, otherwise use filtered auctions
   const sourceAuctions = customListings || auctions;
@@ -189,6 +194,8 @@ export function ActiveAuctions({ searchQuery = "", customListings }: ActiveAucti
   }, [page, loadingMore, hasMore, auctions.length]);
 
   // Улучшенная логика отображения состояния загрузки с таймаутом
+  const [loadingTimeout, setLoadingTimeout] = useState(false);
+  
   useEffect(() => {
     if (loading) {
       // Устанавливаем таймаут на случай застревания в состоянии загрузки
@@ -247,7 +254,6 @@ export function ActiveAuctions({ searchQuery = "", customListings }: ActiveAucti
           </SelectContent>
         </Select>
       </div>
-      
       {/* Улучшенная обработка пустого состояния */}
       {displayedAuctions.length === 0 && !loading ? (
         <div className="text-center py-12">
@@ -268,162 +274,180 @@ export function ActiveAuctions({ searchQuery = "", customListings }: ActiveAucti
       ) : (
         <div className="grid grid-cols-2 gap-3">
           {displayedAuctions.map((auction, index) => (
-            <Card
-              key={`${auction.id}-${index}`}
-              className="group relative rounded-xl overflow-hidden bg-white shadow-lg hover:shadow-2xl transition-all duration-300 cursor-pointer"
-              onClick={() => handleCardClick(auction.id)}
-              onMouseEnter={() => handleCardHover(auction.id)}
-            >
-              <div className="relative">
-                <LazyCarImage
-                  listingId={auction.id}
-                  make={auction.make}
-                  model={auction.model}
-                  year={auction.year}
-                  photos={auction.photos || []}
-                  className="h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+          <Card
+            key={`${auction.id}-${index}`}
+            className="group relative rounded-xl overflow-hidden bg-white shadow-lg hover:shadow-2xl transition-all duration-300 cursor-pointer"
+            onClick={() => handleCardClick(auction.id)}
+            onMouseEnter={() => handleCardHover(auction.id)}
+          >
+            <div className="relative">
+              <LazyCarImage
+                listingId={auction.id}
+                make={auction.make}
+                model={auction.model}
+                year={auction.year}
+                photos={auction.photos || []}
+                className="h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+              />
+              <div className="absolute inset-0 bg-black bg-opacity-20 group-hover:bg-opacity-10 transition-all duration-300"></div>
+              
+              <div className="absolute top-3 left-3">
+                <CountdownTimer 
+                  endTime={auction.endTime || auction.auctionEndTime} 
+                  size="small"
                 />
-                <div className="absolute inset-0 bg-black bg-opacity-20 group-hover:bg-opacity-10 transition-all duration-300"></div>
-                
-                <div className="absolute top-3 left-3">
-                  <CountdownTimer 
-                    endTime={auction.endTime || auction.auctionEndTime} 
-                    size="small"
-                  />
+              </div>
+              
+              <div className="absolute top-3 right-3">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="w-8 h-8 bg-black/50 text-white hover:bg-black/70 backdrop-blur-sm"
+                  onClick={(e) => handleToggleFavorite(auction.id, e)}
+                >
+                  <Heart className={`h-4 w-4 ${isFavorite(auction.id) ? 'fill-red-500 text-red-500' : 'text-white'}`} />
+                </Button>
+              </div>
+              
+              {/* Status Badge */}
+              <div className="absolute bottom-3 left-3">
+                {auction.status === 'ended' ? (
+                  <span className="px-2 py-1 rounded text-xs font-semibold text-white bg-green-600">
+                    ВЫИГРАНО
+                  </span>
+                ) : (
+                  <span className={`px-2 py-1 rounded text-xs font-semibold text-white ${
+                    auction.bidCount > 5 ? 'bg-red-600' :
+                    auction.bidCount > 2 ? 'bg-orange-600' :
+                    'bg-green-600'
+                  }`}>
+                    {auction.bidCount > 5 ? 'ГОРЯЧИЙ АУКЦИОН' :
+                     auction.bidCount > 2 ? 'АКТИВНЫЙ' :
+                     'НОВЫЙ'}
+                  </span>
+                )}
+              </div>
+            </div>
+            <CardContent className="p-4">
+              <div className="mb-2">
+                <span className="text-xs font-mono bg-blue-100 text-blue-700 px-2 py-1 rounded">
+                  Номер лота: {auction.lotNumber}
+                </span>
+              </div>
+              <h3 className="font-bold text-lg text-gray-900 mb-1">
+                {auction.make} {auction.model}
+              </h3>
+              <p className="text-gray-600 text-sm mb-3">
+                {auction.year} • {auction.mileage.toLocaleString()} км • {auction.location || 'Душанбе'}
+              </p>
+              
+              {/* Winner Info for ended auctions */}
+              {auction.status === 'ended' && auction.winnerInfo && (
+                <div className="mb-3 p-2 bg-green-50 rounded border border-green-200">
+                  <p className="text-xs text-green-700">
+                    <span className="font-semibold">Победитель:</span> {auction.winnerInfo.fullName}
+                  </p>
+                  <p className="text-xs text-green-700">
+                    <span className="font-semibold">Выигрышная ставка:</span> {parseFloat(auction.winnerInfo.currentBid).toLocaleString()} с.
+                  </p>
                 </div>
-                
-                <div className="absolute top-3 right-3">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="w-8 h-8 bg-black/50 text-white hover:bg-black/70 backdrop-blur-sm"
-                    onClick={(e) => handleToggleFavorite(auction.id, e)}
-                  >
-                    <Heart className={`h-4 w-4 ${isFavorite(auction.id) ? 'fill-red-500 text-red-500' : 'text-white'}`} />
-                  </Button>
-                </div>
-                
-                {/* Status Badge */}
-                <div className="absolute bottom-3 left-3">
-                  {auction.status === 'ended' ? (
-                    <span className="px-2 py-1 rounded text-xs font-semibold text-white bg-green-600">
-                      ВЫИГРАНО
+              )}
+              
+              {/* Compact status indicators */}
+              <div className="flex flex-wrap gap-1 mb-3">
+                {/* Electric car range - показывается ПЕРВЫМ для электромобилей */}
+                {(() => {
+                  // Отладочная информация
+                  console.log(`🔋 Проверка электромобиля ${auction.make} ${auction.model}:`, {
+                    fuelType: auction.fuelType,
+                    electricRange: auction.electricRange,
+                    batteryCapacity: auction.batteryCapacity,
+                    id: auction.id
+                  });
+                  
+                  return (auction.fuelType === 'Электро' || auction.fuelType === 'electric') && auction.electricRange && auction.electricRange > 0 ? (
+                    <span className="text-xs px-2 py-1 rounded bg-blue-100 text-blue-700">
+                      ⚡ Запас хода: {auction.electricRange} км
+                    </span>
+                  ) : null;
+                })()}
+                {auction.customsCleared && (
+                  <span className="text-xs px-2 py-1 rounded bg-green-100 text-green-700">
+                    Растаможен
+                  </span>
+                )}
+                {auction.recycled && (
+                  <span className="text-xs px-2 py-1 rounded bg-blue-100 text-blue-700">
+                    Утилизация
+                  </span>
+                )}
+                {auction.technicalInspectionValid && (
+                  <span className="text-xs px-2 py-1 rounded bg-purple-100 text-purple-700">
+                    ТО до {auction.technicalInspectionDate || 'н/д'}
+                  </span>
+                )}
+                {auction.tinted && (
+                  <span className="text-xs px-2 py-1 rounded bg-indigo-100 text-indigo-700">
+                    Тонировка {auction.tintingDate ? `до ${auction.tintingDate}` : ''}
+                  </span>
+                )}
+              </div>
+              
+              {/* Price section */}
+              <div className="flex justify-between items-center">
+                <div>
+                  {(auction.currentBid && auction.currentBid !== '0' && auction.currentBid !== '' && !isNaN(parseFloat(auction.currentBid))) ? (
+                    <span className="text-blue-600 font-bold">
+                      {parseFloat(auction.currentBid).toLocaleString()} с.
                     </span>
                   ) : (
-                    <span className={`px-2 py-1 rounded text-xs font-semibold text-white ${
-                      auction.bidCount > 5 ? 'bg-red-600' :
-                      auction.bidCount > 2 ? 'bg-orange-600' :
-                      'bg-green-600'
-                    }`}>
-                      {auction.bidCount > 5 ? 'ГОРЯЧИЙ АУКЦИОН' :
-                       auction.bidCount > 2 ? 'АКТИВНЫЙ' :
-                       'НОВЫЙ'}
+                    <span className="text-blue-600 font-bold">
+                      {parseFloat(auction.startingPrice || '0').toLocaleString()} с.
                     </span>
                   )}
                 </div>
+                <span className="text-xs text-gray-500">
+                  {auction.bidCount} ставок
+                </span>
               </div>
-              <CardContent className="p-4">
-                <div className="mb-2">
-                  <span className="text-xs font-mono bg-blue-100 text-blue-700 px-2 py-1 rounded">
-                    Номер лота: {auction.lotNumber}
-                  </span>
-                </div>
-                <h3 className="font-bold text-lg text-gray-900 mb-1">
-                  {auction.make} {auction.model}
-                </h3>
-                <p className="text-gray-600 text-sm mb-3">
-                  {auction.year} • {auction.mileage.toLocaleString()} км • {auction.location || 'Душанбе'}
-                </p>
-                
-                {/* Winner Info for ended auctions */}
-                {auction.status === 'ended' && auction.winnerInfo && (
-                  <div className="mb-3 p-2 bg-green-50 rounded border border-green-200">
-                    <p className="text-xs text-green-700">
-                      <span className="font-semibold">Победитель:</span> {auction.winnerInfo.fullName}
-                    </p>
-                    <p className="text-xs text-green-700">
-                      <span className="font-semibold">Выигрышная ставка:</span> {parseFloat(auction.winnerInfo.currentBid).toLocaleString()} с.
-                    </p>
-                  </div>
-                )}
-                
-                {/* Compact status indicators */}
-                <div className="flex flex-wrap gap-1 mb-3">
-                  {/* Electric car range - показывается ПЕРВЫМ для электромобилей */}
-                  {(() => {
-                    // Отладочная информация
-                    console.log(`🔋 Проверка электромобиля ${auction.make} ${auction.model}:`, {
-                      fuelType: auction.fuelType,
-                      electricRange: auction.electricRange,
-                      batteryCapacity: auction.batteryCapacity,
-                      id: auction.id
-                    });
-                    
-                    return (auction.fuelType === 'Электро' || auction.fuelType === 'electric') && auction.electricRange && auction.electricRange > 0 ? (
-                      <span className="text-xs px-2 py-1 rounded bg-blue-100 text-blue-700">
-                        ⚡ Запас хода: {auction.electricRange} км
-                      </span>
-                    ) : null;
-                  })()}
-                  {auction.customsCleared && (
-                    <span className="text-xs px-2 py-1 rounded bg-green-100 text-green-700">
-                      Растаможен
-                    </span>
-                  )}
-                  {auction.recycled && (
-                    <span className="text-xs px-2 py-1 rounded bg-blue-100 text-blue-700">
-                      Утилизация
-                    </span>
-                  )}
-                  {auction.technicalInspectionValid && (
-                    <span className="text-xs px-2 py-1 rounded bg-purple-100 text-purple-700">
-                      ТО до {auction.technicalInspectionDate || 'н/д'}
-                    </span>
-                  )}
-                  {auction.tinted && (
-                    <span className="text-xs px-2 py-1 rounded bg-indigo-100 text-indigo-700">
-                      Тонировка {auction.tintingDate ? `до ${auction.tintingDate}` : ''}
-                    </span>
-                  )}
-                </div>
-                
-                {/* Price section */}
-                <div className="flex justify-between items-center">
-                  <div>
-                    {(auction.currentBid && auction.currentBid !== '0' && auction.currentBid !== '' && !isNaN(parseFloat(auction.currentBid))) ? (
-                      <span className="text-blue-600 font-bold">
-                        {parseFloat(auction.currentBid).toLocaleString()} с.
-                      </span>
-                    ) : (
-                      <span className="text-blue-600 font-bold">
-                        {parseFloat(auction.startingPrice || '0').toLocaleString()} с.
-                      </span>
-                    )}
-                  </div>
-                  <span className="text-xs text-gray-500">
-                    {auction.bidCount} ставок
-                  </span>
-                </div>
-                
-                {/* Reserve Price Indicator */}
-                <div className="mt-2">
-                  <ReservePriceIndicator
-                    reservePrice={auction.reservePrice}
-                    currentBid={auction.currentBid}
-                    startingPrice={auction.startingPrice}
-                    size="sm"
-                  />
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      )}
+              
+              {/* Reserve Price Indicator */}
+              <div className="mt-2">
+                <ReservePriceIndicator
+                  reservePrice={auction.reservePrice}
+                  currentBid={auction.currentBid}
+                  startingPrice={auction.startingPrice}
+                  size="sm"
+                />
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
       
       {/* Loading more indicator */}
       {loadingMore && (
         <div className="text-center mt-8 p-4">
           <p className="text-gray-500">Загружаем еще автомобили...</p>
+        </div>
+      )}
+      
+      {/* Show message when no auctions available */}
+      {displayedAuctions.length === 0 && !loading && (
+        <div className="text-center mt-8 p-8 bg-gray-50 rounded-lg">
+          <Car className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+          {searchQuery.trim() ? (
+            <>
+              <p className="text-gray-600 text-lg mb-2">Не нашли подходящий автомобиль</p>
+              <div className="max-w-sm mx-auto">
+              </div>
+            </>
+          ) : (
+            <>
+              <p className="text-gray-600 text-lg mb-2">Нет активных аукционов</p>
+              <p className="text-gray-500 text-sm">Новые автомобили появятся скоро</p>
+            </>
+          )}
         </div>
       )}
     </div>
