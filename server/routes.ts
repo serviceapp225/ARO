@@ -1622,18 +1622,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.put("/api/admin/listings/:id", adminAuth, async (req, res) => {
     try {
       const listingId = parseInt(req.params.id);
-      const { make, model, year, mileage, description, startingPrice, status, location } = req.body;
+      const { 
+        make, model, year, mileage, description, startingPrice, reservePrice,
+        auctionDuration, status, location, engine, transmission, fuelType, 
+        bodyType, driveType, color, condition, vin, customsCleared, recycled,
+        technicalInspectionValid, technicalInspectionDate, tinted, tintingDate,
+        batteryCapacity, electricRange
+      } = req.body;
       
-      const listing = await storage.updateListing(listingId, {
-        make,
-        model, 
-        year,
-        mileage,
-        description,
-        startingPrice,
-        status,
-        location
+      // Валидация и преобразование auctionDuration
+      let validatedAuctionDuration = 7; // значение по умолчанию
+      if (auctionDuration !== undefined) {
+        const duration = parseFloat(auctionDuration);
+        if (!isNaN(duration) && duration > 0) {
+          validatedAuctionDuration = duration;
+          console.log(`📅 Администратор обновляет продолжительность аукциона лота ${listingId}: ${duration} дней`);
+        }
+      }
+      
+      const updateData = {
+        make, model, year, mileage, description, startingPrice, reservePrice,
+        auctionDuration: validatedAuctionDuration, status, location, engine, 
+        transmission, fuelType, bodyType, driveType, color, condition, vin,
+        customsCleared, recycled, technicalInspectionValid, technicalInspectionDate,
+        tinted, tintingDate, batteryCapacity, electricRange
+      };
+      
+      // Убираем undefined значения
+      Object.keys(updateData).forEach(key => {
+        if (updateData[key] === undefined) {
+          delete updateData[key];
+        }
       });
+      
+      const listing = await storage.updateListing(listingId, updateData);
       
       if (!listing) {
         return res.status(404).json({ error: "Listing not found" });

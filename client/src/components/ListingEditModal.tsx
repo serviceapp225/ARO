@@ -329,16 +329,19 @@ export function ListingEditModal({ listingId, isOpen, onClose }: ListingEditModa
                 />
               </div>
               <div>
-                <Label htmlFor="auctionDuration">Продолжительность аукциона (дни)</Label>
+                <Label htmlFor="auctionDuration">Продолжительность аукциона</Label>
                 <Select value={auctionDuration} onValueChange={setAuctionDuration}>
                   <SelectTrigger>
                     <SelectValue placeholder="Выберите длительность" />
                   </SelectTrigger>
                   <SelectContent>
+                    <SelectItem value="0.0007">1 минута (тест)</SelectItem>
                     <SelectItem value="1">1 день</SelectItem>
                     <SelectItem value="3">3 дня</SelectItem>
                     <SelectItem value="5">5 дней</SelectItem>
-                    <SelectItem value="7">7 дней</SelectItem>
+                    <SelectItem value="7">7 дней (стандарт)</SelectItem>
+                    <SelectItem value="10">10 дней</SelectItem>
+                    <SelectItem value="15">15 дней</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
