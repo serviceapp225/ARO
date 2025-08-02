@@ -206,6 +206,17 @@ export default function Messages() {
     }
   }, [conversationId, conversations]);
 
+  // Дополнительный эффект для немедленного разворачивания при наличии conversationId в URL
+  useEffect(() => {
+    if (conversationId) {
+      const convId = parseInt(conversationId);
+      console.log(`🚀 НЕМЕДЛЕННО устанавливаем selectedConversation=${convId} из URL`);
+      setSelectedConversation(convId);
+      // Очищаем URL параметры
+      window.history.replaceState({}, '', window.location.pathname);
+    }
+  }, [conversationId]);
+
   // Получение сообщений для выбранной переписки
   const { data: messages, isLoading: messagesLoading, refetch: refetchMessages } = useQuery<Message[]>({
     queryKey: ["/api/conversations", selectedConversation, "messages"],
