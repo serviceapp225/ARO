@@ -33,6 +33,24 @@ export default function MyWins() {
     gcTime: 60000, // В кэше 1 минута
   });
 
+  const formatPrice = (price: number | string) => {
+    return `${Number(price).toLocaleString()} сомони`;
+  };
+
+  const formatDate = (date: string | Date) => {
+    const dateObj = new Date(date);
+    if (isNaN(dateObj.getTime())) {
+      return 'Дата неизвестна';
+    }
+    return dateObj.toLocaleString('ru-RU', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
   const handleGoBack = () => {
     setLocation("/profile");
   };
@@ -117,78 +135,70 @@ export default function MyWins() {
         ) : (
           <div className="space-y-4">
             {wins.map((win) => (
-              <Card 
+              <div 
                 key={win.id} 
-                className="hover:shadow-md transition-shadow cursor-pointer"
+                className="border rounded-lg p-4 bg-gradient-to-r from-yellow-50 to-orange-50 border-yellow-200 hover:shadow-lg transition-shadow duration-200 cursor-pointer"
                 onClick={() => handleViewAuction(win.listingId)}
               >
-                <CardContent className="p-6">
-                  <div className="flex gap-4">
-                    {/* Car Image */}
-                    <div className="relative w-24 h-16 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
-                      {win.listing?.photos && win.listing.photos.length > 0 ? (
-                        <LazyCarImage
-                          listingId={String(win.listingId)}
-                          make={win.listing.make}
-                          model={win.listing.model}
-                          year={win.listing.year}
-                          photos={win.listing.photos}
-                          className="w-full h-full object-cover rounded-lg"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center">
-                          <Car className="w-8 h-8 text-gray-400" />
-                        </div>
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">
+                        🏆 ПОБЕДА
+                      </Badge>
+                      {win.listing?.lotNumber && (
+                        <span className="text-sm text-gray-600">
+                          Лот #{win.listing.lotNumber}
+                        </span>
                       )}
                     </div>
-
-                    {/* Win Details */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between mb-2">
-                        <div>
-                          <h3 className="font-semibold text-gray-900 truncate">
-                            {win.listing ? `${win.listing.make} ${win.listing.model}` : 'Автомобиль'}
-                          </h3>
-                          <div className="flex items-center gap-2 text-sm text-gray-600">
-                            {win.listing?.year && (
-                              <span>{win.listing.year} г.</span>
-                            )}
-                            {win.listing?.lotNumber && (
-                              <span>• Лот #{win.listing.lotNumber}</span>
-                            )}
-                          </div>
-                        </div>
-                        <Badge variant="default" className="bg-green-100 text-green-800 flex-shrink-0">
-                          <Trophy className="w-3 h-3 mr-1" />
-                          ВЫИГРАНО
-                        </Badge>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div>
+                        <h3 className="font-semibold text-lg">
+                          {win.listing ? `${win.listing.make} ${win.listing.model}` : 'Автомобиль'}
+                        </h3>
+                        {win.listing?.year && (
+                          <p className="text-gray-600">
+                            {win.listing.year} год
+                          </p>
+                        )}
                       </div>
-
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-2xl font-bold text-green-600">
-                            {parseFloat(win.winningBid).toLocaleString()} Сомони
-                          </p>
-                          <p className="text-sm text-gray-600">Выигрышная ставка</p>
-                        </div>
-                        
-                        <div className="text-right text-sm text-gray-600">
-                          <div className="flex items-center gap-1">
-                            <Calendar className="w-4 h-4" />
-                            {new Date(win.wonAt).toLocaleDateString('ru-RU')}
-                          </div>
-                          <p className="mt-1">
-                            {new Date(win.wonAt).toLocaleTimeString('ru-RU', { 
-                              hour: '2-digit', 
-                              minute: '2-digit' 
-                            })}
-                          </p>
+                      
+                      <div>
+                        <p className="font-bold text-lg text-green-600">
+                          {formatPrice(win.winningBid)}
+                        </p>
+                        <p className="text-sm text-gray-600">Выигрышная ставка</p>
+                      </div>
+                      
+                      <div>
+                        <div className="flex items-center gap-1 text-sm text-gray-600">
+                          <Calendar className="w-4 h-4" />
+                          <span>{formatDate(win.wonAt || win.createdAt)}</span>
                         </div>
                       </div>
                     </div>
                   </div>
-                </CardContent>
-              </Card>
+                  
+                  <div className="flex-shrink-0">
+                    {win.listing?.photos && win.listing.photos.length > 0 ? (
+                      <LazyCarImage
+                        listingId={String(win.listingId)}
+                        make={win.listing.make}
+                        model={win.listing.model}
+                        year={win.listing.year}
+                        photos={win.listing.photos}
+                        className="w-20 h-16 object-cover rounded-lg border-2 border-yellow-300"
+                      />
+                    ) : (
+                      <div className="w-20 h-16 bg-gray-200 rounded-lg flex items-center justify-center border-2 border-yellow-300">
+                        <Car className="h-8 w-8 text-gray-400" />
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
             ))}
           </div>
         )}

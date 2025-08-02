@@ -92,7 +92,7 @@ export interface IStorage {
   hasUserViewedAlert(userId: number, alertId: number, listingId: number): Promise<boolean>;
 
   // User Wins operations
-  getUserWins(userId: number): Promise<UserWin[]>;
+  getUserWins(userId: number): Promise<(UserWin & { listing: CarListing })[]>;
   createUserWin(win: InsertUserWin): Promise<UserWin>;
   getWinByListingId(listingId: number): Promise<UserWin | undefined>;
   getAllWins(): Promise<(UserWin & { listing: CarListing; winner: User })[]>;
@@ -1177,27 +1177,62 @@ export class DatabaseStorage implements IStorage {
     return (result.rowCount || 0) > 0;
   }
 
-  async getUserWins(userId: number): Promise<UserWin[]> {
-    // В PostgreSQL версии у нас нет таблицы user_wins
-    // Ищем аукционы, которые выиграл пользователь через bids
-    const wonListings = await db.select({
-      id: sql<number>`1`,
-      userId: sql<number>`${userId}`,
-      listingId: carListings.id,
-      winningBid: carListings.currentBid,
-      createdAt: carListings.createdAt
-    }).from(carListings)
-    .innerJoin(bids, eq(bids.listingId, carListings.id))
-    .where(
-      and(
-        eq(carListings.status, 'ended'),
-        eq(bids.bidderId, userId)
+  async getUserWins(userId: number): Promise<(UserWin & { listing: CarListing })[]> {
+    try {
+      // Находим выигрыши конкретного пользователя используя ту же логику что и getAllWins
+      const userWinsData = await db.select({
+        // Данные выигрыша  
+        id: sql<string>`CAST(${carListings.id} AS TEXT)`,
+        userId: sql<number>`${userId}`,
+        listingId: carListings.id,
+        winningBid: carListings.currentBid,
+        wonAt: carListings.endedAt,
+        createdAt: carListings.createdAt,
+        
+        // Данные объявления
+        listingId2: carListings.id,
+        listingMake: carListings.make,
+        listingModel: carListings.model,
+        listingYear: carListings.year,
+        listingLotNumber: carListings.lotNumber,
+        listingPhotos: carListings.photos,
+        listingStartingPrice: carListings.startingPrice,
+        listingCurrentBid: carListings.currentBid,
+        listingStatus: carListings.status
+      })
+      .from(carListings)
+      .innerJoin(bids, eq(bids.listingId, carListings.id))
+      .where(
+        and(
+          eq(carListings.status, 'ended'),
+          eq(bids.bidderId, userId)
+        )
       )
-    )
-    .orderBy(sql`${bids.amount} DESC`)
-    .limit(1);
+      .orderBy(desc(carListings.endedAt));
 
-    return wonListings as UserWin[];
+      return userWinsData.map(win => ({
+        id: win.id,
+        userId: win.userId,
+        listingId: win.listingId,
+        winningBid: win.winningBid,
+        wonAt: win.wonAt,
+        createdAt: win.createdAt,
+        listing: {
+          id: win.listingId2,
+          make: win.listingMake,
+          model: win.listingModel,
+          year: win.listingYear,
+          lotNumber: win.listingLotNumber,
+          photos: win.listingPhotos,
+          startingPrice: win.listingStartingPrice,
+          currentBid: win.listingCurrentBid,
+          status: win.listingStatus
+        } as CarListing
+      }));
+    } catch (error) {
+      console.error('Ошибка получения выигрышей пользователя:', error);
+      return [];
+    }
   }
 
   async createUserWin(win: InsertUserWin): Promise<UserWin> {
