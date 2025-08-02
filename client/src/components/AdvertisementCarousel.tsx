@@ -4,6 +4,10 @@ import { ChevronLeft, ChevronRight, Phone, MessageCircle, X } from 'lucide-react
 import { Button } from '@/components/ui/button';
 import { useLocation } from 'wouter';
 import { ReferralModal } from './ReferralModal';
+
+// Глобальный кэш состояний загрузки изображений
+const globalImageCache = new Map<string, 'loading' | 'loaded' | 'error'>();
+const globalPreloadedImages = new Set<string>();
 import {
   AlertDialog,
   AlertDialogAction,
@@ -46,38 +50,73 @@ export function AdvertisementCarousel() {
     .filter(ad => ad.isActive)
     .sort((a, b) => a.order - b.order);
 
-  // 🚨 ТЕСТ: Диагностика проблемы с серой колонкой
-  console.log('🎠 [ТЕСТ] Загружены объявления карусели:', advertisements);
-  console.log('🎯 [ТЕСТ] Активные объявления:', activeAds);
-  console.log('📊 [ТЕСТ] isLoading:', isLoading);
-  console.log('🔢 [ТЕСТ] currentSlide:', currentSlide);
-  console.log('⏸️ [ТЕСТ] isPaused:', isPaused);
+  // Логирование загрузки карусели для отладки
+  console.log('🎠 Активные объявления карусели:', activeAds.length);
   
-  // Добавляем тест URL изображения
-  if (activeAds.length > 0) {
-    console.log('🔗 [ТЕСТ] URL изображения "Нужна помощь":', activeAds[0].imageUrl);
+  // Проверяем URL изображения при наличии
+  if (activeAds.length > 0 && activeAds[0].imageUrl) {
+    console.log('🔗 Загружаем изображение карусели:', activeAds[0].imageUrl);
   }
 
-  // Отслеживание загрузки изображений
-  const [imageLoadStates, setImageLoadStates] = useState<{ [key: string]: 'loading' | 'loaded' | 'error' }>({});
+  // Локальное состояние для принудительного рендера при изменении кэша
+  const [, forceUpdate] = useState({});
 
-  // Оптимизированный прелоадинг изображений
+  // Функция для получения состояния загрузки из глобального кэша
+  const getImageLoadState = (imageUrl: string): 'loading' | 'loaded' | 'error' | 'none' => {
+    return globalImageCache.get(imageUrl) || 'none';
+  };
+
+  // Глобальная предзагрузка изображений с постоянным кэшированием
   useEffect(() => {
     activeAds.forEach((ad) => {
-      if (ad.imageUrl && !imageLoadStates[ad.id]) {
-        setImageLoadStates(prev => ({ ...prev, [ad.id]: 'loading' }));
+      if (ad.imageUrl && !globalPreloadedImages.has(ad.imageUrl)) {
+        // Отмечаем как предзагружаемое
+        globalPreloadedImages.add(ad.imageUrl);
         
-        const img = new Image();
-        img.onload = () => {
-          setImageLoadStates(prev => ({ ...prev, [ad.id]: 'loaded' }));
-        };
-        img.onerror = () => {
-          setImageLoadStates(prev => ({ ...prev, [ad.id]: 'error' }));
-        };
-        img.src = ad.imageUrl;
+        // Проверяем, есть ли уже в кэше
+        if (!globalImageCache.has(ad.imageUrl)) {
+          globalImageCache.set(ad.imageUrl, 'loading');
+          
+          const img = new Image();
+          img.onload = () => {
+            globalImageCache.set(ad.imageUrl, 'loaded');
+            forceUpdate({}); // Принудительно обновляем компонент
+          };
+          img.onerror = () => {
+            globalImageCache.set(ad.imageUrl, 'error');
+            forceUpdate({}); // Принудительно обновляем компонент
+          };
+          
+          // Добавляем кэш-заголовки для браузера и предзагружаем
+          img.crossOrigin = 'anonymous';
+          img.loading = 'eager'; // Загружать сразу
+          img.src = ad.imageUrl;
+        }
       }
     });
-  }, [activeAds, imageLoadStates]);
+  }, [activeAds]);
+
+  // Дополнительная предзагрузка при монтировании компонента
+  useEffect(() => {
+    // Предзагружаем изображения заранее для мгновенного отображения
+    activeAds.forEach((ad) => {
+      if (ad.imageUrl && getImageLoadState(ad.imageUrl) === 'none') {
+        // Создаем link элемент для браузерного предзагрузки
+        const link = document.createElement('link');
+        link.rel = 'preload';
+        link.as = 'image';
+        link.href = ad.imageUrl;
+        document.head.appendChild(link);
+        
+        // Убираем link через 5 секунд
+        setTimeout(() => {
+          if (document.head.contains(link)) {
+            document.head.removeChild(link);
+          }
+        }, 5000);
+      }
+    });
+  }, []);
 
   // Автоматическое переключение каждые 5 секунд
   useEffect(() => {
@@ -180,22 +219,11 @@ export function AdvertisementCarousel() {
 
   const currentAd = activeAds[currentSlide];
   
-  // 🚨 ТЕСТ: Отслеживание рендеринга
-  console.log('🎭 [ТЕСТ] Рендерим карусель - currentAd:', currentAd);
-  console.log('🎛️ [ТЕСТ] Состояния загрузки изображений:', imageLoadStates);
-  
+  // Проверяем состояние изображения для отладки
   if (currentAd) {
-    const imageState = imageLoadStates[currentAd.id];
-    console.log(`🖼️ [ТЕСТ] Текущее изображение "${currentAd.title}" - состояние:`, imageState);
-    
-    if (imageState === 'loading') {
-      console.log('⚠️ [ТЕСТ] ПРОБЛЕМА: Изображение еще загружается! Это может вызвать серую колонку');
-    } else if (imageState === 'error') {
-      console.log('🔥 [ТЕСТ] ПРОБЛЕМА: Ошибка загрузки изображения! Это точно вызовет серую колонку');
-    } else if (imageState === 'loaded') {
-      console.log('✅ [ТЕСТ] Изображение загружено успешно');
-    } else {
-      console.log('❓ [ТЕСТ] ПРОБЛЕМА: Неизвестное состояние изображения! Может вызвать серую колонку');
+    const imageState = getImageLoadState(currentAd.imageUrl);
+    if (imageState === 'error') {
+      console.warn('⚠️ Ошибка загрузки изображения карусели:', currentAd.imageUrl);
     }
   }
 
@@ -220,22 +248,22 @@ export function AdvertisementCarousel() {
             }`}
           >
             <div className="relative h-full p-6 text-white">
-              {/* Background Image with Loading State */}
+              {/* Background Image with Loading State - Приоритетная загрузка */}
               <div 
-                className={`absolute inset-0 rounded-2xl bg-cover bg-center bg-no-repeat transition-all duration-300 ${
-                  imageLoadStates[ad.id] === 'loaded' 
+                className={`absolute inset-0 rounded-2xl bg-cover bg-center bg-no-repeat transition-opacity duration-200 ${
+                  getImageLoadState(ad.imageUrl) === 'loaded' 
                     ? 'opacity-100' 
-                    : imageLoadStates[ad.id] === 'error'
-                    ? 'bg-gradient-to-br from-blue-500 via-purple-500 to-indigo-600'
-                    : 'bg-gradient-to-br from-blue-400 via-purple-400 to-indigo-500 animate-pulse'
+                    : getImageLoadState(ad.imageUrl) === 'error'
+                    ? 'bg-gradient-to-br from-blue-500 via-purple-500 to-indigo-600 opacity-100'
+                    : 'bg-gradient-to-br from-blue-400 via-purple-400 to-indigo-500 opacity-60'
                 }`}
                 style={{
-                  backgroundImage: imageLoadStates[ad.id] === 'loaded' ? `url('${ad.imageUrl}')` : undefined,
+                  backgroundImage: getImageLoadState(ad.imageUrl) === 'loaded' ? `url('${ad.imageUrl}')` : undefined,
                 }}
               />
               
               {/* Loading Indicator */}
-              {imageLoadStates[ad.id] === 'loading' && (
+              {getImageLoadState(ad.imageUrl) === 'loading' && (
                 <div className="absolute inset-0 flex items-center justify-center">
                   <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin opacity-75"></div>
                 </div>
