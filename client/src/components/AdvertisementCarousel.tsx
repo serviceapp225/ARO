@@ -46,15 +46,40 @@ export function AdvertisementCarousel() {
     .filter(ad => ad.isActive)
     .sort((a, b) => a.order - b.order);
 
-  // Отладка для понимания проблемы с обновлением
-  console.log('🎠 Загружены объявления карусели:', advertisements);
-  console.log('🎯 Активные объявления:', activeAds);
+  // 🚨 ТЕСТ: Диагностика проблемы с серой колонкой
+  console.log('🎠 [ТЕСТ] Загружены объявления карусели:', advertisements);
+  console.log('🎯 [ТЕСТ] Активные объявления:', activeAds);
+  console.log('📊 [ТЕСТ] isLoading:', isLoading);
+  console.log('🔢 [ТЕСТ] currentSlide:', currentSlide);
+  console.log('⏸️ [ТЕСТ] isPaused:', isPaused);
+  
+  // Добавляем тест URL изображения
+  if (activeAds.length > 0) {
+    console.log('🔗 [ТЕСТ] URL изображения "Нужна помощь":', activeAds[0].imageUrl);
+  }
+
+  // 🚨 ТЕСТ: Отслеживание загрузки изображений
+  const [imageLoadStates, setImageLoadStates] = useState<{ [key: string]: 'loading' | 'loaded' | 'error' }>({});
 
   // Прелоадинг изображений для быстрой загрузки
   useEffect(() => {
-    activeAds.forEach(ad => {
+    console.log('🖼️ [ТЕСТ] Начинаем прелоадинг изображений для', activeAds.length, 'объявлений');
+    
+    activeAds.forEach((ad, index) => {
       if (ad.imageUrl) {
+        console.log(`🔄 [ТЕСТ] Загружаем изображение ${index}: ${ad.title} - ${ad.imageUrl}`);
+        
+        setImageLoadStates(prev => ({ ...prev, [ad.id]: 'loading' }));
+        
         const img = new Image();
+        img.onload = () => {
+          console.log(`✅ [ТЕСТ] Изображение загружено ${index}: ${ad.title}`);
+          setImageLoadStates(prev => ({ ...prev, [ad.id]: 'loaded' }));
+        };
+        img.onerror = () => {
+          console.log(`❌ [ТЕСТ] Ошибка загрузки изображения ${index}: ${ad.title} - ${ad.imageUrl}`);
+          setImageLoadStates(prev => ({ ...prev, [ad.id]: 'error' }));
+        };
         img.src = ad.imageUrl;
       }
     });
@@ -160,6 +185,25 @@ export function AdvertisementCarousel() {
   }
 
   const currentAd = activeAds[currentSlide];
+  
+  // 🚨 ТЕСТ: Отслеживание рендеринга
+  console.log('🎭 [ТЕСТ] Рендерим карусель - currentAd:', currentAd);
+  console.log('🎛️ [ТЕСТ] Состояния загрузки изображений:', imageLoadStates);
+  
+  if (currentAd) {
+    const imageState = imageLoadStates[currentAd.id];
+    console.log(`🖼️ [ТЕСТ] Текущее изображение "${currentAd.title}" - состояние:`, imageState);
+    
+    if (imageState === 'loading') {
+      console.log('⚠️ [ТЕСТ] ПРОБЛЕМА: Изображение еще загружается! Это может вызвать серую колонку');
+    } else if (imageState === 'error') {
+      console.log('🔥 [ТЕСТ] ПРОБЛЕМА: Ошибка загрузки изображения! Это точно вызовет серую колонку');
+    } else if (imageState === 'loaded') {
+      console.log('✅ [ТЕСТ] Изображение загружено успешно');
+    } else {
+      console.log('❓ [ТЕСТ] ПРОБЛЕМА: Неизвестное состояние изображения! Может вызвать серую колонку');
+    }
+  }
 
   return (
     <div 
