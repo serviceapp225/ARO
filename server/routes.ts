@@ -2384,6 +2384,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Очищаем все кэши после одобрения
       clearAllCaches();
       
+      // ОТПРАВЛЯЕМ УВЕДОМЛЕНИЯ ПРИ ОДОБРЕНИИ (pending → active)
+      try {
+        console.log('🔔 Объявление одобрено через /approve! Проверяем сохраненные поисковые запросы для:', listing.make, listing.model);
+        const matchingAlerts = await storage.checkAlertsForNewListing(listing);
+        console.log('📧 Найдено совпадающих запросов:', matchingAlerts.length);
+        
+        // Отправляем уведомление для каждого совпадающего запроса
+        for (const alert of matchingAlerts) {
+          console.log('📨 Создаем уведомление для пользователя:', alert.userId, 'запрос:', alert.id);
+          
+          // Проверяем, что уведомление еще не существует
+          const existingNotifications = await storage.getNotificationsByUser(alert.userId);
+          const duplicateExists = existingNotifications.some(n => 
+            n.type === "car_found" && 
+            n.listingId === listing.id && 
+            n.alertId === alert.id
+          );
+          
+          if (!duplicateExists) {
+            await storage.createNotification({
+              userId: alert.userId,
+              title: "Найден автомобиль по вашему запросу",
+              message: `${listing.make.toUpperCase()} ${listing.model.toUpperCase()} ${listing.year} г. - ${listing.startingPrice} Сомони (лот #${listing.lotNumber})`,
+              type: "car_found",
+              listingId: listing.id,
+              alertId: alert.id,
+              isRead: false
+            });
+            console.log('✅ Уведомление создано для пользователя:', alert.userId);
+          } else {
+            console.log('⚠️ Уведомление уже существует для пользователя:', alert.userId);
+          }
+        }
+        
+        if (matchingAlerts.length > 0) {
+          console.log(`🎯 Отправлены уведомления для ${matchingAlerts.length} пользователей с подходящими поисковыми запросами`);
+        }
+      } catch (alertError) {
+        console.error('❌ Ошибка при проверке поисковых запросов:', alertError);
+      }
+      
       // Принудительно обновляем кэш листингов для главной страницы
       await updateListingsCache();
       
