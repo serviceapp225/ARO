@@ -58,32 +58,26 @@ export function AdvertisementCarousel() {
     console.log('🔗 [ТЕСТ] URL изображения "Нужна помощь":', activeAds[0].imageUrl);
   }
 
-  // 🚨 ТЕСТ: Отслеживание загрузки изображений
+  // Отслеживание загрузки изображений
   const [imageLoadStates, setImageLoadStates] = useState<{ [key: string]: 'loading' | 'loaded' | 'error' }>({});
 
-  // Прелоадинг изображений для быстрой загрузки
+  // Оптимизированный прелоадинг изображений
   useEffect(() => {
-    console.log('🖼️ [ТЕСТ] Начинаем прелоадинг изображений для', activeAds.length, 'объявлений');
-    
-    activeAds.forEach((ad, index) => {
-      if (ad.imageUrl) {
-        console.log(`🔄 [ТЕСТ] Загружаем изображение ${index}: ${ad.title} - ${ad.imageUrl}`);
-        
+    activeAds.forEach((ad) => {
+      if (ad.imageUrl && !imageLoadStates[ad.id]) {
         setImageLoadStates(prev => ({ ...prev, [ad.id]: 'loading' }));
         
         const img = new Image();
         img.onload = () => {
-          console.log(`✅ [ТЕСТ] Изображение загружено ${index}: ${ad.title}`);
           setImageLoadStates(prev => ({ ...prev, [ad.id]: 'loaded' }));
         };
         img.onerror = () => {
-          console.log(`❌ [ТЕСТ] Ошибка загрузки изображения ${index}: ${ad.title} - ${ad.imageUrl}`);
           setImageLoadStates(prev => ({ ...prev, [ad.id]: 'error' }));
         };
         img.src = ad.imageUrl;
       }
     });
-  }, [activeAds]);
+  }, [activeAds, imageLoadStates]);
 
   // Автоматическое переключение каждые 5 секунд
   useEffect(() => {
@@ -226,13 +220,26 @@ export function AdvertisementCarousel() {
             }`}
           >
             <div className="relative h-full p-6 text-white">
-              {/* Background Image */}
+              {/* Background Image with Loading State */}
               <div 
-                className="absolute inset-0 rounded-2xl bg-cover bg-center bg-no-repeat"
+                className={`absolute inset-0 rounded-2xl bg-cover bg-center bg-no-repeat transition-all duration-300 ${
+                  imageLoadStates[ad.id] === 'loaded' 
+                    ? 'opacity-100' 
+                    : imageLoadStates[ad.id] === 'error'
+                    ? 'bg-gradient-to-br from-blue-500 via-purple-500 to-indigo-600'
+                    : 'bg-gradient-to-br from-blue-400 via-purple-400 to-indigo-500 animate-pulse'
+                }`}
                 style={{
-                  backgroundImage: `url('${ad.imageUrl}')`,
+                  backgroundImage: imageLoadStates[ad.id] === 'loaded' ? `url('${ad.imageUrl}')` : undefined,
                 }}
               />
+              
+              {/* Loading Indicator */}
+              {imageLoadStates[ad.id] === 'loading' && (
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin opacity-75"></div>
+                </div>
+              )}
               
               {/* Minimal dark overlay for text readability */}
               <div 
@@ -245,7 +252,7 @@ export function AdvertisementCarousel() {
               {/* Content */}
               <div className="relative z-10 h-full flex flex-col justify-center items-center text-center space-y-3">
                 <h2 className="text-2xl font-bold drop-shadow-lg text-white text-center max-w-md leading-tight">
-                  {ad.title} тест
+                  {ad.title}
                 </h2>
                 {ad.description && (
                   <p className="text-base leading-relaxed opacity-95 drop-shadow-md max-w-md text-white text-center">
