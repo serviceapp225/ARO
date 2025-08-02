@@ -236,6 +236,31 @@ const getUserFromContext = async (req: any, res: any, next: any) => {
   next();
 };
 
+// Функция для получения пользователя из запроса (без next)
+const getUserFromRequest = async (req: any) => {
+  // Пытаемся получить userId из различных источников
+  const userIdHeader = req.headers['x-user-id'];
+  const userEmailHeader = req.headers['x-user-email'];
+  
+  if (userIdHeader) {
+    try {
+      const user = await storage.getUser(parseInt(userIdHeader));
+      return user;
+    } catch (error) {
+      console.error('❌ Ошибка получения пользователя по ID:', error);
+    }
+  } else if (userEmailHeader) {
+    try {
+      const user = await storage.getUserByEmail(userEmailHeader);
+      return user;
+    } catch (error) {
+      console.error('❌ Ошибка получения пользователя по email:', error);
+    }
+  }
+  
+  return null;
+};
+
 export async function registerRoutes(app: Express): Promise<Server> {
   // Добавляем middleware для получения контекста пользователя
   app.use(getUserFromContext);
