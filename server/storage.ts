@@ -1040,11 +1040,29 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getConversationMessages(conversationId: number): Promise<(Message & { sender: User })[]> {
-    return [];
+    const result = await db.select({
+      id: messages.id,
+      conversationId: messages.conversationId,
+      senderId: messages.senderId,
+      content: messages.content,
+      isRead: messages.isRead,
+      createdAt: messages.createdAt,
+      sender: {
+        id: users.id,
+        fullName: users.fullName,
+        email: users.email
+      }
+    })
+    .from(messages)
+    .leftJoin(users, eq(messages.senderId, users.id))
+    .where(eq(messages.conversationId, conversationId))
+    .orderBy(messages.createdAt);
+
+    return result as (Message & { sender: User })[];
   }
 
   async getMessagesByConversation(conversationId: number): Promise<any[]> {
-    return [];
+    return this.getConversationMessages(conversationId);
   }
 
   async sendMessage(message: InsertMessage): Promise<Message> {
