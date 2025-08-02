@@ -228,9 +228,9 @@ export function ActiveAuctions({ searchQuery = "", customListings }: ActiveAucti
         </Select>
       </div>
       <div className="grid grid-cols-2 gap-3">
-        {displayedAuctions.map((auction) => (
+        {displayedAuctions.map((auction, index) => (
           <Card
-            key={auction.id}
+            key={`${auction.id}-${index}`}
             className="group relative rounded-xl overflow-hidden bg-white shadow-lg hover:shadow-2xl transition-all duration-300 cursor-pointer"
             onClick={() => handleCardClick(auction.id)}
             onMouseEnter={() => handleCardHover(auction.id)}
@@ -250,12 +250,6 @@ export function ActiveAuctions({ searchQuery = "", customListings }: ActiveAucti
                 <CountdownTimer 
                   endTime={auction.endTime || auction.auctionEndTime} 
                   size="small"
-                  hasWinner={auction.hasWinner}
-                  winnerDisplayUntil={auction.hasWinner ? 
-                    (auction.winnerInfo?.wonAt ? 
-                      new Date(auction.winnerInfo.wonAt).getTime() + (24 * 60 * 60 * 1000) : 
-                      Date.now() + (24 * 60 * 60 * 1000)
-                    ) : undefined}
                 />
               </div>
               
@@ -272,7 +266,7 @@ export function ActiveAuctions({ searchQuery = "", customListings }: ActiveAucti
               
               {/* Status Badge */}
               <div className="absolute bottom-3 left-3">
-                {(auction.status === 'ended' || auction.status === 'archived') && auction.hasWinner ? (
+                {auction.status === 'ended' ? (
                   <span className="px-2 py-1 rounded text-xs font-semibold text-white bg-green-600">
                     ВЫИГРАНО
                   </span>
@@ -303,7 +297,7 @@ export function ActiveAuctions({ searchQuery = "", customListings }: ActiveAucti
               </p>
               
               {/* Winner Info for ended auctions */}
-              {(auction.status === 'ended' || auction.status === 'archived') && auction.winnerInfo && (
+              {auction.status === 'ended' && auction.winnerInfo && (
                 <div className="mb-3 p-2 bg-green-50 rounded border border-green-200">
                   <p className="text-xs text-green-700">
                     <span className="font-semibold">Победитель:</span> {auction.winnerInfo.fullName}
@@ -317,11 +311,21 @@ export function ActiveAuctions({ searchQuery = "", customListings }: ActiveAucti
               {/* Compact status indicators */}
               <div className="flex flex-wrap gap-1 mb-3">
                 {/* Electric car range - показывается ПЕРВЫМ для электромобилей */}
-                {(auction.fuelType === 'Электро' || auction.fuelType === 'electric') && auction.electricRange && auction.electricRange > 0 && (
-                  <span className="text-xs px-2 py-1 rounded bg-blue-100 text-blue-700">
-                    ⚡ Запас хода: {auction.electricRange} км
-                  </span>
-                )}
+                {(() => {
+                  // Отладочная информация
+                  console.log(`🔋 Проверка электромобиля ${auction.make} ${auction.model}:`, {
+                    fuelType: auction.fuelType,
+                    electricRange: auction.electricRange,
+                    batteryCapacity: auction.batteryCapacity,
+                    id: auction.id
+                  });
+                  
+                  return (auction.fuelType === 'Электро' || auction.fuelType === 'electric') && auction.electricRange && auction.electricRange > 0 ? (
+                    <span className="text-xs px-2 py-1 rounded bg-blue-100 text-blue-700">
+                      ⚡ Запас хода: {auction.electricRange} км
+                    </span>
+                  ) : null;
+                })()}
                 {auction.customsCleared && (
                   <span className="text-xs px-2 py-1 rounded bg-green-100 text-green-700">
                     Растаможен

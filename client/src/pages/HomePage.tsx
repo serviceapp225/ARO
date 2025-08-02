@@ -28,8 +28,14 @@ export default function HomePage() {
     gcTime: 60 * 60 * 1000, // 1 час в памяти
   });
 
-  // Используем данные из AuctionContext вместо дублирующего запроса
-  const isPageLoading = false; // Убираем лишний лоадер, AuctionContext управляет загрузкой
+  const { data: listingsData, isLoading: listingsLoading } = useQuery({
+    queryKey: ['/api/listings'],
+    staleTime: 10 * 1000, // Объявления остаются свежими 10 секунд
+    gcTime: 2 * 60 * 1000, // 2 минуты в памяти для быстрого возврата
+  });
+
+  // Показываем скелетон только пока критические данные (объявления) не загрузились
+  const isPageLoading = listingsLoading;
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();

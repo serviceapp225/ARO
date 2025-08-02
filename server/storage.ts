@@ -277,32 +277,28 @@ export class DatabaseStorage implements IStorage {
       console.log(`Starting ultra-fast main listings query for status: ${status}`);
       const startTime = Date.now();
       
-      // Complete SQL query with all fields needed for moderation including winner info
+      // Complete SQL query with all fields needed for moderation
       const result = await pool.query(`
-        SELECT cl.id, cl.seller_id, cl.lot_number, cl.make, cl.model, cl.year, cl.mileage,
-               cl.starting_price, cl.current_bid, cl.reserve_price, cl.auction_duration, cl.description,
-               cl.status, cl.auction_end_time, cl.condition, cl.engine, cl.transmission, cl.fuel_type,
-               cl.body_type, cl.drive_type, cl.color, cl.vin, cl.location, cl.ended_at,
-               cl.customs_cleared, cl.recycled, cl.technical_inspection_valid, 
-               cl.technical_inspection_date, cl.tinted, cl.tinting_date,
-               uw.user_id as winner_id, uw.winning_bid, uw.won_at,
-               u.full_name as winner_name
-        FROM car_listings cl
-        LEFT JOIN user_wins uw ON cl.id = uw.listing_id
-        LEFT JOIN users u ON uw.user_id = u.id
-        WHERE cl.status = $1 
-        ORDER BY cl.created_at DESC 
+        SELECT id, seller_id, lot_number, make, model, year, mileage,
+               starting_price, current_bid, reserve_price, auction_duration, description,
+               status, auction_end_time, condition, engine, transmission, fuel_type,
+               body_type, drive_type, color, vin, location,
+               customs_cleared, recycled, technical_inspection_valid, 
+               technical_inspection_date, tinted, tinting_date
+        FROM car_listings 
+        WHERE status = $1 
+        ORDER BY created_at DESC 
         LIMIT $2
       `, [status, limit || 20]);
       
       console.log(`Ultra-fast main listings query completed in ${Date.now() - startTime}ms, found ${result.rows.length} listings`);
       
-      // Convert to expected format with complete data from database including winner info
+      // Convert to expected format with complete data from database
       const listings = result.rows.map((row: any) => ({
         id: row.id,
         sellerId: row.seller_id,
         customMakeModel: null,
-        endedAt: row.ended_at,
+        endedAt: null,
         batteryCapacity: null,
         electricRange: null,
         lotNumber: row.lot_number,
@@ -341,15 +337,7 @@ export class DatabaseStorage implements IStorage {
         driveType: row.drive_type,
         color: row.color,
         vin: row.vin,
-        location: row.location,
-        // Winner information for display
-        hasWinner: !!row.winner_id,
-        winnerInfo: row.winner_id ? {
-          userId: row.winner_id,
-          fullName: row.winner_name,
-          currentBid: row.winning_bid,
-          wonAt: row.won_at
-        } : null
+        location: row.location
       }));
       
       return listings as CarListing[];
@@ -896,70 +884,12 @@ export class DatabaseStorage implements IStorage {
   async getRecentWonListings(hoursLimit: number): Promise<CarListing[]> {
     try {
       const cutoffDate = new Date(Date.now() - hoursLimit * 60 * 60 * 1000);
-      const result = await pool.query(`
-        SELECT cl.*, uw.user_id as winner_id, uw.winning_bid, uw.won_at,
-               u.full_name as winner_name
-        FROM car_listings cl
-        LEFT JOIN user_wins uw ON cl.id = uw.listing_id
-        LEFT JOIN users u ON uw.user_id = u.id
-        WHERE cl.status IN ('ended', 'archived') 
-        AND cl.auction_end_time >= $1
-        ORDER BY cl.auction_end_time DESC
-      `, [cutoffDate]);
-      
-      return result.rows.map((row: any) => ({
-        id: row.id,
-        sellerId: row.seller_id,
-        customMakeModel: null,
-        endedAt: row.ended_at,
-        batteryCapacity: null,
-        electricRange: null,
-        lotNumber: row.lot_number,
-        make: row.make,
-        model: row.model,
-        year: row.year,
-        mileage: row.mileage,
-        description: row.description || '',
-        startingPrice: row.starting_price,
-        currentBid: row.current_bid,
-        reservePrice: row.reserve_price,
-        status: row.status,
-        auctionEndTime: row.auction_end_time,
-        photos: [
-          `/api/listings/${row.id}/photo/0`,
-          `/api/listings/${row.id}/photo/1`,
-          `/api/listings/${row.id}/photo/2`,
-          `/api/listings/${row.id}/photo/3`,
-          `/api/listings/${row.id}/photo/4`
-        ],
-        createdAt: new Date(row.created_at),
-        updatedAt: row.updated_at ? new Date(row.updated_at) : null,
-        customsCleared: row.customs_cleared || false,
-        recycled: row.recycled || false,
-        technicalInspectionValid: row.technical_inspection_valid || false,
-        technicalInspectionDate: row.technical_inspection_date || null,
-        tinted: row.tinted || false,
-        tintingDate: row.tinting_date || null,
-        condition: row.condition || 'good',
-        auctionDuration: row.auction_duration || 7,
-        auctionStartTime: row.auction_start_time ? new Date(row.auction_start_time) : null,
-        engine: row.engine,
-        transmission: row.transmission,
-        fuelType: row.fuel_type,
-        bodyType: row.body_type,
-        driveType: row.drive_type,
-        color: row.color,
-        vin: row.vin,
-        location: row.location,
-        // Winner information for display
-        hasWinner: !!row.winner_id,
-        winnerInfo: row.winner_id ? {
-          userId: row.winner_id,
-          fullName: row.winner_name,
-          currentBid: row.winning_bid,
-          wonAt: row.won_at
-        } : null
-      })) as CarListing[];
+      return await db.select().from(carListings).where(
+        and(
+          eq(carListings.status, 'ended'),
+          sql`auction_end_time >= ${cutoffDate}`
+        )
+      );
     } catch (error) {
       console.error('Error getting recent won listings:', error);
       return [];
@@ -1035,9 +965,6 @@ export class DatabaseStorage implements IStorage {
             .update(carListings)
             .set({ status: 'ended', updatedAt: now })
             .where(eq(carListings.id, listing.id));
-
-          // Создаем запись о победителе
-          await this.createWinnerRecord(listing.id);
 
           console.log(`🏁 Аукцион ${listing.id} завершен успешно`);
         }
@@ -1333,107 +1260,6 @@ export class DatabaseStorage implements IStorage {
         .values(data as InsertSellCarBanner)
         .returning();
       return created;
-    }
-  }
-
-  // Добавляем функции для работы с победителями
-  async getAllWins(): Promise<UserWin[]> {
-    try {
-      const result = await db.select({
-        id: userWins.id,
-        userId: userWins.userId,
-        listingId: userWins.listingId,
-        winningBid: userWins.winningBid,
-        wonAt: userWins.wonAt,
-        createdAt: sql<Date>`COALESCE(${userWins.wonAt}, NOW())`
-      }).from(userWins);
-      
-      return result as UserWin[];
-    } catch (error) {
-      console.error('Error getting all wins:', error);
-      return [];
-    }
-  }
-
-  async createWinnerRecord(listingId: number): Promise<void> {
-    try {
-      // Находим последнюю ставку для этого аукциона
-      const [lastBid] = await db.select()
-        .from(bids)
-        .where(eq(bids.listingId, listingId))
-        .orderBy(sql`amount DESC`)
-        .limit(1);
-
-      if (!lastBid) {
-        console.log(`⚠️ Нет ставок для аукциона ${listingId}, пропускаем создание записи о победителе`);
-        return;
-      }
-
-      // Проверяем, есть ли уже запись о победителе
-      const [existingWin] = await db.select()
-        .from(userWins)
-        .where(eq(userWins.listingId, listingId))
-        .limit(1);
-
-      if (existingWin) {
-        console.log(`✅ Запись о победителе для аукциона ${listingId} уже существует`);
-        return;
-      }
-
-      // Создаем запись о победителе
-      await db.insert(userWins).values({
-        userId: lastBid.bidderId,
-        listingId: listingId,
-        winningBid: lastBid.amount.toString(),
-        wonAt: new Date()
-      });
-
-      console.log(`🏆 Создана запись о победителе аукциона ${listingId}: пользователь ${lastBid.bidderId}, ставка ${lastBid.amount}`);
-
-      // Отправляем SMS уведомление победителю
-      await this.sendWinnerSMS(lastBid.bidderId, listingId, lastBid.amount.toString());
-
-    } catch (error) {
-      console.error(`❌ Ошибка создания записи о победителе для аукциона ${listingId}:`, error);
-    }
-  }
-
-  async sendWinnerSMS(userId: number, listingId: number, winningBid: string): Promise<void> {
-    try {
-      // Получаем информацию о пользователе
-      const [user] = await db.select().from(users).where(eq(users.id, userId));
-      if (!user) return;
-
-      // Получаем информацию о лоте
-      const [listing] = await db.select().from(carListings).where(eq(carListings.id, listingId));
-      if (!listing) return;
-
-      const phoneNumber = user.phoneNumber;
-      if (!phoneNumber) return;
-
-      // Формируем текст SMS
-      const smsText = `🎉 Поздравляем! Вы выиграли аукцион!\n\nАвтомобиль: ${listing.make} ${listing.model} ${listing.year}\nВаша ставка: ${winningBid} сомони\n\nСвяжитесь с продавцом для завершения сделки.\n\nАВТОБИД.ТЖ`;
-
-      // Отправляем SMS через VPS прокси
-      const response = await fetch('http://your-vps-ip:3001/send-sms', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          to: phoneNumber,
-          text: smsText
-        })
-      });
-
-      if (response.ok) {
-        console.log(`📱 SMS уведомление о победе отправлено пользователю ${userId} (${phoneNumber})`);
-      } else {
-        console.error(`❌ Ошибка отправки SMS победителю ${userId}:`, await response.text());
-      }
-
-    } catch (error) {
-      console.error(`❌ Ошибка отправки SMS победителю ${userId}:`, error);
     }
   }
 }
