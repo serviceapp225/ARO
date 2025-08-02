@@ -978,7 +978,45 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getConversationsByUser(userId: number): Promise<any[]> {
-    return [];
+    const conversationsResult = await db
+      .select({
+        id: conversations.id,
+        listingId: conversations.listingId,
+        buyerId: conversations.buyerId,
+        sellerId: conversations.sellerId,
+        createdAt: conversations.createdAt,
+        updatedAt: conversations.updatedAt,
+        listing: {
+          id: carListings.id,
+          make: carListings.make,
+          model: carListings.model,
+          year: carListings.year,
+          lotNumber: carListings.lotNumber,
+          photos: carListings.photos
+        },
+        otherUser: {
+          id: users.id,
+          fullName: users.fullName,
+          email: users.email,
+          phoneNumber: users.phoneNumber
+        }
+      })
+      .from(conversations)
+      .leftJoin(carListings, eq(conversations.listingId, carListings.id))
+      .leftJoin(users, 
+        eq(users.id, 
+          sql`CASE 
+            WHEN ${conversations.buyerId} = ${userId} THEN ${conversations.sellerId}
+            ELSE ${conversations.buyerId}
+          END`
+        )
+      )
+      .where(
+        sql`${conversations.buyerId} = ${userId} OR ${conversations.sellerId} = ${userId}`
+      )
+      .orderBy(sql`${conversations.updatedAt} DESC`);
+
+    return conversationsResult;
   }
 
   async getConversation(listingId: number, buyerId: number, sellerId: number): Promise<Conversation | undefined> {
