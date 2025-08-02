@@ -95,6 +95,7 @@ export interface IStorage {
   getUserWins(userId: number): Promise<UserWin[]>;
   createUserWin(win: InsertUserWin): Promise<UserWin>;
   getWinByListingId(listingId: number): Promise<UserWin | undefined>;
+  getAllWins(): Promise<(UserWin & { listing: CarListing; winner: User })[]>;
 
   // Smart Auction Lifecycle Operations
   getRecentWonListings(hoursLimit: number): Promise<CarListing[]>;
@@ -1225,6 +1226,100 @@ export class DatabaseStorage implements IStorage {
       winningBid: lastBid.amount.toString(),
       createdAt: lastBid.createdAt || new Date()
     } as UserWin;
+  }
+
+  async getAllWins(): Promise<(UserWin & { listing: CarListing; winner: User })[]> {
+    try {
+      // Находим все завершённые аукционы (ended или archived) с победителями
+      const winsData = await db.select({
+        // Данные выигрыша
+        winId: sql<number>`ROW_NUMBER() OVER (ORDER BY ${bids.amount} DESC)`,
+        userId: bids.bidderId,
+        listingId: bids.listingId,
+        winningBid: bids.amount,
+        wonAt: bids.createdAt,
+        
+        // Данные лота - используем только существующие поля
+        listing: {
+          id: carListings.id,
+          lotNumber: carListings.lotNumber,
+          make: carListings.make,
+          model: carListings.model,
+          year: carListings.year,
+          startingPrice: carListings.startingPrice,
+          currentBid: carListings.currentBid,
+          photos: carListings.photos,
+          status: carListings.status,
+          auctionEndTime: carListings.auctionEndTime,
+          createdAt: carListings.createdAt,
+          sellerId: carListings.sellerId,
+          customMakeModel: carListings.customMakeModel,
+          bodyType: carListings.bodyType,
+          fuelType: carListings.fuelType,
+          transmission: carListings.transmission,
+          mileage: carListings.mileage,
+          color: carListings.color,
+          vin: carListings.vin,
+          description: carListings.description,
+          location: carListings.location,
+          condition: carListings.condition,
+          electricRange: carListings.electricRange,
+          batteryCapacity: carListings.batteryCapacity
+        },
+        
+        // Данные победителя - используем только существующие поля
+        winner: {
+          id: users.id,
+          email: users.email,
+          phoneNumber: users.phoneNumber,
+          fullName: users.fullName,
+          username: users.username,
+          isActive: users.isActive,
+          role: users.role,
+          createdAt: users.createdAt,
+          invitedBy: users.invitedBy,
+          isInvited: users.isInvited
+        }
+      })
+      .from(bids)
+      .innerJoin(carListings, eq(bids.listingId, carListings.id))
+      .innerJoin(users, eq(bids.bidderId, users.id))
+      .where(
+        and(
+          sql`${carListings.status} IN ('ended', 'archived')`,
+          sql`${bids.amount} = ${carListings.currentBid}` // Только победные ставки
+        )
+      )
+      .orderBy(sql`${bids.createdAt} DESC`);
+
+      // Преобразуем в нужный формат
+      return winsData.map((row) => ({
+        id: row.winId,
+        userId: row.userId,
+        listingId: row.listingId,
+        winningBid: row.winningBid.toString(),
+        wonAt: row.wonAt || new Date(),
+        listing: {
+          ...row.listing,
+          // Добавляем недостающие поля с значениями по умолчанию
+          reservePrice: null,
+          endedAt: null,
+          title: null,
+          views: 0,
+          inspectionReport: null,
+          chargingTime: null,
+          updatedAt: null
+        } as CarListing,
+        winner: {
+          ...row.winner,
+          // Добавляем недостающее поле
+          uid: null
+        } as User
+      }));
+    } catch (error) {
+      console.error('Error getting all wins:', error);
+      return [];
+    }
   }
 
   // Sell Car Banner operations
