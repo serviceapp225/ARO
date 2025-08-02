@@ -393,7 +393,6 @@ export function useAuctionWebSocket(): AuctionWebSocketHook {
           import('@/hooks/use-toast').then(({ toast }) => {
             toast({
               title: "💬 Новое сообщение",
-              description: "У вас новое сообщение",
               duration: 3000,
             });
           });
