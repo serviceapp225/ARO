@@ -1313,11 +1313,12 @@ export class DatabaseStorage implements IStorage {
 
   async getUserWins(userId: number): Promise<(UserWin & { listing: CarListing })[]> {
     try {
-      // Находим выигрыши конкретного пользователя используя ту же логику что и getAllWins
+      // Находим только те аукционы где пользователь РЕАЛЬНО ВЫИГРАЛ
+      // Это значит: аукцион завершен И у пользователя самая высокая ставка
       const userWinsData = await db.select({
         // Данные выигрыша  
         id: sql<string>`CAST(${carListings.id} AS TEXT)`,
-        userId: sql<number>`${userId}`,
+        userId: bids.bidderId,
         listingId: carListings.id,
         winningBid: carListings.currentBid,
         wonAt: carListings.endedAt,
@@ -1338,17 +1339,18 @@ export class DatabaseStorage implements IStorage {
       .innerJoin(bids, eq(bids.listingId, carListings.id))
       .where(
         and(
-          eq(carListings.status, 'ended'),
-          eq(bids.bidderId, userId)
+          eq(carListings.status, 'ended'), // Аукцион завершен
+          eq(bids.bidderId, userId), // Ставка принадлежит пользователю
+          eq(bids.amount, carListings.currentBid) // Ставка пользователя = текущая максимальная (значит он победитель)
         )
       )
-      .orderBy(desc(carListings.endedAt));
+      .orderBy(sql`${carListings.createdAt} DESC`);
 
       return userWinsData.map(win => ({
         id: win.id,
         userId: win.userId,
         listingId: win.listingId,
-        winningBid: win.winningBid,
+        winningBid: win.winningBid?.toString() || "0",
         wonAt: win.wonAt,
         createdAt: win.createdAt,
         listing: {
@@ -1360,7 +1362,29 @@ export class DatabaseStorage implements IStorage {
           photos: win.listingPhotos,
           startingPrice: win.listingStartingPrice,
           currentBid: win.listingCurrentBid,
-          status: win.listingStatus
+          status: win.listingStatus,
+          // Добавляем недостающие поля
+          sellerId: 0,
+          customMakeModel: null,
+          bodyType: null,
+          fuelType: null,
+          transmission: null,
+          mileage: null,
+          color: null,
+          vin: null,
+          description: null,
+          location: null,
+          condition: null,
+          reservePrice: null,
+          auctionEndTime: null,
+          endedAt: null,
+          title: null,
+          views: 0,
+          inspectionReport: null,
+          electricRange: null,
+          batteryCapacity: null,
+          chargingTime: null,
+          updatedAt: null
         } as CarListing
       }));
     } catch (error) {
