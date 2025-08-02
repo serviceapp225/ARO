@@ -320,11 +320,11 @@ export type UserWin = typeof userWins.$inferSelect;
 // Conversations table for messaging system
 export const conversations = pgTable("conversations", {
   id: serial("id").primaryKey(),
-  listingId: integer("listing_id").notNull().references(() => carListings.id, { onDelete: "cascade" }),
-  buyerId: integer("buyer_id").notNull().references(() => users.id, { onDelete: "cascade" }),
-  sellerId: integer("seller_id").notNull().references(() => users.id, { onDelete: "cascade" }),
-  lastMessageAt: timestamp("last_message_at").defaultNow(),
+  listingId: integer("listing_id").references(() => carListings.id, { onDelete: "cascade" }),
+  buyerId: integer("buyer_id").references(() => users.id, { onDelete: "cascade" }),
+  sellerId: integer("seller_id").references(() => users.id, { onDelete: "cascade" }),
   createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
 }, (table) => ({
   buyerIdx: index("conversations_buyer_idx").on(table.buyerId),
   sellerIdx: index("conversations_seller_idx").on(table.sellerId),
@@ -335,8 +335,8 @@ export const conversations = pgTable("conversations", {
 
 export const insertConversationSchema = createInsertSchema(conversations).omit({
   id: true,
-  lastMessageAt: true,
   createdAt: true,
+  updatedAt: true,
 });
 
 export type InsertConversation = z.infer<typeof insertConversationSchema>;
