@@ -87,23 +87,16 @@ export function CountdownTimer({ endTime, size = 'small', onTimeUp, hasWinner = 
   const shouldShowWinnerStatus = () => {
     if (!hasWinner) return false;
     
-    // Если время отображения победителя не задано, показываем 24 часа
-    if (!winnerDisplayUntil) {
-      // Проверяем, прошло ли 24 часа с момента окончания аукциона
-      if (!endTime) return true;
-      
-      const endTimeDate = new Date(endTime);
+    // Если время отображения победителя задано, проверяем его
+    if (winnerDisplayUntil) {
+      const displayUntilDate = new Date(winnerDisplayUntil);
       const now = new Date();
-      const hoursSinceEnd = (now.getTime() - endTimeDate.getTime()) / (1000 * 60 * 60);
-      
-      return hoursSinceEnd < 24; // Показываем ВЫИГРАНО в течение 24 часов
+      return now < displayUntilDate;
     }
     
-    // Если время отображения задано, проверяем его
-    const displayUntilDate = new Date(winnerDisplayUntil);
-    const now = new Date();
-    
-    return now < displayUntilDate;
+    // Если время отображения не задано, но есть победитель - показываем ВЫИГРАНО
+    // Это покрывает случаи когда аукцион завершен досрочно с победителем
+    return true;
   };
 
   // Если аукцион выигран и в периоде отображения, показываем "ВЫИГРАНО"
