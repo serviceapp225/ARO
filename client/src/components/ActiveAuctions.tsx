@@ -251,7 +251,11 @@ export function ActiveAuctions({ searchQuery = "", customListings }: ActiveAucti
                   endTime={auction.endTime || auction.auctionEndTime} 
                   size="small"
                   hasWinner={auction.hasWinner}
-                  winnerDisplayUntil={auction.winnerInfo?.wonAt ? new Date(auction.winnerInfo.wonAt).getTime() + (24 * 60 * 60 * 1000) : undefined}
+                  winnerDisplayUntil={auction.hasWinner ? 
+                    (auction.winnerInfo?.wonAt ? 
+                      new Date(auction.winnerInfo.wonAt).getTime() + (24 * 60 * 60 * 1000) : 
+                      Date.now() + (24 * 60 * 60 * 1000)
+                    ) : undefined}
                 />
               </div>
               
