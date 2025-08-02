@@ -2806,11 +2806,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Messaging API routes
   app.get("/api/conversations", async (req, res) => {
     try {
-      const userId = parseInt(req.query.userId as string);
-      console.log(`📨 Получение переписок для пользователя ${userId}`);
-      if (!userId) {
-        return res.status(400).json({ error: "userId query parameter is required" });
+      const user = await getUserFromContext(req);
+      if (!user) {
+        return res.status(401).json({ error: "Unauthorized" });
       }
+      
+      const userId = user.id;
+      console.log(`📨 Получение переписок для пользователя ${userId}`);
+      
       const conversations = await storage.getConversationsByUser(userId);
       console.log(`✅ Найдено ${conversations.length} переписок для пользователя ${userId}:`, conversations.map(c => ({ 
         id: c.id, 
@@ -2819,7 +2822,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       })));
       res.json(conversations);
     } catch (error) {
-      console.error(`❌ Ошибка получения переписок для пользователя ${userId}:`, error);
+      console.error(`❌ Ошибка получения переписок:`, error);
       res.status(500).json({ error: "Failed to fetch conversations" });
     }
   });
