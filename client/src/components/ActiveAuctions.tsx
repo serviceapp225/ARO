@@ -250,6 +250,8 @@ export function ActiveAuctions({ searchQuery = "", customListings }: ActiveAucti
                 <CountdownTimer 
                   endTime={auction.endTime || auction.auctionEndTime} 
                   size="small"
+                  hasWinner={auction.hasWinner}
+                  winnerDisplayUntil={auction.winnerInfo?.wonAt ? new Date(auction.winnerInfo.wonAt).getTime() + (24 * 60 * 60 * 1000) : undefined}
                 />
               </div>
               

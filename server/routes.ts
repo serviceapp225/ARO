@@ -339,7 +339,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         batteryCapacity: listing.batteryCapacity,
         electricRange: listing.electricRange,
         bidCount: bidCountsCache.get(listing.id) || 0,
-        photos: listing.photos || [] // Добавляем фотографии в кэш для отображения
+        photos: listing.photos || [], // Добавляем фотографии в кэш для отображения
+        // Информация о победителе для выигранных аукционов
+        hasWinner: listing.hasWinner || false,
+        winnerInfo: listing.winnerInfo || null
       }));
       
       cachedListings = fastListings;
@@ -508,7 +511,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         location: listing.location,
         batteryCapacity: listing.batteryCapacity,
         electricRange: listing.electricRange,
-        bidCount: bidCountsCache.get(listing.id) || 0
+        bidCount: bidCountsCache.get(listing.id) || 0,
+        // Информация о победителе для выигранных аукционов
+        winnerInfo: listing.winnerInfo || null,
+        hasWinner: listing.hasWinner || false
       }));
       
       // console.log("Sending optimized response"); // Убрано для производительности

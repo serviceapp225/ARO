@@ -1,13 +1,15 @@
 import { useEffect, useState, memo } from 'react';
-import { Clock } from 'lucide-react';
+import { Clock, Trophy } from 'lucide-react';
 
 interface CountdownTimerProps {
   endTime: Date | string | null | undefined;
   size?: 'small' | 'large';
   onTimeUp?: () => void;
+  hasWinner?: boolean; // Новый проп для определения выиграно ли
+  winnerDisplayUntil?: Date | string | null; // До какого времени показывать "ВЫИГРАНО"
 }
 
-export function CountdownTimer({ endTime, size = 'small', onTimeUp }: CountdownTimerProps) {
+export function CountdownTimer({ endTime, size = 'small', onTimeUp, hasWinner = false, winnerDisplayUntil }: CountdownTimerProps) {
   const [timeLeft, setTimeLeft] = useState<{
     days: number;
     hours: number;
@@ -80,6 +82,54 @@ export function CountdownTimer({ endTime, size = 'small', onTimeUp }: CountdownT
   };
 
   const formatTime = (num: number) => num.toString().padStart(2, '0');
+
+  // Проверяем, нужно ли показывать "ВЫИГРАНО"
+  const shouldShowWinnerStatus = () => {
+    if (!hasWinner) return false;
+    
+    // Если время отображения победителя не задано, показываем 24 часа
+    if (!winnerDisplayUntil) {
+      // Проверяем, прошло ли 24 часа с момента окончания аукциона
+      if (!endTime) return true;
+      
+      const endTimeDate = new Date(endTime);
+      const now = new Date();
+      const hoursSinceEnd = (now.getTime() - endTimeDate.getTime()) / (1000 * 60 * 60);
+      
+      return hoursSinceEnd < 24; // Показываем ВЫИГРАНО в течение 24 часов
+    }
+    
+    // Если время отображения задано, проверяем его
+    const displayUntilDate = new Date(winnerDisplayUntil);
+    const now = new Date();
+    
+    return now < displayUntilDate;
+  };
+
+  // Если аукцион выигран и в периоде отображения, показываем "ВЫИГРАНО"
+  if (shouldShowWinnerStatus()) {
+    if (size === 'large') {
+      return (
+        <div className="bg-gradient-to-r from-green-600 to-green-800 text-white p-6 rounded-2xl text-center animate-pulse">
+          <div className="text-sm mb-2">Аукцион завершен</div>
+          <div className="text-3xl font-bold mb-2 flex items-center justify-center gap-2">
+            <Trophy className="w-8 h-8" />
+            ВЫИГРАНО
+          </div>
+          <div className="text-sm opacity-90">
+            Поздравляем с победой!
+          </div>
+        </div>
+      );
+    }
+    
+    return (
+      <div className="bg-green-600 text-white px-2 py-0.5 rounded-full text-xs font-semibold animate-pulse">
+        <Trophy className="w-2.5 h-2.5 inline mr-0.5" />
+        ВЫИГРАНО
+      </div>
+    );
+  }
 
   // Если endTime не задано, показываем сообщение об окончании
   if (!endTime) {
