@@ -2664,7 +2664,7 @@ function ArchiveManagement() {
 // Компонент кнопки прокрутки наверх
 // Раздел "Выигрыши"
 function WinsSection() {
-  const { data: wins = [], isLoading, refetch } = useQuery({
+  const { data: wins = [], isLoading, refetch } = useQuery<any[]>({
     queryKey: ['/api/admin/wins'],
     staleTime: 1000, // 1 секунда
     refetchInterval: 3000, // Автообновление каждые 3 секунды
@@ -2745,17 +2745,17 @@ function WinsSection() {
                           🏆 ПОБЕДА
                         </Badge>
                         <span className="text-sm text-gray-600">
-                          Лот #{win.listing.lotNumber}
+                          Лот #{win.listing?.lotNumber || 'N/A'}
                         </span>
                       </div>
                       
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div>
                           <h3 className="font-semibold text-lg">
-                            {win.listing.make} {win.listing.model}
+                            {win.listing?.make || 'N/A'} {win.listing?.model || 'N/A'}
                           </h3>
                           <p className="text-gray-600">
-                            {win.listing.year} год
+                            {win.listing?.year || 'N/A'} год
                           </p>
                         </div>
                         
@@ -2782,10 +2782,10 @@ function WinsSection() {
                     </div>
                     
                     <div className="flex-shrink-0">
-                      {win.listing.photos && win.listing.photos.length > 0 ? (
+                      {win.listing?.photos && win.listing.photos.length > 0 ? (
                         <img 
                           src={win.listing.photos[0]} 
-                          alt={`${win.listing.make} ${win.listing.model}`}
+                          alt={`${win.listing?.make || ''} ${win.listing?.model || ''}`}
                           className="w-20 h-16 object-cover rounded-lg border-2 border-yellow-300"
                         />
                       ) : (
