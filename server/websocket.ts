@@ -276,6 +276,30 @@ class AuctionWebSocketManager {
     }
   }
 
+  public notifyNewMessage(recipientId: number, messageData: any): boolean {
+    console.log(`💬 Отправка уведомления о новом сообщении пользователю ${recipientId}`);
+    
+    let notificationSent = false;
+    
+    this.clients.forEach((client) => {
+      if (client.userId === recipientId && client.ws.readyState === WebSocket.OPEN) {
+        this.sendMessage(client, {
+          type: 'new_message',
+          data: messageData,
+          timestamp: Date.now()
+        });
+        notificationSent = true;
+        console.log(`✅ Уведомление о новом сообщении отправлено пользователю ${recipientId}`);
+      }
+    });
+    
+    if (!notificationSent) {
+      console.log(`⚠️ Пользователь ${recipientId} не подключен, уведомление о сообщении не отправлено`);
+    }
+    
+    return notificationSent;
+  }
+
   public setHotAuction(listingId: number, isHot: boolean) {
     const room = this.rooms.get(listingId);
     if (room) {

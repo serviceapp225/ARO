@@ -328,6 +328,42 @@ export function useAuctionWebSocket(): AuctionWebSocketHook {
         }
         break;
         
+      case 'new_message':
+        // НОВАЯ СИСТЕМА: Мгновенные уведомления о новых сообщениях
+        console.log('💬 Получено уведомление о новом сообщении:', message);
+        
+        if (currentUserId && typeof currentUserId === 'number') {
+          console.log('🔄 REAL-TIME: Обновляем кэш сообщений для пользователя', currentUserId);
+          
+          // Мгновенно обновляем кэш переписок (правильный queryKey)
+          queryClient.invalidateQueries({ queryKey: ["/api/conversations", currentUserId] });
+          
+          // Если текущая переписка открыта, обновляем сообщения
+          if (message.data?.conversationId) {
+            console.log('🔄 REAL-TIME: Обновляем сообщения переписки', message.data.conversationId);
+            queryClient.invalidateQueries({ 
+              queryKey: ["/api/conversations", message.data.conversationId, "messages"] 
+            });
+          }
+          
+          // Обновляем счетчик непрочитанных сообщений
+          queryClient.invalidateQueries({ queryKey: [`/api/messages/unread-count/${currentUserId}`] });
+          
+          // КРИТИЧНО: Сигнализируем странице сообщений об обновлении через localStorage
+          console.log('🔄 REAL-TIME: Отправляем сигнал странице сообщений для принудительного обновления');
+          localStorage.setItem('force-refresh-messages', Date.now().toString());
+          
+          // Динамически импортируем toast для показа уведомления
+          import('@/hooks/use-toast').then(({ toast }) => {
+            toast({
+              title: "💬 Новое сообщение",
+              description: `От ${message.data?.senderName || 'пользователя'}`,
+              duration: 3000,
+            });
+          });
+        }
+        break;
+        
       case 'new_message_notification':
         // НОВАЯ СИСТЕМА: Мгновенные уведомления о новых сообщениях
         console.log('💬 Получено уведомление о новом сообщении:', message);
