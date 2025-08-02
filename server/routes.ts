@@ -2423,10 +2423,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
         userId: winningBid.bidderId,
         type: "auction_won",
         title: "🏆 Поздравляем с победой!",
-        message: `Вы выиграли аукцион ${listing.make} ${listing.model} со ставкой ${parseFloat(winningBid.amount).toLocaleString()} Сомони`,
+        message: `Вы выиграли аукцион ${listing.make} ${listing.model} со ставкой ${parseFloat(winningBid.amount).toLocaleString()} Сомони (лот #${listing.lotNumber})`,
         listingId: listingId,
         isRead: false
       });
+
+      // Уведомления проигравшим участникам
+      const uniqueBidders = [...new Set(bids.map(bid => bid.bidderId))];
+      for (const bidderId of uniqueBidders) {
+        if (bidderId !== winningBid.bidderId) {
+          await storage.createNotification({
+            userId: bidderId,
+            title: "Аукцион завершен",
+            message: `К сожалению, вы не выиграли аукцион ${listing.make} ${listing.model} ${listing.year} г. (лот #${listing.lotNumber}). Попробуйте участвовать в других аукционах!`,
+            type: "auction_lost",
+            listingId: listingId,
+            isRead: false
+          });
+        }
+      }
 
       // Принудительно архивируем аукцион
       await storage.updateListingStatus(listingId, "archived");

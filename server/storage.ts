@@ -964,8 +964,54 @@ export class DatabaseStorage implements IStorage {
           // Завершаем аукцион как обычно (резервная цена достигнута)
           await db
             .update(carListings)
-            .set({ status: 'ended', updatedAt: now })
+            .set({ status: 'ended', endedAt: now, updatedAt: now })
             .where(eq(carListings.id, listing.id));
+
+          // Определяем победителя (самая высокая ставка)
+          const [winningBid] = await db
+            .select()
+            .from(bids)
+            .where(eq(bids.listingId, listing.id))
+            .orderBy(desc(bids.amount))
+            .limit(1);
+
+          if (winningBid) {
+            console.log(`🏆 Победитель аукциона ${listing.id}: пользователь ${winningBid.bidderId}, ставка ${winningBid.amount}`);
+            
+            // Создаем уведомление о выигрыше
+            await this.createNotification({
+              userId: winningBid.bidderId,
+              title: "🏆 Поздравляем! Вы выиграли аукцион!",
+              message: `Вы выиграли ${listing.make} ${listing.model} ${listing.year} г. со ставкой ${winningBid.amount} Сомони (лот #${listing.lotNumber})`,
+              type: "auction_won",
+              listingId: listing.id,
+              isRead: false
+            });
+
+            console.log(`✅ Уведомление о выигрыше отправлено пользователю ${winningBid.bidderId}`);
+
+            // Уведомления проигравшим участникам
+            const allBids = await db
+              .select({ bidderId: bids.bidderId })
+              .from(bids)
+              .where(eq(bids.listingId, listing.id))
+              .groupBy(bids.bidderId);
+
+            for (const bid of allBids) {
+              if (bid.bidderId !== winningBid.bidderId) {
+                await this.createNotification({
+                  userId: bid.bidderId,
+                  title: "Аукцион завершен",
+                  message: `К сожалению, вы не выиграли аукцион ${listing.make} ${listing.model} ${listing.year} г. (лот #${listing.lotNumber}). Попробуйте участвовать в других аукционах!`,
+                  type: "auction_lost",
+                  listingId: listing.id,
+                  isRead: false
+                });
+              }
+            }
+
+            console.log(`📢 Уведомления проигравшим участникам отправлены`);
+          }
 
           console.log(`🏁 Аукцион ${listing.id} завершен успешно`);
         }

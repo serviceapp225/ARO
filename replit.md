@@ -40,6 +40,7 @@ Preferred communication style: Simple, everyday language in Russian.
 - **Real-time Communication**: WebSocket manager for instant updates and notifications.
 - **Messaging System**: Integrated messaging for buyer-seller communication, with unread message indicators.
 - **Automatic Auction Restart**: Failed auctions (no bids or reserve price not met) automatically restart with original starting bid and extended 7-day duration.
+- **Complete Notification System**: Automatic notifications for auction winners and losers when auctions end, both through scheduled processing and manual admin completion.
 
 ### UI/UX Decisions
 - Mobile-first design.
