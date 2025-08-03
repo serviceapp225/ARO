@@ -1092,17 +1092,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
-      // Check if user already has the highest bid
-      const userHighestBid = existingBids
-        .filter(bid => bid.bidderId === validatedData.bidderId)
-        .sort((a, b) => parseFloat(b.amount) - parseFloat(a.amount))[0];
-      
-      if (userHighestBid && parseFloat(userHighestBid.amount) === currentHighestBid) {
-        return res.status(400).json({ 
-          error: "Already highest bidder", 
-          message: "Вы уже лидируете в аукционе с максимальной ставкой."
-        });
-      }
+      // Убираем проверку "уже лидируете" - пусть пользователи перебивают свои ставки
       
       console.log(`🚀 СОЗДАЕМ СТАВКУ: аукцион ${listingId}, пользователь ${validatedData.bidderId}, сумма ${validatedData.amount}`);
       const bid = await storage.createBid(validatedData);

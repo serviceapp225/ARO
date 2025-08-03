@@ -184,14 +184,7 @@ export default function AuctionDetail() {
     },
     onError: (error: any) => {
       // Handle specific error types
-      if (error?.errorType === "Already highest bidder") {
-        toast({
-          title: "Вы уже лидируете",
-          description: "Вы уже сделали максимальную ставку в данном аукционе.",
-          variant: "destructive",
-          duration: 4000,
-        });
-      } else if (error?.errorType === "Bid too low") {
+      if (error?.errorType === "Bid too low") {
         toast({
           title: "Ставка слишком низкая", 
           description: "Ваша ставка должна быть выше текущей максимальной ставки.",
