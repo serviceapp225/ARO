@@ -178,7 +178,7 @@ export default function AuctionDetail() {
   // Mutation for placing bids (moved to later in the file)
 
   // Fetch real bidding history with auto-refresh
-  const { data: bidsData, refetch: refetchBids } = useQuery({
+  const { data: bidsData, isLoading: bidsLoading, refetch: refetchBids } = useQuery({
     queryKey: [`/api/listings/${id}/bids`],
     enabled: !!id,
     refetchInterval: 250, // МАКСИМАЛЬНАЯ СКОРОСТЬ: обновление каждые 0.25 секунды
@@ -238,7 +238,8 @@ export default function AuctionDetail() {
 
   // Use real auction data from database
   const auction = currentAuction as any;
-  const sortedBids = Array.isArray(bidsData) ? bidsData : [];
+  // Не показываем пустой массив во время загрузки - это предотвращает показ "0 ставок"
+  const sortedBids = bidsLoading ? null : (Array.isArray(bidsData) ? bidsData : []);
 
   // Вычисляем текущую ставку из реальных данных - ВСЕГДА АКТУАЛЬНАЯ ЦЕНА
   // ЕДИНЫЙ ИСТОЧНИК ПРАВДЫ - только история ставок
@@ -1567,7 +1568,12 @@ export default function AuctionDetail() {
                       )}
                     </div>
                   </div>
-                )) : (
+                )) : bidsLoading ? (
+                  <div className="text-center py-8 text-gray-500">
+                    <Users className="w-12 h-12 mx-auto mb-3 text-gray-300 animate-pulse" />
+                    <p>Загружаем ставки...</p>
+                  </div>
+                ) : (
                   <div className="text-center py-8 text-gray-500">
                     <Users className="w-12 h-12 mx-auto mb-3 text-gray-300" />
                     <p>Пока нет ставок</p>
