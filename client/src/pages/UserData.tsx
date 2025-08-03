@@ -52,30 +52,53 @@ export default function UserData() {
   };
 
   // Загружаем документы пользователя из базы данных
-  const { data: userDocuments = [] } = useQuery({
+  const { data: userDocuments = [], isLoading: documentsLoading } = useQuery({
     queryKey: [`/api/users/${getCurrentUserId()}/documents`],
     enabled: !!getCurrentUserId(),
     refetchOnWindowFocus: false,
+    retry: 2,
   });
 
   // Находим документы паспорта и обновляем превью
   useEffect(() => {
     if (userDocuments.length > 0) {
-      const frontPassport = userDocuments.find(doc => 
-        doc.type === 'passport' && doc.title?.includes('передняя')
+      const passportDocs = userDocuments.filter(doc => doc.type === 'passport');
+      
+      // Ищем по разным вариантам названий
+      const frontPassport = passportDocs.find(doc => 
+        doc.title?.toLowerCase().includes('передняя') || 
+        doc.title?.toLowerCase().includes('front') ||
+        doc.title?.toLowerCase().includes('перед') ||
+        doc.order === 0
       );
-      const backPassport = userDocuments.find(doc => 
-        doc.type === 'passport' && doc.title?.includes('задняя')
+      
+      const backPassport = passportDocs.find(doc => 
+        doc.title?.toLowerCase().includes('задняя') || 
+        doc.title?.toLowerCase().includes('back') ||
+        doc.title?.toLowerCase().includes('зад') ||
+        doc.order === 1
       );
 
+      // Если не нашли по названию, используем первые два документа
+      const finalFront = frontPassport || passportDocs[0];
+      const finalBack = backPassport || passportDocs[1];
+
       setPassportPreviews({
-        front: frontPassport?.fileUrl || null,
-        back: backPassport?.fileUrl || null
+        front: finalFront?.fileUrl || null,
+        back: finalBack?.fileUrl || null
       });
 
       console.log(`📋 Загружено документов из БД: ${userDocuments.length}`);
-      if (frontPassport) console.log('✅ Найден документ передней части паспорта');
-      if (backPassport) console.log('✅ Найден документ задней части паспорта');
+      console.log(`📄 Документы паспорта: ${passportDocs.length}`);
+      if (finalFront) console.log('✅ Найден документ передней части паспорта');
+      if (finalBack) console.log('✅ Найден документ задней части паспорта');
+    } else if (userDocuments.length === 0) {
+      // Очищаем превью если нет документов
+      setPassportPreviews({
+        front: null,
+        back: null
+      });
+      console.log('📋 Документы не найдены, очищаем превью');
     }
   }, [userDocuments]);
 
@@ -350,7 +373,7 @@ export default function UserData() {
               <div>
                 <Label>Передняя часть паспорта</Label>
                 <div className="mt-2 border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-                  {currentData.passportFront ? (
+                  {(currentData.passportFront || passportPreviews.front) ? (
                     <div className="space-y-2">
                       {passportPreviews.front ? (
                         <div className="space-y-3">
@@ -399,7 +422,7 @@ export default function UserData() {
                   <Button variant="outline" size="sm" className="mt-3" asChild>
                     <label htmlFor="passport-front" className="cursor-pointer">
                       <Upload className="w-4 h-4 mr-2" />
-                      {currentData.passportFront ? 'Изменить файл' : 'Загрузить файл'}
+                      {(currentData.passportFront || passportPreviews.front) ? 'Изменить файл' : 'Загрузить файл'}
                     </label>
                   </Button>
                 </div>
@@ -409,7 +432,7 @@ export default function UserData() {
               <div>
                 <Label>Задняя часть паспорта</Label>
                 <div className="mt-2 border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-                  {currentData.passportBack ? (
+                  {(currentData.passportBack || passportPreviews.back) ? (
                     <div className="space-y-2">
                       {passportPreviews.back ? (
                         <div className="space-y-3">
@@ -458,7 +481,7 @@ export default function UserData() {
                   <Button variant="outline" size="sm" className="mt-3" asChild>
                     <label htmlFor="passport-back" className="cursor-pointer">
                       <Upload className="w-4 h-4 mr-2" />
-                      {currentData.passportBack ? 'Изменить файл' : 'Загрузить файл'}
+                      {(currentData.passportBack || passportPreviews.back) ? 'Изменить файл' : 'Загрузить файл'}
                     </label>
                   </Button>
                 </div>
