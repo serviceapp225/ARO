@@ -1221,6 +1221,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         wsManager.broadcastBidUpdate(listingId, bidUpdateData);
         
+        // НОВОЕ: Отправляем обновление списка всем клиентам для мгновенного обновления карточек
+        const listingForUpdate = {
+          id: listingId,
+          currentBid: updatedListing?.currentBid,
+          bidCount: allBids.length,
+          highestBid: bidUpdateData.highestBid
+        };
+        wsManager.broadcastListingsUpdate(listingId, listingForUpdate);
+        
         console.log(`✅ WebSocket broadcast ОТПРАВЛЕН: новая ставка ${bid.amount} на аукцион ${listingId}, обновленная цена в WebSocket: ${updatedListing?.currentBid}`);
       }
       

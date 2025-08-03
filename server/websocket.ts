@@ -317,6 +317,29 @@ class AuctionWebSocketManager {
     }
   }
 
+  // Отправка обновления списка аукционов всем подключенным клиентам
+  public broadcastListingsUpdate(listingId: number, listingData: any) {
+    console.log(`📋 Отправка обновления списка для аукциона ${listingId} всем подключенным клиентам`);
+    
+    const message = {
+      type: 'listing_update',
+      listingId,
+      data: listingData,
+      timestamp: Date.now()
+    };
+
+    // Отправляем всем подключенным клиентам, не только участникам аукциона
+    let sentCount = 0;
+    this.clients.forEach((client) => {
+      if (client.ws.readyState === WebSocket.OPEN) {
+        this.sendMessage(client, message);
+        sentCount++;
+      }
+    });
+    
+    console.log(`✅ Обновление списка отправлено ${sentCount} клиентам для аукциона ${listingId}`);
+  }
+
   private broadcastToRoom(room: AuctionRoom, message: any) {
     const deadClients: WebSocketClient[] = [];
     
