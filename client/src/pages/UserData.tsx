@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useLocation } from "wouter";
 import { useToast } from "@/hooks/use-toast";
 import { useUserData } from "@/contexts/UserDataContext";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/contexts/AuthContext";
 
 export default function UserData() {
@@ -50,6 +50,34 @@ export default function UserData() {
   const getCurrentUserId = () => {
     return user?.userId || null;
   };
+
+  // Загружаем документы пользователя из базы данных
+  const { data: userDocuments = [] } = useQuery({
+    queryKey: [`/api/users/${getCurrentUserId()}/documents`],
+    enabled: !!getCurrentUserId(),
+    refetchOnWindowFocus: false,
+  });
+
+  // Находим документы паспорта и обновляем превью
+  useEffect(() => {
+    if (userDocuments.length > 0) {
+      const frontPassport = userDocuments.find(doc => 
+        doc.type === 'passport' && doc.title?.includes('передняя')
+      );
+      const backPassport = userDocuments.find(doc => 
+        doc.type === 'passport' && doc.title?.includes('задняя')
+      );
+
+      setPassportPreviews({
+        front: frontPassport?.fileUrl || null,
+        back: backPassport?.fileUrl || null
+      });
+
+      console.log(`📋 Загружено документов из БД: ${userDocuments.length}`);
+      if (frontPassport) console.log('✅ Найден документ передней части паспорта');
+      if (backPassport) console.log('✅ Найден документ задней части паспорта');
+    }
+  }, [userDocuments]);
 
   // Mutation to update user profile in database
   const updateProfileMutation = useMutation({
@@ -132,6 +160,10 @@ export default function UserData() {
 
           if (response.ok) {
             console.log(`✅ Документ паспорта (${type}) сохранен в базу данных`);
+            // Обновляем кэш документов для немедленного отображения
+            queryClient.invalidateQueries({ 
+              queryKey: [`/api/users/${userId}/documents`] 
+            });
           } else {
             console.error(`❌ Ошибка сохранения документа паспорта (${type})`);
           }

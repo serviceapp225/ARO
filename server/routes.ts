@@ -1316,6 +1316,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Получить документы текущего пользователя
+  app.get("/api/users/:id/documents", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.id);
+      console.log(`📋 Получение документов пользователя ${userId}`);
+      const documents = await storage.getUserDocuments(userId);
+      console.log(`📄 Найдено документов: ${documents.length}`);
+      res.json(documents);
+    } catch (error) {
+      console.error(`❌ Ошибка получения документов пользователя ${req.params.id}:`, error);
+      res.status(500).json({ error: "Failed to fetch user documents: " + error.message });
+    }
+  });
+
   // Сохранить документ пользователя (для обычных пользователей)
   app.post("/api/users/:id/documents", async (req, res) => {
     try {
@@ -1324,18 +1338,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       console.log(`📝 Сохранение документа пользователя ${userId}, тип: ${type}`);
       
-      // Преобразуем base64 в URL данных если нужно
-      let fileUrl = null;
-      if (fileData) {
-        fileUrl = fileData; // Сохраняем как data URL
+      // Сначала проверим, есть ли уже такой документ (избегаем дублирования)
+      const existingDocs = await storage.getUserDocuments(userId);
+      const duplicateDoc = existingDocs.find(doc => doc.type === type && doc.title === title);
+      
+      if (duplicateDoc) {
+        console.log(`⚠️ Документ уже существует, обновляем: ${duplicateDoc.id}`);
+        // Обновляем существующий документ
+        const updatedDoc = await storage.updateDocument(duplicateDoc.id, {
+          content: content || `Документ типа ${type}`,
+          fileUrl: fileData || duplicateDoc.fileUrl
+        });
+        console.log(`✅ Документ обновлен с ID: ${updatedDoc?.id}`);
+        return res.json(updatedDoc);
       }
       
+      // Создаем новый документ
       const document = await storage.createDocument({
         userId,
         type,
         title,
         content: content || `Документ типа ${type}`,
-        fileUrl
+        fileUrl: fileData
       });
       
       console.log(`✅ Документ сохранен с ID: ${document.id}`);
