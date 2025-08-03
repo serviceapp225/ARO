@@ -37,11 +37,12 @@ Preferred communication style: Simple, everyday language in Russian.
 - **User Features**: Favorites, car alerts, bidding history, profile management with photo uploads.
 - **Admin Features**: User activation/deactivation, listing moderation, banner management, analytics dashboard.
 - **Performance**: Aggressive image compression (1.2MB to 150-180KB), API response optimization (9MB to 6.3KB), multi-level caching (server, HTTP, browser), lazy loading.
-- **Real-time Communication**: WebSocket manager for instant updates and notifications.
+- **Real-time Communication**: WebSocket manager for instant updates and notifications with automatic main page card refresh.
 - **Messaging System**: Integrated messaging for buyer-seller communication, with unread message indicators.
 - **Automatic Auction Restart**: Failed auctions (no bids or reserve price not met) automatically restart with original starting bid and extended 7-day duration.
 - **Complete Notification System**: Automatic notifications for auction winners and losers when auctions end, both through scheduled processing and manual admin completion.
 - **Integrated SMS Notifications**: Automatic SMS delivery for auction outcomes (win/loss) via VPS proxy server, seamlessly integrated with in-app notifications through OSON SMS API.
+- **Real-time Price Updates**: Main page auction cards automatically refresh every 3 seconds and immediately update via WebSocket when new bids are placed, ensuring users always see current auction prices without manual page refresh.
 
 ### UI/UX Decisions
 - Mobile-first design.
