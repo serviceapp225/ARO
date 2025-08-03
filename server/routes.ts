@@ -1139,7 +1139,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.log(`🎯 Участники для уведомления:`, Array.from(uniqueBidders));
         
         // Send notification to each participant
-        for (const participantId of uniqueBidders) {
+        for (const participantId of Array.from(uniqueBidders)) {
           try {
             console.log(`📝 Создаем уведомление для пользователя ${participantId}...`);
             const carTitle = `${listing.make} ${listing.model} ${listing.year}`;
