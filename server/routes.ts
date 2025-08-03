@@ -2556,7 +2556,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Уведомления проигравшим участникам
-      const uniqueBidders = [...new Set(bids.map(bid => bid.bidderId))];
+      const uniqueBidders = Array.from(new Set(bids.map(bid => bid.bidderId)));
       for (const bidderId of uniqueBidders) {
         if (bidderId !== winningBid.bidderId) {
           await storage.createNotification({
