@@ -76,88 +76,84 @@ function clearCachePattern(pattern: string) {
   console.log(`✅ Очищено ${deletedCount} ключей кэша`);
 }
 
-// Middleware для защиты админских маршрутов
+// Безопасный middleware для валидации входных данных
+const sanitizeInput = (req: any, res: any, next: any) => {
+  // Валидация и очистка заголовков
+  const userIdHeader = req.headers['x-user-id'];
+  const userEmailHeader = req.headers['x-user-email'];
+  
+  if (userIdHeader && !/^\d+$/.test(userIdHeader)) {
+    return res.status(400).json({ error: 'Invalid user ID format' });
+  }
+  
+  if (userEmailHeader && userEmailHeader.length > 100) {
+    return res.status(400).json({ error: 'Email header too long' });
+  }
+  
+  // Очистка body от потенциально опасных данных
+  if (req.body && typeof req.body === 'object') {
+    const cleanBody = JSON.parse(JSON.stringify(req.body));
+    // Удаляем HTML/скрипт теги из строковых полей
+    Object.keys(cleanBody).forEach(key => {
+      if (typeof cleanBody[key] === 'string') {
+        cleanBody[key] = cleanBody[key].replace(/<script[^>]*>.*?<\/script>/gi, '')
+                                     .replace(/<[^>]*>/g, '')
+                                     .trim();
+      }
+    });
+    req.body = cleanBody;
+  }
+  
+  next();
+};
+
+// Middleware для защиты админских маршрутов с усиленной безопасностью
 const adminAuth = async (req: any, res: any, next: any) => {
-  console.log('🔐 adminAuth middleware вызван для:', req.url);
-  console.log('🔐 adminAuth заголовки запроса:', {
-    'x-user-id': req.headers['x-user-id'],
-    'x-user-email': req.headers['x-user-email'],
-    'content-type': req.headers['content-type']
-  });
-  
-  // Сначала проверяем req.user установленный getUserFromContext
-  let user = req.user;
-  console.log('🔍 adminAuth: req.user из getUserFromContext:', user ? { id: user.id, email: user.email } : 'NOT SET');
-  
-  // Если user не установлен, пытаемся получить из заголовков
-  if (!user) {
+  try {
+    // Валидация заголовков безопасности
     const userIdHeader = req.headers['x-user-id'];
     const userEmailHeader = req.headers['x-user-email'];
     
-    console.log('🔍 adminAuth: Проверяем заголовки:', { userIdHeader, userEmailHeader });
+    let user = req.user;
     
-    if (userIdHeader) {
-      try {
-        user = await storage.getUser(parseInt(userIdHeader));
-        console.log('✅ adminAuth: Найден пользователь по ID из заголовка:', user?.id);
-      } catch (error) {
-        console.error('❌ Ошибка получения пользователя по ID из заголовка:', error);
-      }
-    } else if (userEmailHeader) {
-      try {
+    // Если user не установлен, пытаемся получить из заголовков с проверками
+    if (!user) {
+      if (userIdHeader) {
+        const userId = parseInt(userIdHeader);
+        if (isNaN(userId) || userId <= 0) {
+          return res.status(400).json({ error: 'Invalid user ID' });
+        }
+        user = await storage.getUser(userId);
+      } else if (userEmailHeader) {
+        // Валидация email формата
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(userEmailHeader)) {
+          return res.status(400).json({ error: 'Invalid email format' });
+        }
         user = await storage.getUserByEmail(userEmailHeader);
-        console.log('✅ adminAuth: Найден пользователь по email из заголовка:', user?.id);
-      } catch (error) {
-        console.error('❌ Ошибка получения пользователя по email из заголовка:', error);
       }
     }
-  }
-  
-  // Fallback для админа - принудительно устанавливаем админа для номера 992903331332
-  if (!user) {
-    console.log('🔐 adminAuth: Применяем fallback для админа...');
-    try {
-      user = await storage.getUserByEmail('+992 (90) 333-13-32@autoauction.tj');
-      if (user) {
-        console.log('🔐 adminAuth: Fallback админ найден:', { id: user.id, role: user.role, isActive: user.isActive });
-      } else {
-        console.log('❌ adminAuth: Fallback админ НЕ найден в базе');
-      }
-    } catch (error) {
-      console.error('❌ Ошибка получения админа fallback:', error);
+    
+    // Безопасная проверка админских прав
+    if (!user || !user.isActive) {
+      return res.status(401).json({ error: 'Authentication required' });
     }
-  }
-  
-  console.log('🔍 adminAuth ИТОГОВЫЙ user:', user ? { id: user.id, role: user.role, email: user.email, isActive: user.isActive } : 'NOT FOUND');
-  
-  if (!user) {
-    console.log('❌ adminAuth: Пользователь НЕ НАЙДЕН - возвращаем 401');
-    return res.status(401).json({ error: 'User not found' });
-  }
-  
-  if (!user.isActive) {
-    console.log('❌ adminAuth: Пользователь найден, но НЕАКТИВЕН - возвращаем 401');
-    return res.status(401).json({ error: 'User not active' });
-  }
 
-  // Проверяем админские права по номеру телефона
-  const phonePattern = user.email.match(/^\+992\s?\(?(\d{2})\)?\s?(\d{3})-?(\d{2})-?(\d{2})/);
-  const fullPhone = phonePattern ? `+992${phonePattern[1]}${phonePattern[2]}${phonePattern[3]}${phonePattern[4]}` : null;
-  
-  const adminPhones = ['+992903331332', '+992 (90) 333-13-32'];
-  const isAdminByPhone = adminPhones.includes(fullPhone || '') || adminPhones.some(phone => user.email.includes(phone));
-  
-  console.log('🔍 adminAuth phone check:', { fullPhone, isAdminByPhone, userRole: user.role, email: user.email });
+    // Проверяем админские права безопасно
+    const adminPhones = ['+992903331332', '+992 (90) 333-13-32'];
+    const isAdminByPhone = user.email && adminPhones.some(phone => user.email.includes(phone));
+    
+    // Проверяем права доступа: роль admin ИЛИ номер телефона админа
+    if (user.role !== 'admin' && !isAdminByPhone) {
+      return res.status(403).json({ error: 'Access denied' });
+    }
 
-  // Проверяем права доступа: роль admin ИЛИ номер телефона админа
-  if (user.role !== 'admin' && !isAdminByPhone) {
-    console.log('❌ adminAuth: Недостаточно прав доступа', { role: user.role, isAdminByPhone, email: user.email });
-    return res.status(403).json({ error: 'Access denied - insufficient permissions' });
+    req.user = user;
+    next();
+  } catch (error) {
+    console.error('Admin auth error:', error);
+    return res.status(500).json({ error: 'Internal server error' });
   }
-
-  console.log('✅ adminAuth: Доступ РАЗРЕШЕН для пользователя', user.id);
-  req.user = user;
-  next();
 };
 
 // Альтернативный middleware для внешних инструментов (Retool)
@@ -1009,7 +1005,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/listings/:id/bids", getUserFromContext, async (req, res) => {
+  app.post("/api/listings/:id/bids", sanitizeInput, getUserFromContext, async (req, res) => {
     console.log(`🚨🚨🚨 КРИТИЧНО: POST запрос ставки достиг роута! ID: ${req.params.id}`);
     console.log(`🚨🚨🚨 КРИТИЧНО: Тело запроса:`, req.body);
     console.log(`🚨🚨🚨 КРИТИЧНО: Пользователь:`, req.user);
@@ -1704,7 +1700,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Полное обновление объявления
-  app.put("/api/admin/listings/:id", adminAuth, async (req, res) => {
+  app.put("/api/admin/listings/:id", sanitizeInput, adminAuth, async (req, res) => {
     try {
       const listingId = parseInt(req.params.id);
       const { 
@@ -1758,7 +1754,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
 
 
-  app.put("/api/admin/listings/:id/status", async (req, res) => {
+  app.put("/api/admin/listings/:id/status", sanitizeInput, adminAuth, async (req, res) => {
     try {
       const listingId = parseInt(req.params.id);
       const { status } = req.body;
@@ -1817,7 +1813,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Notifications routes
-  app.get("/api/notifications/:userId", async (req, res) => {
+  app.get("/api/notifications/:userId", sanitizeInput, async (req, res) => {
     try {
       const userId = parseInt(req.params.userId);
       console.log(`🔔 Получение уведомлений для пользователя ${userId}`);
@@ -1993,7 +1989,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/admin/banners", async (req, res) => {
+  app.post("/api/admin/banners", sanitizeInput, adminAuth, async (req, res) => {
     try {
       const bannerData = insertBannerSchema.parse(req.body);
       const banner = await storage.createBanner(bannerData);
@@ -2007,7 +2003,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put("/api/admin/banners/:id", async (req, res) => {
+  app.put("/api/admin/banners/:id", sanitizeInput, adminAuth, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       const bannerData = insertBannerSchema.partial().parse(req.body);
@@ -2027,7 +2023,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/admin/banners", async (req, res) => {
+  app.get("/api/admin/banners", adminAuth, async (req, res) => {
     try {
       const banners = await storage.getBanners();
       res.json(banners);
@@ -2036,7 +2032,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/admin/banners/:id", async (req, res) => {
+  app.delete("/api/admin/banners/:id", sanitizeInput, adminAuth, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       const success = await storage.deleteBanner(id);
@@ -2064,7 +2060,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put("/api/admin/sell-car-section", async (req, res) => {
+  app.put("/api/admin/sell-car-section", sanitizeInput, adminAuth, async (req, res) => {
     try {
       const validatedData = req.body; // Will validate in component
       const section = await storage.updateSellCarSection(validatedData);
@@ -2093,7 +2089,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/admin/advertisement-carousel", async (req, res) => {
+  app.get("/api/admin/advertisement-carousel", adminAuth, async (req, res) => {
     try {
       // For admin, show all items (including inactive)
       const carousel = await (storage as any).getAdvertisementCarouselAll ? 
@@ -2105,7 +2101,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/admin/advertisement-carousel", async (req, res) => {
+  app.post("/api/admin/advertisement-carousel", sanitizeInput, adminAuth, async (req, res) => {
     try {
       const item = await storage.createAdvertisementCarouselItem(req.body);
       clearCachePattern('advertisement_carousel');
@@ -2115,7 +2111,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/admin/advertisement-carousel/:id", async (req, res) => {
+  app.get("/api/admin/advertisement-carousel/:id", sanitizeInput, adminAuth, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       const item = await storage.getAdvertisementCarouselItem(id);

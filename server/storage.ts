@@ -2,11 +2,41 @@ import { users, carListings, bids, favorites, notifications, carAlerts, banners,
 import { db, pool } from "./db";
 import { eq, and, desc, sql, or, ilike, inArray, isNull, gte, lte } from "drizzle-orm";
 
-// SMS функция для отправки уведомлений
-async function sendSMSViaProxy(phoneNumber: string, message: string): Promise<{success: boolean, message?: string}> {
-  const VPS_PROXY_URL = "http://188.166.61.86:3000/api/send-sms";
+// Безопасная валидация входных данных
+function sanitizeAndValidateInput(data: any, type: 'string' | 'number' | 'email' | 'phone' = 'string'): any {
+  if (data === null || data === undefined) return null;
   
-  console.log(`[SMS VPS] Отправка SMS уведомления на ${phoneNumber}: ${message}`);
+  switch (type) {
+    case 'string':
+      return typeof data === 'string' ? 
+        data.replace(/<script[^>]*>.*?<\/script>/gi, '').replace(/<[^>]*>/g, '').trim().slice(0, 1000) : 
+        String(data).slice(0, 1000);
+    case 'number':
+      const num = Number(data);
+      return isNaN(num) ? 0 : num;
+    case 'email':
+      const emailStr = String(data).trim().toLowerCase();
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      return emailRegex.test(emailStr) ? emailStr : null;
+    case 'phone':
+      const phoneStr = String(data).replace(/[^0-9+\-\s()]/g, '');
+      return phoneStr.length >= 10 ? phoneStr : null;
+    default:
+      return data;
+  }
+}
+
+// SMS функция для отправки уведомлений с усиленной безопасностью
+async function sendSMSViaProxy(phoneNumber: string, message: string): Promise<{success: boolean, message?: string}> {
+  // Валидация входных данных
+  const cleanPhone = sanitizeAndValidateInput(phoneNumber, 'phone');
+  const cleanMessage = sanitizeAndValidateInput(message, 'string');
+  
+  if (!cleanPhone || !cleanMessage) {
+    return { success: false, message: "Invalid phone number or message format" };
+  }
+  
+  const VPS_PROXY_URL = process.env.VPS_PROXY_URL || "http://188.166.61.86:3000/api/send-sms";
   
   try {
     const response = await fetch(VPS_PROXY_URL, {
@@ -17,34 +47,29 @@ async function sendSMSViaProxy(phoneNumber: string, message: string): Promise<{s
       },
       body: JSON.stringify({
         login: process.env.SMS_LOGIN || "zarex",
-        password: process.env.SMS_PASSWORD || "a6d5d8b47551199899862d6d768a4cb1",
+        password: process.env.SMS_PASSWORD,
         sender: process.env.SMS_SENDER || "OsonSMS",
-        to: phoneNumber.replace(/[^0-9]/g, ''),
-        text: message
+        to: cleanPhone.replace(/[^0-9]/g, ''),
+        text: cleanMessage.slice(0, 160) // SMS лимит
       })
     });
     
     const contentType = response.headers.get('content-type');
     if (!contentType || !contentType.includes('application/json')) {
-      throw new Error(`VPS прокси вернул неправильный формат ответа: ${contentType}`);
+      throw new Error(`Invalid response format from VPS proxy`);
     }
     
     const responseData = await response.json();
-    console.log(`[SMS VPS] Ответ прокси сервера:`, responseData);
     
     if (response.ok && responseData.success) {
-      console.log(`✅ SMS уведомление отправлено через VPS прокси`);
-      return { success: true, message: "SMS уведомление отправлено через VPS прокси" };
+      return { success: true, message: "SMS notification sent via VPS proxy" };
     } else {
-      console.error(`[SMS VPS] Ошибка отправки уведомления:`, responseData);
-      console.log(`[SMS DEMO] Fallback режим для ${phoneNumber}: ${message}`);
-      return { success: true, message: "SMS уведомление отправлено (демо-режим - VPS недоступен)" };
+      return { success: true, message: "SMS notification sent (demo mode - VPS unavailable)" };
     }
     
   } catch (error) {
-    console.error("[SMS VPS] Ошибка при отправке SMS уведомления через VPS:", error);
-    console.log(`[SMS DEMO] Fallback режим для ${phoneNumber}: ${message}`);
-    return { success: true, message: "SMS уведомление отправлено (демо-режим - ошибка VPS)" };
+    console.error("[SMS VPS] Error sending SMS:", error);
+    return { success: true, message: "SMS notification sent (demo mode - VPS error)" };
   }
 }
 
@@ -174,27 +199,61 @@ export interface IStorage {
 
 export class DatabaseStorage implements IStorage {
   async getUser(id: number): Promise<User | undefined> {
-    const [user] = await db.select().from(users).where(eq(users.id, id));
+    // Валидация ID
+    const cleanId = sanitizeAndValidateInput(id, 'number');
+    if (!cleanId || cleanId <= 0) {
+      return undefined;
+    }
+    
+    const [user] = await db.select().from(users).where(eq(users.id, cleanId));
     return user || undefined;
   }
 
   async getUserById(id: number): Promise<User | undefined> {
-    const [user] = await db.select().from(users).where(eq(users.id, id));
+    const cleanId = sanitizeAndValidateInput(id, 'number');
+    if (!cleanId || cleanId <= 0) {
+      return undefined;
+    }
+    
+    const [user] = await db.select().from(users).where(eq(users.id, cleanId));
     return user || undefined;
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
-    const [user] = await db.select().from(users).where(eq(users.username, username));
+    const cleanUsername = sanitizeAndValidateInput(username, 'string');
+    if (!cleanUsername || cleanUsername.length < 3) {
+      return undefined;
+    }
+    
+    const [user] = await db.select().from(users).where(eq(users.username, cleanUsername));
     return user || undefined;
   }
 
   async getUserByEmail(email: string): Promise<User | undefined> {
-    const [user] = await db.select().from(users).where(eq(users.email, email));
+    const cleanEmail = sanitizeAndValidateInput(email, 'email');
+    if (!cleanEmail) {
+      return undefined;
+    }
+    
+    const [user] = await db.select().from(users).where(eq(users.email, cleanEmail));
     return user || undefined;
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
-    const [user] = await db.insert(users).values(insertUser).returning();
+    // Валидация всех полей пользователя
+    const cleanUser = {
+      ...insertUser,
+      email: sanitizeAndValidateInput(insertUser.email, 'email'),
+      fullName: sanitizeAndValidateInput(insertUser.fullName, 'string'),
+      username: sanitizeAndValidateInput(insertUser.username, 'string'),
+      phoneNumber: insertUser.phoneNumber ? sanitizeAndValidateInput(insertUser.phoneNumber, 'phone') : undefined
+    };
+    
+    if (!cleanUser.email || !cleanUser.fullName) {
+      throw new Error('Invalid user data: email and fullName are required');
+    }
+    
+    const [user] = await db.insert(users).values(cleanUser).returning();
     return user;
   }
 
