@@ -524,7 +524,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Car listing routes - ультрабыстрая отдача с агрессивным кэшированием
-  app.get("/api/listings", (req, res) => {
+  app.get("/api/listings", async (req, res) => {
     try {
       // console.log("Listings endpoint called, cache size:", cachedListings.length); // Убрано для производительности
       
@@ -532,35 +532,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.setHeader('Cache-Control', 'public, max-age=5, s-maxage=5'); // 5 секунд кэш для быстрых обновлений
       res.setHeader('ETag', `"listings-${lastCacheUpdate}"`);
       
-      // Оптимизируем данные для скорости но сохраняем важные поля
-      const optimizedListings = cachedListings.map(listing => ({
-        id: listing.id,
-        lotNumber: listing.lotNumber,
-        make: listing.make,
-        model: listing.model,
-        year: listing.year,
-        mileage: listing.mileage,
-        currentBid: listing.currentBid,
-        startingPrice: listing.startingPrice,
-        status: listing.status,
-        auctionEndTime: listing.auctionEndTime,
-        auctionStartTime: listing.auctionStartTime,
-        photos: listing.photos || [], // Возвращаем фотографии для отображения в карточках
-        customsCleared: listing.customsCleared,
-        recycled: listing.recycled,
-        technicalInspectionValid: listing.technicalInspectionValid,
-        technicalInspectionDate: listing.technicalInspectionDate,
-        tinted: listing.tinted,
-        tintingDate: listing.tintingDate,
-        engine: listing.engine,
-        transmission: listing.transmission,
-        fuelType: listing.fuelType,
-        color: listing.color,
-        condition: listing.condition,
-        location: listing.location,
-        batteryCapacity: listing.batteryCapacity,
-        electricRange: listing.electricRange,
-        bidCount: bidCountsCache.get(listing.id) || 0
+      // Динамически вычисляем bidCount для каждого аукциона для исправления проблемы мерцания
+      const optimizedListings = await Promise.all(cachedListings.map(async listing => {
+        const realTimeBidCount = await storage.getBidCountForListing(listing.id);
+        return {
+          id: listing.id,
+          lotNumber: listing.lotNumber,
+          make: listing.make,
+          model: listing.model,
+          year: listing.year,
+          mileage: listing.mileage,
+          currentBid: listing.currentBid,
+          startingPrice: listing.startingPrice,
+          status: listing.status,
+          auctionEndTime: listing.auctionEndTime,
+          auctionStartTime: listing.auctionStartTime,
+          photos: listing.photos || [], // Возвращаем фотографии для отображения в карточках
+          customsCleared: listing.customsCleared,
+          recycled: listing.recycled,
+          technicalInspectionValid: listing.technicalInspectionValid,
+          technicalInspectionDate: listing.technicalInspectionDate,
+          tinted: listing.tinted,
+          tintingDate: listing.tintingDate,
+          engine: listing.engine,
+          transmission: listing.transmission,
+          fuelType: listing.fuelType,
+          color: listing.color,
+          condition: listing.condition,
+          location: listing.location,
+          batteryCapacity: listing.batteryCapacity,
+          electricRange: listing.electricRange,
+          bidCount: realTimeBidCount // Всегда актуальное количество ставок
+        };
       }));
       
       // console.log("Sending optimized response"); // Убрано для производительности
