@@ -75,6 +75,32 @@ export function useOptimizedRealTime(config: RealTimeConfig = {}) {
     } else if (message.type === 'listing_update') {
       console.log('📝 Получено обновление объявления:', message);
       console.log('🔄 Принудительное обновление списка аукционов через WebSocket');
+      console.log('📊 Данные для обновления:', message.data);
+      
+      // Принудительно инвалидируем кэш списка аукционов
+      queryClient.invalidateQueries({ queryKey: ['/api/listings'] });
+      
+      // Если есть данные об аукционе - обновляем кэш напрямую  
+      if (message.data && message.data.id) {
+        const listingId = message.data.id.toString();
+        queryClient.setQueryData(['/api/listings', listingId], (oldData: any) => {
+          if (oldData) {
+            console.log('🔄 Обновляем кэш аукциона через WebSocket:', {
+              oldCurrentBid: oldData.currentBid,
+              newCurrentBid: message.data.currentBid,
+              oldBidCount: oldData.bidCount || 0,
+              newBidCount: message.data.bidCount || 0
+            });
+            return {
+              ...oldData,
+              currentBid: message.data.currentBid || oldData.currentBid,
+              bidCount: message.data.bidCount !== undefined ? message.data.bidCount : oldData.bidCount
+            };
+          }
+          return oldData;
+        });
+      }
+      
       smartUpdateAuctionData();
     }
   }, [smartUpdateAuctionData]);
