@@ -1316,6 +1316,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Сохранить документ пользователя (для обычных пользователей)
+  app.post("/api/users/:id/documents", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.id);
+      const { type, title, content, fileData } = req.body;
+      
+      console.log(`📝 Сохранение документа пользователя ${userId}, тип: ${type}`);
+      
+      // Преобразуем base64 в URL данных если нужно
+      let fileUrl = null;
+      if (fileData) {
+        fileUrl = fileData; // Сохраняем как data URL
+      }
+      
+      const document = await storage.createDocument({
+        userId,
+        type,
+        title,
+        content: content || `Документ типа ${type}`,
+        fileUrl
+      });
+      
+      console.log(`✅ Документ сохранен с ID: ${document.id}`);
+      res.status(201).json(document);
+    } catch (error) {
+      console.error(`❌ Ошибка сохранения документа пользователя ${req.params.id}:`, error);
+      res.status(500).json({ error: "Failed to save document: " + error.message });
+    }
+  });
+
   app.get("/api/users/by-phone/:phone", async (req, res) => {
     try {
       const rawPhone = req.params.phone;
@@ -2332,10 +2362,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/admin/users/:id/documents", adminAuth, async (req, res) => {
     try {
       const userId = parseInt(req.params.id);
+      console.log(`📋 Получение документов пользователя ${userId}`);
       const documents = await storage.getUserDocuments(userId);
+      console.log(`📄 Найдено документов: ${documents.length}`);
       res.json(documents);
     } catch (error) {
-      res.status(500).json({ error: "Failed to fetch user documents" });
+      console.error(`❌ Ошибка получения документов пользователя ${req.params.id}:`, error);
+      res.status(500).json({ error: "Failed to fetch user documents: " + error.message });
     }
   });
 

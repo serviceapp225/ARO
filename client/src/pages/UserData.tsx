@@ -112,6 +112,33 @@ export default function UserData() {
       updateUserData({
         [type === 'front' ? 'passportFront' : 'passportBack']: file
       });
+
+      // Сохраняем документ в базу данных для доступа админа
+      try {
+        const userId = getCurrentUserId();
+        if (userId) {
+          const response = await fetch(`/api/users/${userId}/documents`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              type: 'passport',
+              title: `Паспорт - ${type === 'front' ? 'передняя часть' : 'задняя часть'}`,
+              content: `Фотография паспорта (${type === 'front' ? 'передняя' : 'задняя'} часть)`,
+              fileData: previewUrl
+            }),
+          });
+
+          if (response.ok) {
+            console.log(`✅ Документ паспорта (${type}) сохранен в базу данных`);
+          } else {
+            console.error(`❌ Ошибка сохранения документа паспорта (${type})`);
+          }
+        }
+      } catch (error) {
+        console.error(`❌ Ошибка сохранения документа в базу данных:`, error);
+      }
       
       toast({
         title: "Файл загружен",
