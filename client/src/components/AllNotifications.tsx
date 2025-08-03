@@ -33,10 +33,11 @@ export function AllNotifications({ userId }: AllNotificationsProps) {
       if (!response.ok) throw new Error('Failed to fetch notifications');
       return response.json();
     },
-    staleTime: 0,
-    gcTime: 60000,
-    refetchOnWindowFocus: true,
+    staleTime: 30000, // Данные свежие 30 секунд - полагаемся на WebSocket для real-time обновлений
+    gcTime: 300000,   // Кэш живет 5 минут
+    refetchOnWindowFocus: false, // Отключаем лишние обновления при фокусе
     refetchOnMount: true,
+    refetchInterval: false, // Убираем автоматическое обновление - используем WebSocket
   });
 
   const deleteNotificationMutation = useMutation({

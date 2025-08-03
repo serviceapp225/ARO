@@ -23,30 +23,7 @@ export function ActiveAuctions({ searchQuery = "", customListings }: ActiveAucti
   const { isFavorite, addToFavorites, removeFromFavorites } = useFavorites();
   const queryClient = useQueryClient();
   
-  // Умное фоновое обновление без мерцания
-  useEffect(() => {
-    const smartRefreshInterval = setInterval(async () => {
-      console.log('🔄 Умное фоновое обновление данных');
-      
-      try {
-        // Загружаем новые данные в фоне без очистки кэша
-        const response = await fetch('/api/listings');
-        const newData = await response.json();
-        
-        // Обновляем кэш только если данные изменились
-        const currentData = queryClient.getQueryData(['/api/listings']);
-        
-        if (JSON.stringify(currentData) !== JSON.stringify(newData)) {
-          console.log('✅ Обнаружены изменения, плавно обновляем');
-          queryClient.setQueryData(['/api/listings'], newData);
-        }
-      } catch (error) {
-        console.log('⚠️ Ошибка фонового обновления:', error);
-      }
-    }, 60000); // Каждую минуту
-
-    return () => clearInterval(smartRefreshInterval);
-  }, [queryClient]);
+  // Убираем дублирующее фоновое обновление - теперь все управляется через WebSocket и умный хук
 
   const [, setLocation] = useLocation();
   const [page, setPage] = useState(1);

@@ -113,10 +113,11 @@ export function TopHeader({
   // Получаем количество непрочитанных сообщений
   const { data: unreadCount } = useQuery({
     queryKey: [`/api/messages/unread-count/${currentUserId}`],
-    refetchInterval: 5000, // Обновляем каждые 5 секунд (было 1 секунда)
-    staleTime: 2000, // Кэшируем данные на 2 секунды
-    gcTime: 10000, // Держим в памяти 10 секунд
-    enabled: !shouldHideNotifications() && !!currentUserId
+    refetchInterval: false, // Убираем автоматическое обновление - полагаемся на WebSocket
+    staleTime: 60000, // Кэшируем данные на 1 минуту
+    gcTime: 300000, // Держим в памяти 5 минут
+    enabled: !shouldHideNotifications() && !!currentUserId,
+    refetchOnWindowFocus: false, // Отключаем лишние обновления
   });
 
   return (
