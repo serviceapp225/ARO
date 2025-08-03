@@ -341,12 +341,23 @@ export default function AuctionDetail() {
         return;
       }
       
-      // Show error toast - автоисчезновение через 1 секунду, нельзя закрыть
+      // Handle "Already highest bidder" with friendly message
+      if (error.message === "Already highest bidder") {
+        toast({
+          title: "Упс! Вы уже лидер!",
+          description: "Ваша ставка должна быть выше вашей предыдущей ставки.",
+          variant: "destructive",
+          duration: 4000,
+        });
+        return;
+      }
+      
+      // Show generic error toast - автоисчезновение через 1 секунду, нельзя закрыть
       toast({
-        title: "❌ Ошибка",
-        description: error.message || "Не удалось сделать ставку. Попробуйте еще раз.",
+        title: "Упс! Что-то пошло не так",
+        description: "Не удалось сделать ставку. Попробуйте еще раз.",
         variant: "destructive",
-        duration: 1000, // 1 секунда автоисчезновения
+        duration: 3000,
       });
     },
   });
