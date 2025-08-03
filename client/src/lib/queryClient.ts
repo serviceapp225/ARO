@@ -92,6 +92,77 @@ export const getQueryFn: <T>(options: {
     return await res.json();
   };
 
+// Кастомный persister с размерным лимитом для localStorage
+const persistOptions = {
+  persister: {
+    persistClient: async (client: any) => {
+      try {
+        // Ограничиваем размер кэша до 2MB
+        const clientStr = JSON.stringify(client);
+        if (clientStr.length > 2 * 1024 * 1024) { // 2MB лимит
+          console.warn('🧹 TanStack Query кэш превышает 2MB, очищаем');
+          queryClient.clear(); // Очищаем весь кэш
+          return;
+        }
+        
+        const dataWithTimestamp = {
+          data: client,
+          timestamp: Date.now()
+        };
+        localStorage.setItem('tanstack-query-cache', JSON.stringify(dataWithTimestamp));
+      } catch (error) {
+        if (error instanceof DOMException && error.name === 'QuotaExceededError') {
+          console.warn('🧹 localStorage переполнен при сохранении кэша, очищаем');
+          queryClient.clear();
+          // Пытаемся очистить localStorage и сохранить заново
+          try {
+            // Удаляем старые кэши
+            for (let i = localStorage.length - 1; i >= 0; i--) {
+              const key = localStorage.key(i);
+              if (key && key.includes('tanstack')) {
+                localStorage.removeItem(key);
+              }
+            }
+          } catch (cleanupError) {
+            console.error('❌ Ошибка очистки кэша:', cleanupError);
+          }
+        } else {
+          console.error('❌ Ошибка сохранения кэша:', error);
+        }
+      }
+    },
+    restoreClient: async () => {
+      try {
+        const stored = localStorage.getItem('tanstack-query-cache');
+        if (!stored) return undefined;
+        
+        const parsed = JSON.parse(stored);
+        
+        // Проверяем возраст кэша (максимум 1 час)
+        if (parsed.timestamp && parsed.data) {
+          const age = Date.now() - parsed.timestamp;
+          const maxAge = 60 * 60 * 1000; // 1 час
+          
+          if (age > maxAge) {
+            localStorage.removeItem('tanstack-query-cache');
+            return undefined;
+          }
+          return parsed.data;
+        }
+        
+        return parsed; // Старый формат
+      } catch (error) {
+        console.error('❌ Ошибка восстановления кэша:', error);
+        localStorage.removeItem('tanstack-query-cache');
+        return undefined;
+      }
+    },
+    removeClient: async () => {
+      localStorage.removeItem('tanstack-query-cache');
+    }
+  }
+};
+
 export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {

@@ -13,6 +13,122 @@ interface UserDataContextType {
   updateUserData: (data: Partial<UserDataContextType['userData']>) => void;
 }
 
+// Утилиты для безопасной работы с localStorage
+class SafeStorage {
+  private static maxAge = 7 * 24 * 60 * 60 * 1000; // 7 дней в миллисекундах
+  
+  static setItem(key: string, value: any): boolean {
+    try {
+      const dataWithTimestamp = {
+        data: value,
+        timestamp: Date.now()
+      };
+      localStorage.setItem(key, JSON.stringify(dataWithTimestamp));
+      return true;
+    } catch (error) {
+      if (error instanceof DOMException && error.name === 'QuotaExceededError') {
+        console.warn('🧹 localStorage переполнен, очищаем старые данные');
+        this.clearOldData();
+        try {
+          const dataWithTimestamp = {
+            data: value,
+            timestamp: Date.now()
+          };
+          localStorage.setItem(key, JSON.stringify(dataWithTimestamp));
+          return true;
+        } catch (retryError) {
+          console.error('❌ Не удалось сохранить данные даже после очистки:', retryError);
+          return false;
+        }
+      } else {
+        console.error('❌ Ошибка сохранения в localStorage:', error);
+        return false;
+      }
+    }
+  }
+  
+  static getItem(key: string): any {
+    try {
+      const stored = localStorage.getItem(key);
+      if (!stored) return null;
+      
+      const parsed = JSON.parse(stored);
+      
+      // Проверяем, есть ли timestamp (новый формат)
+      if (parsed.timestamp && parsed.data) {
+        const age = Date.now() - parsed.timestamp;
+        if (age > this.maxAge) {
+          // Данные устарели, удаляем
+          localStorage.removeItem(key);
+          return null;
+        }
+        return parsed.data;
+      }
+      
+      // Старый формат без timestamp, возвращаем как есть
+      return parsed;
+    } catch (error) {
+      console.error(`❌ Ошибка чтения ${key} из localStorage:`, error);
+      return null;
+    }
+  }
+  
+  static clearOldData(): void {
+    const keysToRemove: string[] = [];
+    const currentTime = Date.now();
+    
+    // Проходим по всем ключам localStorage
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (!key) continue;
+      
+      try {
+        const stored = localStorage.getItem(key);
+        if (!stored) continue;
+        
+        const parsed = JSON.parse(stored);
+        
+        // Если есть timestamp, проверяем возраст
+        if (parsed.timestamp) {
+          const age = currentTime - parsed.timestamp;
+          if (age > this.maxAge) {
+            keysToRemove.push(key);
+          }
+        }
+        // Удаляем старые ключи без timestamp (legacy данные)
+        else if (key.startsWith('userData_') || key.includes('tanstack')) {
+          keysToRemove.push(key);
+        }
+      } catch (error) {
+        // Если не можем распарсить, удаляем
+        keysToRemove.push(key);
+      }
+    }
+    
+    // Удаляем старые данные
+    keysToRemove.forEach(key => {
+      try {
+        localStorage.removeItem(key);
+        console.log(`🗑️ Удален устаревший ключ: ${key}`);
+      } catch (error) {
+        console.error(`❌ Не удалось удалить ключ ${key}:`, error);
+      }
+    });
+    
+    console.log(`🧹 Очищено ${keysToRemove.length} устаревших записей из localStorage`);
+  }
+  
+  static getStorageSize(): string {
+    let total = 0;
+    for (let key in localStorage) {
+      if (localStorage.hasOwnProperty(key)) {
+        total += localStorage[key].length + key.length;
+      }
+    }
+    return `${(total / 1024).toFixed(2)} KB`;
+  }
+}
+
 const UserDataContext = createContext<UserDataContextType | undefined>(undefined);
 
 export function UserDataProvider({ children }: { children: React.ReactNode }) {
@@ -28,44 +144,38 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
 
   // Загружаем данные из localStorage при инициализации
   useEffect(() => {
-    // Очищаем старые глобальные данные пользователя
+    // Очищаем старые глобальные данные пользователя и выполняем автоматическую очистку
     localStorage.removeItem('userData');
+    SafeStorage.clearOldData();
     
-    const demoUserData = localStorage.getItem('demo-user');
+    // Выводим информацию о размере localStorage
+    console.log(`📊 Размер localStorage: ${SafeStorage.getStorageSize()}`);
+    
+    const demoUserData = SafeStorage.getItem('demo-user');
     let currentPhoneNumber = "";
     
     // Сначала получаем номер телефона текущего пользователя
     if (demoUserData) {
-      try {
-        const demoUser = JSON.parse(demoUserData);
-        currentPhoneNumber = demoUser.phoneNumber || "";
-        setUserData(prev => ({
-          ...prev,
-          phoneNumber: currentPhoneNumber
-        }));
-      } catch (error) {
-        console.error('Error loading demo user data:', error);
-      }
+      currentPhoneNumber = demoUserData.phoneNumber || "";
+      setUserData(prev => ({
+        ...prev,
+        phoneNumber: currentPhoneNumber
+      }));
     }
     
     // Загружаем данные для конкретного номера телефона
     if (currentPhoneNumber) {
       const userDataKey = `userData_${currentPhoneNumber}`;
-      const savedData = localStorage.getItem(userDataKey);
+      const savedData = SafeStorage.getItem(userDataKey);
       
       if (savedData) {
-        try {
-          const parsed = JSON.parse(savedData);
-          setUserData(prev => ({
-            ...prev,
-            fullName: parsed.fullName || "",
-            email: parsed.email || "",
-            accountType: parsed.accountType || 'individual',
-            profilePhoto: parsed.profilePhoto || null,
-          }));
-        } catch (error) {
-          console.error('Error loading user data:', error);
-        }
+        setUserData(prev => ({
+          ...prev,
+          fullName: savedData.fullName || "",
+          email: savedData.email || "",
+          accountType: savedData.accountType || 'individual',
+          profilePhoto: savedData.profilePhoto || null,
+        }));
       } else {
         // Для нового пользователя очищаем все данные кроме номера телефона
         setUserData(prev => ({
@@ -86,13 +196,24 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
       // Сохраняем в localStorage используя номер телефона как ключ
       if (newData.phoneNumber) {
         const userDataKey = `userData_${newData.phoneNumber}`;
+        
+        // Сохраняем только критически важные данные (НЕ файлы и большие объекты)
         const dataToSave = {
-          fullName: newData.fullName,
-          email: newData.email,
-          accountType: newData.accountType,
-          profilePhoto: newData.profilePhoto,
+          fullName: newData.fullName || "",
+          email: newData.email || "",
+          accountType: newData.accountType || 'individual',
+          // Сохраняем profilePhoto только если это не слишком большая строка
+          profilePhoto: (newData.profilePhoto && newData.profilePhoto.length < 10000) ? newData.profilePhoto : null,
         };
-        localStorage.setItem(userDataKey, JSON.stringify(dataToSave));
+        
+        const success = SafeStorage.setItem(userDataKey, dataToSave);
+        
+        if (!success) {
+          console.warn('⚠️ Не удалось сохранить данные пользователя в localStorage');
+          // Можно показать уведомление пользователю, но приложение продолжит работать
+        } else {
+          console.log(`✅ Данные пользователя сохранены (${SafeStorage.getStorageSize()})`);
+        }
       }
       
       return newData;
