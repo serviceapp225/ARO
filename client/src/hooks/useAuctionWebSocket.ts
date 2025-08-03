@@ -35,6 +35,19 @@ export function useAuctionWebSocket(): AuctionWebSocketHook {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   
+  // Проверяем готовность AuthContext
+  if (!user) {
+    return {
+      isConnected: false,
+      connectionQuality: 'disconnected' as const,
+      joinAuction: () => {},
+      leaveAuction: () => {},
+      lastBidUpdate: null,
+      participantCount: 0,
+      isHotAuction: false
+    };
+  }
+  
   // Единая функция для получения ID пользователя
   const getCurrentUserId = useCallback(() => {
     if (!user?.phoneNumber) return null;

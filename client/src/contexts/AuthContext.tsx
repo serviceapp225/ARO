@@ -25,7 +25,21 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<DemoUser | null>(null);
+  // Загружаем пользователя синхронно при инициализации, чтобы избежать user = null
+  const [user, setUser] = useState<DemoUser | null>(() => {
+    try {
+      const demoUserData = localStorage.getItem('demo-user');
+      if (demoUserData) {
+        console.log('🔄 Синхронная загрузка пользователя при инициализации');
+        const demoUser = JSON.parse(demoUserData);
+        demoUser.role = demoUser.role || 'buyer';
+        return demoUser;
+      }
+    } catch (error) {
+      console.error('❌ Ошибка синхронной загрузки пользователя:', error);
+    }
+    return null;
+  });
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
@@ -44,9 +58,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const loadUser = async () => {
+      console.log('🔄 Начинается загрузка пользователя из localStorage');
       // Check for demo user in localStorage
       const demoUserData = localStorage.getItem('demo-user');
       if (demoUserData) {
+        console.log('👤 Найден пользователь в localStorage:', demoUserData.substring(0, 100) + '...');
         try {
           const demoUser = JSON.parse(demoUserData);
           demoUser.role = demoUser.role || 'buyer';

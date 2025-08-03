@@ -32,7 +32,7 @@ Preferred communication style: Simple, everyday language in Russian.
 - **Key Tables**: users, car_listings, bids, favorites, notifications, car_alerts, banners
 
 ### Core Features
-- **Authentication**: Role-based access (buyer/seller/admin), manual user activation, SMS verification infrastructure, Google OAuth integration (prepared).
+- **Authentication**: Role-based access (buyer/seller/admin), manual user activation, SMS verification infrastructure, Google OAuth integration (prepared). Profile photos stored in database with full persistence.
 - **Auction Management**: Real-time countdowns, automatic bid validation, status management (pending, active, ended, rejected), image carousels.
 - **User Features**: Favorites, car alerts, bidding history, profile management with photo uploads.
 - **Admin Features**: User activation/deactivation, listing moderation, banner management, analytics dashboard.
@@ -43,6 +43,7 @@ Preferred communication style: Simple, everyday language in Russian.
 - **Complete Notification System**: Automatic notifications for auction winners and losers when auctions end, both through scheduled processing and manual admin completion.
 - **Integrated SMS Notifications**: Automatic SMS delivery for auction outcomes (win/loss) via VPS proxy server, seamlessly integrated with in-app notifications through OSON SMS API.
 - **Real-time Price Updates**: Main page auction cards automatically refresh every 3 seconds and immediately update via WebSocket when new bids are placed, ensuring users always see current auction prices without manual page refresh.
+- **Stable Authentication**: Fixed issue where users were logged out during page refresh or network errors by preventing localStorage clearing on API failures.
 
 ### UI/UX Decisions
 - Mobile-first design.
