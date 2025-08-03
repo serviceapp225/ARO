@@ -1246,8 +1246,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
       clearCachePattern(`auction_${listingId}`);
       console.log(`🧹 ОЧИЩЕН КЭШ для аукциона ${listingId} - теперь характеристики обновятся`);
       
-      // Принудительно обновляем кэш листингов для мгновенного отображения новых ставок
-      setTimeout(updateListingsCache, 100); // Обновляем через 100мс для гарантированного обновления
+      // КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: МГНОВЕННО обновляем конкретный аукцион в кэше
+      console.log(`🚀 МГНОВЕННОЕ обновление кэша для аукциона ${listingId}: current_bid ${validatedData.amount}`);
+      
+      // Находим и обновляем аукцион в кэше немедленно
+      const cacheIndex = cachedListings.findIndex(listing => listing.id === listingId);
+      if (cacheIndex !== -1) {
+        cachedListings[cacheIndex].currentBid = validatedData.amount;
+        cachedListings[cacheIndex].bidCount = (bidCountsCache.get(listingId) || 0) + 1;
+        bidCountsCache.set(listingId, cachedListings[cacheIndex].bidCount);
+        console.log(`✅ МГНОВЕННО обновлен кэш аукциона ${listingId}: новая цена ${validatedData.amount}`);
+      }
+      
+      // Обновляем время последнего обновления кэша
+      lastCacheUpdate = Date.now();
+      
+      // Дополнительно запускаем полное обновление кэша в фоне (без ожидания)
+      updateListingsCache().catch(error => {
+        console.error('Ошибка фонового обновления кэша:', error);
+      });
       
       // Обновляем время последней ставки для принудительного обновления
       lastBidUpdate = Date.now();
