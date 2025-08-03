@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { ArrowLeft, User, Phone, Mail, Upload, Camera, Edit, Save, X } from "lucide-react";
+import { ArrowLeft, User, Phone, Mail, Upload, Camera, Edit, Save, X, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -17,6 +17,14 @@ export default function UserData() {
   const [tempData, setTempData] = useState(userData);
   const [isEditingName, setIsEditingName] = useState(false);
   const [editedName, setEditedName] = useState(userData.fullName || '');
+  const [passportPreviews, setPassportPreviews] = useState<{
+    front: string | null;
+    back: string | null;
+  }>({ front: null, back: null });
+  const [showPreview, setShowPreview] = useState<{
+    type: 'front' | 'back' | null;
+    url: string | null;
+  }>({ type: null, url: null });
   const queryClient = useQueryClient();
   const { user } = useAuth();
 
@@ -25,6 +33,18 @@ export default function UserData() {
     setTempData(userData);
     setEditedName(userData.fullName || '');
   }, [userData]);
+
+  // Обработка клавиши Escape для закрытия модального окна
+  useEffect(() => {
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && showPreview.url) {
+        closePreview();
+      }
+    };
+
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, [showPreview.url]);
 
   // Function to get current user ID from auth context
   const getCurrentUserId = () => {
@@ -68,9 +88,27 @@ export default function UserData() {
     }
   });
 
-  const handleFileUpload = (type: 'front' | 'back') => (event: React.ChangeEvent<HTMLInputElement>) => {
+  // Функция для создания превью изображения
+  const createImagePreview = (file: File): Promise<string> => {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        resolve(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const handleFileUpload = (type: 'front' | 'back') => async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
+      // Создаем превью изображения
+      const previewUrl = await createImagePreview(file);
+      setPassportPreviews(prev => ({
+        ...prev,
+        [type]: previewUrl
+      }));
+
       updateUserData({
         [type === 'front' ? 'passportFront' : 'passportBack']: file
       });
@@ -81,6 +119,19 @@ export default function UserData() {
         duration: 3000,
       });
     }
+  };
+
+  // Функция для открытия превью в полном размере
+  const openPreview = (type: 'front' | 'back') => {
+    const previewUrl = passportPreviews[type];
+    if (previewUrl) {
+      setShowPreview({ type, url: previewUrl });
+    }
+  };
+
+  // Функция для закрытия превью
+  const closePreview = () => {
+    setShowPreview({ type: null, url: null });
   };
 
   const handleInputChange = (field: string, value: string) => {
@@ -242,9 +293,36 @@ export default function UserData() {
                 <div className="mt-2 border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
                   {currentData.passportFront ? (
                     <div className="space-y-2">
-                      <Camera className="w-8 h-8 text-green-600 mx-auto" />
-                      <p className="text-green-700 font-medium">Файл загружен</p>
-                      <p className="text-sm text-gray-500">{currentData.passportFront.name}</p>
+                      {passportPreviews.front ? (
+                        <div className="space-y-3">
+                          <div className="relative mx-auto w-32 h-20 bg-gray-100 rounded-lg overflow-hidden border">
+                            <img 
+                              src={passportPreviews.front} 
+                              alt="Превью передней части паспорта"
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                          <div className="flex items-center justify-center gap-2">
+                            <Camera className="w-4 h-4 text-green-600" />
+                            <p className="text-green-700 font-medium">Образец загружен</p>
+                          </div>
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            onClick={() => openPreview('front')}
+                            className="text-blue-600 hover:text-blue-800"
+                          >
+                            <Eye className="w-4 h-4 mr-1" />
+                            Увеличить
+                          </Button>
+                        </div>
+                      ) : (
+                        <div className="space-y-2">
+                          <Camera className="w-8 h-8 text-green-600 mx-auto" />
+                          <p className="text-green-700 font-medium">Файл загружен</p>
+                          <p className="text-sm text-gray-500">{currentData.passportFront.name}</p>
+                        </div>
+                      )}
                     </div>
                   ) : (
                     <div className="space-y-2">
@@ -274,9 +352,36 @@ export default function UserData() {
                 <div className="mt-2 border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
                   {currentData.passportBack ? (
                     <div className="space-y-2">
-                      <Camera className="w-8 h-8 text-green-600 mx-auto" />
-                      <p className="text-green-700 font-medium">Файл загружен</p>
-                      <p className="text-sm text-gray-500">{currentData.passportBack.name}</p>
+                      {passportPreviews.back ? (
+                        <div className="space-y-3">
+                          <div className="relative mx-auto w-32 h-20 bg-gray-100 rounded-lg overflow-hidden border">
+                            <img 
+                              src={passportPreviews.back} 
+                              alt="Превью задней части паспорта"
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                          <div className="flex items-center justify-center gap-2">
+                            <Camera className="w-4 h-4 text-green-600" />
+                            <p className="text-green-700 font-medium">Образец загружен</p>
+                          </div>
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            onClick={() => openPreview('back')}
+                            className="text-blue-600 hover:text-blue-800"
+                          >
+                            <Eye className="w-4 h-4 mr-1" />
+                            Увеличить
+                          </Button>
+                        </div>
+                      ) : (
+                        <div className="space-y-2">
+                          <Camera className="w-8 h-8 text-green-600 mx-auto" />
+                          <p className="text-green-700 font-medium">Файл загружен</p>
+                          <p className="text-sm text-gray-500">{currentData.passportBack.name}</p>
+                        </div>
+                      )}
                     </div>
                   ) : (
                     <div className="space-y-2">
@@ -310,6 +415,36 @@ export default function UserData() {
           </Card>
         </div>
       </main>
+
+      {/* Модальное окно для просмотра изображения в полном размере */}
+      {showPreview.url && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-75 z-50 flex items-center justify-center p-4"
+          onClick={closePreview}
+        >
+          <div 
+            className="relative max-w-4xl max-h-full"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={closePreview}
+              className="absolute -top-12 right-0 text-white hover:text-gray-300"
+            >
+              <X className="w-6 h-6" />
+            </Button>
+            <img
+              src={showPreview.url}
+              alt={`Полный размер ${showPreview.type === 'front' ? 'передней' : 'задней'} части паспорта`}
+              className="max-w-full max-h-full object-contain rounded-lg"
+            />
+            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-50 text-white px-3 py-1 rounded-full text-sm">
+              {showPreview.type === 'front' ? 'Передняя часть паспорта' : 'Задняя часть паспорта'}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
