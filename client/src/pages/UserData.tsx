@@ -52,7 +52,7 @@ export default function UserData() {
   };
 
   // Загружаем документы пользователя из базы данных
-  const { data: userDocuments = [], isLoading: documentsLoading } = useQuery({
+  const { data: userDocuments = [], isLoading: documentsLoading } = useQuery<any[]>({
     queryKey: [`/api/users/${getCurrentUserId()}/documents`],
     enabled: !!getCurrentUserId(),
     refetchOnWindowFocus: false,
@@ -83,22 +83,31 @@ export default function UserData() {
       const finalFront = frontPassport || passportDocs[0];
       const finalBack = backPassport || passportDocs[1];
 
-      setPassportPreviews({
+      const newPreviews = {
         front: finalFront?.fileUrl || null,
         back: finalBack?.fileUrl || null
-      });
+      };
 
-      console.log(`📋 Загружено документов из БД: ${userDocuments.length}`);
-      console.log(`📄 Документы паспорта: ${passportDocs.length}`);
-      if (finalFront) console.log('✅ Найден документ передней части паспорта');
-      if (finalBack) console.log('✅ Найден документ задней части паспорта');
-    } else if (userDocuments.length === 0) {
-      // Очищаем превью если нет документов
-      setPassportPreviews({
-        front: null,
-        back: null
+      // Обновляем состояние только если данные действительно изменились
+      setPassportPreviews(prev => {
+        if (prev.front !== newPreviews.front || prev.back !== newPreviews.back) {
+          console.log(`📋 Загружено документов из БД: ${userDocuments.length}`);
+          console.log(`📄 Документы паспорта: ${passportDocs.length}`);
+          if (finalFront) console.log('✅ Найден документ передней части паспорта');
+          if (finalBack) console.log('✅ Найден документ задней части паспорта');
+          return newPreviews;
+        }
+        return prev;
       });
-      console.log('📋 Документы не найдены, очищаем превью');
+    } else {
+      // Очищаем превью если нет документов, но только если они не пустые
+      setPassportPreviews(prev => {
+        if (prev.front !== null || prev.back !== null) {
+          console.log('📋 Документы не найдены, очищаем превью');
+          return { front: null, back: null };
+        }
+        return prev;
+      });
     }
   }, [userDocuments]);
 
@@ -402,7 +411,7 @@ export default function UserData() {
                         <div className="space-y-2">
                           <Camera className="w-8 h-8 text-green-600 mx-auto" />
                           <p className="text-green-700 font-medium">Файл загружен</p>
-                          <p className="text-sm text-gray-500">{currentData.passportFront.name}</p>
+                          <p className="text-sm text-gray-500">{currentData.passportFront?.name}</p>
                         </div>
                       )}
                     </div>
@@ -461,7 +470,7 @@ export default function UserData() {
                         <div className="space-y-2">
                           <Camera className="w-8 h-8 text-green-600 mx-auto" />
                           <p className="text-green-700 font-medium">Файл загружен</p>
-                          <p className="text-sm text-gray-500">{currentData.passportBack.name}</p>
+                          <p className="text-sm text-gray-500">{currentData.passportBack?.name}</p>
                         </div>
                       )}
                     </div>
