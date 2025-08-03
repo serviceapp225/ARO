@@ -3,6 +3,20 @@ import { QueryClient, QueryFunction } from "@tanstack/react-query";
 async function throwIfResNotOk(res: Response) {
   if (!res.ok) {
     const text = (await res.text()) || res.statusText;
+    
+    // Try to parse error response for better error messages
+    try {
+      const errorData = JSON.parse(text);
+      if (errorData.error === "Already highest bidder") {
+        throw new Error("Already highest bidder");
+      }
+      if (errorData.message) {
+        throw new Error(errorData.message);
+      }
+    } catch (parseError) {
+      // If JSON parsing fails, use original text
+    }
+    
     throw new Error(`${res.status}: ${text}`);
   }
 }

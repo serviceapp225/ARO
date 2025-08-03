@@ -941,9 +941,10 @@ export default function AuctionDetail() {
       
     } catch (error) {
       console.error('Error placing bid:', error);
+      // Общий catch блок только для неизвестных ошибок, специфичные ошибки уже обработаны выше
       toast({
-        title: "Ошибка",
-        description: error instanceof Error ? error.message : "Не удалось разместить ставку. Попробуйте еще раз.",
+        title: "Упс! Что-то пошло не так",
+        description: "Не удалось разместить ставку. Попробуйте еще раз.",
         variant: "destructive",
         duration: 3000,
       });
