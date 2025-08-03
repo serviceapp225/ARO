@@ -238,8 +238,9 @@ export default function AuctionDetail() {
 
   // Use real auction data from database
   const auction = currentAuction as any;
-  // Не показываем пустой массив во время загрузки - это предотвращает показ "0 ставок"
-  const sortedBids = bidsLoading ? null : (Array.isArray(bidsData) ? bidsData : []);
+  // ИСПРАВЛЕНО: Всегда показываем имеющиеся данные, даже во время загрузки
+  // Это предотвращает мерцание "0 ставок → 27 ставок → 0 ставок"
+  const sortedBids = Array.isArray(bidsData) ? bidsData : [];
 
   // Вычисляем текущую ставку из реальных данных - ВСЕГДА АКТУАЛЬНАЯ ЦЕНА
   // ЕДИНЫЙ ИСТОЧНИК ПРАВДЫ - только история ставок
@@ -1536,7 +1537,7 @@ export default function AuctionDetail() {
             </CardHeader>
             <CardContent>
               <div className="space-y-3 max-h-64 overflow-y-auto">
-                {sortedBids && sortedBids.length > 0 ? sortedBids.map((bid: any, index: number) => (
+                {sortedBids.length > 0 ? sortedBids.map((bid: any, index: number) => (
                   <div key={bid.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                     <div className="flex items-center gap-3">
                       <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-medium ${
@@ -1568,7 +1569,7 @@ export default function AuctionDetail() {
                       )}
                     </div>
                   </div>
-                )) : bidsLoading ? (
+                )) : bidsLoading && sortedBids.length === 0 ? (
                   <div className="text-center py-8 text-gray-500">
                     <Users className="w-12 h-12 mx-auto mb-3 text-gray-300 animate-pulse" />
                     <p>Загружаем ставки...</p>
