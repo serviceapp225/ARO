@@ -236,11 +236,24 @@ export default function AuctionDetail() {
     enabled: !!currentUser && !!(currentUser as any)?.userId,
   });
 
+  // Очистка кэша при смене аукциона - исправляет проблему отображения старых ставок
+  const [previousId, setPreviousId] = useState<string | null>(null);
+  
+  useEffect(() => {
+    if (id && id !== previousId) {
+      // При переходе на новый аукцион очищаем кэш ставок от предыдущего
+      if (previousId) {
+        queryClient.removeQueries({ queryKey: [`/api/listings/${previousId}/bids`] });
+      }
+      setPreviousId(id);
+    }
+  }, [id, previousId, queryClient]);
+
   // Use real auction data from database
   const auction = currentAuction as any;
-  // ИСПРАВЛЕНО: Всегда показываем имеющиеся данные, даже во время загрузки
-  // Это предотвращает мерцание "0 ставок → 27 ставок → 0 ставок"
-  const sortedBids = Array.isArray(bidsData) ? bidsData : [];
+  // ИСПРАВЛЕНО: Показываем данные только если они относятся к текущему аукциону
+  // Это предотвращает показ старых ставок при переходе между аукционами
+  const sortedBids = (Array.isArray(bidsData) && !bidsLoading) ? bidsData : [];
 
   // Вычисляем текущую ставку из реальных данных - ВСЕГДА АКТУАЛЬНАЯ ЦЕНА
   // ЕДИНЫЙ ИСТОЧНИК ПРАВДЫ - только история ставок
