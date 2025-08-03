@@ -73,7 +73,8 @@ export function useOptimizedRealTime(config: RealTimeConfig = {}) {
       console.log('🏁 Получено обновление аукциона');
       smartUpdateAuctionData();
     } else if (message.type === 'listing_update') {
-      console.log('📝 Получено обновление объявления');
+      console.log('📝 Получено обновление объявления:', message);
+      console.log('🔄 Принудительное обновление списка аукционов через WebSocket');
       smartUpdateAuctionData();
     }
   }, [smartUpdateAuctionData]);
