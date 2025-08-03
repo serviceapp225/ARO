@@ -23,27 +23,46 @@ export function useOptimizedRealTime(config: RealTimeConfig = {}) {
   const lastDataUpdateRef = useRef(Date.now());
   const healthCheckIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Оптимизированное обновление данных с отслеживанием времени
-  const invalidateAuctionData = useCallback((listingId?: string) => {
+  // Умное обновление данных без агрессивной очистки кэша
+  const smartUpdateAuctionData = useCallback(async (listingId?: string) => {
     lastDataUpdateRef.current = Date.now();
-    const keys = listingId 
-      ? [`/api/listings/${listingId}`, `/api/listings/${listingId}/bids`]
-      : ['/api/listings'];
     
-    keys.forEach(key => {
-      queryClient.removeQueries({ queryKey: [key] });
-      queryClient.invalidateQueries({ queryKey: [key] });
-    });
-  }, [queryClient]);
+    try {
+      if (listingId) {
+        // Обновляем конкретный аукцион
+        console.log(`🔄 Умное обновление аукциона ${listingId}`);
+        queryClient.invalidateQueries({ queryKey: [`/api/listings/${listingId}`] });
+        queryClient.invalidateQueries({ queryKey: [`/api/listings/${listingId}/bids`] });
+      } else {
+        // Фоновое обновление всех данных без очистки кэша
+        console.log('🔄 Фоновое обновление списка аукционов');
+        
+        // Загружаем новые данные в фоне
+        const response = await fetch('/api/listings');
+        const newData = await response.json();
+        
+        // Сравниваем с текущими данными
+        const currentData = queryClient.getQueryData(['/api/listings']);
+        
+        if (JSON.stringify(currentData) !== JSON.stringify(newData)) {
+          console.log('✅ Данные изменились, плавно обновляем');
+          queryClient.setQueryData(['/api/listings'], newData);
+        } else {
+          console.log('📋 Данные не изменились, обновление не требуется');
+        }
+      }
+    } catch (error) {
+      console.error('⚠️ Ошибка умного обновления:', error);
+      // Fallback к обычному обновлению при ошибке
+      queryClient.invalidateQueries({ queryKey: ['/api/listings'] });
+    }
+  }, [queryClient, lastDataUpdateRef]);
 
-  // Принудительное обновление при обнаружении "застревания"
-  const forceUpdate = useCallback(() => {
-    console.log('🔄 Принудительное обновление всех данных');
-    lastDataUpdateRef.current = Date.now();
-    queryClient.removeQueries({ queryKey: ['/api/listings'] });
-    queryClient.invalidateQueries({ queryKey: ['/api/listings'] });
-    queryClient.refetchQueries({ queryKey: ['/api/listings'] });
-  }, [queryClient]);
+  // Мягкое принудительное обновление без агрессивной очистки
+  const gentleForceUpdate = useCallback(async () => {
+    console.log('🔄 Мягкое принудительное обновление');
+    await smartUpdateAuctionData();
+  }, [smartUpdateAuctionData]);
 
   // WebSocket подключение
   const connectWebSocket = useCallback(() => {
@@ -75,10 +94,10 @@ export function useOptimizedRealTime(config: RealTimeConfig = {}) {
           
           if (message.type === 'bid_update') {
             console.log('💰 Получено обновление ставки:', message);
-            invalidateAuctionData(message.listingId?.toString());
+            smartUpdateAuctionData(message.listingId?.toString());
           } else if (message.type === 'auction_update') {
             console.log('🏁 Получено обновление аукциона:', message);
-            invalidateAuctionData();
+            smartUpdateAuctionData();
           }
         } catch (error) {
           console.error('Ошибка обработки WebSocket сообщения:', error);
@@ -103,7 +122,7 @@ export function useOptimizedRealTime(config: RealTimeConfig = {}) {
     } catch (error) {
       console.error('Ошибка подключения WebSocket:', error);
     }
-  }, [enableWebSocket, invalidateAuctionData]);
+  }, [enableWebSocket, smartUpdateAuctionData]);
 
   // Fallback polling (только если WebSocket недоступен)
   const { data: pollingData } = useQuery({
@@ -117,9 +136,9 @@ export function useOptimizedRealTime(config: RealTimeConfig = {}) {
   useEffect(() => {
     if (enablePolling && pollingData && !isConnectedRef.current) {
       console.log('🔄 Fallback polling обновление');
-      invalidateAuctionData();
+      smartUpdateAuctionData();
     }
-  }, [pollingData, enablePolling, invalidateAuctionData]);
+  }, [pollingData, enablePolling, smartUpdateAuctionData]);
 
   // Инициализация
   useEffect(() => {
@@ -142,7 +161,7 @@ export function useOptimizedRealTime(config: RealTimeConfig = {}) {
 
   return {
     isConnected: isConnectedRef.current,
-    forceUpdate,
-    invalidateAuctionData
+    forceUpdate: gentleForceUpdate,
+    smartUpdate: smartUpdateAuctionData
   };
 }

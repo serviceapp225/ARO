@@ -23,16 +23,30 @@ export function ActiveAuctions({ searchQuery = "", customListings }: ActiveAucti
   const { isFavorite, addToFavorites, removeFromFavorites } = useFavorites();
   const queryClient = useQueryClient();
   
-  // Принудительное обновление данных каждые 30 секунд для предотвращения "застревания"
+  // Умное фоновое обновление без мерцания
   useEffect(() => {
-    const forceRefreshInterval = setInterval(() => {
-      console.log('🔄 Принудительное обновление данных аукционов');
-      refreshAuctions();
-      queryClient.invalidateQueries({ queryKey: ['/api/listings'] });
-    }, 30000); // Каждые 30 секунд
+    const smartRefreshInterval = setInterval(async () => {
+      console.log('🔄 Умное фоновое обновление данных');
+      
+      try {
+        // Загружаем новые данные в фоне без очистки кэша
+        const response = await fetch('/api/listings');
+        const newData = await response.json();
+        
+        // Обновляем кэш только если данные изменились
+        const currentData = queryClient.getQueryData(['/api/listings']);
+        
+        if (JSON.stringify(currentData) !== JSON.stringify(newData)) {
+          console.log('✅ Обнаружены изменения, плавно обновляем');
+          queryClient.setQueryData(['/api/listings'], newData);
+        }
+      } catch (error) {
+        console.log('⚠️ Ошибка фонового обновления:', error);
+      }
+    }, 60000); // Каждую минуту
 
-    return () => clearInterval(forceRefreshInterval);
-  }, [refreshAuctions, queryClient]);
+    return () => clearInterval(smartRefreshInterval);
+  }, [queryClient]);
 
   const [, setLocation] = useLocation();
   const [page, setPage] = useState(1);
