@@ -51,6 +51,9 @@ export function UserDetailModal({ userId, isOpen, onClose }: UserDetailModalProp
   const { data: documents = [], isLoading: documentsLoading } = useQuery<Document[]>({
     queryKey: [`/api/admin/users/${userId}/documents`],
     enabled: !!userId && isOpen,
+    refetchOnWindowFocus: false,
+    staleTime: 0, // Всегда считать данные устаревшими
+    cacheTime: 0, // Не кэшировать данные
   });
 
   // Fetch user listings
@@ -67,7 +70,12 @@ export function UserDetailModal({ userId, isOpen, onClose }: UserDetailModalProp
       setPhoneNumber(user?.phoneNumber || '');
       setIsActive(user.isActive || false);
     }
-  }, [user]);
+    
+    // Принудительно обновляем кэш документов при открытии модалки
+    if (isOpen && userId) {
+      queryClient.invalidateQueries({ queryKey: [`/api/admin/users/${userId}/documents`] });
+    }
+  }, [user, isOpen, userId, queryClient]);
 
   // Update user profile mutation
   const updateUserMutation = useMutation({

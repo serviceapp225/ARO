@@ -2419,13 +2419,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Удалить документ пользователя
   app.delete("/api/admin/users/:userId/documents/:documentId", adminAuth, async (req, res) => {
     try {
+      console.log('🗑️ Удаление документа:', {
+        userId: req.params.userId,
+        documentId: req.params.documentId,
+        parsedDocumentId: parseInt(req.params.documentId)
+      });
+      
       const documentId = parseInt(req.params.documentId);
+      
+      if (isNaN(documentId)) {
+        console.log('❌ Неверный ID документа:', req.params.documentId);
+        return res.status(400).json({ error: "Invalid document ID" });
+      }
+      
       const deleted = await storage.deleteDocument(documentId);
+      console.log('🗑️ Результат удаления документа:', { documentId, deleted });
+      
       if (!deleted) {
+        console.log('❌ Документ не найден:', documentId);
         return res.status(404).json({ error: "Document not found" });
       }
+      
+      console.log('✅ Документ успешно удален:', documentId);
       res.status(204).send();
     } catch (error) {
+      console.error('❌ Ошибка при удалении документа:', error);
       res.status(500).json({ error: "Failed to delete document" });
     }
   });

@@ -928,8 +928,19 @@ export class DatabaseStorage implements IStorage {
   }
 
   async deleteDocument(id: number): Promise<boolean> {
-    const result = await db.delete(documents).where(eq(documents.id, id));
-    return result.rowCount !== null && result.rowCount > 0;
+    console.log('🗑️ Попытка удаления документа из БД:', id);
+    try {
+      const result = await db.delete(documents).where(eq(documents.id, id));
+      console.log('🗑️ Результат удаления из БД:', { 
+        id, 
+        rowCount: result.rowCount,
+        success: result.rowCount !== null && result.rowCount > 0 
+      });
+      return result.rowCount !== null && result.rowCount > 0;
+    } catch (error) {
+      console.error('❌ Ошибка при удалении документа из БД:', error);
+      throw error;
+    }
   }
 
   async createAlertView(insertView: InsertAlertView): Promise<AlertView> {
