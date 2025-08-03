@@ -353,8 +353,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Предзагружаем кэш при старте
   await updateListingsCache();
   
-  // Обновляем кэш каждые 5 секунд для мгновенных обновлений ставок
-  setInterval(updateListingsCache, 5000);
+  // Обновляем кэш каждые 2 секунды для более быстрых обновлений ставок
+  setInterval(updateListingsCache, 2000);
   
   // Принудительно обновляем кэш для электромобилей
   setTimeout(() => {
