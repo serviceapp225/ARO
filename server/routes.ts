@@ -1006,13 +1006,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/listings/:id/bids", async (req, res) => {
+  app.post("/api/listings/:id/bids", getUserFromContext, async (req, res) => {
     console.log(`🚨🚨🚨 КРИТИЧНО: POST запрос ставки достиг роута! ID: ${req.params.id}`);
     console.log(`🚨🚨🚨 КРИТИЧНО: Тело запроса:`, req.body);
+    console.log(`🚨🚨🚨 КРИТИЧНО: Пользователь:`, req.user);
+    
+    if (!req.user) {
+      return res.status(401).json({ error: "User not authenticated" });
+    }
+    
     try {
       const listingId = parseInt(req.params.id);
       console.log(`🎯 ПОЛУЧЕН POST запрос ставки для аукциона ${listingId}:`, req.body);
-      console.log(`🎯 НАЧАЛО ОБРАБОТКИ СТАВКИ для аукциона ${listingId} от пользователя ${req.body.bidderId}`);
+      console.log(`🎯 НАЧАЛО ОБРАБОТКИ СТАВКИ для аукциона ${listingId} от пользователя ${req.user.id}`);
+      console.log(`🔍 ПРОВЕРКА req.user:`, req.user);
       
       // Check if auction exists and is still active
       const listing = await storage.getListing(listingId);
@@ -1033,7 +1040,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const bidData = {
         ...req.body,
-        listingId
+        listingId,
+        bidderId: req.user.id
       };
       
       const validatedData = insertBidSchema.parse(bidData);
