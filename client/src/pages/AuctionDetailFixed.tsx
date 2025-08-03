@@ -267,22 +267,9 @@ export default function AuctionDetail() {
     mutationFn: async (bidData: { bidderId: number; amount: string }) => {
       console.log(`📤 Отправляем POST запрос ставки:`, bidData);
       try {
-        const response = await fetch(`/api/listings/${id}/bids`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(bidData),
-        });
-        
-        if (!response.ok) {
-          const errorData = await response.json();
-          const error = new Error(errorData.message || 'Failed to place bid');
-          (error as any).errorType = errorData.error;
-          (error as any).errorMessage = errorData.message;
-          throw error;
-        }
-        
+        const result = await apiRequest('POST', `/api/listings/${id}/bids`, bidData);
         console.log(`✅ Ставка успешно создана!`);
-        return response.json();
+        return result;
       } catch (fetchError) {
         console.log("❌ Ошибка при создании ставки:", fetchError);
         throw fetchError;
