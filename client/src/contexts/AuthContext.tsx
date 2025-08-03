@@ -33,8 +33,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (user === null) {
       console.log('🔍 AuthContext: user стал null');
+      console.trace('🔍 Трейс сброса пользователя в null');
     } else if (user === undefined) {
       console.log('🔍 AuthContext: user стал undefined');
+      console.trace('🔍 Трейс сброса пользователя в undefined');
     } else {
       console.log('🔍 AuthContext: user обновлен:', { phoneNumber: user?.phoneNumber, userId: user.userId });
     }
@@ -169,7 +171,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           
           setUser(demoUser);
         } catch (error) {
-          localStorage.removeItem('demo-user');
+          console.error('❌ Ошибка загрузки пользователя:', error);
+          // НЕ удаляем пользователя из localStorage при ошибках загрузки!
+          // Это вызывает неожиданный выход из системы
         }
       }
       setLoading(false);
@@ -211,6 +215,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = async () => {
     try {
+      console.log('🚪 Пользователь выходит из системы (вызван logout)');
       localStorage.removeItem('demo-user');
       setUser(null);
     } catch (error) {

@@ -197,18 +197,21 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
   // Функция для загрузки фотографии профиля из базы данных
   const loadProfilePhotoFromDatabase = async (userId: number) => {
     try {
+      console.log('🔍 Загружаем фото профиля для пользователя:', userId);
       const response = await fetch(`/api/users/${userId}`);
       if (response.ok) {
         const user = await response.json();
+        console.log('📸 Получен ответ с фото:', !!user.profilePhoto);
         if (user.profilePhoto) {
           setUserData(prev => ({
             ...prev,
             profilePhoto: user.profilePhoto
           }));
+          console.log('✅ Фото профиля загружено из БД');
         }
       }
     } catch (error) {
-      console.error('Ошибка загрузки фотографии профиля:', error);
+      console.error('❌ Ошибка загрузки фотографии профиля:', error);
     }
   };
 
