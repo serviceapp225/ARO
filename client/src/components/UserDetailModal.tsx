@@ -12,7 +12,7 @@ import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
 import { User, Document, CarListing } from '@shared/schema';
-import { User2, FileText, Trash2, Upload, X, Car, Edit, Eye } from 'lucide-react';
+import { User2, FileText, Trash2, Upload, X, Car, Edit, Eye, Camera, Calendar, ZoomIn } from 'lucide-react';
 import { ListingEditModal } from '@/components/ListingEditModal';
 
 interface UserDetailModalProps {
@@ -37,6 +37,9 @@ export function UserDetailModal({ userId, isOpen, onClose }: UserDetailModalProp
   const [documentType, setDocumentType] = useState('');
   const [documentTitle, setDocumentTitle] = useState('');
   const [documentContent, setDocumentContent] = useState('');
+  
+  // Image viewing state
+  const [viewingImage, setViewingImage] = useState<string | null>(null);
 
   // Fetch user data
   const { data: user, isLoading: userLoading } = useQuery<User>({
@@ -234,6 +237,28 @@ export function UserDetailModal({ userId, isOpen, onClose }: UserDetailModalProp
     };
     return types[type as keyof typeof types] || type;
   };
+
+  // Определение типа документа паспорта по названию
+  const getPassportType = (title: string) => {
+    if (title.includes('передняя') || title.includes('передний')) {
+      return 'front';
+    } else if (title.includes('задняя') || title.includes('задний')) {
+      return 'back';
+    }
+    return 'unknown';
+  };
+
+  // Получение изображения документа 
+  const getDocumentImage = (document: any) => {
+    if (document.content && document.content.startsWith('data:image/')) {
+      return document.content;
+    }
+    return null;
+  };
+
+  // Группировка документов паспорта
+  const passportDocuments = documents.filter(doc => doc.type === 'passport' || doc.title?.toLowerCase().includes('паспорт'));
+  const otherDocuments = documents.filter(doc => doc.type !== 'passport' && !doc.title?.toLowerCase().includes('паспорт'));
 
   if (!isOpen || !userId) return null;
 
@@ -617,7 +642,10 @@ export function UserDetailModal({ userId, isOpen, onClose }: UserDetailModalProp
 
               <Card>
                 <CardHeader>
-                  <CardTitle>Документы пользователя</CardTitle>
+                  <CardTitle className="flex items-center gap-2">
+                    <Camera className="w-5 h-5" />
+                    Документы пользователя
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
                   {documentsLoading ? (
@@ -628,32 +656,120 @@ export function UserDetailModal({ userId, isOpen, onClose }: UserDetailModalProp
                       У пользователя нет документов
                     </div>
                   ) : (
-                    <div className="space-y-3">
-                      {documents.map((document) => (
-                        <div
-                          key={document.id}
-                          className="flex items-center justify-between p-3 border rounded-lg"
-                        >
-                          <div className="flex items-center gap-3">
-                            <FileText className="w-5 h-5 text-blue-600" />
-                            <div>
-                              <div className="font-medium">{document.title}</div>
-                              <div className="text-sm text-gray-500">
-                                {getDocumentTypeLabel(document.type)} • {' '}
-                                {document.createdAt ? new Date(document.createdAt.toString()).toLocaleDateString('ru-RU') : 'Дата не указана'}
-                              </div>
-                            </div>
+                    <div className="space-y-6">
+                      {/* Документы паспорта */}
+                      {passportDocuments.length > 0 && (
+                        <div>
+                          <h4 className="font-semibold text-lg mb-4 flex items-center gap-2">
+                            <Camera className="w-5 h-5 text-blue-600" />
+                            Паспорт
+                          </h4>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {passportDocuments.map((document) => {
+                              const passportType = getPassportType(document.title || '');
+                              const documentImage = getDocumentImage(document);
+                              
+                              return (
+                                <Card key={document.id} className="overflow-hidden">
+                                  <CardContent className="p-0">
+                                    {/* Превью изображения */}
+                                    {documentImage ? (
+                                      <div className="relative aspect-[3/2] bg-gray-100">
+                                        <img
+                                          src={documentImage}
+                                          alt={document.title}
+                                          className="w-full h-full object-cover cursor-pointer hover:opacity-90 transition-opacity"
+                                          onClick={() => setViewingImage(documentImage)}
+                                        />
+                                        <div className="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-10 transition-all duration-200 flex items-center justify-center opacity-0 hover:opacity-100">
+                                          <ZoomIn className="w-8 h-8 text-white" />
+                                        </div>
+                                      </div>
+                                    ) : (
+                                      <div className="aspect-[3/2] bg-gray-100 flex items-center justify-center">
+                                        <Camera className="w-12 h-12 text-gray-400" />
+                                      </div>
+                                    )}
+                                    
+                                    {/* Информация о документе */}
+                                    <div className="p-4">
+                                      <div className="flex items-center justify-between mb-2">
+                                        <h5 className="font-medium">
+                                          {passportType === 'front' ? 'Паспорт - передняя часть' : 
+                                           passportType === 'back' ? 'Паспорт - задняя часть' : 
+                                           document.title}
+                                        </h5>
+                                        <Button
+                                          size="sm"
+                                          variant="destructive"
+                                          onClick={() => deleteDocumentMutation.mutate(document.id)}
+                                          disabled={deleteDocumentMutation.isPending}
+                                        >
+                                          <Trash2 className="w-4 h-4" />
+                                        </Button>
+                                      </div>
+                                      <div className="flex items-center gap-2 text-sm text-gray-500">
+                                        <Calendar className="w-4 h-4" />
+                                        <span>
+                                          Паспорт • {document.createdAt ? new Date(document.createdAt.toString()).toLocaleDateString('ru-RU') : 'Дата не указана'}
+                                        </span>
+                                      </div>
+                                      {documentImage && (
+                                        <Button
+                                          size="sm"
+                                          variant="outline"
+                                          className="w-full mt-3"
+                                          onClick={() => setViewingImage(documentImage)}
+                                        >
+                                          <Eye className="w-4 h-4 mr-2" />
+                                          Просмотреть
+                                        </Button>
+                                      )}
+                                    </div>
+                                  </CardContent>
+                                </Card>
+                              );
+                            })}
                           </div>
-                          <Button
-                            size="sm"
-                            variant="destructive"
-                            onClick={() => deleteDocumentMutation.mutate(document.id)}
-                            disabled={deleteDocumentMutation.isPending}
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
                         </div>
-                      ))}
+                      )}
+
+                      {/* Другие документы */}
+                      {otherDocuments.length > 0 && (
+                        <div>
+                          <h4 className="font-semibold text-lg mb-4 flex items-center gap-2">
+                            <FileText className="w-5 h-5 text-gray-600" />
+                            Другие документы
+                          </h4>
+                          <div className="space-y-3">
+                            {otherDocuments.map((document) => (
+                              <div
+                                key={document.id}
+                                className="flex items-center justify-between p-3 border rounded-lg"
+                              >
+                                <div className="flex items-center gap-3">
+                                  <FileText className="w-5 h-5 text-blue-600" />
+                                  <div>
+                                    <div className="font-medium">{document.title}</div>
+                                    <div className="text-sm text-gray-500">
+                                      {getDocumentTypeLabel(document.type)} • {' '}
+                                      {document.createdAt ? new Date(document.createdAt.toString()).toLocaleDateString('ru-RU') : 'Дата не указана'}
+                                    </div>
+                                  </div>
+                                </div>
+                                <Button
+                                  size="sm"
+                                  variant="destructive"
+                                  onClick={() => deleteDocumentMutation.mutate(document.id)}
+                                  disabled={deleteDocumentMutation.isPending}
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </Button>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   )}
                 </CardContent>
@@ -673,6 +789,34 @@ export function UserDetailModal({ userId, isOpen, onClose }: UserDetailModalProp
           queryClient.invalidateQueries({ queryKey: [`/api/admin/users/${userId}/listings`] });
         }}
       />
+
+      {/* Модальное окно просмотра изображения */}
+      {viewingImage && (
+        <Dialog open={!!viewingImage} onOpenChange={() => setViewingImage(null)}>
+          <DialogContent className="max-w-4xl max-h-[90vh] p-0">
+            <DialogHeader className="p-6 pb-0">
+              <DialogTitle className="flex items-center gap-2">
+                <Camera className="w-5 h-5" />
+                Просмотр документа
+              </DialogTitle>
+            </DialogHeader>
+            <div className="p-6 pt-0">
+              <div className="relative bg-gray-100 rounded-lg overflow-hidden">
+                <img
+                  src={viewingImage}
+                  alt="Документ пользователя"
+                  className="w-full max-h-[70vh] object-contain"
+                />
+              </div>
+              <div className="flex justify-end mt-4">
+                <Button onClick={() => setViewingImage(null)}>
+                  Закрыть
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
     </Dialog>
   );
 }
