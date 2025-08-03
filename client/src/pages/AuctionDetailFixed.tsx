@@ -159,12 +159,12 @@ export default function AuctionDetail() {
   const { data: currentAuction, refetch: refetchAuction } = useQuery({
     queryKey: [`/api/listings/${id}`],
     enabled: !!id,
-    refetchInterval: 250, // МАКСИМАЛЬНАЯ СКОРОСТЬ: обновление каждые 0.25 секунды
-    refetchIntervalInBackground: true,
-    staleTime: 0, // Данные всегда считаются устаревшими
-    gcTime: 0, // НЕ кэшировать вообще
-    refetchOnMount: 'always', // Всегда обновлять при монтировании
-    refetchOnWindowFocus: 'always', // Всегда обновлять при фокусе окна
+    refetchInterval: 30000, // Умеренное обновление каждые 30 секунд
+    refetchIntervalInBackground: false, // Не обновлять в фоне
+    staleTime: 10000, // Данные свежие 10 секунд
+    gcTime: 300000, // Кэш на 5 минут
+    refetchOnMount: true, // Обновлять при монтировании
+    refetchOnWindowFocus: false, // Не обновлять при фокусе
   });
 
   // Принудительное обновление при получении WebSocket обновления
@@ -181,12 +181,12 @@ export default function AuctionDetail() {
   const { data: bidsData, isLoading: bidsLoading, refetch: refetchBids } = useQuery({
     queryKey: [`/api/listings/${id}/bids`],
     enabled: !!id,
-    refetchInterval: 250, // МАКСИМАЛЬНАЯ СКОРОСТЬ: обновление каждые 0.25 секунды
-    refetchIntervalInBackground: true,
-    staleTime: 0, // Данные всегда считаются устаревшими
-    gcTime: 0, // НЕ кэшировать вообще
-    refetchOnMount: 'always', // Всегда обновлять при монтировании
-    refetchOnWindowFocus: 'always', // Всегда обновлять при фокусе окна
+    refetchInterval: 15000, // Обновление ставок каждые 15 секунд
+    refetchIntervalInBackground: false, // Не обновлять в фоне
+    staleTime: 5000, // Данные свежие 5 секунд
+    gcTime: 300000, // Кэш на 5 минут
+    refetchOnMount: true, // Обновлять при монтировании
+    refetchOnWindowFocus: false, // Не обновлять при фокусе
   });
 
   // Get unique bidder IDs to fetch user data
@@ -250,12 +250,12 @@ export default function AuctionDetail() {
     }
     
     // 2. Резервный источник: данные аукциона из базы
-    if (currentAuction?.currentBid) {
-      return parseFloat(currentAuction.currentBid);
+    if (currentAuction && typeof currentAuction === 'object' && 'currentBid' in currentAuction && currentAuction.currentBid) {
+      return parseFloat(currentAuction.currentBid as string);
     }
     
     // 3. Если ставок нет: стартовая цена
-    return currentAuction ? parseFloat(currentAuction.startingPrice) : 0;
+    return currentAuction && typeof currentAuction === 'object' && 'startingPrice' in currentAuction ? parseFloat(currentAuction.startingPrice as string) : 0;
   };
 
   // Мемоизируем currentBid - единый источник правды через историю ставок
