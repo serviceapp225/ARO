@@ -70,9 +70,23 @@ export function useOptimizedRealTime(config: RealTimeConfig = {}) {
   const handleWebSocketMessage = useCallback((message: any) => {
     if (message.type === 'bid_update') {
       console.log('💰 Получено обновление ставки:', message.listingId);
+      
+      // МГНОВЕННОЕ обновление цен - сначала обновляем кэш напрямую
+      if (message.data?.listing) {
+        const currentListings = queryClient.getQueryData(['/api/listings']);
+        if (Array.isArray(currentListings)) {
+          const updatedListings = currentListings.map((listing: any) =>
+            listing.id === message.listingId 
+              ? { ...listing, currentBid: message.data.listing.currentBid }
+              : listing
+          );
+          console.log(`💰 WebSocket обновление: принудительное обновление кэша для аукциона`, message.listingId, ', новая ставка:', message.data.listing.currentBid, 'сомони');
+          queryClient.setQueryData(['/api/listings'], updatedListings);
+        }
+      }
+      
+      // Затем обновляем конкретный аукцион
       smartUpdateAuctionData(message.listingId?.toString());
-      // Принудительно обновляем главный список для карточек
-      queryClient.invalidateQueries({ queryKey: ['/api/listings'] });
     } else if (message.type === 'auction_update') {
       console.log('🏁 Получено обновление аукциона');
       smartUpdateAuctionData();
