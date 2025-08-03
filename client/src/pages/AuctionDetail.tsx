@@ -197,11 +197,9 @@ export default function AuctionDetail() {
       addOptimisticBid(parseInt(id!), variables.amount);
       console.log(`🚀 Оптимистичное обновление: ставка ${variables.amount} для аукциона ${id}`);
       
-      // МГНОВЕННОЕ ОБНОВЛЕНИЕ КАРТОЧЕК - не ждем WebSocket
-      console.log('🚀 Мгновенное обновление карточек после успешной ставки');
-      queryClient.removeQueries({ queryKey: ['/api/listings'] });
+      // ПЛАВНОЕ ОБНОВЛЕНИЕ КАРТОЧЕК - не удаляем кэш полностью, только обновляем
+      console.log('🚀 Плавное обновление карточек после успешной ставки');
       queryClient.invalidateQueries({ queryKey: ['/api/listings'] });
-      queryClient.refetchQueries({ queryKey: ['/api/listings'] });
       
       // Refetch auction data and bidding history to get updated price
       refetchAuction();
