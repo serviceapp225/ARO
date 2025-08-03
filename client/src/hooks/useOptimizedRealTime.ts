@@ -71,9 +71,13 @@ export function useOptimizedRealTime(config: RealTimeConfig = {}) {
     if (message.type === 'bid_update') {
       console.log('💰 Получено обновление ставки:', message.listingId);
       smartUpdateAuctionData(message.listingId?.toString());
+      // Принудительно обновляем главный список для карточек
+      queryClient.invalidateQueries({ queryKey: ['/api/listings'] });
     } else if (message.type === 'auction_update') {
       console.log('🏁 Получено обновление аукциона');
       smartUpdateAuctionData();
+      // Принудительно обновляем главный список для карточек  
+      queryClient.invalidateQueries({ queryKey: ['/api/listings'] });
     } else if (message.type === 'listing_update') {
       console.log('📝 Получено обновление объявления:', message);
       console.log('📊 Данные для обновления:', message.data);
