@@ -1100,7 +1100,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (userHighestBid && parseFloat(userHighestBid.amount) === currentHighestBid) {
         return res.status(400).json({ 
           error: "Already highest bidder", 
-          message: "Ваша ставка должна быть выше вашей предыдущей ставки."
+          message: "Упс! Вы уже лидер!"
         });
       }
       

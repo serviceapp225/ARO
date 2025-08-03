@@ -857,7 +857,7 @@ export default function AuctionDetail() {
         // Handle specific error types with user-friendly messages
         if (errorData.error === "Already highest bidder") {
           toast({
-            title: "Увеличьте ставку",
+            title: "Упс! Вы уже лидер!",
             description: "Ваша ставка должна быть выше вашей предыдущей ставки.",
             variant: "destructive",
             duration: 4000,
