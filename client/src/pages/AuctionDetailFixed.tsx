@@ -354,10 +354,10 @@ export default function AuctionDetail() {
       
       // Show generic error toast - автоисчезновение через 1 секунду, нельзя закрыть
       toast({
-        title: "Упс! Что-то пошло не так",
-        description: "Не удалось сделать ставку. Попробуйте еще раз.",
+        title: "Упс! Вы уже лидер!",
+        description: "Ваша ставка должна быть выше вашей предыдущей ставки.",
         variant: "destructive",
-        duration: 3000,
+        duration: 4000,
       });
     },
   });
