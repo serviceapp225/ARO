@@ -258,6 +258,10 @@ export function UserDetailModal({ userId, isOpen, onClose }: UserDetailModalProp
 
   // Получение изображения документа 
   const getDocumentImage = (document: any) => {
+    // Проверяем сначала fileUrl, потом content
+    if (document.fileUrl && document.fileUrl.startsWith('data:image/')) {
+      return document.fileUrl;
+    }
     if (document.content && document.content.startsWith('data:image/')) {
       return document.content;
     }
