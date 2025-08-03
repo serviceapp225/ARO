@@ -855,7 +855,15 @@ export default function AuctionDetail() {
         }
         
         // Handle specific error types with user-friendly messages
-        if (errorData.error === "Bid too low") {
+        if (errorData.error === "Already highest bidder") {
+          toast({
+            title: "Увеличьте ставку",
+            description: "Ваша ставка должна быть выше вашей предыдущей ставки.",
+            variant: "destructive",
+            duration: 4000,
+          });
+          return;
+        } else if (errorData.error === "Bid too low") {
           toast({
             title: "Ставка слишком низкая",
             description: "Ваша ставка должна быть выше текущей максимальной ставки.",
