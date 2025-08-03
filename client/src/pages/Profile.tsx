@@ -7,6 +7,7 @@ import { useRef, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import type { User } from "@shared/schema";
 import { useToast } from "@/hooks/use-toast";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 export default function Profile() {
   const { user, logout, refreshUserStatus } = useAuth();
@@ -14,6 +15,7 @@ export default function Profile() {
   const [, setLocation] = useLocation();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   
   // Загружаем актуальные данные пользователя с сервера
   const { data: serverUser, refetch: refetchUser } = useQuery<User>({
@@ -35,18 +37,62 @@ export default function Profile() {
   const currentUser = serverUser || user;
   const isUserActive = serverUser?.isActive ?? (user as any)?.isActive ?? false;
 
+  // Mutation для сохранения фотографии профиля в базе данных
+  const updateProfilePhotoMutation = useMutation({
+    mutationFn: async (profilePhoto: string) => {
+      const userId = (user as any)?.userId;
+      if (!userId) throw new Error('User ID not found');
+      
+      const response = await fetch(`/api/users/${userId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ profilePhoto })
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to update profile photo');
+      }
+      
+      return response.json();
+    },
+    onSuccess: () => {
+      // Обновляем кэш запроса пользователя
+      queryClient.invalidateQueries({ queryKey: [`/api/users/${(user as any)?.userId}`] });
+      toast({
+        title: "Успешно!",
+        description: "Фотография профиля сохранена",
+      });
+    },
+    onError: (error) => {
+      console.error('Error updating profile photo:', error);
+      toast({
+        title: "Ошибка",
+        description: "Не удалось сохранить фотографию профиля",
+        variant: "destructive",
+      });
+    }
+  });
+
   const handlePhotoSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
       // Проверяем тип файла
       if (!file.type.startsWith('image/')) {
-        alert('Пожалуйста, выберите файл изображения');
+        toast({
+          title: "Ошибка",
+          description: "Пожалуйста, выберите файл изображения",
+          variant: "destructive",
+        });
         return;
       }
       
       // Проверяем размер файла (максимум 5MB)
       if (file.size > 5 * 1024 * 1024) {
-        alert('Размер файла не должен превышать 5MB');
+        toast({
+          title: "Ошибка",
+          description: "Размер файла не должен превышать 5MB",
+          variant: "destructive",
+        });
         return;
       }
 
@@ -54,7 +100,12 @@ export default function Profile() {
       const reader = new FileReader();
       reader.onload = (e) => {
         const imageDataUrl = e.target?.result as string;
+        
+        // Сохраняем в localStorage для мгновенного отображения
         updateUserData({ profilePhoto: imageDataUrl });
+        
+        // Сохраняем в базу данных
+        updateProfilePhotoMutation.mutate(imageDataUrl);
       };
       reader.readAsDataURL(file);
     }
@@ -114,9 +165,9 @@ export default function Profile() {
               {/* Profile Photo */}
               <div className="relative inline-block mb-4">
                 <div className="w-24 h-24 bg-gray-200 rounded-full flex items-center justify-center overflow-hidden mx-auto">
-                  {userData.profilePhoto ? (
+                  {(serverUser?.profilePhoto || userData.profilePhoto) ? (
                     <img 
-                      src={userData.profilePhoto} 
+                      src={serverUser?.profilePhoto || userData.profilePhoto} 
                       alt="Фото профиля" 
                       className="w-full h-full object-cover"
                     />

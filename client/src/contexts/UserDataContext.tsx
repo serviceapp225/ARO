@@ -161,9 +161,14 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
         ...prev,
         phoneNumber: currentPhoneNumber
       }));
+
+      // Загружаем фотографию профиля из базы данных, если есть userId
+      if (demoUserData.userId) {
+        loadProfilePhotoFromDatabase(demoUserData.userId);
+      }
     }
     
-    // Загружаем данные для конкретного номера телефона
+    // Загружаем данные для конкретного номера телефона из localStorage
     if (currentPhoneNumber) {
       const userDataKey = `userData_${currentPhoneNumber}`;
       const savedData = SafeStorage.getItem(userDataKey);
@@ -174,7 +179,7 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
           fullName: savedData.fullName || "",
           email: savedData.email || "",
           accountType: savedData.accountType || 'individual',
-          profilePhoto: savedData.profilePhoto || null,
+          // Не загружаем profilePhoto из localStorage - берем из базы данных
         }));
       } else {
         // Для нового пользователя очищаем все данные кроме номера телефона
@@ -188,6 +193,24 @@ export function UserDataProvider({ children }: { children: React.ReactNode }) {
       }
     }
   }, []);
+
+  // Функция для загрузки фотографии профиля из базы данных
+  const loadProfilePhotoFromDatabase = async (userId: number) => {
+    try {
+      const response = await fetch(`/api/users/${userId}`);
+      if (response.ok) {
+        const user = await response.json();
+        if (user.profilePhoto) {
+          setUserData(prev => ({
+            ...prev,
+            profilePhoto: user.profilePhoto
+          }));
+        }
+      }
+    } catch (error) {
+      console.error('Ошибка загрузки фотографии профиля:', error);
+    }
+  };
 
   const updateUserData = (data: Partial<UserDataContextType['userData']>) => {
     setUserData(prev => {
