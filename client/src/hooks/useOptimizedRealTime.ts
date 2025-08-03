@@ -74,23 +74,37 @@ export function useOptimizedRealTime(config: RealTimeConfig = {}) {
       smartUpdateAuctionData();
     } else if (message.type === 'listing_update') {
       console.log('📝 Получено обновление объявления:', message);
-      console.log('🔄 Принудительное обновление списка аукционов через WebSocket');
       console.log('📊 Данные для обновления:', message.data);
       
-      // Принудительно инвалидируем кэш списка аукционов
-      queryClient.invalidateQueries({ queryKey: ['/api/listings'] });
-      
-      // Если есть данные об аукционе - обновляем кэш напрямую  
+      // КРИТИЧНО: Обновляем главный кэш списка /api/listings для мгновенного обновления карточек
       if (message.data && message.data.id) {
+        queryClient.setQueryData(['/api/listings'], (oldListings: any) => {
+          if (Array.isArray(oldListings)) {
+            console.log('🔄 Обновляем главный список аукционов через WebSocket для ID:', message.data.id);
+            return oldListings.map((listing: any) => {
+              if (listing.id === message.data.id) {
+                console.log('✅ Найден аукцион для обновления:', {
+                  oldCurrentBid: listing.currentBid,
+                  newCurrentBid: message.data.currentBid,
+                  oldBidCount: listing.bidCount || 0,
+                  newBidCount: message.data.bidCount || 0
+                });
+                return {
+                  ...listing,
+                  currentBid: message.data.currentBid || listing.currentBid,
+                  bidCount: message.data.bidCount !== undefined ? message.data.bidCount : listing.bidCount
+                };
+              }
+              return listing;
+            });
+          }
+          return oldListings;
+        });
+        
+        // ДОПОЛНИТЕЛЬНО: Обновляем индивидуальный кэш аукциона
         const listingId = message.data.id.toString();
         queryClient.setQueryData(['/api/listings', listingId], (oldData: any) => {
           if (oldData) {
-            console.log('🔄 Обновляем кэш аукциона через WebSocket:', {
-              oldCurrentBid: oldData.currentBid,
-              newCurrentBid: message.data.currentBid,
-              oldBidCount: oldData.bidCount || 0,
-              newBidCount: message.data.bidCount || 0
-            });
             return {
               ...oldData,
               currentBid: message.data.currentBid || oldData.currentBid,
@@ -101,6 +115,7 @@ export function useOptimizedRealTime(config: RealTimeConfig = {}) {
         });
       }
       
+      console.log('🔄 Принудительное обновление через smartUpdateAuctionData');
       smartUpdateAuctionData();
     }
   }, [smartUpdateAuctionData]);
