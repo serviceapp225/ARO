@@ -122,8 +122,8 @@ app.use((req, res, next) => {
   try {
     await deploymentSafeInit();
     
-    // Создаем дефолтный банер "Продай свое авто" если его нет
-    await ensureDefaultSellCarBanner();
+    // Банер "Продай свое авто" удален по запросу пользователя
+    // await ensureDefaultSellCarBanner();
     
     console.log("✅ DEPLOYMENT: Инициализация завершена успешно");
   } catch (error) {
