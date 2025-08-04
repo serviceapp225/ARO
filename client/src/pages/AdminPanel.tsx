@@ -1985,6 +1985,11 @@ function AdvertisementCarouselManagement() {
     title: '',
     description: '',
     imageUrl: '',
+    rotationImage1: '',
+    rotationImage2: '',
+    rotationImage3: '',
+    rotationImage4: '',
+    rotationInterval: 3,
     linkUrl: '',
     buttonText: 'Узнать больше',
     order: 1,
@@ -2064,6 +2069,11 @@ function AdvertisementCarouselManagement() {
             title: freshItem.title,
             description: freshItem.description || '',
             imageUrl: freshItem.imageUrl,
+            rotationImage1: freshItem.rotationImage1 || '',
+            rotationImage2: freshItem.rotationImage2 || '',
+            rotationImage3: freshItem.rotationImage3 || '',
+            rotationImage4: freshItem.rotationImage4 || '',
+            rotationInterval: freshItem.rotationInterval || 3,
             linkUrl: freshItem.linkUrl || '',
             buttonText: freshItem.buttonText || 'Узнать больше',
             order: freshItem.order || 1,
@@ -2137,6 +2147,11 @@ function AdvertisementCarouselManagement() {
         title: freshItem.title,
         description: freshItem.description || '',
         imageUrl: freshItem.imageUrl,
+        rotationImage1: freshItem.rotationImage1 || '',
+        rotationImage2: freshItem.rotationImage2 || '',
+        rotationImage3: freshItem.rotationImage3 || '',
+        rotationImage4: freshItem.rotationImage4 || '',
+        rotationInterval: freshItem.rotationInterval || 3,
         linkUrl: freshItem.linkUrl || '',
         buttonText: freshItem.buttonText || 'Узнать больше',
         order: freshItem.order || 1,
@@ -2149,6 +2164,11 @@ function AdvertisementCarouselManagement() {
         title: item.title,
         description: item.description || '',
         imageUrl: item.imageUrl,
+        rotationImage1: item.rotationImage1 || '',
+        rotationImage2: item.rotationImage2 || '',
+        rotationImage3: item.rotationImage3 || '',
+        rotationImage4: item.rotationImage4 || '',
+        rotationInterval: item.rotationInterval || 3,
         linkUrl: item.linkUrl || '',
         buttonText: item.buttonText || 'Узнать больше',
         order: item.order || 1,
@@ -2253,6 +2273,68 @@ function AdvertisementCarouselManagement() {
                   type="url"
                   required
                 />
+              </div>
+
+              {/* Секция ротации изображений */}
+              <div className="space-y-4 p-4 border rounded-lg bg-gray-50 dark:bg-gray-800">
+                <h4 className="font-medium text-sm">Изображения для ротации (необязательно)</h4>
+                <div className="space-y-3">
+                  <div className="space-y-2">
+                    <Label htmlFor="rotationImage1">Изображение 1</Label>
+                    <Input
+                      id="rotationImage1"
+                      value={formData.rotationImage1}
+                      onChange={(e) => setFormData({ ...formData, rotationImage1: e.target.value })}
+                      placeholder="https://example.com/image1.jpg"
+                      type="url"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="rotationImage2">Изображение 2</Label>
+                    <Input
+                      id="rotationImage2"
+                      value={formData.rotationImage2}
+                      onChange={(e) => setFormData({ ...formData, rotationImage2: e.target.value })}
+                      placeholder="https://example.com/image2.jpg"
+                      type="url"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="rotationImage3">Изображение 3</Label>
+                    <Input
+                      id="rotationImage3"
+                      value={formData.rotationImage3}
+                      onChange={(e) => setFormData({ ...formData, rotationImage3: e.target.value })}
+                      placeholder="https://example.com/image3.jpg"
+                      type="url"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="rotationImage4">Изображение 4</Label>
+                    <Input
+                      id="rotationImage4"
+                      value={formData.rotationImage4}
+                      onChange={(e) => setFormData({ ...formData, rotationImage4: e.target.value })}
+                      placeholder="https://example.com/image4.jpg"
+                      type="url"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="rotationInterval">Интервал смены (секунды)</Label>
+                    <Input
+                      id="rotationInterval"
+                      type="number"
+                      value={formData.rotationInterval}
+                      onChange={(e) => setFormData({ ...formData, rotationInterval: parseInt(e.target.value) || 3 })}
+                      min="1"
+                      max="10"
+                      placeholder="3"
+                    />
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                      Если изображения не заданы, будет использоваться основное изображение
+                    </p>
+                  </div>
+                </div>
               </div>
 
               <div className="space-y-2">

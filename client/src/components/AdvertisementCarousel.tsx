@@ -24,6 +24,11 @@ interface AdvertisementItem {
   title: string;
   description: string;
   imageUrl: string;
+  rotationImage1?: string;
+  rotationImage2?: string;
+  rotationImage3?: string;
+  rotationImage4?: string;
+  rotationInterval?: number;
   linkUrl: string;
   buttonText: string;
   isActive: boolean;
@@ -35,6 +40,7 @@ export function AdvertisementCarousel() {
   const [isPaused, setIsPaused] = useState(false);
   const [showReferralModal, setShowReferralModal] = useState(false);
   const [showSupportModal, setShowSupportModal] = useState(false);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [, setLocation] = useLocation();
 
   const { data: advertisements = [], isLoading } = useQuery<AdvertisementItem[]>({
@@ -49,6 +55,27 @@ export function AdvertisementCarousel() {
   const activeAds = advertisements
     .filter(ad => ad.isActive)
     .sort((a, b) => a.order - b.order);
+
+  const currentAd = activeAds[currentSlide];
+
+  // Функция для получения массива изображений для ротации
+  const getRotationImages = (ad: AdvertisementItem): string[] => {
+    const images: string[] = [ad.imageUrl]; // Основное изображение всегда первое
+    
+    if (ad.rotationImage1) images.push(ad.rotationImage1);
+    if (ad.rotationImage2) images.push(ad.rotationImage2);
+    if (ad.rotationImage3) images.push(ad.rotationImage3);
+    if (ad.rotationImage4) images.push(ad.rotationImage4);
+    
+    return images;
+  };
+
+  // Получаем текущее изображение для отображения
+  const getCurrentImage = (): string => {
+    if (!currentAd) return '';
+    const images = getRotationImages(currentAd);
+    return images[currentImageIndex % images.length] || currentAd.imageUrl;
+  };
 
   // Логирование загрузки карусели для отладки
   console.log('🎠 Активные объявления карусели:', activeAds.length);
@@ -69,30 +96,35 @@ export function AdvertisementCarousel() {
   // Глобальная предзагрузка изображений с постоянным кэшированием
   useEffect(() => {
     activeAds.forEach((ad) => {
-      if (ad.imageUrl && !globalPreloadedImages.has(ad.imageUrl)) {
-        // Отмечаем как предзагружаемое
-        globalPreloadedImages.add(ad.imageUrl);
-        
-        // Проверяем, есть ли уже в кэше
-        if (!globalImageCache.has(ad.imageUrl)) {
-          globalImageCache.set(ad.imageUrl, 'loading');
+      // Предзагрузка основного изображения и всех изображений ротации
+      const allImages = getRotationImages(ad);
+      
+      allImages.forEach((imageUrl) => {
+        if (imageUrl && !globalPreloadedImages.has(imageUrl)) {
+          // Отмечаем как предзагружаемое
+          globalPreloadedImages.add(imageUrl);
           
-          const img = new Image();
-          img.onload = () => {
-            globalImageCache.set(ad.imageUrl, 'loaded');
-            forceUpdate({}); // Принудительно обновляем компонент
-          };
-          img.onerror = () => {
-            globalImageCache.set(ad.imageUrl, 'error');
-            forceUpdate({}); // Принудительно обновляем компонент
-          };
-          
-          // Добавляем кэш-заголовки для браузера и предзагружаем
-          img.crossOrigin = 'anonymous';
-          img.loading = 'eager'; // Загружать сразу
-          img.src = ad.imageUrl;
+          // Проверяем, есть ли уже в кэше
+          if (!globalImageCache.has(imageUrl)) {
+            globalImageCache.set(imageUrl, 'loading');
+            
+            const img = new Image();
+            img.onload = () => {
+              globalImageCache.set(imageUrl, 'loaded');
+              forceUpdate({}); // Принудительно обновляем компонент
+            };
+            img.onerror = () => {
+              globalImageCache.set(imageUrl, 'error');
+              forceUpdate({}); // Принудительно обновляем компонент
+            };
+            
+            // Добавляем кэш-заголовки для браузера и предзагружаем
+            img.crossOrigin = 'anonymous';
+            img.loading = 'eager'; // Загружать сразу
+            img.src = imageUrl;
+          }
         }
-      }
+      });
     });
   }, [activeAds]);
 
@@ -118,7 +150,7 @@ export function AdvertisementCarousel() {
     });
   }, []);
 
-  // Автоматическое переключение каждые 5 секунд
+  // Автоматическое переключение слайдов каждые 5 секунд
   useEffect(() => {
     if (activeAds.length <= 1 || isPaused) return;
 
@@ -128,6 +160,26 @@ export function AdvertisementCarousel() {
 
     return () => clearInterval(interval);
   }, [activeAds.length, isPaused]);
+
+  // Автоматическая ротация изображений внутри текущего слайда
+  useEffect(() => {
+    if (!currentAd || isPaused) return;
+
+    const images = getRotationImages(currentAd);
+    if (images.length <= 1) return; // Нет дополнительных изображений для ротации
+
+    const interval = (currentAd.rotationInterval || 3) * 1000;
+    const rotationInterval = setInterval(() => {
+      setCurrentImageIndex((prev) => (prev + 1) % images.length);
+    }, interval);
+
+    return () => clearInterval(rotationInterval);
+  }, [currentAd, isPaused]);
+
+  // Сброс индекса изображения при смене слайда
+  useEffect(() => {
+    setCurrentImageIndex(0);
+  }, [currentSlide]);
 
   // Ручное переключение слайдов
   const goToSlide = (index: number) => {
@@ -217,8 +269,6 @@ export function AdvertisementCarousel() {
     return null;
   }
 
-  const currentAd = activeAds[currentSlide];
-  
   // Проверяем состояние изображения для отладки
   if (currentAd) {
     const imageState = getImageLoadState(currentAd.imageUrl);
@@ -251,14 +301,14 @@ export function AdvertisementCarousel() {
               {/* Background Image with Loading State - Приоритетная загрузка */}
               <div 
                 className={`absolute inset-0 rounded-2xl bg-cover bg-center bg-no-repeat transition-opacity duration-200 ${
-                  getImageLoadState(ad.imageUrl) === 'loaded' 
+                  getImageLoadState(getCurrentImage()) === 'loaded' 
                     ? 'opacity-100' 
-                    : getImageLoadState(ad.imageUrl) === 'error'
+                    : getImageLoadState(getCurrentImage()) === 'error'
                     ? 'bg-gradient-to-br from-blue-500 via-purple-500 to-indigo-600 opacity-100'
                     : 'bg-gradient-to-br from-blue-400 via-purple-400 to-indigo-500 opacity-60'
                 }`}
                 style={{
-                  backgroundImage: getImageLoadState(ad.imageUrl) === 'loaded' ? `url('${ad.imageUrl}')` : undefined,
+                  backgroundImage: getImageLoadState(getCurrentImage()) === 'loaded' ? `url('${getCurrentImage()}')` : undefined,
                 }}
               />
               
