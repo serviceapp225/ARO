@@ -3,6 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import fs from "fs";
 import path from "path";
+import express from "express";
 import { db } from "./db";
 import { carListings, notifications, alertViews, carAlerts } from "../shared/schema";
 import { eq, sql } from "drizzle-orm";
@@ -258,6 +259,26 @@ const getUserFromRequest = async (req: any) => {
 };
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // КРИТИЧНО: Обработка статических файлов ПЕРЕД всеми другими middleware
+  const assetsPath = path.join(process.cwd(), 'dist', 'public', 'assets');
+  console.log(`🔧 ROUTES: Настройка обработки /assets для директории: ${assetsPath}`);
+  
+  if (fs.existsSync(assetsPath)) {
+    app.use('/assets', express.static(assetsPath, {
+      setHeaders: (res, filePath) => {
+        console.log(`📁 STATIC FILE: ${filePath}`);
+        if (filePath.endsWith('.js')) {
+          res.setHeader('Content-Type', 'application/javascript');
+        } else if (filePath.endsWith('.css')) {
+          res.setHeader('Content-Type', 'text/css');
+        }
+      }
+    }));
+    console.log(`✅ ROUTES: Статические файлы /assets настроены`);
+  } else {
+    console.log(`❌ ROUTES: Assets директория не найдена: ${assetsPath}`);
+  }
+
   // Добавляем middleware для получения контекста пользователя
   app.use(getUserFromContext);
   

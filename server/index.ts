@@ -89,32 +89,61 @@ app.use((req, res, next) => {
     console.log("📝 DEPLOYMENT: Продолжаем запуск приложения...");
   }
   
-  // КРИТИЧНО: Обрабатываем статические файлы /assets ПЕРЕД API роутами
-  if (app.get("env") !== "development") {
-    // В production добавляем специальную обработку для /assets
-    const assetsPath = path.join(process.cwd(), 'dist', 'assets');
-    if (fs.existsSync(assetsPath)) {
-      app.use('/assets', express.static(assetsPath, {
-        setHeaders: (res, filePath) => {
-          if (filePath.endsWith('.js')) {
-            res.setHeader('Content-Type', 'application/javascript; charset=utf-8');
-          } else if (filePath.endsWith('.css')) {
-            res.setHeader('Content-Type', 'text/css; charset=utf-8');
-          }
-        }
-      }));
+  // КРИТИЧНО: Всегда обрабатываем статические файлы /assets ПЕРЕД API роутами
+  // Проверяем все возможные пути для статических файлов
+  const possibleAssetsPaths = [
+    path.join(process.cwd(), 'dist', 'public', 'assets'),
+    path.join(import.meta.dirname, 'public', 'assets'),
+    path.join(process.cwd(), 'dist', 'assets'),
+    path.join(process.cwd(), 'public', 'assets'),
+    path.join(process.cwd(), 'server', 'public', 'assets')
+  ];
+  
+  console.log(`🔍 Ищем assets директории:`);
+  let assetsPath = null;
+  
+  for (const testPath of possibleAssetsPaths) {
+    console.log(`📁 Проверяем: ${testPath} - ${fs.existsSync(testPath) ? 'ЕСТЬ' : 'НЕТ'}`);
+    if (fs.existsSync(testPath)) {
+      assetsPath = testPath;
+      break;
     }
   }
   
-  let server;
-  if (app.get("env") === "development") {
-    // В разработке Vite обрабатывает статические файлы
-    server = await registerRoutes(app);
-    await setupVite(app, server);
+  if (assetsPath) {
+    console.log(`✅ Найдена assets директория: ${assetsPath}`);
+    
+    // Настраиваем обработку /assets с правильными MIME типами ПЕРЕД API роутами
+    app.use('/assets', express.static(assetsPath, {
+      setHeaders: (res, filePath) => {
+        console.log(`📄 Отдаем статический файл: ${filePath}`);
+        if (filePath.endsWith('.js')) {
+          res.setHeader('Content-Type', 'application/javascript; charset=utf-8');
+          console.log(`✅ JS файл: установлен Content-Type: application/javascript`);
+        } else if (filePath.endsWith('.css')) {
+          res.setHeader('Content-Type', 'text/css; charset=utf-8');
+          console.log(`✅ CSS файл: установлен Content-Type: text/css`);
+        }
+      }
+    }));
+    console.log(`✅ Обработка /assets настроена ПЕРЕД API роутами`);
   } else {
-    // В production сначала настраиваем остальные статические файлы
-    server = await registerRoutes(app);
+    console.log(`❌ Assets директория не найдена ни в одном из путей`);
+  }
+  
+  const server = await registerRoutes(app);
+
+  // Определяем режим работы
+  const isProduction = process.env.NODE_ENV === 'production' || 
+                       process.env.REPLIT_DEPLOYMENT === '1' ||
+                       (typeof process.env.REPL_OWNER !== 'undefined' && process.env.PORT);
+
+  if (isProduction) {
+    console.log(`🔧 PRODUCTION: Используем serveStatic`);
     serveStatic(app);
+  } else {
+    console.log(`🔧 DEVELOPMENT: Используем setupVite`);
+    await setupVite(app, server);
   }
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
