@@ -1998,8 +1998,12 @@ function AdvertisementCarouselManagement() {
 
   const { data: carouselItems = [], isLoading } = useQuery<AdvertisementCarousel[]>({
     queryKey: ['/api/admin/advertisement-carousel'],
-    staleTime: 1000, // 1 секунда - мгновенное обновление для админа
-    refetchInterval: 5000, // Обновляем каждые 5 секунд
+    staleTime: 2 * 60 * 1000, // Данные актуальны 2 минуты
+    gcTime: 5 * 60 * 1000, // Кэш хранится 5 минут  
+    refetchInterval: 60 * 1000, // Обновляем каждую минуту
+    refetchOnWindowFocus: false, // Не обновляем при каждом фокусе
+    retry: 3, // Повторяем запрос при ошибке 3 раза
+    retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000), // Экспоненциальная задержка
   });
 
 

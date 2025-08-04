@@ -150,8 +150,10 @@ export function useOptimizedRealTime(config: RealTimeConfig = {}) {
     queryKey: ['/api/bid-updates/timestamp'],
     enabled: enablePolling && !getConnectionStatus().isConnected,
     refetchInterval: pollingInterval,
-    staleTime: 0,
-    gcTime: 0,
+    staleTime: 30 * 1000, // Данные актуальны 30 секунд
+    gcTime: 2 * 60 * 1000, // Кэш хранится 2 минуты
+    retry: 2, // Повторяем запрос при ошибке 2 раза
+    retryDelay: 1000, // Задержка между попытками 1 секунда
   });
 
   useEffect(() => {

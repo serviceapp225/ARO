@@ -21,9 +21,11 @@ export default function Profile() {
   const { data: serverUser, refetch: refetchUser } = useQuery<User>({
     queryKey: [`/api/users/${(user as any)?.userId}`],
     enabled: !!user && !!(user as any)?.userId,
-    refetchInterval: 2000, // Обновляем каждые 2 секунды для актуальных данных
-    staleTime: 1000, // Данные свежие только 1 секунду
-    gcTime: 5000, // В кэше 5 секунд
+    refetchInterval: 30 * 1000, // Обновляем каждые 30 секунд для стабильности
+    staleTime: 2 * 60 * 1000, // Данные актуальны 2 минуты
+    gcTime: 5 * 60 * 1000, // Кэш хранится 5 минут
+    retry: 3, // Повторяем запрос при ошибке 3 раза
+    retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000),
   });
   
   // Обновляем статус пользователя при получении новых данных

@@ -45,11 +45,13 @@ export function AdvertisementCarousel() {
 
   const { data: advertisements = [], isLoading } = useQuery<AdvertisementItem[]>({
     queryKey: ['/api/advertisement-carousel'],
-    staleTime: 0, // Принудительно считаем данные устаревшими
-    gcTime: 0, // Не кэшируем данные (в v5 используется gcTime вместо cacheTime)
-    refetchInterval: 10 * 1000, // Обновляем каждые 10 секунд  
-    refetchOnWindowFocus: true, // Обновляем при фокусе
-    refetchOnMount: true, // Обновляем при монтировании
+    staleTime: 5 * 60 * 1000, // Данные актуальны 5 минут
+    gcTime: 10 * 60 * 1000, // Кэш хранится 10 минут
+    refetchInterval: 30 * 1000, // Обновляем каждые 30 секунд
+    refetchOnWindowFocus: false, // Не обновляем при каждом фокусе
+    refetchOnMount: false, // Используем кэш при монтировании
+    retry: 3, // Повторяем запрос при ошибке 3 раза
+    retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000), // Экспоненциальная задержка
   });
 
   // Фильтруем только активные объявления и сортируем по порядку
