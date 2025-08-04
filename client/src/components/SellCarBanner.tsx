@@ -3,18 +3,27 @@ import { useLocation } from "wouter";
 import carBannerSvg from "@/assets/car-banner.svg";
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useQuery } from "@tanstack/react-query";
 
 export function SellCarBanner() {
   const [, setLocation] = useLocation();
   const { user } = useAuth();
   
-  // Оптимизированные фотографии автомобилей для быстрой загрузки
-  const carImages = [
-    'https://images.unsplash.com/photo-1555215695-3004980ad54e?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=70', // Modern sports car - уменьшен размер
-    'https://images.unsplash.com/photo-1502877338535-766e1452684a?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=70', // Luxury sedan - уменьшен размер
-    'https://images.unsplash.com/photo-1567018265282-303944d3c2a8?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=70', // White car - оптимизирован
-    'https://images.unsplash.com/photo-1552519507-ac11af17dcc8?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=70', // Selected car - оптимизирован
+  // Загружаем данные банера из API
+  const { data: bannerData } = useQuery({
+    queryKey: ['/api/sell-car-banner'],
+    enabled: true,
+  });
+  
+  // Дефолтные изображения для ротации
+  const defaultCarImages = [
+    'https://images.unsplash.com/photo-1555215695-3004980ad54e?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=70',
+    'https://images.unsplash.com/photo-1502877338535-766e1452684a?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=70',
+    'https://images.unsplash.com/photo-1567018265282-303944d3c2a8?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=70',
+    'https://images.unsplash.com/photo-1552519507-ac11af17dcc8?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=70',
   ];
+  
+  const carImages = bannerData?.backgroundImageUrl ? [bannerData.backgroundImageUrl, ...defaultCarImages] : defaultCarImages;
   
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   
@@ -61,10 +70,10 @@ export function SellCarBanner() {
       {/* Content */}
       <div className="relative z-10 h-full flex flex-col justify-center items-center text-center space-y-2">
         <h2 className="text-2xl font-bold text-white h-8 flex items-center">
-          Продай свое авто
+          {bannerData?.title || "Продай свое авто"}
         </h2>
         <p className="text-base leading-relaxed opacity-90 text-white h-12 flex items-center">
-          Получи максимальную цену за свой автомобиль на нашем аукционе
+          {bannerData?.description || "Получи максимальную цену за свой автомобиль на нашем аукционе"}
         </p>
         <div className="mt-4">
           <span 
@@ -75,7 +84,7 @@ export function SellCarBanner() {
             }}
           >
             <Plus className="w-4 h-4" />
-            Начать продажу
+            {bannerData?.buttonText || "Начать продажу"}
           </span>
         </div>
       </div>
