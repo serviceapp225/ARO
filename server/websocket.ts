@@ -435,36 +435,7 @@ class AuctionWebSocketManager {
     console.log(`📬 Уведомление отправлено пользователю ${userId} на ${sentCount} устройств`);
   }
 
-  // НОВЫЙ МЕТОД: Мгновенное уведомление о новом сообщении
-  public notifyNewMessage(recipientId: number, messageData: any) {
-    let sentCount = 0;
-    console.log(`🔍 WEBSOCKET DEBUG: Ищем клиентов для пользователя ${recipientId}`);
-    console.log(`📊 WEBSOCKET DEBUG: Всего подключенных клиентов: ${this.clients.size}`);
-    
-    // Показываем всех подключенных клиентов для диагностики
-    this.clients.forEach((client, index) => {
-      console.log(`📱 WEBSOCKET DEBUG: Клиент ${index + 1}: userId=${client.userId}, ready=${client.ws.readyState === WebSocket.OPEN}`);
-    });
-    
-    // Ищем всех клиентов получателя
-    this.clients.forEach(client => {
-      if (client.userId === recipientId && client.ws.readyState === WebSocket.OPEN) {
-        console.log(`✅ WEBSOCKET DEBUG: Найден клиент для пользователя ${recipientId}, отправляем уведомление`);
-        this.sendMessage(client, {
-          type: 'new_message_notification',
-          messageData,
-          timestamp: Date.now()
-        });
-        sentCount++;
-      }
-    });
-    
-    console.log(`💬 Уведомление о новом сообщении отправлено пользователю ${recipientId} на ${sentCount} устройств`);
-    if (sentCount === 0) {
-      console.log(`⚠️ WEBSOCKET DEBUG: Не найдено активных клиентов для пользователя ${recipientId}`);
-    }
-    return sentCount > 0;
-  }
+
 
   public getStats() {
     return {

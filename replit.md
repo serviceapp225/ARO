@@ -55,11 +55,20 @@ Preferred communication style: Simple, everyday language in Russian.
 - Confetti and sound effects for successful bids.
 
 ### Deployment Strategy
-- Containerized deployment with Docker.
-- Optimized builds for production (Vite for frontend, esbuild for backend).
+- Production build system with Vite (frontend) and esbuild (backend).
+- Automatic environment detection: development (port 5000, Vite middleware) vs production (port 3000, static files).
+- Resolved deployment white screen issue by implementing proper NODE_ENV=production handling.
+- Static file serving from dist/public/ directory in production mode.
+- Build process: `npm run build` creates optimized JS/CSS bundles with proper MIME types.
 - Environment variable handling for sensitive data.
 - Health check endpoints for monitoring.
 - Compatibility with Replit's Reserved VM deployment for persistent storage and WebSocket support.
+
+### Recent Fixes (Jan 2025)
+- **Deployment Issue Resolved**: Fixed white screen on deployment caused by incorrect MIME type handling
+- **Production Build**: Implemented proper static file serving for production deployments
+- **Environment Detection**: Added robust development vs production mode detection
+- **Build Optimization**: All static assets properly bundled and served with correct headers
 
 ## External Dependencies
 
