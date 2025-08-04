@@ -89,7 +89,33 @@ app.use((req, res, next) => {
     console.log("📝 DEPLOYMENT: Продолжаем запуск приложения...");
   }
   
-  const server = await registerRoutes(app);
+  // КРИТИЧНО: Обрабатываем статические файлы /assets ПЕРЕД API роутами
+  if (app.get("env") !== "development") {
+    // В production добавляем специальную обработку для /assets
+    const assetsPath = path.join(process.cwd(), 'dist', 'assets');
+    if (fs.existsSync(assetsPath)) {
+      app.use('/assets', express.static(assetsPath, {
+        setHeaders: (res, filePath) => {
+          if (filePath.endsWith('.js')) {
+            res.setHeader('Content-Type', 'application/javascript; charset=utf-8');
+          } else if (filePath.endsWith('.css')) {
+            res.setHeader('Content-Type', 'text/css; charset=utf-8');
+          }
+        }
+      }));
+    }
+  }
+  
+  let server;
+  if (app.get("env") === "development") {
+    // В разработке Vite обрабатывает статические файлы
+    server = await registerRoutes(app);
+    await setupVite(app, server);
+  } else {
+    // В production сначала настраиваем остальные статические файлы
+    server = await registerRoutes(app);
+    serveStatic(app);
+  }
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;
@@ -98,15 +124,6 @@ app.use((req, res, next) => {
     res.status(status).json({ message });
     throw err;
   });
-
-  // importantly only setup vite in development and after
-  // setting up all the other routes so the catch-all route
-  // doesn't interfere with the other routes
-  if (app.get("env") === "development") {
-    await setupVite(app, server);
-  } else {
-    serveStatic(app);
-  }
 
   // DEPLOYMENT: Use PORT from environment or fallback to 3000 for Replit deployment
   // Replit deployment expects port 3000 to be the primary port
