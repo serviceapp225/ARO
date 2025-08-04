@@ -4,46 +4,8 @@ import { registerRoutes } from "./routes";
 import { deploymentSafeInit } from "./deploymentSafeInit";
 import { createTables } from "./createTables";
 import { setupVite, serveStatic, log } from "./vite";
-import { storage } from "./storage";
 import fs from "fs";
 import path from "path";
-
-// Функция для создания дефолтного банера "Продай свое авто"
-async function ensureDefaultSellCarBanner() {
-  try {
-    console.log("🎯 Проверяем наличие банера 'Продай свое авто'...");
-    
-    const existingCarousels = await storage.getAdvertisementCarousel();
-    
-    // Проверяем, есть ли банер "Продать автомобиль"
-    const sellCarBanner = existingCarousels.find(carousel => 
-      carousel.title.includes("Продай") || 
-      carousel.title.includes("автомобиль") || 
-      carousel.title.includes("авто")
-    );
-    
-    if (!sellCarBanner) {
-      console.log("🎯 Банер 'Продай свое авто' не найден, создаем дефолтный...");
-      
-      // Создаем банер с рабочими внешними изображениями
-      await storage.createAdvertisementCarouselItem({
-        title: "Продай свое авто",
-        description: "Размести объявление и получи максимальную выгоду от продажи",
-        imageUrl: "https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-        linkUrl: "/create-listing",
-        buttonText: "Разместить объявление",
-        isActive: true,
-        order: 1
-      });
-      
-      console.log("✅ Дефолтный банер 'Продай свое авто' создан успешно!");
-    } else {
-      console.log("✅ Банер 'Продай свое авто' уже существует");
-    }
-  } catch (error) {
-    console.error("⚠️ Ошибка при создании дефолтного банера:", error);
-  }
-}
 
 // Загрузка переменных окружения из .env файла
 const envPath = path.join(process.cwd(), '.env');
@@ -121,10 +83,6 @@ app.use((req, res, next) => {
   
   try {
     await deploymentSafeInit();
-    
-    // Создаем дефолтный банер "Продай свое авто" если его нет
-    await ensureDefaultSellCarBanner();
-    
     console.log("✅ DEPLOYMENT: Инициализация завершена успешно");
   } catch (error) {
     console.error("⚠️ DEPLOYMENT: Ошибка инициализации БД:", error);
