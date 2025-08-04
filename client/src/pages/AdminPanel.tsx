@@ -1218,6 +1218,11 @@ function SellBannerManagement() {
     buttonText: '',
     linkUrl: '',
     backgroundImageUrl: '',
+    rotationImage1: '',
+    rotationImage2: '',
+    rotationImage3: '',
+    rotationImage4: '',
+    rotationInterval: 3,
     gradientFrom: '',
     gradientTo: '',
     textColor: '',
@@ -1453,6 +1458,66 @@ function SellBannerManagement() {
                   placeholder="https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?w=800&h=300&fit=crop"
                   type="url"
                 />
+              </div>
+
+              {/* Изображения для ротации */}
+              <div className="space-y-4">
+                <h4 className="text-lg font-medium">Изображения для ротации</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="rotationImage1">Изображение 1</Label>
+                    <Input
+                      id="rotationImage1"
+                      value={formData.rotationImage1 || ''}
+                      onChange={(e) => setFormData({ ...formData, rotationImage1: e.target.value })}
+                      placeholder="https://images.unsplash.com/photo-1555215695-3004980ad54e"
+                      type="url"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="rotationImage2">Изображение 2</Label>
+                    <Input
+                      id="rotationImage2"
+                      value={formData.rotationImage2 || ''}
+                      onChange={(e) => setFormData({ ...formData, rotationImage2: e.target.value })}
+                      placeholder="https://images.unsplash.com/photo-1502877338535-766e1452684a"
+                      type="url"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="rotationImage3">Изображение 3</Label>
+                    <Input
+                      id="rotationImage3"
+                      value={formData.rotationImage3 || ''}
+                      onChange={(e) => setFormData({ ...formData, rotationImage3: e.target.value })}
+                      placeholder="https://images.unsplash.com/photo-1567018265282-303944d3c2a8"
+                      type="url"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="rotationImage4">Изображение 4</Label>
+                    <Input
+                      id="rotationImage4"
+                      value={formData.rotationImage4 || ''}
+                      onChange={(e) => setFormData({ ...formData, rotationImage4: e.target.value })}
+                      placeholder="https://images.unsplash.com/photo-1552519507-ac11af17dcc8"
+                      type="url"
+                    />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="rotationInterval">Интервал ротации (секунды)</Label>
+                  <Input
+                    id="rotationInterval"
+                    type="number"
+                    min="1"
+                    max="60"
+                    value={formData.rotationInterval || 3}
+                    onChange={(e) => setFormData({ ...formData, rotationInterval: parseInt(e.target.value) || 3 })}
+                    className="w-32"
+                  />
+                  <p className="text-xs text-gray-500">Время между сменой изображений (1-60 секунд)</p>
+                </div>
               </div>
 
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">

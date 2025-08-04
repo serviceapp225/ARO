@@ -262,6 +262,11 @@ export const sellCarBanner = pgTable("sell_car_banner", {
   buttonText: text("button_text").notNull().default("Начать продажу"),
   linkUrl: text("link_url").notNull().default("/sell"),
   backgroundImageUrl: text("background_image_url").default("https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?w=800&h=300&fit=crop"),
+  rotationImage1: text("rotation_image_1").default("https://images.unsplash.com/photo-1555215695-3004980ad54e?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=70"),
+  rotationImage2: text("rotation_image_2").default("https://images.unsplash.com/photo-1502877338535-766e1452684a?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=70"),
+  rotationImage3: text("rotation_image_3").default("https://images.unsplash.com/photo-1567018265282-303944d3c2a8?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=70"),
+  rotationImage4: text("rotation_image_4").default("https://images.unsplash.com/photo-1552519507-ac11af17dcc8?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=70"),
+  rotationInterval: integer("rotation_interval").default(3), // секунды
   gradientFrom: text("gradient_from").default("#059669"),
   gradientTo: text("gradient_to").default("#047857"),
   textColor: text("text_color").default("#ffffff"),

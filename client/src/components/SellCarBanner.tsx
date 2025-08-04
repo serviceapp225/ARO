@@ -17,26 +17,41 @@ export function SellCarBanner() {
     refetchInterval: 10000, // Обновляем каждые 10 секунд
   });
   
-  // Дефолтные изображения для ротации
-  const defaultCarImages = [
-    'https://images.unsplash.com/photo-1555215695-3004980ad54e?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=70',
-    'https://images.unsplash.com/photo-1502877338535-766e1452684a?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=70',
-    'https://images.unsplash.com/photo-1567018265282-303944d3c2a8?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=70',
-    'https://images.unsplash.com/photo-1552519507-ac11af17dcc8?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=70',
-  ];
+  // Изображения для ротации из API или дефолтные
+  const getCarImages = () => {
+    if (!bannerData) {
+      // Дефолтные изображения если данных еще нет
+      return [
+        'https://images.unsplash.com/photo-1555215695-3004980ad54e?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=70',
+        'https://images.unsplash.com/photo-1502877338535-766e1452684a?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=70',
+        'https://images.unsplash.com/photo-1567018265282-303944d3c2a8?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=70',
+        'https://images.unsplash.com/photo-1552519507-ac11af17dcc8?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=70',
+      ];
+    }
+    
+    // Собираем изображения из админ панели
+    const images = [];
+    if (bannerData.rotationImage1) images.push(bannerData.rotationImage1);
+    if (bannerData.rotationImage2) images.push(bannerData.rotationImage2);
+    if (bannerData.rotationImage3) images.push(bannerData.rotationImage3);
+    if (bannerData.rotationImage4) images.push(bannerData.rotationImage4);
+    
+    return images.length > 0 ? images : [bannerData.backgroundImageUrl || 'https://images.unsplash.com/photo-1555215695-3004980ad54e?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=70'];
+  };
   
-  const carImages = bannerData?.backgroundImageUrl ? [bannerData.backgroundImageUrl, ...defaultCarImages] : defaultCarImages;
+  const carImages = getCarImages();
+  const rotationInterval = (bannerData?.rotationInterval || 3) * 1000; // Конвертируем в миллисекунды
   
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   
-  // Ротация изображений каждые 5 секунд
+  // Ротация изображений с настраиваемым интервалом
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentImageIndex((prev) => (prev + 1) % carImages.length);
-    }, 5000);
+    }, rotationInterval);
     
     return () => clearInterval(interval);
-  }, [carImages.length]);
+  }, [carImages.length, rotationInterval]);
   
   const handleClick = () => {
     console.log('КЛИК РАБОТАЕТ! Переход на /sell');
