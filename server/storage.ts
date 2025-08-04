@@ -1217,7 +1217,19 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
-
+  async getAdminStats(): Promise<{pendingListings: number; activeAuctions: number; totalUsers: number; bannedUsers: number}> {
+    const [pendingResult] = await db.select({ count: sql<number>`count(*)` }).from(carListings).where(eq(carListings.status, 'pending'));
+    const [activeResult] = await db.select({ count: sql<number>`count(*)` }).from(carListings).where(eq(carListings.status, 'active'));
+    const [totalUsersResult] = await db.select({ count: sql<number>`count(*)` }).from(users);
+    const [bannedUsersResult] = await db.select({ count: sql<number>`count(*)` }).from(users).where(eq(users.isActive, false));
+    
+    return {
+      pendingListings: pendingResult.count,
+      activeAuctions: activeResult.count,
+      totalUsers: totalUsersResult.count,
+      bannedUsers: bannedUsersResult.count
+    };
+  }
 
   async getUnreadMessageCount(userId: number): Promise<number> {
     try {
