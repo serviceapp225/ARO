@@ -171,7 +171,8 @@ export function AdvertisementCarousel() {
     const images = getRotationImages(currentAd);
     if (images.length <= 1) return; // Нет дополнительных изображений для ротации
 
-    const interval = (currentAd.rotationInterval || 3) * 1000;
+    // Увеличиваем минимальный интервал до 8 секунд для плавной ротации
+    const interval = Math.max((currentAd.rotationInterval || 8), 8) * 1000;
     const rotationInterval = setInterval(() => {
       setCurrentImageIndex((prev) => (prev + 1) % images.length);
     }, interval);
@@ -303,12 +304,12 @@ export function AdvertisementCarousel() {
             <div className="relative h-full p-6 text-white">
               {/* Background Image with Loading State - Приоритетная загрузка */}
               <div 
-                className={`absolute inset-0 rounded-2xl bg-cover bg-center bg-no-repeat transition-opacity duration-200 ${
+                className={`absolute inset-0 rounded-2xl bg-cover bg-center bg-no-repeat transition-all duration-1000 ease-in-out ${
                   getImageLoadState(getCurrentImage()) === 'loaded' 
-                    ? 'opacity-100' 
+                    ? 'opacity-100 scale-100' 
                     : getImageLoadState(getCurrentImage()) === 'error'
-                    ? 'bg-gradient-to-br from-blue-500 via-purple-500 to-indigo-600 opacity-100'
-                    : 'bg-gradient-to-br from-blue-400 via-purple-400 to-indigo-500 opacity-60'
+                    ? 'bg-gradient-to-br from-blue-500 via-purple-500 to-indigo-600 opacity-100 scale-100'
+                    : 'bg-gradient-to-br from-blue-400 via-purple-400 to-indigo-500 opacity-60 scale-105'
                 }`}
                 style={{
                   backgroundImage: getImageLoadState(getCurrentImage()) === 'loaded' ? `url('${getCurrentImage()}')` : undefined,

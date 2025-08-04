@@ -97,11 +97,20 @@ const persistOptions = {
   persister: {
     persistClient: async (client: any) => {
       try {
-        // Ограничиваем размер кэша до 2MB
+        // Ограничиваем размер кэша до 5MB (увеличиваем лимит чтобы избежать очистки)
         const clientStr = JSON.stringify(client);
-        if (clientStr.length > 2 * 1024 * 1024) { // 2MB лимит
-          console.warn('🧹 TanStack Query кэш превышает 2MB, очищаем');
-          queryClient.clear(); // Очищаем весь кэш
+        if (clientStr.length > 5 * 1024 * 1024) { // 5MB лимит
+          console.warn('🧹 TanStack Query кэш превышает 5MB, выборочно очищаем старые запросы');
+          // Вместо полной очистки удаляем только старые запросы
+          queryClient.removeQueries({
+            predicate: (query) => {
+              const age = Date.now() - (query.state.dataUpdatedAt || 0);
+              // Не удаляем критические запросы аукционов и списков
+              const isCritical = query.queryKey[0] === '/api/listings' || 
+                                String(query.queryKey[0]).includes('/api/listings/');
+              return !isCritical && age > 30 * 60 * 1000; // Удаляем только некритичные данные старше 30 минут
+            }
+          });
           return;
         }
         
@@ -112,15 +121,35 @@ const persistOptions = {
         localStorage.setItem('tanstack-query-cache', JSON.stringify(dataWithTimestamp));
       } catch (error) {
         if (error instanceof DOMException && error.name === 'QuotaExceededError') {
-          console.warn('🧹 localStorage переполнен при сохранении кэша, очищаем');
-          queryClient.clear();
-          // Пытаемся очистить localStorage и сохранить заново
+          console.warn('🧹 localStorage переполнен при сохранении кэша, выборочная очистка');
+          // Вместо полной очистки делаем выборочную очистку старых данных
+          queryClient.removeQueries({
+            predicate: (query) => {
+              const age = Date.now() - (query.state.dataUpdatedAt || 0);
+              // Не удаляем критические запросы аукционов и списков
+              const isCritical = query.queryKey[0] === '/api/listings' || 
+                                String(query.queryKey[0]).includes('/api/listings/');
+              return !isCritical && age > 30 * 60 * 1000; // Удаляем только некритичные данные старше 30 минут
+            }
+          });
+          
+          // Очищаем только старые кэши из localStorage
           try {
-            // Удаляем старые кэши
             for (let i = localStorage.length - 1; i >= 0; i--) {
               const key = localStorage.key(i);
               if (key && key.includes('tanstack')) {
-                localStorage.removeItem(key);
+                const stored = localStorage.getItem(key);
+                if (stored) {
+                  try {
+                    const parsed = JSON.parse(stored);
+                    const age = Date.now() - (parsed.timestamp || 0);
+                    if (age > 30 * 60 * 1000) { // Старше 30 минут
+                      localStorage.removeItem(key);
+                    }
+                  } catch (parseError) {
+                    localStorage.removeItem(key); // Удаляем поврежденные данные
+                  }
+                }
               }
             }
           } catch (cleanupError) {

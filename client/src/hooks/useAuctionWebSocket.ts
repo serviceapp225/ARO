@@ -8,6 +8,9 @@ interface WebSocketMessage {
   data?: any;
   message?: string;
   timestamp?: number;
+  userId?: number;
+  success?: boolean;
+  messageData?: any;
 }
 
 interface AuctionWebSocketHook {
@@ -35,18 +38,19 @@ export function useAuctionWebSocket(): AuctionWebSocketHook {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   
-  // Проверяем готовность AuthContext
-  if (!user) {
-    return {
-      isConnected: false,
-      connectionQuality: 'disconnected' as const,
-      joinAuction: () => {},
-      leaveAuction: () => {},
-      lastBidUpdate: null,
-      participantCount: 0,
-      isHotAuction: false
-    };
-  }
+  // ИСПРАВЛЕНО: Не блокируем WebSocket при отсутствии user
+  // Это может быть временное состояние загрузки, а WebSocket нужен для системы
+  // if (!user) {
+  //   return {
+  //     isConnected: false,
+  //     connectionQuality: 'disconnected' as const,
+  //     joinAuction: () => {},
+  //     leaveAuction: () => {},
+  //     lastBidUpdate: null,
+  //     participantCount: 0,
+  //     isHotAuction: false
+  //   };
+  // }
   
   // Единая функция для получения ID пользователя
   const getCurrentUserId = useCallback(() => {
@@ -111,7 +115,7 @@ export function useAuctionWebSocket(): AuctionWebSocketHook {
         }, 60000);
         
         // ВАЖНО: Идентифицируем пользователя для уведомлений
-        if (currentUserId) {
+        if (currentUserId && wsRef.current) {
           const identifyMessage = {
             type: 'identify_user',
             userId: currentUserId
@@ -124,7 +128,7 @@ export function useAuctionWebSocket(): AuctionWebSocketHook {
         }
         
         // Повторно подключаемся к аукциону если был активен
-        if (currentListingRef.current) {
+        if (currentListingRef.current && wsRef.current) {
           const message = {
             type: 'join_auction',
             listingId: currentListingRef.current,

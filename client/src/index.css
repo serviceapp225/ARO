@@ -12,6 +12,16 @@
   padding-bottom: 100px; /* Компактный отступ для полного отображения контента */
 }
 
+/* Плавные переходы для карусели изображений */
+.carousel-image-transition {
+  transition: all 1.2s ease-in-out;
+  transform-origin: center center;
+}
+
+.carousel-image-transition:hover {
+  transform: scale(1.02);
+}
+
 :root {
   --background: 0 0% 100%;
   --foreground: 20 14.3% 4.1%;
