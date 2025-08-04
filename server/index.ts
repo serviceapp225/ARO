@@ -88,6 +88,32 @@ app.use((req, res, next) => {
     console.error("⚠️ DEPLOYMENT: Ошибка инициализации БД:", error);
     console.log("📝 DEPLOYMENT: Продолжаем запуск приложения...");
   }
+
+  // Настраиваем статические файлы ПЕРЕД регистрацией API роутов
+  const isProduction = process.env.NODE_ENV === "production";
+  
+  if (isProduction) {
+    console.log("🏭 PRODUCTION: Используем статические файлы");
+    
+    // Правильная настройка для статических файлов в production
+    const distPublicPath = path.join(process.cwd(), 'dist', 'public');
+    
+    if (fs.existsSync(distPublicPath)) {
+      console.log(`📁 PRODUCTION: Найдена папка статических файлов: ${distPublicPath}`);
+      
+      // Специально настраиваем статические файлы с правильными MIME типами ПЕРЕД всеми API роутами
+      console.log("🎯 PRODUCTION: Настраиваем /assets middleware ПЕРЕД API роутами");
+      app.use('/assets', express.static(path.join(distPublicPath, 'assets'), {
+        setHeaders: (res, filePath) => {
+          if (filePath.endsWith('.js')) {
+            res.setHeader('Content-Type', 'application/javascript; charset=utf-8');
+          } else if (filePath.endsWith('.css')) {
+            res.setHeader('Content-Type', 'text/css; charset=utf-8');
+          }
+        }
+      }));
+    }
+  }
   
   const server = await registerRoutes(app);
 
@@ -102,11 +128,36 @@ app.use((req, res, next) => {
   // importantly only setup vite in development and after
   // setting up all the other routes so the catch-all route
   // doesn't interfere with the other routes
-  const isProduction = process.env.NODE_ENV === "production";
   
   if (isProduction) {
-    console.log("🏭 PRODUCTION: Используем статические файлы");
-    serveStatic(app);
+    // Подключаем остальные статические файлы ПОСЛЕ настройки /assets
+    const distPublicPath = path.join(process.cwd(), 'dist', 'public');
+    if (fs.existsSync(distPublicPath)) {
+      console.log("📁 PRODUCTION: Настраиваем остальные статические файлы");
+      app.use(express.static(distPublicPath, {
+        index: false,
+        setHeaders: (res, filePath) => {
+          if (filePath.endsWith('.html')) {
+            res.setHeader('Content-Type', 'text/html; charset=utf-8');
+          }
+        }
+      }));
+      
+      // SPA fallback - все остальные запросы направляем на index.html
+      app.use("*", (req, res) => {
+        console.log(`🔧 SPA FALLBACK (PRODUCTION): ${req.path} → index.html (для клиентского роутинга)`);
+        const indexPath = path.join(distPublicPath, 'index.html');
+        if (fs.existsSync(indexPath)) {
+          res.sendFile(indexPath);
+        } else {
+          res.status(404).send('Static files not found');
+        }
+      });
+    } else {
+      console.error(`❌ PRODUCTION: Папка статических файлов не найдена: ${distPublicPath}`);
+      console.log("🔄 PRODUCTION: Переключаемся на fallback к serveStatic");
+      serveStatic(app);
+    }
   } else {
     console.log("🛠️ DEVELOPMENT: Используем Vite middleware");
     await setupVite(app, server);
