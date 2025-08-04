@@ -16,7 +16,6 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Link } from 'wouter';
 import { UserDetailModal } from '@/components/UserDetailModal';
 import { ListingEditModal } from '@/components/ListingEditModal';
-import { AdvertisementCarouselManagement } from '@/components/AdvertisementCarouselManagement';
 import type { User, CarListing, Notification, AdvertisementCarousel } from '@shared/schema';
 
 // Функция для форматирования номера телефона
