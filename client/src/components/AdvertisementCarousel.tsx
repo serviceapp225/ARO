@@ -45,16 +45,17 @@ export function AdvertisementCarousel() {
 
   const { data: advertisements = [], isLoading } = useQuery<AdvertisementItem[]>({
     queryKey: ['/api/advertisement-carousel'],
-    staleTime: 30 * 1000, // 30 секунд - оптимизированное кэширование
-    refetchInterval: 30 * 1000, // Обновляем каждые 30 секунд
-    refetchOnWindowFocus: false, // Не обновляем при фокусе
+    staleTime: 0, // Принудительно считаем данные устаревшими
+    gcTime: 0, // Не кэшируем данные (в v5 используется gcTime вместо cacheTime)
+    refetchInterval: 10 * 1000, // Обновляем каждые 10 секунд  
+    refetchOnWindowFocus: true, // Обновляем при фокусе
     refetchOnMount: true, // Обновляем при монтировании
   });
 
   // Фильтруем только активные объявления и сортируем по порядку
-  const activeAds = advertisements
-    .filter(ad => ad.isActive)
-    .sort((a, b) => a.order - b.order);
+  const activeAds = (advertisements as AdvertisementItem[])
+    .filter((ad: AdvertisementItem) => ad.isActive)
+    .sort((a: AdvertisementItem, b: AdvertisementItem) => a.order - b.order);
 
   const currentAd = activeAds[currentSlide];
 
@@ -95,7 +96,7 @@ export function AdvertisementCarousel() {
 
   // Глобальная предзагрузка изображений с постоянным кэшированием
   useEffect(() => {
-    activeAds.forEach((ad) => {
+    activeAds.forEach((ad: AdvertisementItem) => {
       // Предзагрузка основного изображения и всех изображений ротации
       const allImages = getRotationImages(ad);
       
@@ -131,7 +132,7 @@ export function AdvertisementCarousel() {
   // Дополнительная предзагрузка при монтировании компонента
   useEffect(() => {
     // Предзагружаем изображения заранее для мгновенного отображения
-    activeAds.forEach((ad) => {
+    activeAds.forEach((ad: AdvertisementItem) => {
       if (ad.imageUrl && getImageLoadState(ad.imageUrl) === 'none') {
         // Создаем link элемент для браузерного предзагрузки
         const link = document.createElement('link');
@@ -286,7 +287,7 @@ export function AdvertisementCarousel() {
     >
       {/* Overlay slide system */}
       <div className="relative h-full">
-        {activeAds.map((ad, index) => (
+        {activeAds.map((ad: AdvertisementItem, index: number) => (
           <div
             key={ad.id}
             className={`absolute inset-0 transition-all duration-500 ease-in-out ${
@@ -385,7 +386,7 @@ export function AdvertisementCarousel() {
       {/* Индикаторы слайдов */}
       {activeAds.length > 1 && (
         <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
-          {activeAds.map((_, index) => (
+          {activeAds.map((_: AdvertisementItem, index: number) => (
             <button
               key={index}
               className={`w-3 h-3 rounded-full transition-colors ${
