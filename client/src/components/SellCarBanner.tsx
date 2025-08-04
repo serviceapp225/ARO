@@ -13,6 +13,8 @@ export function SellCarBanner() {
   const { data: bannerData } = useQuery({
     queryKey: ['/api/sell-car-banner'],
     enabled: true,
+    staleTime: 0, // Данные сразу становятся устаревшими
+    refetchInterval: 10000, // Обновляем каждые 10 секунд
   });
   
   // Дефолтные изображения для ротации

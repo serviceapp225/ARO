@@ -2238,7 +2238,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       console.log("✅ Банер sell-car-banner успешно обновлен:", banner);
-      clearCachePattern('sell_car_banner');
+      
+      // Очищаем кэш принудительно
+      cache.delete('sell_car_banner');
+      console.log("🗑️ Кэш sell_car_banner принудительно очищен");
+      
       res.json(banner);
     } catch (error) {
       console.error("💥 Ошибка обновления банера sell-car-banner:", error);
