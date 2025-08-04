@@ -131,12 +131,14 @@ app.use((req, res, next) => {
     console.log(`❌ Assets директория не найдена ни в одном из путей`);
   }
   
-  const server = await registerRoutes(app);
-
   // Определяем режим работы
   const isProduction = process.env.NODE_ENV === 'production' || 
                        process.env.REPLIT_DEPLOYMENT === '1' ||
                        (typeof process.env.REPL_OWNER !== 'undefined' && process.env.PORT);
+
+
+
+  const server = await registerRoutes(app);
 
   if (isProduction) {
     console.log(`🔧 PRODUCTION: Используем serveStatic`);

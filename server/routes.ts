@@ -264,13 +264,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
   console.log(`🔧 ROUTES: Настройка обработки /assets для директории: ${assetsPath}`);
   
   if (fs.existsSync(assetsPath)) {
+    // Добавляем логирование всех запросов к /assets
+    app.use('/assets', (req, res, next) => {
+      console.log(`🎯 ASSETS REQUEST: ${req.method} ${req.url} - ищем файл в ${assetsPath}`);
+      next();
+    });
+    
     app.use('/assets', express.static(assetsPath, {
       setHeaders: (res, filePath) => {
-        console.log(`📁 STATIC FILE: ${filePath}`);
+        console.log(`📁 STATIC FILE FOUND: ${filePath}`);
         if (filePath.endsWith('.js')) {
           res.setHeader('Content-Type', 'application/javascript');
+          console.log(`🎯 Set JavaScript MIME type for: ${filePath}`);
         } else if (filePath.endsWith('.css')) {
           res.setHeader('Content-Type', 'text/css');
+          console.log(`🎯 Set CSS MIME type for: ${filePath}`);
         }
       }
     }));
