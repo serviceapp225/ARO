@@ -2955,7 +2955,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           email: emailFromPhone,
           username: normalizedPhone,
           phoneNumber: normalizedPhone, // Добавляем номер телефона в отдельное поле
-          fullName: null,
+          fullName: `Пользователь ${normalizedPhone}`, // Временное имя вместо null
           isActive: false, // По умолчанию все новые пользователи неактивны
           role: 'buyer'
         });
