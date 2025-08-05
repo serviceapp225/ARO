@@ -3484,7 +3484,7 @@ async function sendSMSCode(phoneNumber: string, code: string): Promise<{success:
   console.log(`[SMS VPS PROXY] Отправка SMS на ${phoneNumber}: ${code}`);
   
   try {
-    // Отправляем запрос к VPS прокси с правильными параметрами для OSON SMS API v1
+    // Отправляем запрос к VPS прокси с правильными параметрами для OSON SMS API
     const response = await fetch(VPS_PROXY_URL, {
       method: 'POST',
       headers: {
@@ -3492,11 +3492,12 @@ async function sendSMSCode(phoneNumber: string, code: string): Promise<{success:
         'User-Agent': 'AUTOBID.TJ Replit Client'
       },
       body: JSON.stringify({
-        login: process.env.SMS_LOGIN || "zarex",
-        password: process.env.SMS_PASSWORD || "a6d5d8b47551199899862d6d768a4cb1",
-        sender: process.env.SMS_SENDER || "OsonSMS",
+        login: "zarex",
+        pass_salt_hash: "a6d5d8b47551199899862d6d768a4cb1",
+        sender: "OsonSMS",
         to: phoneNumber.replace(/[^0-9]/g, ''),
-        text: `Ваш код подтверждения AUTOBID.TJ: ${code}`
+        text: `Ваш код подтверждения AUTOBID.TJ: ${code}`,
+        server_url: "https://api.osonsms.com/sendsms_v1.php"
       })
     });
     
@@ -3548,7 +3549,7 @@ async function sendSMSNotification(phoneNumber: string, message: string): Promis
   console.log(`[SMS VPS PROXY] Отправка SMS уведомления на ${phoneNumber}: ${message}`);
   
   try {
-    // Отправляем запрос к VPS прокси с правильными параметрами для OSON SMS API v1
+    // Отправляем запрос к VPS прокси с правильными параметрами для OSON SMS API
     const response = await fetch(VPS_PROXY_URL, {
       method: 'POST',
       headers: {
@@ -3556,11 +3557,12 @@ async function sendSMSNotification(phoneNumber: string, message: string): Promis
         'User-Agent': 'AUTOBID.TJ Replit Client'
       },
       body: JSON.stringify({
-        login: process.env.SMS_LOGIN || "zarex",
-        password: process.env.SMS_PASSWORD || "a6d5d8b47551199899862d6d768a4cb1",
-        sender: process.env.SMS_SENDER || "OsonSMS",
+        login: "zarex",
+        pass_salt_hash: "a6d5d8b47551199899862d6d768a4cb1",
+        sender: "OsonSMS",
         to: phoneNumber.replace(/[^0-9]/g, ''),
-        text: message
+        text: message,
+        server_url: "https://api.osonsms.com/sendsms_v1.php"
       })
     });
     
