@@ -179,10 +179,21 @@ const adminAuth = async (req: any, res: any, next: any) => {
     const adminPhones = ['+992903331332', '+992 (90) 333-13-32'];
     const isAdminByPhone = user.email && adminPhones.some(phone => user.email.includes(phone));
     
+    console.log('🔍 Admin auth check:', {
+      userId: user.id,
+      role: user.role,
+      email: user.email,
+      isAdminByPhone,
+      adminPhones
+    });
+    
     // Проверяем права доступа: роль admin ИЛИ номер телефона админа
     if (user.role !== 'admin' && !isAdminByPhone) {
+      console.log('❌ Access denied - not admin role and not admin phone');
       return res.status(403).json({ error: 'Access denied' });
     }
+    
+    console.log('✅ Admin access granted');
 
     req.user = user;
     next();
