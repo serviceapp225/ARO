@@ -5,33 +5,55 @@ import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
 
+// Тип данных баннера
+interface SellCarBannerData {
+  id: number;
+  title: string;
+  description: string;
+  buttonText: string;
+  backgroundImageUrl?: string;
+  rotationImage1?: string;
+  rotationImage2?: string;
+  rotationImage3?: string;
+  rotationImage4?: string;
+  rotationInterval?: number;
+}
+
 export function SellCarBanner() {
   const [, setLocation] = useLocation();
   const { user } = useAuth();
   
   // Загружаем данные банера из API
-  const { data: bannerData } = useQuery({
+  const { data: bannerData } = useQuery<SellCarBannerData>({
     queryKey: ['/api/sell-car-banner'],
     enabled: true,
     staleTime: 0, // Данные сразу становятся устаревшими
     refetchInterval: 10000, // Обновляем каждые 10 секунд
   });
   
-  // Изображения для ротации только из API (убираем внешние fallback ссылки)
+  // Функция для получения оптимизированного URL изображения баннера продажи
+  const getOptimizedImageUrl = (imageType: 'background' | 'rotation1' | 'rotation2' | 'rotation3' | 'rotation4'): string => {
+    if (!bannerData?.id) return '';
+    const url = `/api/images/sell-car-banner/${bannerData.id}/${imageType}`;
+    console.log('🏷️ Загружаем изображение SellCarBanner через API:', url);
+    return url;
+  };
+
+  // Изображения для ротации из API endpoints (оптимизированные)
   const getCarImages = () => {
     if (!bannerData) {
       return []; // Без данных не показываем изображения
     }
     
-    // Собираем изображения из админ панели
+    // Собираем изображения из локальных API endpoints
     const images = [];
-    if (bannerData.rotationImage1) images.push(bannerData.rotationImage1);
-    if (bannerData.rotationImage2) images.push(bannerData.rotationImage2);
-    if (bannerData.rotationImage3) images.push(bannerData.rotationImage3);
-    if (bannerData.rotationImage4) images.push(bannerData.rotationImage4);
+    if (bannerData.rotationImage1) images.push(getOptimizedImageUrl('rotation1'));
+    if (bannerData.rotationImage2) images.push(getOptimizedImageUrl('rotation2'));
+    if (bannerData.rotationImage3) images.push(getOptimizedImageUrl('rotation3'));
+    if (bannerData.rotationImage4) images.push(getOptimizedImageUrl('rotation4'));
     
     // Если есть дополнительные изображения, используем их, иначе основное
-    return images.length > 0 ? images : (bannerData.backgroundImageUrl ? [bannerData.backgroundImageUrl] : []);
+    return images.length > 0 ? images : (bannerData.backgroundImageUrl ? [getOptimizedImageUrl('background')] : []);
   };
   
   const carImages = getCarImages();

@@ -5,6 +5,7 @@ import { deploymentSafeInit } from "./deploymentSafeInit";
 import { createTables } from "./createTables";
 import { setupVite, serveStatic, log } from "./vite";
 import { storage } from "./storage";
+import { ImageUpdateService } from "./imageUpdateService";
 import fs from "fs";
 import path from "path";
 
@@ -124,6 +125,9 @@ app.use((req, res, next) => {
     
     // Банер "Продай свое авто" удален по запросу пользователя
     // await ensureDefaultSellCarBanner();
+    
+    // Инициализация автоматического скачивания изображений
+    ImageUpdateService.initializeOnStartup();
     
     console.log("✅ DEPLOYMENT: Инициализация завершена успешно");
   } catch (error) {
