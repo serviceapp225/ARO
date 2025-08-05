@@ -349,21 +349,30 @@ function ModerationManagement() {
   // Мутация удаления объявления
   const deleteMutation = useMutation({
     mutationFn: async (listingId: number) => {
-      console.log('🗑️ Отправка запроса на удаление пользователя с заголовками:', {
+      console.log('🗑️ DEBUG: Пользователь перед удалением:', user);
+      console.log('🗑️ DEBUG: userId:', user?.userId);
+      console.log('🗑️ DEBUG: email:', user?.email);
+      
+      const headers = {
         'Content-Type': 'application/json',
-        'x-user-id': user?.userId?.toString(),
-        'x-user-email': user?.email
-      });
+        'x-user-id': user?.userId?.toString() || '',
+        'x-user-email': user?.email || ''
+      };
+      
+      console.log('🗑️ Отправка DELETE запроса с заголовками:', headers);
       
       const response = await fetch(`/api/admin/listings/${listingId}`, {
         method: 'DELETE',
-        headers: { 
-          'Content-Type': 'application/json',
-          'x-user-id': user?.userId?.toString() || '',
-          'x-user-email': user?.email || ''
-        }
+        headers
       });
-      if (!response.ok) throw new Error('Failed to delete listing');
+      
+      console.log('🗑️ Ответ сервера:', response.status, response.statusText);
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        console.error('🗑️ Ошибка удаления:', errorData);
+        throw new Error(errorData.error || 'Failed to delete listing');
+      }
       return response.json();
     },
     onSuccess: () => {
