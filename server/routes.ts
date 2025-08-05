@@ -5,10 +5,9 @@ import fs from "fs";
 import path from "path";
 import express from "express";
 import { db } from "./db";
-import { carListings, notifications, alertViews, carAlerts, banners, advertisementCarousel, sellCarBanner } from "../shared/schema";
+import { carListings, notifications, alertViews, carAlerts } from "../shared/schema";
 import { eq, sql } from "drizzle-orm";
 import sharp from "sharp";
-import { ImageDownloadService } from "./imageDownloadService";
 import { insertCarListingSchema, insertBidSchema, insertFavoriteSchema, insertNotificationSchema, insertCarAlertSchema, insertBannerSchema, insertSellCarBannerSchema, type CarAlert } from "@shared/schema";
 import { z } from "zod";
 import AuctionWebSocketManager from "./websocket";
@@ -35,10 +34,6 @@ const queryParamsSchema = z.object({
 // Simple in-memory cache
 const cache = new Map();
 const CACHE_TTL = 2000; // 2 seconds for ultra-fast updates
-
-// Кэш для готовых изображений (Buffer объекты)
-const imageCache = new Map<string, { buffer: Buffer; mimeType: string; timestamp: number }>();
-const IMAGE_CACHE_TTL = 3600000; // 1 час для изображений
 
 function getCached(key: string) {
   const cached = cache.get(key);
@@ -81,29 +76,6 @@ function clearCachePattern(pattern: string) {
   });
   console.log(`✅ Очищено ${deletedCount} ключей кэша`);
 }
-
-function clearImageCache() {
-  const size = imageCache.size;
-  imageCache.clear();
-  console.log(`🖼️ Очищено ${size} изображений из кэша`);
-}
-
-// Периодическая очистка устаревших изображений из кэша
-setInterval(() => {
-  const now = Date.now();
-  let deletedCount = 0;
-  
-  for (const [key, value] of imageCache.entries()) {
-    if (now - value.timestamp > IMAGE_CACHE_TTL) {
-      imageCache.delete(key);
-      deletedCount++;
-    }
-  }
-  
-  if (deletedCount > 0) {
-    console.log(`🕒 Удалено ${deletedCount} устаревших изображений из кэша`);
-  }
-}, 600000); // каждые 10 минут
 
 // Безопасный middleware для валидации входных данных
 const sanitizeInput = (req: any, res: any, next: any) => {
@@ -1494,33 +1466,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.patch("/api/users/:id", async (req, res) => {
     try {
       const userId = parseInt(req.params.id);
-      console.log(`🔧 Обновление профиля пользователя ${userId}:`, req.body);
+      const { fullName, profilePhoto } = req.body;
       
-      const { fullName, profilePhoto, email, username, phoneNumber } = req.body;
-      
-      const updateData: any = {};
-      if (fullName !== undefined) updateData.fullName = fullName;
-      if (profilePhoto !== undefined) updateData.profilePhoto = profilePhoto;
-      if (email !== undefined) updateData.email = email;
-      if (username !== undefined) updateData.username = username;
-      if (phoneNumber !== undefined) updateData.phoneNumber = phoneNumber;
-      
-      console.log(`📝 Данные для обновления:`, updateData);
-      
-      const user = await storage.updateUserProfile(userId, updateData);
+      const user = await storage.updateUserProfile(userId, { fullName, profilePhoto });
       if (!user) {
-        console.log(`❌ Пользователь ${userId} не найден`);
         return res.status(404).json({ error: "User not found" });
       }
-      
-      console.log(`✅ Профиль пользователя ${userId} успешно обновлен`);
       res.json(user);
     } catch (error) {
-      console.error("❌ Ошибка обновления профиля:", error);
-      res.status(500).json({ 
-        error: "Failed to update user profile",
-        details: error instanceof Error ? error.message : String(error)
-      });
+      res.status(500).json({ error: "Failed to update user profile" });
     }
   });
 
@@ -2409,37 +2363,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Обновить профиль пользователя
-  app.put("/api/admin/users/:id", requireAdmin, async (req, res) => {
+  app.put("/api/admin/users/:id", adminAuth, async (req, res) => {
     try {
       const userId = parseInt(req.params.id);
-      console.log(`🔧 АДМИН: Обновление профиля пользователя ${userId}:`, req.body);
+      const { fullName, email, phoneNumber } = req.body;
       
-      const { fullName, email, phoneNumber, username, profilePhoto } = req.body;
-      
-      const updateData: any = {};
-      if (fullName !== undefined) updateData.fullName = fullName;
-      if (email !== undefined) updateData.email = email;
-      if (phoneNumber !== undefined) updateData.phoneNumber = phoneNumber;
-      if (username !== undefined) updateData.username = username;
-      if (profilePhoto !== undefined) updateData.profilePhoto = profilePhoto;
-      
-      console.log(`📝 АДМИН: Данные для обновления:`, updateData);
-      
-      const user = await storage.updateUserProfile(userId, updateData);
+      const user = await storage.updateUserProfile(userId, {
+        fullName,
+        email,
+        phoneNumber
+      });
       
       if (!user) {
-        console.log(`❌ АДМИН: Пользователь ${userId} не найден`);
         return res.status(404).json({ error: "User not found" });
       }
       
-      console.log(`✅ АДМИН: Профиль пользователя ${userId} успешно обновлен`);
       res.json(user);
     } catch (error) {
-      console.error("❌ АДМИН: Ошибка обновления профиля:", error);
-      res.status(500).json({ 
-        error: "Failed to update user profile",
-        details: error instanceof Error ? error.message : String(error)
-      });
+      res.status(500).json({ error: "Failed to update user profile" });
     }
   });
 
@@ -2840,19 +2781,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Сохраняем код в кэше с нормализованным номером
       const cacheKey = `sms_code_${normalizedPhone}`;
-      const cacheData = { 
+      cache.set(cacheKey, { 
         code: verificationCode, 
         timestamp: Date.now(),
         attempts: 0
-      };
-      cache.set(cacheKey, cacheData);
-      
-      console.log(`💾 Код сохранен в кэше:`, {
-        key: cacheKey,
-        code: verificationCode,
-        timestamp: cacheData.timestamp,
-        phoneNumber: normalizedPhone
       });
+      
+      console.log(`💾 Код сохранен в кэше с ключом: ${cacheKey}`);
 
       // В production здесь будет интеграция с SMS-провайдером
       // Например: Twilio, Nexmo, или локальный SMS-шлюз
@@ -2898,17 +2833,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const { code: storedCode, timestamp, attempts } = cachedData;
       
-      console.log(`🔍 Данные из кэша:`, {
-        storedCode: storedCode,
-        enteredCode: code,
-        storedCodeType: typeof storedCode,
-        enteredCodeType: typeof code,
-        timestamp: timestamp,
-        attempts: attempts
-      });
-      
-      // Проверяем, не истек ли код (10 минут)
-      if (Date.now() - timestamp > 600000) {
+      // Проверяем, не истек ли код (5 минут)
+      if (Date.now() - timestamp > 300000) {
         cache.delete(cacheKey);
         return res.status(400).json({ error: "Код истек" });
       }
@@ -2919,23 +2845,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Превышено количество попыток" });
       }
 
-      // Приводим оба кода к строкам для сравнения
-      const normalizedStoredCode = String(storedCode).trim();
-      const normalizedEnteredCode = String(code).trim();
-      
-      console.log(`🔍 Сравнение кодов:`, {
-        normalizedStoredCode: normalizedStoredCode,
-        normalizedEnteredCode: normalizedEnteredCode,
-        isEqual: normalizedStoredCode === normalizedEnteredCode
-      });
-
-      if (normalizedEnteredCode !== normalizedStoredCode) {
+      if (code !== storedCode) {
         // Увеличиваем счетчик попыток
         cache.set(cacheKey, {
           ...cachedData,
           attempts: attempts + 1
         });
-        console.log(`❌ Коды не совпадают: введен "${normalizedEnteredCode}", ожидался "${normalizedStoredCode}"`);
         return res.status(400).json({ error: "Неверный код" });
       }
 
@@ -2992,7 +2907,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           email: emailFromPhone,
           username: normalizedPhone,
           phoneNumber: normalizedPhone, // Добавляем номер телефона в отдельное поле
-          fullName: `Пользователь ${normalizedPhone}`, // Временное имя вместо null
+          fullName: null,
           isActive: false, // По умолчанию все новые пользователи неактивны
           role: 'buyer'
         });
@@ -3556,249 +3471,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         error: "Page not found",
         message: "Клиентские файлы не найдены. Убедитесь что приложение собрано правильно."
       });
-    }
-  });
-
-  // ===============================
-  // API ENDPOINTS ДЛЯ ИЗОБРАЖЕНИЙ
-  // ===============================
-
-  // Обслуживание изображений баннеров
-  app.get("/api/images/banners/:id", async (req, res) => {
-    try {
-      const bannerId = parseInt(req.params.id);
-      
-      const banner = await db.select()
-        .from(banners)
-        .where(eq(banners.id, bannerId))
-        .limit(1);
-      
-      if (banner.length === 0) {
-        return res.status(404).json({ error: "Banner not found" });
-      }
-      
-      const bannerData = banner[0];
-      
-      // Если есть локальные данные изображения
-      if (bannerData.imageData && bannerData.imageType) {
-        const imageBuffer = ImageDownloadService.base64ToBuffer(bannerData.imageData);
-        
-        res.set({
-          'Content-Type': bannerData.imageType,
-          'Content-Length': imageBuffer.length.toString(),
-          'Cache-Control': 'public, max-age=86400' // 24 часа кэш
-        });
-        
-        res.send(imageBuffer);
-        return;
-      }
-      
-      // Fallback на внешний URL если локальных данных нет
-      if (bannerData.imageUrl) {
-        res.redirect(bannerData.imageUrl);
-        return;
-      }
-      
-      res.status(404).json({ error: "Image not available" });
-    } catch (error) {
-      console.error("Error serving banner image:", error);
-      res.status(500).json({ error: "Internal server error" });
-    }
-  });
-
-  // Обслуживание изображений карусели рекламы
-  app.get("/api/images/carousel/:id/:type?", async (req, res) => {
-    try {
-      const carouselId = parseInt(req.params.id);
-      const imageType = req.params.type || 'main'; // main, rotation1, rotation2, rotation3, rotation4
-      
-      const carousel = await db.select()
-        .from(advertisementCarousel)
-        .where(eq(advertisementCarousel.id, carouselId))
-        .limit(1);
-      
-      if (carousel.length === 0) {
-        return res.status(404).json({ error: "Carousel item not found" });
-      }
-      
-      const carouselData = carousel[0];
-      let imageData: string | null = null;
-      let mimeType: string | null = null;
-      let fallbackUrl: string | null = null;
-      
-      // Определяем какое изображение запрашивается
-      switch (imageType) {
-        case 'main':
-          imageData = carouselData.imageData;
-          mimeType = carouselData.imageType;
-          fallbackUrl = carouselData.imageUrl;
-          break;
-        case 'rotation1':
-          imageData = carouselData.rotationImage1Data;
-          mimeType = carouselData.rotationImage1Type;
-          fallbackUrl = carouselData.rotationImage1;
-          break;
-        case 'rotation2':
-          imageData = carouselData.rotationImage2Data;
-          mimeType = carouselData.rotationImage2Type;
-          fallbackUrl = carouselData.rotationImage2;
-          break;
-        case 'rotation3':
-          imageData = carouselData.rotationImage3Data;
-          mimeType = carouselData.rotationImage3Type;
-          fallbackUrl = carouselData.rotationImage3;
-          break;
-        case 'rotation4':
-          imageData = carouselData.rotationImage4Data;
-          mimeType = carouselData.rotationImage4Type;
-          fallbackUrl = carouselData.rotationImage4;
-          break;
-        default:
-          return res.status(400).json({ error: "Invalid image type" });
-      }
-      
-      // Проверяем кэш готовых изображений карусели
-      const cacheKey = `carousel-${carouselId}-${imageType}`;
-      const cached = imageCache.get(cacheKey);
-      if (cached && Date.now() - cached.timestamp < IMAGE_CACHE_TTL) {
-        res.set({
-          'Content-Type': cached.mimeType,
-          'Content-Length': cached.buffer.length.toString(),
-          'Cache-Control': 'public, max-age=86400' // 24 часа кэш
-        });
-        res.send(cached.buffer);
-        return;
-      }
-
-      // Если есть локальные данные изображения
-      if (imageData && mimeType) {
-        const imageBuffer = ImageDownloadService.base64ToBuffer(imageData);
-        
-        // Сохраняем в кэш готовое изображение карусели
-        imageCache.set(cacheKey, {
-          buffer: imageBuffer,
-          mimeType: mimeType,
-          timestamp: Date.now()
-        });
-        
-        res.set({
-          'Content-Type': mimeType,
-          'Content-Length': imageBuffer.length.toString(),
-          'Cache-Control': 'public, max-age=86400' // 24 часа кэш
-        });
-        
-        res.send(imageBuffer);
-        return;
-      }
-      
-      // Fallback на внешний URL если локальных данных нет
-      if (fallbackUrl) {
-        res.redirect(fallbackUrl);
-        return;
-      }
-      
-      res.status(404).json({ error: "Image not available" });
-    } catch (error) {
-      console.error("Error serving carousel image:", error);
-      res.status(500).json({ error: "Internal server error" });
-    }
-  });
-
-  // Обслуживание изображений баннера продажи авто
-  app.get("/api/images/sell-car-banner/:id/:type?", async (req, res) => {
-    try {
-      const bannerId = parseInt(req.params.id);
-      const imageType = req.params.type || 'background'; // background, rotation1, rotation2, rotation3, rotation4
-      
-      // Проверяем кэш готовых изображений
-      const cacheKey = `sell-banner-${bannerId}-${imageType}`;
-      const cached = imageCache.get(cacheKey);
-      if (cached && Date.now() - cached.timestamp < IMAGE_CACHE_TTL) {
-        res.set({
-          'Content-Type': cached.mimeType,
-          'Content-Length': cached.buffer.length.toString(),
-          'Cache-Control': 'public, max-age=86400' // 24 часа кэш
-        });
-        res.send(cached.buffer);
-        return;
-      }
-      
-      const sellBanner = await db.select()
-        .from(sellCarBanner)
-        .where(eq(sellCarBanner.id, bannerId))
-        .limit(1);
-      
-      if (sellBanner.length === 0) {
-        return res.status(404).json({ error: "Sell car banner not found" });
-      }
-      
-      const sellBannerData = sellBanner[0];
-      let imageData: string | null = null;
-      let mimeType: string | null = null;
-      let fallbackUrl: string | null = null;
-      
-      // Определяем какое изображение запрашивается
-      switch (imageType) {
-        case 'background':
-          imageData = sellBannerData.backgroundImageData;
-          mimeType = sellBannerData.backgroundImageType;
-          fallbackUrl = sellBannerData.backgroundImageUrl;
-          break;
-        case 'rotation1':
-          imageData = sellBannerData.rotationImage1Data;
-          mimeType = sellBannerData.rotationImage1Type;
-          fallbackUrl = sellBannerData.rotationImage1;
-          break;
-        case 'rotation2':
-          imageData = sellBannerData.rotationImage2Data;
-          mimeType = sellBannerData.rotationImage2Type;
-          fallbackUrl = sellBannerData.rotationImage2;
-          break;
-        case 'rotation3':
-          imageData = sellBannerData.rotationImage3Data;
-          mimeType = sellBannerData.rotationImage3Type;
-          fallbackUrl = sellBannerData.rotationImage3;
-          break;
-        case 'rotation4':
-          imageData = sellBannerData.rotationImage4Data;
-          mimeType = sellBannerData.rotationImage4Type;
-          fallbackUrl = sellBannerData.rotationImage4;
-          break;
-        default:
-          return res.status(400).json({ error: "Invalid image type" });
-      }
-      
-      // Если есть локальные данные изображения
-      if (imageData && mimeType) {
-        const imageBuffer = ImageDownloadService.base64ToBuffer(imageData);
-        
-        // Сохраняем в кэш готовое изображение
-        imageCache.set(cacheKey, {
-          buffer: imageBuffer,
-          mimeType: mimeType,
-          timestamp: Date.now()
-        });
-        
-        res.set({
-          'Content-Type': mimeType,
-          'Content-Length': imageBuffer.length.toString(),
-          'Cache-Control': 'public, max-age=86400' // 24 часа кэш
-        });
-        
-        res.send(imageBuffer);
-        return;
-      }
-      
-      // Fallback на внешний URL если локальных данных нет
-      if (fallbackUrl) {
-        res.redirect(fallbackUrl);
-        return;
-      }
-      
-      res.status(404).json({ error: "Image not available" });
-    } catch (error) {
-      console.error("Error serving sell car banner image:", error);
-      res.status(500).json({ error: "Internal server error" });
     }
   });
   
