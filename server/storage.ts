@@ -249,8 +249,8 @@ export class DatabaseStorage implements IStorage {
       phoneNumber: insertUser.phoneNumber ? sanitizeAndValidateInput(insertUser.phoneNumber, 'phone') : undefined
     };
     
-    if (!cleanUser.email || !cleanUser.fullName) {
-      throw new Error('Invalid user data: email and fullName are required');
+    if (!cleanUser.email) {
+      throw new Error('Invalid user data: email is required');
     }
     
     const [user] = await db.insert(users).values(cleanUser).returning();
