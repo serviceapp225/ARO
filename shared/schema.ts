@@ -266,17 +266,11 @@ export const sellCarBanner = pgTable("sell_car_banner", {
   description: text("description").notNull().default("Получи максимальную цену за свой автомобиль на нашем аукционе"),
   buttonText: text("button_text").notNull().default("Начать продажу"),
   linkUrl: text("link_url").notNull().default("/sell"),
-  // Поддержка как URL, так и загруженных файлов
   backgroundImageUrl: text("background_image_url").default("https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?w=800&h=300&fit=crop"),
-  backgroundImageData: text("background_image_data"), // Base64 encoded image data
   rotationImage1: text("rotation_image_1").default("https://images.unsplash.com/photo-1555215695-3004980ad54e?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=70"),
-  rotationImage1Data: text("rotation_image_1_data"), // Base64 encoded image data
   rotationImage2: text("rotation_image_2").default("https://images.unsplash.com/photo-1502877338535-766e1452684a?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=70"),
-  rotationImage2Data: text("rotation_image_2_data"), // Base64 encoded image data
   rotationImage3: text("rotation_image_3").default("https://images.unsplash.com/photo-1567018265282-303944d3c2a8?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=70"),
-  rotationImage3Data: text("rotation_image_3_data"), // Base64 encoded image data
   rotationImage4: text("rotation_image_4").default("https://images.unsplash.com/photo-1552519507-ac11af17dcc8?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=70"),
-  rotationImage4Data: text("rotation_image_4_data"), // Base64 encoded image data
   rotationInterval: integer("rotation_interval").default(3), // секунды
   gradientFrom: text("gradient_from").default("#059669"),
   gradientTo: text("gradient_to").default("#047857"),
