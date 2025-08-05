@@ -12,8 +12,8 @@ build = ["sh", "-c", "npm ci --only=production && npm run build"]
 run = ["sh", "-c", "npm start"]
 
 [[ports]]
-localPort = 3000
-externalPort = 3000
+localPort = 5000
+externalPort = 80
 
 [workflows]
 runButton = "Start application"
