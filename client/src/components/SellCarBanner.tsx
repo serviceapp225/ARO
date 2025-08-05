@@ -5,12 +5,26 @@ import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
 
+// Тип данных баннера
+interface SellCarBannerData {
+  id: number;
+  title: string;
+  description: string;
+  buttonText: string;
+  backgroundImageUrl?: string;
+  rotationImage1?: string;
+  rotationImage2?: string;
+  rotationImage3?: string;
+  rotationImage4?: string;
+  rotationInterval?: number;
+}
+
 export function SellCarBanner() {
   const [, setLocation] = useLocation();
   const { user } = useAuth();
   
   // Загружаем данные банера из API
-  const { data: bannerData } = useQuery({
+  const { data: bannerData } = useQuery<SellCarBannerData>({
     queryKey: ['/api/sell-car-banner'],
     enabled: true,
     staleTime: 0, // Данные сразу становятся устаревшими
@@ -20,7 +34,9 @@ export function SellCarBanner() {
   // Функция для получения оптимизированного URL изображения баннера продажи
   const getOptimizedImageUrl = (imageType: 'background' | 'rotation1' | 'rotation2' | 'rotation3' | 'rotation4'): string => {
     if (!bannerData?.id) return '';
-    return `/api/images/sell-car-banner/${bannerData.id}/${imageType}`;
+    const url = `/api/images/sell-car-banner/${bannerData.id}/${imageType}`;
+    console.log('🏷️ Загружаем изображение SellCarBanner через API:', url);
+    return url;
   };
 
   // Изображения для ротации из API endpoints (оптимизированные)
