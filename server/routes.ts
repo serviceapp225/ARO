@@ -2672,9 +2672,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Удалить объявление полностью
-  app.delete("/api/admin/listings/:id", adminAuth, async (req, res) => {
+  app.delete("/api/admin/listings/:id", (req, res, next) => {
+    console.log('🗑️ DELETE request received with headers:', {
+      'x-user-id': req.headers['x-user-id'],
+      'x-user-email': req.headers['x-user-email'],
+      'content-type': req.headers['content-type'],
+      'user-agent': req.headers['user-agent']?.substring(0, 50)
+    });
+    adminAuth(req, res, next);
+  }, async (req, res) => {
     try {
       const listingId = parseInt(req.params.id);
+      console.log('✅ Admin authenticated, proceeding to delete listing:', listingId);
+      
       const success = await storage.deleteListing(listingId);
       if (!success) {
         return res.status(404).json({ error: "Listing not found" });
@@ -2686,6 +2696,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Принудительно обновляем кэш листингов для главной страницы
       await updateListingsCache();
       
+      console.log('✅ Listing deleted successfully:', listingId);
       res.json({ success: true, message: "Listing deleted successfully" });
     } catch (error) {
       console.error("Error deleting listing:", error);
