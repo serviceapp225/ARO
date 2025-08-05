@@ -5,9 +5,10 @@ import fs from "fs";
 import path from "path";
 import express from "express";
 import { db } from "./db";
-import { carListings, notifications, alertViews, carAlerts } from "../shared/schema";
+import { carListings, notifications, alertViews, carAlerts, banners, advertisementCarousel, sellCarBanner } from "../shared/schema";
 import { eq, sql } from "drizzle-orm";
 import sharp from "sharp";
+import { ImageDownloadService } from "./imageDownloadService";
 import { insertCarListingSchema, insertBidSchema, insertFavoriteSchema, insertNotificationSchema, insertCarAlertSchema, insertBannerSchema, insertSellCarBannerSchema, type CarAlert } from "@shared/schema";
 import { z } from "zod";
 import AuctionWebSocketManager from "./websocket";
@@ -3471,6 +3472,209 @@ export async function registerRoutes(app: Express): Promise<Server> {
         error: "Page not found",
         message: "Клиентские файлы не найдены. Убедитесь что приложение собрано правильно."
       });
+    }
+  });
+
+  // ===============================
+  // API ENDPOINTS ДЛЯ ИЗОБРАЖЕНИЙ
+  // ===============================
+
+  // Обслуживание изображений баннеров
+  app.get("/api/images/banners/:id", async (req, res) => {
+    try {
+      const bannerId = parseInt(req.params.id);
+      
+      const banner = await db.select()
+        .from(banners)
+        .where(eq(banners.id, bannerId))
+        .limit(1);
+      
+      if (banner.length === 0) {
+        return res.status(404).json({ error: "Banner not found" });
+      }
+      
+      const bannerData = banner[0];
+      
+      // Если есть локальные данные изображения
+      if (bannerData.imageData && bannerData.imageType) {
+        const imageBuffer = ImageDownloadService.base64ToBuffer(bannerData.imageData);
+        
+        res.set({
+          'Content-Type': bannerData.imageType,
+          'Content-Length': imageBuffer.length.toString(),
+          'Cache-Control': 'public, max-age=86400' // 24 часа кэш
+        });
+        
+        res.send(imageBuffer);
+        return;
+      }
+      
+      // Fallback на внешний URL если локальных данных нет
+      if (bannerData.imageUrl) {
+        res.redirect(bannerData.imageUrl);
+        return;
+      }
+      
+      res.status(404).json({ error: "Image not available" });
+    } catch (error) {
+      console.error("Error serving banner image:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Обслуживание изображений карусели рекламы
+  app.get("/api/images/carousel/:id/:type?", async (req, res) => {
+    try {
+      const carouselId = parseInt(req.params.id);
+      const imageType = req.params.type || 'main'; // main, rotation1, rotation2, rotation3, rotation4
+      
+      const carousel = await db.select()
+        .from(advertisementCarousel)
+        .where(eq(advertisementCarousel.id, carouselId))
+        .limit(1);
+      
+      if (carousel.length === 0) {
+        return res.status(404).json({ error: "Carousel item not found" });
+      }
+      
+      const carouselData = carousel[0];
+      let imageData: string | null = null;
+      let mimeType: string | null = null;
+      let fallbackUrl: string | null = null;
+      
+      // Определяем какое изображение запрашивается
+      switch (imageType) {
+        case 'main':
+          imageData = carouselData.imageData;
+          mimeType = carouselData.imageType;
+          fallbackUrl = carouselData.imageUrl;
+          break;
+        case 'rotation1':
+          imageData = carouselData.rotationImage1Data;
+          mimeType = carouselData.rotationImage1Type;
+          fallbackUrl = carouselData.rotationImage1;
+          break;
+        case 'rotation2':
+          imageData = carouselData.rotationImage2Data;
+          mimeType = carouselData.rotationImage2Type;
+          fallbackUrl = carouselData.rotationImage2;
+          break;
+        case 'rotation3':
+          imageData = carouselData.rotationImage3Data;
+          mimeType = carouselData.rotationImage3Type;
+          fallbackUrl = carouselData.rotationImage3;
+          break;
+        case 'rotation4':
+          imageData = carouselData.rotationImage4Data;
+          mimeType = carouselData.rotationImage4Type;
+          fallbackUrl = carouselData.rotationImage4;
+          break;
+        default:
+          return res.status(400).json({ error: "Invalid image type" });
+      }
+      
+      // Если есть локальные данные изображения
+      if (imageData && mimeType) {
+        const imageBuffer = ImageDownloadService.base64ToBuffer(imageData);
+        
+        res.set({
+          'Content-Type': mimeType,
+          'Content-Length': imageBuffer.length.toString(),
+          'Cache-Control': 'public, max-age=86400' // 24 часа кэш
+        });
+        
+        res.send(imageBuffer);
+        return;
+      }
+      
+      // Fallback на внешний URL если локальных данных нет
+      if (fallbackUrl) {
+        res.redirect(fallbackUrl);
+        return;
+      }
+      
+      res.status(404).json({ error: "Image not available" });
+    } catch (error) {
+      console.error("Error serving carousel image:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Обслуживание изображений баннера продажи авто
+  app.get("/api/images/sell-car-banner/:id/:type?", async (req, res) => {
+    try {
+      const bannerId = parseInt(req.params.id);
+      const imageType = req.params.type || 'background'; // background, rotation1, rotation2, rotation3, rotation4
+      
+      const sellBanner = await db.select()
+        .from(sellCarBanner)
+        .where(eq(sellCarBanner.id, bannerId))
+        .limit(1);
+      
+      if (sellBanner.length === 0) {
+        return res.status(404).json({ error: "Sell car banner not found" });
+      }
+      
+      const sellBannerData = sellBanner[0];
+      let imageData: string | null = null;
+      let mimeType: string | null = null;
+      let fallbackUrl: string | null = null;
+      
+      // Определяем какое изображение запрашивается
+      switch (imageType) {
+        case 'background':
+          imageData = sellBannerData.backgroundImageData;
+          mimeType = sellBannerData.backgroundImageType;
+          fallbackUrl = sellBannerData.backgroundImageUrl;
+          break;
+        case 'rotation1':
+          imageData = sellBannerData.rotationImage1Data;
+          mimeType = sellBannerData.rotationImage1Type;
+          fallbackUrl = sellBannerData.rotationImage1;
+          break;
+        case 'rotation2':
+          imageData = sellBannerData.rotationImage2Data;
+          mimeType = sellBannerData.rotationImage2Type;
+          fallbackUrl = sellBannerData.rotationImage2;
+          break;
+        case 'rotation3':
+          imageData = sellBannerData.rotationImage3Data;
+          mimeType = sellBannerData.rotationImage3Type;
+          fallbackUrl = sellBannerData.rotationImage3;
+          break;
+        case 'rotation4':
+          imageData = sellBannerData.rotationImage4Data;
+          mimeType = sellBannerData.rotationImage4Type;
+          fallbackUrl = sellBannerData.rotationImage4;
+          break;
+        default:
+          return res.status(400).json({ error: "Invalid image type" });
+      }
+      
+      // Если есть локальные данные изображения
+      if (imageData && mimeType) {
+        const imageBuffer = ImageDownloadService.base64ToBuffer(imageData);
+        
+        res.set({
+          'Content-Type': mimeType,
+          'Content-Length': imageBuffer.length.toString(),
+          'Cache-Control': 'public, max-age=86400' // 24 часа кэш
+        });
+        
+        res.send(imageBuffer);
+        return;
+      }
+      
+      // Fallback на внешний URL если локальных данных нет
+      if (fallbackUrl) {
+        res.redirect(fallbackUrl);
+        return;
+      }
+      
+      res.status(404).json({ error: "Image not available" });
+    } catch (error) {
+      console.error("Error serving sell car banner image:", error);
+      res.status(500).json({ error: "Internal server error" });
     }
   });
   

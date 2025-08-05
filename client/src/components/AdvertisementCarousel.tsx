@@ -61,14 +61,22 @@ export function AdvertisementCarousel() {
 
   const currentAd = activeAds[currentSlide];
 
-  // Функция для получения массива изображений для ротации
+
+
+  // Функция для получения оптимизированного URL изображения
+  const getOptimizedImageUrl = (ad: AdvertisementItem, imageType: 'main' | 'rotation1' | 'rotation2' | 'rotation3' | 'rotation4'): string => {
+    // Используем новые API endpoints для локальных изображений
+    return `/api/images/carousel/${ad.id}/${imageType}`;
+  };
+
+  // Функция для получения массива изображений для ротации (теперь использует API endpoints)
   const getRotationImages = (ad: AdvertisementItem): string[] => {
-    const images: string[] = [ad.imageUrl]; // Основное изображение всегда первое
+    const images: string[] = [getOptimizedImageUrl(ad, 'main')]; // Основное изображение
     
-    if (ad.rotationImage1) images.push(ad.rotationImage1);
-    if (ad.rotationImage2) images.push(ad.rotationImage2);
-    if (ad.rotationImage3) images.push(ad.rotationImage3);
-    if (ad.rotationImage4) images.push(ad.rotationImage4);
+    if (ad.rotationImage1) images.push(getOptimizedImageUrl(ad, 'rotation1'));
+    if (ad.rotationImage2) images.push(getOptimizedImageUrl(ad, 'rotation2'));
+    if (ad.rotationImage3) images.push(getOptimizedImageUrl(ad, 'rotation3'));
+    if (ad.rotationImage4) images.push(getOptimizedImageUrl(ad, 'rotation4'));
     
     return images;
   };
@@ -77,7 +85,7 @@ export function AdvertisementCarousel() {
   const getCurrentImage = (): string => {
     if (!currentAd) return '';
     const images = getRotationImages(currentAd);
-    return images[currentImageIndex % images.length] || currentAd.imageUrl;
+    return images[currentImageIndex % images.length] || getOptimizedImageUrl(currentAd, 'main');
   };
 
   // Логирование загрузки карусели для отладки
@@ -85,7 +93,7 @@ export function AdvertisementCarousel() {
   
   // Проверяем URL изображения при наличии
   if (activeAds.length > 0 && activeAds[0].imageUrl) {
-    console.log('🔗 Загружаем изображение карусели:', activeAds[0].imageUrl);
+    console.log('🔗 Загружаем изображение карусели через API:', getOptimizedImageUrl(activeAds[0], 'main'));
   }
 
   // Локальное состояние для принудительного рендера при изменении кэша
