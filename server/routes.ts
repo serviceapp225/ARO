@@ -2870,8 +2870,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         attempts: attempts
       });
       
-      // Проверяем, не истек ли код (5 минут)
-      if (Date.now() - timestamp > 300000) {
+      // Проверяем, не истек ли код (10 минут)
+      if (Date.now() - timestamp > 600000) {
         cache.delete(cacheKey);
         return res.status(400).json({ error: "Код истек" });
       }
