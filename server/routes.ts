@@ -2409,24 +2409,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Обновить профиль пользователя
-  app.put("/api/admin/users/:id", adminAuth, async (req, res) => {
+  app.put("/api/admin/users/:id", requireAdmin, async (req, res) => {
     try {
       const userId = parseInt(req.params.id);
-      const { fullName, email, phoneNumber } = req.body;
+      console.log(`🔧 АДМИН: Обновление профиля пользователя ${userId}:`, req.body);
       
-      const user = await storage.updateUserProfile(userId, {
-        fullName,
-        email,
-        phoneNumber
-      });
+      const { fullName, email, phoneNumber, username, profilePhoto } = req.body;
+      
+      const updateData: any = {};
+      if (fullName !== undefined) updateData.fullName = fullName;
+      if (email !== undefined) updateData.email = email;
+      if (phoneNumber !== undefined) updateData.phoneNumber = phoneNumber;
+      if (username !== undefined) updateData.username = username;
+      if (profilePhoto !== undefined) updateData.profilePhoto = profilePhoto;
+      
+      console.log(`📝 АДМИН: Данные для обновления:`, updateData);
+      
+      const user = await storage.updateUserProfile(userId, updateData);
       
       if (!user) {
+        console.log(`❌ АДМИН: Пользователь ${userId} не найден`);
         return res.status(404).json({ error: "User not found" });
       }
       
+      console.log(`✅ АДМИН: Профиль пользователя ${userId} успешно обновлен`);
       res.json(user);
     } catch (error) {
-      res.status(500).json({ error: "Failed to update user profile" });
+      console.error("❌ АДМИН: Ошибка обновления профиля:", error);
+      res.status(500).json({ 
+        error: "Failed to update user profile",
+        details: error instanceof Error ? error.message : String(error)
+      });
     }
   });
 
