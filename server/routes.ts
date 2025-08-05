@@ -1494,15 +1494,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.patch("/api/users/:id", async (req, res) => {
     try {
       const userId = parseInt(req.params.id);
-      const { fullName, profilePhoto } = req.body;
+      console.log(`🔧 Обновление профиля пользователя ${userId}:`, req.body);
       
-      const user = await storage.updateUserProfile(userId, { fullName, profilePhoto });
+      const { fullName, profilePhoto, email, username, phoneNumber } = req.body;
+      
+      const updateData: any = {};
+      if (fullName !== undefined) updateData.fullName = fullName;
+      if (profilePhoto !== undefined) updateData.profilePhoto = profilePhoto;
+      if (email !== undefined) updateData.email = email;
+      if (username !== undefined) updateData.username = username;
+      if (phoneNumber !== undefined) updateData.phoneNumber = phoneNumber;
+      
+      console.log(`📝 Данные для обновления:`, updateData);
+      
+      const user = await storage.updateUserProfile(userId, updateData);
       if (!user) {
+        console.log(`❌ Пользователь ${userId} не найден`);
         return res.status(404).json({ error: "User not found" });
       }
+      
+      console.log(`✅ Профиль пользователя ${userId} успешно обновлен`);
       res.json(user);
     } catch (error) {
-      res.status(500).json({ error: "Failed to update user profile" });
+      console.error("❌ Ошибка обновления профиля:", error);
+      res.status(500).json({ 
+        error: "Failed to update user profile",
+        details: error instanceof Error ? error.message : String(error)
+      });
     }
   });
 

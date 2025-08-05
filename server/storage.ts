@@ -267,18 +267,46 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updateUserProfile(id: number, data: { fullName?: string; profilePhoto?: string; email?: string; username?: string; phoneNumber?: string }): Promise<User | undefined> {
+    console.log(`🔧 updateUserProfile вызван для пользователя ${id} с данными:`, data);
+    
     const updateData: any = {};
-    if (data.fullName !== undefined) updateData.fullName = data.fullName;
-    if (data.profilePhoto !== undefined) updateData.profilePhoto = data.profilePhoto;
-    if (data.email !== undefined) updateData.email = data.email;
-    if (data.username !== undefined) updateData.username = data.username;
-    if (data.phoneNumber !== undefined) updateData.phoneNumber = data.phoneNumber;
+    
+    // Безопасная обработка каждого поля
+    if (data.fullName !== undefined) {
+      updateData.fullName = data.fullName || null; // Разрешаем пустые строки как null
+    }
+    if (data.profilePhoto !== undefined) {
+      updateData.profilePhoto = data.profilePhoto || null;
+    }
+    if (data.email !== undefined && data.email) {
+      const cleanEmail = sanitizeAndValidateInput(data.email, 'email');
+      if (cleanEmail) updateData.email = cleanEmail;
+    }
+    if (data.username !== undefined && data.username) {
+      const cleanUsername = sanitizeAndValidateInput(data.username, 'string');
+      if (cleanUsername) updateData.username = cleanUsername;
+    }
+    if (data.phoneNumber !== undefined && data.phoneNumber) {
+      const cleanPhone = sanitizeAndValidateInput(data.phoneNumber, 'phone');
+      if (cleanPhone) updateData.phoneNumber = cleanPhone;
+    }
+    
+    console.log(`📝 Финальные данные для обновления:`, updateData);
+    
+    if (Object.keys(updateData).length === 0) {
+      console.log(`⚠️ Нет данных для обновления пользователя ${id}`);
+      // Возвращаем текущего пользователя без изменений
+      const [user] = await db.select().from(users).where(eq(users.id, id));
+      return user || undefined;
+    }
     
     const [user] = await db
       .update(users)
       .set(updateData)
       .where(eq(users.id, id))
       .returning();
+      
+    console.log(`✅ Пользователь ${id} обновлен успешно`);
     return user || undefined;
   }
 
