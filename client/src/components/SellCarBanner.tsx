@@ -17,16 +17,10 @@ export function SellCarBanner() {
     refetchInterval: 10000, // Обновляем каждые 10 секунд
   });
   
-  // Изображения для ротации из API или дефолтные
+  // Изображения для ротации только из API (убираем внешние fallback ссылки)
   const getCarImages = () => {
     if (!bannerData) {
-      // Дефолтные изображения если данных еще нет
-      return [
-        'https://images.unsplash.com/photo-1555215695-3004980ad54e?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=70',
-        'https://images.unsplash.com/photo-1502877338535-766e1452684a?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=70',
-        'https://images.unsplash.com/photo-1567018265282-303944d3c2a8?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=70',
-        'https://images.unsplash.com/photo-1552519507-ac11af17dcc8?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=70',
-      ];
+      return []; // Без данных не показываем изображения
     }
     
     // Собираем изображения из админ панели
@@ -36,7 +30,8 @@ export function SellCarBanner() {
     if (bannerData.rotationImage3) images.push(bannerData.rotationImage3);
     if (bannerData.rotationImage4) images.push(bannerData.rotationImage4);
     
-    return images.length > 0 ? images : [bannerData.backgroundImageUrl || 'https://images.unsplash.com/photo-1555215695-3004980ad54e?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=70'];
+    // Если есть дополнительные изображения, используем их, иначе основное
+    return images.length > 0 ? images : (bannerData.backgroundImageUrl ? [bannerData.backgroundImageUrl] : []);
   };
   
   const carImages = getCarImages();
@@ -44,8 +39,32 @@ export function SellCarBanner() {
   
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   
+  // Состояние загрузки изображений (как в карусели)
+  const [imageLoadState, setImageLoadState] = useState<{[url: string]: 'loading' | 'loaded' | 'error'}>({});
+  
+  // Предзагрузка изображений (как в карусели)
+  useEffect(() => {
+    carImages.forEach((imageUrl) => {
+      if (imageUrl && !imageLoadState[imageUrl]) {
+        setImageLoadState(prev => ({ ...prev, [imageUrl]: 'loading' }));
+        
+        const img = new Image();
+        img.onload = () => {
+          setImageLoadState(prev => ({ ...prev, [imageUrl]: 'loaded' }));
+        };
+        img.onerror = () => {
+          setImageLoadState(prev => ({ ...prev, [imageUrl]: 'error' }));
+        };
+        img.crossOrigin = 'anonymous';
+        img.src = imageUrl;
+      }
+    });
+  }, [carImages]);
+
   // Ротация изображений с настраиваемым интервалом
   useEffect(() => {
+    if (carImages.length <= 1) return; // Не ротируем если одно изображение или меньше
+    
     const interval = setInterval(() => {
       setCurrentImageIndex((prev) => (prev + 1) % carImages.length);
     }, rotationInterval);
@@ -71,18 +90,15 @@ export function SellCarBanner() {
       onClick={handleClick}
       className="relative h-44 rounded-2xl p-6 text-white overflow-hidden shadow-2xl cursor-pointer hover:shadow-3xl transition-all duration-300"
     >
-      {/* Background with Rotating Car Photos + Preloading */}
+      {/* Background with Rotating Car Photos from API or fallback to SVG */}
       <div 
         className="absolute inset-0 rounded-2xl bg-gradient-to-br from-slate-800 to-slate-900 bg-cover bg-center bg-no-repeat transition-all duration-1000 ease-in-out"
         style={{
-          backgroundImage: `linear-gradient(135deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.4) 100%), url('${carImages[currentImageIndex]}'), url('${carBannerSvg}')`
+          backgroundImage: carImages.length > 0 && carImages[currentImageIndex] && imageLoadState[carImages[currentImageIndex]] === 'loaded'
+            ? `linear-gradient(135deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.4) 100%), url('${carImages[currentImageIndex]}')`
+            : `linear-gradient(135deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.4) 100%), url('${carBannerSvg}')`
         }}
       ></div>
-      
-      {/* Preload next images for faster switching */}
-      {carImages.map((img, index) => (
-        <link key={index} rel="preload" as="image" href={img} style={{ display: 'none' }} />
-      ))}
       
       {/* Content */}
       <div className="relative z-10 h-full flex flex-col justify-center items-center text-center space-y-2">
