@@ -417,17 +417,72 @@ function ModerationManagement() {
               Объявления ожидающие одобрения: {pendingListings.length}
             </CardDescription>
           </div>
-          <Button 
-            variant="outline" 
-            size="sm"
-            onClick={() => {
-              console.log('🔄 Принудительное обновление модерации...');
-              queryClient.removeQueries({ queryKey: ['/api/admin/listings/pending-approval'] });
-              queryClient.invalidateQueries({ queryKey: ['/api/admin/listings/pending-approval'] });
-            }}
-          >
-            🔄 Обновить
-          </Button>
+          <div className="flex gap-2">
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => {
+                console.log('🔄 Принудительное обновление модерации...');
+                queryClient.removeQueries({ queryKey: ['/api/admin/listings/pending-approval'] });
+                queryClient.invalidateQueries({ queryKey: ['/api/admin/listings/pending-approval'] });
+              }}
+            >
+              🔄 Обновить
+            </Button>
+            <Button 
+              variant="destructive" 
+              size="sm"
+              onClick={async () => {
+                console.log('🗑️ ТЕСТ: Пользователь перед удалением:', user);
+                console.log('🗑️ ТЕСТ: userId:', user?.userId);
+                console.log('🗑️ ТЕСТ: email:', user?.email);
+                
+                const headers = {
+                  'Content-Type': 'application/json',
+                  'x-user-id': user?.userId?.toString() || '',
+                  'x-user-email': user?.email || ''
+                };
+                
+                console.log('🗑️ ТЕСТ: Отправка DELETE запроса с заголовками:', headers);
+                
+                try {
+                  const response = await fetch('/api/admin/listings/67', {
+                    method: 'DELETE',
+                    headers
+                  });
+                  
+                  console.log('🗑️ ТЕСТ: Ответ сервера:', response.status, response.statusText);
+                  
+                  if (response.ok) {
+                    const result = await response.json();
+                    console.log('🗑️ ТЕСТ: Результат:', result);
+                    toast({
+                      title: "Успешно!",
+                      description: "Объявление удалено через тестовую кнопку",
+                      variant: "default"
+                    });
+                  } else {
+                    const error = await response.json().catch(() => ({}));
+                    console.error('🗑️ ТЕСТ: Ошибка:', error);
+                    toast({
+                      title: "Ошибка",
+                      description: error.error || 'Неизвестная ошибка',
+                      variant: "destructive"
+                    });
+                  }
+                } catch (e) {
+                  console.error('🗑️ ТЕСТ: Исключение:', e);
+                  toast({
+                    title: "Ошибка",
+                    description: 'Сетевая ошибка',
+                    variant: "destructive"
+                  });
+                }
+              }}
+            >
+              🗑️ ТЕСТ Удалить #67
+            </Button>
+          </div>
         </div>
       </CardHeader>
       <CardContent>
