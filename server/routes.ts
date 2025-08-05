@@ -957,7 +957,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (error instanceof z.ZodError) {
         return res.status(400).json({ error: "Invalid listing data", details: error.errors });
       }
-      res.status(500).json({ error: "Failed to create listing", details: error.message });
+      res.status(500).json({ error: "Failed to create listing", details: error instanceof Error ? error.message : 'Unknown error' });
     }
   });
 
@@ -1351,7 +1351,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(documents);
     } catch (error) {
       console.error(`❌ Ошибка получения документов пользователя ${req.params.id}:`, error);
-      res.status(500).json({ error: "Failed to fetch user documents: " + error.message });
+      res.status(500).json({ error: "Failed to fetch user documents: " + (error instanceof Error ? error.message : 'Unknown error') });
     }
   });
 
@@ -1391,7 +1391,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(201).json(document);
     } catch (error) {
       console.error(`❌ Ошибка сохранения документа пользователя ${req.params.id}:`, error);
-      res.status(500).json({ error: "Failed to save document: " + error.message });
+      res.status(500).json({ error: "Failed to save document: " + (error instanceof Error ? error.message : 'Unknown error') });
     }
   });
 
@@ -1760,8 +1760,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Убираем undefined значения
       Object.keys(updateData).forEach(key => {
-        if (updateData[key] === undefined) {
-          delete updateData[key];
+        if (updateData[key as keyof typeof updateData] === undefined) {
+          delete updateData[key as keyof typeof updateData];
         }
       });
       
@@ -2396,7 +2396,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(204).send();
     } catch (error) {
       console.error("Error deleting user:", error);
-      res.status(500).json({ error: "Failed to delete user: " + error.message });
+      res.status(500).json({ error: "Failed to delete user: " + (error instanceof Error ? error.message : 'Unknown error') });
     }
   });
 
@@ -2421,7 +2421,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(documents);
     } catch (error) {
       console.error(`❌ Ошибка получения документов пользователя ${req.params.id}:`, error);
-      res.status(500).json({ error: "Failed to fetch user documents: " + error.message });
+      res.status(500).json({ error: "Failed to fetch user documents: " + (error instanceof Error ? error.message : 'Unknown error') });
     }
   });
 

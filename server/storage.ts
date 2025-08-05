@@ -1626,6 +1626,62 @@ export class DatabaseStorage implements IStorage {
       return created;
     }
   }
+
+  // Методы для архивных аукционов
+  async archiveExpiredListings(): Promise<void> {
+    const expiredListings = await db
+      .select()
+      .from(carListings)
+      .where(
+        and(
+          eq(carListings.status, 'active'),
+          lt(carListings.endTime, new Date())
+        )
+      );
+
+    for (const listing of expiredListings) {
+      await db
+        .update(carListings)
+        .set({ status: 'expired' })
+        .where(eq(carListings.id, listing.id));
+    }
+  }
+
+  async getArchivedListings(): Promise<CarListing[]> {
+    return await db
+      .select()
+      .from(carListings)
+      .where(eq(carListings.status, 'expired'))
+      .orderBy(desc(carListings.endTime));
+  }
+
+  async restartListing(listingId: number): Promise<CarListing | undefined> {
+    const [listing] = await db
+      .select()
+      .from(carListings)
+      .where(eq(carListings.id, listingId));
+
+    if (!listing) return undefined;
+
+    const [restarted] = await db
+      .update(carListings)
+      .set({
+        status: 'active',
+        startTime: new Date(),
+        endTime: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 дней
+        currentBid: listing.startingPrice
+      })
+      .where(eq(carListings.id, listingId))
+      .returning();
+
+    return restarted;
+  }
+
+  async deleteArchivedListing(listingId: number): Promise<void> {
+    await db
+      .delete(carListings)
+      .where(eq(carListings.id, listingId));
+  }
 }
 
 // PostgreSQL-only storage implementation - use the Database class
