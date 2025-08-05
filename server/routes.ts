@@ -3493,11 +3493,10 @@ async function sendSMSCode(phoneNumber: string, code: string): Promise<{success:
       },
       body: JSON.stringify({
         login: "zarex",
-        pass_salt_hash: "a6d5d8b47551199899862d6d768a4cb1",
+        password: "a6d5d8b47551199899862d6d768a4cb1",
         sender: "OsonSMS",
         to: phoneNumber.replace(/[^0-9]/g, ''),
-        text: `Ваш код подтверждения AUTOBID.TJ: ${code}`,
-        server_url: "https://api.osonsms.com/sendsms_v1.php"
+        text: `Ваш код подтверждения AUTOBID.TJ: ${code}`
       })
     });
     
@@ -3558,11 +3557,10 @@ async function sendSMSNotification(phoneNumber: string, message: string): Promis
       },
       body: JSON.stringify({
         login: "zarex",
-        pass_salt_hash: "a6d5d8b47551199899862d6d768a4cb1",
+        password: "a6d5d8b47551199899862d6d768a4cb1",
         sender: "OsonSMS",
         to: phoneNumber.replace(/[^0-9]/g, ''),
-        text: message,
-        server_url: "https://api.osonsms.com/sendsms_v1.php"
+        text: message
       })
     });
     
