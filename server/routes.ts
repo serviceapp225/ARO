@@ -13,6 +13,7 @@ import { z } from "zod";
 import AuctionWebSocketManager from "./websocket";
 import { createHash } from "crypto";
 import { getDatabaseStatus } from "./deploymentSafeInit";
+import multer from "multer";
 
 // Input validation schemas
 const idParamSchema = z.object({
@@ -2251,6 +2252,108 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("💥 Ошибка обновления банера sell-car-banner:", error);
       res.status(500).json({ error: "Failed to update sell car banner" });
+    }
+  });
+
+  // Multer configuration for banner image uploads
+  const storage_multer = multer.memoryStorage();
+  const upload = multer({
+    storage: storage_multer,
+    limits: {
+      fileSize: 10 * 1024 * 1024, // 10MB limit
+    },
+    fileFilter: (req, file, cb) => {
+      const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+      if (allowedTypes.includes(file.mimetype)) {
+        cb(null, true);
+      } else {
+        cb(new Error('Только изображения разрешены (JPEG, PNG, WebP)'));
+      }
+    }
+  });
+
+  // Banner image upload endpoint
+  app.post("/api/admin/sell-car-banner/upload-image", upload.single('image'), async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ error: "Файл изображения не предоставлен" });
+      }
+
+      console.log("🖼️ Загрузка изображения банера:", {
+        originalName: req.file.originalname,
+        size: req.file.size,
+        mimetype: req.file.mimetype
+      });
+
+      // Оптимизация изображения с помощью Sharp
+      const optimizedImage = await sharp(req.file.buffer)
+        .resize(800, 300, { fit: 'cover', position: 'center' })
+        .jpeg({ quality: 85, progressive: true })
+        .toBuffer();
+
+      // Конвертация в base64 для хранения в БД
+      const base64Image = `data:image/jpeg;base64,${optimizedImage.toString('base64')}`;
+
+      console.log("✅ Изображение оптимизировано:", {
+        originalSize: req.file.size,
+        optimizedSize: optimizedImage.length,
+        compression: ((req.file.size - optimizedImage.length) / req.file.size * 100).toFixed(1) + '%'
+      });
+
+      // Возвращаем base64 строку для сохранения в базе данных
+      res.json({ 
+        imageData: base64Image,
+        originalSize: req.file.size,
+        optimizedSize: optimizedImage.length
+      });
+
+    } catch (error) {
+      console.error("💥 Ошибка загрузки изображения банера:", error);
+      res.status(500).json({ error: "Ошибка обработки изображения" });
+    }
+  });
+
+  // Rotation images upload endpoint (for multiple images)
+  app.post("/api/admin/sell-car-banner/upload-rotation-images", upload.array('images', 4), async (req, res) => {
+    try {
+      if (!req.files || !Array.isArray(req.files) || req.files.length === 0) {
+        return res.status(400).json({ error: "Файлы изображений не предоставлены" });
+      }
+
+      console.log("🖼️ Загрузка изображений ротации:", req.files.length);
+
+      const processedImages = await Promise.all(
+        req.files.map(async (file, index) => {
+          console.log(`⚡ Обработка изображения ${index + 1}:`, {
+            originalName: file.originalname,
+            size: file.size,
+            mimetype: file.mimetype
+          });
+
+          // Оптимизация каждого изображения
+          const optimizedImage = await sharp(file.buffer)
+            .resize(600, 400, { fit: 'cover', position: 'center' })
+            .jpeg({ quality: 80, progressive: true })
+            .toBuffer();
+
+          const base64Image = `data:image/jpeg;base64,${optimizedImage.toString('base64')}`;
+
+          return {
+            index: index + 1,
+            imageData: base64Image,
+            originalSize: file.size,
+            optimizedSize: optimizedImage.length
+          };
+        })
+      );
+
+      console.log("✅ Все изображения ротации обработаны:", processedImages.length);
+
+      res.json({ images: processedImages });
+
+    } catch (error) {
+      console.error("💥 Ошибка загрузки изображений ротации:", error);
+      res.status(500).json({ error: "Ошибка обработки изображений" });
     }
   });
 

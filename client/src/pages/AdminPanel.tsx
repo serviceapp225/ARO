@@ -11,7 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { Trash2, User as UserIcon, Car, Bell, Settings, CheckCircle, XCircle, AlertCircle, Edit, Search, Image, Plus, Eye, ChevronUp, RefreshCw, Award, Gift } from 'lucide-react';
+import { Trash2, User as UserIcon, Car, Bell, Settings, CheckCircle, XCircle, AlertCircle, Edit, Search, Image, Plus, Eye, ChevronUp, RefreshCw, Award, Gift, Upload, X } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { Link } from 'wouter';
@@ -1218,16 +1218,30 @@ function SellBannerManagement() {
     buttonText: '',
     linkUrl: '',
     backgroundImageUrl: '',
+    backgroundImageData: '',
     rotationImage1: '',
+    rotationImage1Data: '',
     rotationImage2: '',
+    rotationImage2Data: '',
     rotationImage3: '',
+    rotationImage3Data: '',
     rotationImage4: '',
+    rotationImage4Data: '',
     rotationInterval: 3,
     gradientFrom: '',
     gradientTo: '',
     textColor: '',
     isActive: true,
     overlayOpacity: 60
+  });
+
+  // Состояние для загрузки изображений
+  const [uploading, setUploading] = useState({
+    background: false,
+    rotation1: false,
+    rotation2: false,
+    rotation3: false,
+    rotation4: false
   });
 
   // Получение данных баннера
@@ -1245,10 +1259,15 @@ function SellBannerManagement() {
         buttonText: (banner as any).buttonText || '',
         linkUrl: (banner as any).linkUrl || '',
         backgroundImageUrl: (banner as any).backgroundImageUrl || '',
+        backgroundImageData: (banner as any).backgroundImageData || '',
         rotationImage1: (banner as any).rotationImage1 || '',
+        rotationImage1Data: (banner as any).rotationImage1Data || '',
         rotationImage2: (banner as any).rotationImage2 || '',
+        rotationImage2Data: (banner as any).rotationImage2Data || '',
         rotationImage3: (banner as any).rotationImage3 || '',
+        rotationImage3Data: (banner as any).rotationImage3Data || '',
         rotationImage4: (banner as any).rotationImage4 || '',
+        rotationImage4Data: (banner as any).rotationImage4Data || '',
         rotationInterval: (banner as any).rotationInterval || 3,
         gradientFrom: (banner as any).gradientFrom || '',
         gradientTo: (banner as any).gradientTo || '',
@@ -1262,7 +1281,7 @@ function SellBannerManagement() {
   // Мутация для обновления баннера
   const updateBannerMutation = useMutation({
     mutationFn: async (bannerData: any) => {
-      const response = await fetch('/api/admin/sell-car-banner', {
+      const response = await apiRequest('/api/admin/sell-car-banner', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(bannerData),
@@ -1287,6 +1306,54 @@ function SellBannerManagement() {
     },
   });
 
+  // Функция загрузки изображения
+  const handleImageUpload = async (file: File, imageType: string) => {
+    setUploading(prev => ({ ...prev, [imageType]: true }));
+    
+    try {
+      const formData_upload = new FormData();
+      formData_upload.append('image', file);
+      
+      const response = await apiRequest('/api/admin/sell-car-banner/upload-image', {
+        method: 'POST',
+        body: formData_upload,
+      });
+      
+      if (!response.ok) throw new Error('Ошибка загрузки изображения');
+      
+      const result = await response.json();
+      
+      // Обновляем formData с новыми данными изображения
+      if (imageType === 'backgroundImage') {
+        setFormData(prev => ({
+          ...prev,
+          backgroundImageData: result.imageData,
+          backgroundImageUrl: '' // Очищаем URL если загружаем файл
+        }));
+      } else {
+        setFormData(prev => ({
+          ...prev,
+          [`${imageType}Data`]: result.imageData,
+          [imageType]: '' // Очищаем URL если загружаем файл
+        }));
+      }
+      
+      toast({
+        title: "Изображение загружено",
+        description: `Размер: ${(result.optimizedSize / 1024).toFixed(1)} KB (сжато на ${((result.originalSize - result.optimizedSize) / result.originalSize * 100).toFixed(1)}%)`,
+      });
+      
+    } catch (error: any) {
+      toast({
+        title: "Ошибка загрузки",
+        description: error.message || "Не удалось загрузить изображение",
+        variant: "destructive",
+      });
+    } finally {
+      setUploading(prev => ({ ...prev, [imageType]: false }));
+    }
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     updateBannerMutation.mutate(formData);
@@ -1300,6 +1367,16 @@ function SellBannerManagement() {
         buttonText: (banner as any).buttonText || '',
         linkUrl: (banner as any).linkUrl || '',
         backgroundImageUrl: (banner as any).backgroundImageUrl || '',
+        backgroundImageData: (banner as any).backgroundImageData || '',
+        rotationImage1: (banner as any).rotationImage1 || '',
+        rotationImage1Data: (banner as any).rotationImage1Data || '',
+        rotationImage2: (banner as any).rotationImage2 || '',
+        rotationImage2Data: (banner as any).rotationImage2Data || '',
+        rotationImage3: (banner as any).rotationImage3 || '',
+        rotationImage3Data: (banner as any).rotationImage3Data || '',
+        rotationImage4: (banner as any).rotationImage4 || '',
+        rotationImage4Data: (banner as any).rotationImage4Data || '',
+        rotationInterval: (banner as any).rotationInterval || 3,
         gradientFrom: (banner as any).gradientFrom || '',
         gradientTo: (banner as any).gradientTo || '',
         textColor: (banner as any).textColor || '',
@@ -1351,11 +1428,11 @@ function SellBannerManagement() {
                 background: `linear-gradient(135deg, ${(banner as any).gradientFrom || '#059669'} 0%, ${(banner as any).gradientTo || '#047857'} 100%)`,
               }}
             >
-              {(banner as any).backgroundImageUrl && (
+              {((banner as any).backgroundImageData || (banner as any).backgroundImageUrl) && (
                 <div 
                   className="absolute inset-0 rounded-2xl bg-cover bg-center bg-no-repeat"
                   style={{
-                    backgroundImage: `url('${(banner as any).backgroundImageUrl}')`,
+                    backgroundImage: `url('${(banner as any).backgroundImageData || (banner as any).backgroundImageUrl}')`,
                     opacity: ((banner as any).overlayOpacity || 60) / 100,
                   }}
                 />
@@ -1454,15 +1531,79 @@ function SellBannerManagement() {
                 <p className="text-xs text-gray-500">Введите относительный путь, например: /sell или /create-listing</p>
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="backgroundImageUrl">URL фонового изображения</Label>
-                <Input
-                  id="backgroundImageUrl"
-                  value={formData.backgroundImageUrl}
-                  onChange={(e) => setFormData({ ...formData, backgroundImageUrl: e.target.value })}
-                  placeholder="https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?w=800&h=300&fit=crop"
-                  type="url"
-                />
+              {/* Фоновое изображение */}
+              <div className="space-y-4 border rounded-lg p-4 bg-gray-50 dark:bg-gray-800">
+                <div className="flex items-center justify-between">
+                  <Label className="text-lg font-semibold">Фоновое изображение</Label>
+                  {(formData.backgroundImageData || formData.backgroundImageUrl) && (
+                    <Badge variant="outline" className="text-xs">
+                      {formData.backgroundImageData ? 'Загружено' : 'URL'}
+                    </Badge>
+                  )}
+                </div>
+                
+                {/* Предварительный просмотр */}
+                {(formData.backgroundImageData || formData.backgroundImageUrl) && (
+                  <div className="relative">
+                    <img 
+                      src={formData.backgroundImageData || formData.backgroundImageUrl} 
+                      alt="Фон" 
+                      className="w-full h-32 object-cover rounded-lg border"
+                    />
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      size="sm"
+                      className="absolute top-2 right-2"
+                      onClick={() => setFormData({ ...formData, backgroundImageData: '', backgroundImageUrl: '' })}
+                    >
+                      <X className="w-4 h-4" />
+                    </Button>
+                  </div>
+                )}
+                
+                {/* Загрузка файла */}
+                <div className="space-y-2">
+                  <Label>Загрузить новое изображение</Label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) handleImageUpload(file, 'backgroundImage');
+                      }}
+                      className="hidden"
+                      id="background-upload"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => document.getElementById('background-upload')?.click()}
+                      disabled={uploading.background}
+                      className="flex items-center gap-2"
+                    >
+                      {uploading.background ? (
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600" />
+                      ) : (
+                        <Upload className="w-4 h-4" />
+                      )}
+                      {uploading.background ? 'Загрузка...' : 'Выбрать файл'}
+                    </Button>
+                  </div>
+                </div>
+                
+                {/* Альтернативно: URL */}
+                <div className="space-y-2">
+                  <Label htmlFor="backgroundImageUrl">Или введите URL</Label>
+                  <Input
+                    id="backgroundImageUrl"
+                    value={formData.backgroundImageUrl}
+                    onChange={(e) => setFormData({ ...formData, backgroundImageUrl: e.target.value, backgroundImageData: '' })}
+                    placeholder="https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?w=800&h=300&fit=crop"
+                    type="url"
+                  />
+                </div>
               </div>
 
               {/* Изображения для ротации */}
