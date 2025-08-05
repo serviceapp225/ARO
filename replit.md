@@ -26,7 +26,7 @@ Preferred communication style: Simple, everyday language in Russian.
 - **Session Management**: Express sessions
 
 ### Database
-- **Primary Database**: PostgreSQL (via Neon serverless for production)
+- **Primary Database**: PostgreSQL (via Neon serverless for production) - **ACTIVE** (restored January 2025)
 - **Development Database**: SQLite
 - **Schema Management**: Drizzle Kit for migrations
 - **Key Tables**: users, car_listings, bids, favorites, notifications, car_alerts, banners
