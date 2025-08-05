@@ -80,9 +80,22 @@ export function UserDetailModal({ userId, isOpen, onClose }: UserDetailModalProp
   // Update user profile mutation
   const updateUserMutation = useMutation({
     mutationFn: async (data: { fullName: string; email: string; phoneNumber: string }) => {
+      const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+      };
+      
+      // Добавляем заголовки авторизации
+      if (currentUser.userId) {
+        headers['x-user-id'] = currentUser.userId.toString();
+      }
+      if (currentUser.email) {
+        headers['x-user-email'] = currentUser.email;
+      }
+      
       const response = await fetch(`/api/admin/users/${userId}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify(data),
       });
       if (!response.ok) throw new Error('Failed to update user');
@@ -107,8 +120,24 @@ export function UserDetailModal({ userId, isOpen, onClose }: UserDetailModalProp
   // Delete user mutation
   const deleteUserMutation = useMutation({
     mutationFn: async () => {
+      const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+      };
+      
+      // Добавляем заголовки авторизации
+      if (currentUser.userId) {
+        headers['x-user-id'] = currentUser.userId.toString();
+      }
+      if (currentUser.email) {
+        headers['x-user-email'] = currentUser.email;
+      }
+
+      console.log('🗑️ Отправка запроса на удаление пользователя с заголовками:', headers);
+      
       const response = await fetch(`/api/admin/users/${userId}`, {
         method: 'DELETE',
+        headers,
       });
       if (!response.ok) {
         const errorData = await response.text();
@@ -139,9 +168,22 @@ export function UserDetailModal({ userId, isOpen, onClose }: UserDetailModalProp
   // Update user status mutation
   const updateUserStatusMutation = useMutation({
     mutationFn: async (isActive: boolean) => {
+      const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+      };
+      
+      // Добавляем заголовки авторизации
+      if (currentUser.userId) {
+        headers['x-user-id'] = currentUser.userId.toString();
+      }
+      if (currentUser.email) {
+        headers['x-user-email'] = currentUser.email;
+      }
+      
       const response = await fetch(`/api/admin/users/${userId}/status`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify({ isActive }),
       });
       if (!response.ok) throw new Error('Failed to update user status');
@@ -166,9 +208,22 @@ export function UserDetailModal({ userId, isOpen, onClose }: UserDetailModalProp
   // Add document mutation
   const addDocumentMutation = useMutation({
     mutationFn: async (document: { type: string; title: string; content: string }) => {
+      const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+      };
+      
+      // Добавляем заголовки авторизации
+      if (currentUser.userId) {
+        headers['x-user-id'] = currentUser.userId.toString();
+      }
+      if (currentUser.email) {
+        headers['x-user-email'] = currentUser.email;
+      }
+      
       const response = await fetch(`/api/admin/users/${userId}/documents`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify(document),
       });
       if (!response.ok) throw new Error('Failed to add document');
@@ -189,8 +244,22 @@ export function UserDetailModal({ userId, isOpen, onClose }: UserDetailModalProp
   // Delete document mutation
   const deleteDocumentMutation = useMutation({
     mutationFn: async (documentId: number) => {
+      const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+      };
+      
+      // Добавляем заголовки авторизации
+      if (currentUser.userId) {
+        headers['x-user-id'] = currentUser.userId.toString();
+      }
+      if (currentUser.email) {
+        headers['x-user-email'] = currentUser.email;
+      }
+      
       const response = await fetch(`/api/admin/users/${userId}/documents/${documentId}`, {
         method: 'DELETE',
+        headers,
       });
       if (!response.ok) throw new Error('Failed to delete document');
       return response.json();
