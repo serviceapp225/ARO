@@ -441,9 +441,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
 
       // Отправляем SMS
-      let smsResult = { success: false, message: "No phone number" };
+      let smsResult: { success: boolean; message: string } = { success: false, message: "No phone number" };
       if (user.phoneNumber) {
-        smsResult = await sendSMSNotification(user.phoneNumber, smsMessage);
+        const smsResponse = await sendSMSNotification(user.phoneNumber, smsMessage);
+        smsResult = {
+          success: smsResponse.success,
+          message: smsResponse.message || (smsResponse.success ? "SMS sent successfully" : "SMS failed")
+        };
       }
 
       res.json({ 
@@ -1037,17 +1041,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/listings/:id/bids", sanitizeInput, getUserFromContext, async (req, res) => {
     console.log(`🚨🚨🚨 КРИТИЧНО: POST запрос ставки достиг роута! ID: ${req.params.id}`);
     console.log(`🚨🚨🚨 КРИТИЧНО: Тело запроса:`, req.body);
-    console.log(`🚨🚨🚨 КРИТИЧНО: Пользователь:`, req.user);
+    console.log(`🚨🚨🚨 КРИТИЧНО: Пользователь:`, (req as any).user);
     
-    if (!req.user) {
+    if (!(req as any).user) {
       return res.status(401).json({ error: "User not authenticated" });
     }
     
     try {
       const listingId = parseInt(req.params.id);
       console.log(`🎯 ПОЛУЧЕН POST запрос ставки для аукциона ${listingId}:`, req.body);
-      console.log(`🎯 НАЧАЛО ОБРАБОТКИ СТАВКИ для аукциона ${listingId} от пользователя ${req.user.id}`);
-      console.log(`🔍 ПРОВЕРКА req.user:`, req.user);
+      console.log(`🎯 НАЧАЛО ОБРАБОТКИ СТАВКИ для аукциона ${listingId} от пользователя ${(req as any).user.id}`);
+      console.log(`🔍 ПРОВЕРКА req.user:`, (req as any).user);
       
       // Check if auction exists and is still active
       const listing = await storage.getListing(listingId);
@@ -1069,7 +1073,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const bidData = {
         ...req.body,
         listingId,
-        bidderId: req.user.id
+        bidderId: (req as any).user.id
       };
       
       const validatedData = insertBidSchema.parse(bidData);
@@ -3143,11 +3147,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Messaging API routes
   app.get("/api/conversations", async (req, res) => {
     try {
-      if (!req.user) {
+      if (!(req as any).user) {
         return res.status(401).json({ error: "Unauthorized" });
       }
       
-      const userId = req.user.id;
+      const userId = (req as any).user.id;
       console.log(`📨 Получение переписок для пользователя ${userId}`);
       
       const conversations = await storage.getConversationsByUser(userId);

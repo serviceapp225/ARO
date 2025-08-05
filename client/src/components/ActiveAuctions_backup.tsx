@@ -274,7 +274,7 @@ export function ActiveAuctions({ searchQuery = "", customListings }: ActiveAucti
       ) : (
         <div className="grid grid-cols-2 gap-3">
           {displayedAuctions.map((auction, index) => (
-          <Card
+            <Card
             key={`${auction.id}-${index}`}
             className="group relative rounded-xl overflow-hidden bg-white shadow-lg hover:shadow-2xl transition-all duration-300 cursor-pointer"
             onClick={() => handleCardClick(auction.id)}
@@ -422,8 +422,9 @@ export function ActiveAuctions({ searchQuery = "", customListings }: ActiveAucti
               </div>
             </CardContent>
           </Card>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
       
       {/* Loading more indicator */}
       {loadingMore && (

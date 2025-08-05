@@ -10,13 +10,3 @@ export function usePollingSync(intervalMs: number = 200) {
     lastUpdate: Date.now()
   };
 }
-  const forceSync = () => {
-    queryClient.removeQueries({ queryKey: ['/api/listings'] });
-    queryClient.invalidateQueries({ queryKey: ['/api/listings'] });
-    queryClient.refetchQueries({ queryKey: ['/api/listings'] });
-    lastUpdateRef.current = Date.now();
-    console.log('⚡ Принудительная синхронизация данных');
-  };
-
-  return { forceSync };
-}

@@ -10,4 +10,3 @@ export function useTimestampSync() {
     isActive: false
   };
 }
-}

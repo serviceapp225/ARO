@@ -21,9 +21,13 @@ const { createServer } = require('http');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Basic middleware
-app.use(express.json({ limit: '50mb' }));
-app.use(express.static(path.join(__dirname, 'public')));
+// Secure middleware
+app.use(express.json({ limit: '10mb' }));
+app.use(express.static(path.join(__dirname, 'public'), {
+  dotfiles: 'deny',
+  index: false,
+  redirect: false
+}));
 
 // Health check
 app.get('/api/health', (req, res) => {
@@ -40,8 +44,8 @@ app.get('*', (req, res) => {
 });
 
 const server = createServer(app);
-server.listen(PORT, '0.0.0.0', () => {
-  console.log(\`Server running on port \${PORT}\`);
+server.listen(PORT, '127.0.0.1', () => {
+  console.log('Server running on port ' + PORT);
 });
 `;
 
