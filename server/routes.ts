@@ -2861,6 +2861,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const { code: storedCode, timestamp, attempts } = cachedData;
       
+      console.log(`🔍 Данные из кэша:`, {
+        storedCode: storedCode,
+        enteredCode: code,
+        storedCodeType: typeof storedCode,
+        enteredCodeType: typeof code,
+        timestamp: timestamp,
+        attempts: attempts
+      });
+      
       // Проверяем, не истек ли код (5 минут)
       if (Date.now() - timestamp > 300000) {
         cache.delete(cacheKey);
@@ -2873,12 +2882,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Превышено количество попыток" });
       }
 
-      if (code !== storedCode) {
+      // Приводим оба кода к строкам для сравнения
+      const normalizedStoredCode = String(storedCode).trim();
+      const normalizedEnteredCode = String(code).trim();
+      
+      console.log(`🔍 Сравнение кодов:`, {
+        normalizedStoredCode: normalizedStoredCode,
+        normalizedEnteredCode: normalizedEnteredCode,
+        isEqual: normalizedStoredCode === normalizedEnteredCode
+      });
+
+      if (normalizedEnteredCode !== normalizedStoredCode) {
         // Увеличиваем счетчик попыток
         cache.set(cacheKey, {
           ...cachedData,
           attempts: attempts + 1
         });
+        console.log(`❌ Коды не совпадают: введен "${normalizedEnteredCode}", ожидался "${normalizedStoredCode}"`);
         return res.status(400).json({ error: "Неверный код" });
       }
 
