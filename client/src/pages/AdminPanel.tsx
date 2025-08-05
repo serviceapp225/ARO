@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { apiRequest } from '@/lib/queryClient';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -209,8 +210,7 @@ function ModerationManagement() {
     queryKey: ['/api/admin/listings/pending-approval'],
     queryFn: async () => {
       console.log('🔄 Загружаем объявления на модерацию...');
-      const response = await fetch('/api/admin/listings/pending-approval');
-      if (!response.ok) throw new Error('Failed to fetch pending listings');
+      const response = await apiRequest('GET', '/api/admin/listings/pending-approval');
       const data = await response.json();
       console.log('📋 Получены данные модерации:', data);
       return data;
