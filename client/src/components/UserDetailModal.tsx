@@ -80,7 +80,10 @@ export function UserDetailModal({ userId, isOpen, onClose }: UserDetailModalProp
   // Update user profile mutation
   const updateUserMutation = useMutation({
     mutationFn: async (data: { fullName: string; email: string; phoneNumber: string }) => {
-      const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+      // Получаем пользователя так же как в queryClient.ts
+      const userStr = localStorage.getItem('demo-user') || localStorage.getItem('currentUser');
+      const currentUser = userStr ? JSON.parse(userStr) : {};
+      
       const headers: Record<string, string> = {
         'Content-Type': 'application/json',
       };
@@ -120,7 +123,11 @@ export function UserDetailModal({ userId, isOpen, onClose }: UserDetailModalProp
   // Delete user mutation
   const deleteUserMutation = useMutation({
     mutationFn: async () => {
-      const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+      // Получаем пользователя так же как в queryClient.ts
+      const userStr = localStorage.getItem('demo-user') || localStorage.getItem('currentUser');
+      const currentUser = userStr ? JSON.parse(userStr) : {};
+      console.log('🔍 Отладка currentUser для удаления:', currentUser);
+      
       const headers: Record<string, string> = {
         'Content-Type': 'application/json',
       };
@@ -168,7 +175,10 @@ export function UserDetailModal({ userId, isOpen, onClose }: UserDetailModalProp
   // Update user status mutation
   const updateUserStatusMutation = useMutation({
     mutationFn: async (isActive: boolean) => {
-      const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+      // Получаем пользователя так же как в queryClient.ts
+      const userStr = localStorage.getItem('demo-user') || localStorage.getItem('currentUser');
+      const currentUser = userStr ? JSON.parse(userStr) : {};
+      
       const headers: Record<string, string> = {
         'Content-Type': 'application/json',
       };
@@ -208,7 +218,10 @@ export function UserDetailModal({ userId, isOpen, onClose }: UserDetailModalProp
   // Add document mutation
   const addDocumentMutation = useMutation({
     mutationFn: async (document: { type: string; title: string; content: string }) => {
-      const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+      // Получаем пользователя так же как в queryClient.ts
+      const userStr = localStorage.getItem('demo-user') || localStorage.getItem('currentUser');
+      const currentUser = userStr ? JSON.parse(userStr) : {};
+      
       const headers: Record<string, string> = {
         'Content-Type': 'application/json',
       };
@@ -244,7 +257,10 @@ export function UserDetailModal({ userId, isOpen, onClose }: UserDetailModalProp
   // Delete document mutation
   const deleteDocumentMutation = useMutation({
     mutationFn: async (documentId: number) => {
-      const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+      // Получаем пользователя так же как в queryClient.ts
+      const userStr = localStorage.getItem('demo-user') || localStorage.getItem('currentUser');
+      const currentUser = userStr ? JSON.parse(userStr) : {};
+      
       const headers: Record<string, string> = {
         'Content-Type': 'application/json',
       };
