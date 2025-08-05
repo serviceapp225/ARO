@@ -2809,13 +2809,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Сохраняем код в кэше с нормализованным номером
       const cacheKey = `sms_code_${normalizedPhone}`;
-      cache.set(cacheKey, { 
+      const cacheData = { 
         code: verificationCode, 
         timestamp: Date.now(),
         attempts: 0
-      });
+      };
+      cache.set(cacheKey, cacheData);
       
-      console.log(`💾 Код сохранен в кэше с ключом: ${cacheKey}`);
+      console.log(`💾 Код сохранен в кэше:`, {
+        key: cacheKey,
+        code: verificationCode,
+        timestamp: cacheData.timestamp,
+        phoneNumber: normalizedPhone
+      });
 
       // В production здесь будет интеграция с SMS-провайдером
       // Например: Twilio, Nexmo, или локальный SMS-шлюз
