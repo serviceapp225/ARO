@@ -31,7 +31,6 @@ export function UserDetailModal({ userId, isOpen, onClose }: UserDetailModalProp
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
-  const [username, setUsername] = useState('');
   const [isActive, setIsActive] = useState(true);
 
   // Document form state
@@ -69,7 +68,6 @@ export function UserDetailModal({ userId, isOpen, onClose }: UserDetailModalProp
       setFullName(user.fullName || '');
       setEmail(user.email || '');
       setPhoneNumber(user?.phoneNumber || '');
-      setUsername(user?.username || '');
       setIsActive(user.isActive || false);
     }
     
@@ -81,18 +79,13 @@ export function UserDetailModal({ userId, isOpen, onClose }: UserDetailModalProp
 
   // Update user profile mutation
   const updateUserMutation = useMutation({
-    mutationFn: async (data: { fullName: string; email: string; phoneNumber: string; username: string }) => {
-      console.log('🔧 Отправляем данные для обновления профиля:', data);
+    mutationFn: async (data: { fullName: string; email: string; phoneNumber: string }) => {
       const response = await fetch(`/api/admin/users/${userId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
       });
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('❌ Ошибка обновления профиля:', response.status, errorText);
-        throw new Error(`Failed to update user: ${response.status} ${errorText}`);
-      }
+      if (!response.ok) throw new Error('Failed to update user');
       return response.json();
     },
     onSuccess: () => {
@@ -216,7 +209,6 @@ export function UserDetailModal({ userId, isOpen, onClose }: UserDetailModalProp
       fullName,
       email,
       phoneNumber,
-      username,
     });
   };
 
@@ -333,7 +325,7 @@ export function UserDetailModal({ userId, isOpen, onClose }: UserDetailModalProp
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-4">
+                  <div>
                     <div>
                       <Label htmlFor="phoneNumber">Номер телефона</Label>
                       <Input
@@ -341,15 +333,6 @@ export function UserDetailModal({ userId, isOpen, onClose }: UserDetailModalProp
                         value={phoneNumber}
                         onChange={(e) => setPhoneNumber(e.target.value)}
                         placeholder="Введите номер телефона"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="username">Имя пользователя</Label>
-                      <Input
-                        id="username"
-                        value={username}
-                        onChange={(e) => setUsername(e.target.value)}
-                        placeholder="Введите имя пользователя"
                       />
                     </div>
                   </div>
