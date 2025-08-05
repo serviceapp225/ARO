@@ -206,7 +206,7 @@ app.use((req, res, next) => {
   // Replit deployment expects port 3000 to be the primary port
   // Development mode uses 5000 as configured in workflow
   
-  const port = process.env.PORT || (process.env.NODE_ENV === 'production' ? 3000 : 5000);
+  const port = process.env.PORT || (isProduction ? 3000 : 5000);
   server.listen({
     port: Number(port),
     host: "0.0.0.0",
