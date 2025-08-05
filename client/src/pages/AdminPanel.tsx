@@ -1246,7 +1246,7 @@ function SellBannerManagement() {
 
   // Получение данных баннера
   const { data: banner, isLoading: bannerLoading } = useQuery({
-    queryKey: ['/api/sell-car-banner'],
+    queryKey: ['/api/sell-car-section'],
     staleTime: 30000,
   });
 
@@ -1294,7 +1294,7 @@ function SellBannerManagement() {
         title: "Успешно",
         description: "Баннер обновлен успешно",
       });
-      queryClient.invalidateQueries({ queryKey: ['/api/sell-car-banner'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/sell-car-section'] });
       setIsEditing(false);
     },
     onError: (error: any) => {
@@ -1314,8 +1314,12 @@ function SellBannerManagement() {
       const formData_upload = new FormData();
       formData_upload.append('image', file);
       
-      const response = await apiRequest('/api/admin/sell-car-banner/upload-image', {
+      const response = await fetch('/api/admin/sell-car-banner/upload-image', {
         method: 'POST',
+        headers: {
+          'x-user-id': '4',
+          'x-user-email': '+992 (90) 333-13-32@autoauction.tj',
+        },
         body: formData_upload,
       });
       

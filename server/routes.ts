@@ -2273,7 +2273,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Banner image upload endpoint
-  app.post("/api/admin/sell-car-banner/upload-image", upload.single('image'), async (req, res) => {
+  app.post("/api/admin/sell-car-banner/upload-image", adminAuth, upload.single('image'), async (req, res) => {
     try {
       if (!req.file) {
         return res.status(400).json({ error: "Файл изображения не предоставлен" });
