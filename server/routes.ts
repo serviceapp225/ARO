@@ -3072,6 +3072,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const listingId = parseInt(req.params.id);
       const { status } = req.body;
       
+      console.log(`🔧 АДМИН: Обновление статуса объявления ${listingId} на "${status}"`);
+      
       if (isNaN(listingId)) {
         return res.status(400).json({ error: "Invalid listing ID" });
       }
@@ -3082,16 +3084,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const listing = await storage.updateListingStatus(listingId, status);
       if (!listing) {
+        console.log(`❌ АДМИН: Объявление ${listingId} не найдено`);
         return res.status(404).json({ error: "Listing not found" });
       }
       
       // Очищаем кеш при изменении статуса
       clearAllCaches();
       
+      console.log(`✅ АДМИН: Статус объявления ${listingId} успешно изменен на "${status}"`);
       res.json(listing);
     } catch (error) {
-      console.error("Failed to update listing status:", error);
+      console.error("❌ АДМИН: Ошибка обновления статуса объявления:", error);
       res.status(500).json({ error: "Failed to update listing status" });
+    }
+  });
+
+  // Маршрут для одобрения объявления (используется фронтендом)
+  app.post("/api/admin/listings/:id/approve", requireAdmin, async (req, res) => {
+    try {
+      const listingId = parseInt(req.params.id);
+      
+      console.log(`🔧 АДМИН: Одобрение объявления ${listingId}`);
+      
+      if (isNaN(listingId)) {
+        return res.status(400).json({ error: "Invalid listing ID" });
+      }
+      
+      // Одобрение = установка статуса "active"
+      const listing = await storage.updateListingStatus(listingId, 'active');
+      if (!listing) {
+        console.log(`❌ АДМИН: Объявление ${listingId} не найдено для одобрения`);
+        return res.status(404).json({ error: "Listing not found" });
+      }
+      
+      // Очищаем кеш при изменении статуса
+      clearAllCaches();
+      
+      console.log(`✅ АДМИН: Объявление ${listingId} успешно одобрено`);
+      res.json(listing);
+    } catch (error) {
+      console.error("❌ АДМИН: Ошибка одобрения объявления:", error);
+      res.status(500).json({ error: "Failed to approve listing" });
     }
   });
 
