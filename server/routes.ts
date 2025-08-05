@@ -3084,7 +3084,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { id } = req.params;
       const deleted = await storage.deleteArchivedListing(parseInt(id));
       
-      if (!deleted) {
+      if (deleted === false) {
         return res.status(404).json({ message: 'Listing not found or not archived' });
       }
 
@@ -3197,7 +3197,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log(`✅ Найдено ${messages.length} сообщений для переписки ${conversationId}`);
       res.json(messages);
     } catch (error) {
-      console.error(`❌ Ошибка получения сообщений для переписки ${conversationId}:`, error);
+      console.error(`❌ Ошибка получения сообщений для переписки ${req.params.conversationId}:`, error);
       res.status(500).json({ error: "Failed to fetch messages" });
     }
   });
@@ -3248,11 +3248,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
             console.log(`📊 Данные переписки: buyerId=${conversation.buyerId}, sellerId=${conversation.sellerId}, senderId=${senderId}`);
             
             try {
-              if (global.wsManager) {
-                const notificationSent = global.wsManager.notifyNewMessage(recipientId, {
+              if ((global as any).wsManager) {
+                const notificationSent = (global as any).wsManager.notifyNewMessage(recipientId, {
                   conversationId,
                   message,
-                  senderName: message.senderName || 'Пользователь'
+                  senderName: 'Пользователь'
                 });
                 console.log(`✅ ШАГ 3 ЗАВЕРШЕН: WebSocket уведомление отправлено=${notificationSent} получателю ${recipientId}`);
               } else {
@@ -3282,7 +3282,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
     } catch (error) {
       console.error("❌ КРИТИЧЕСКАЯ ОШИБКА создания сообщения:", error);
-      console.error("❌ Stack trace:", error.stack);
+      console.error("❌ Stack trace:", (error as Error).stack);
       res.status(500).json({ error: "Failed to send message" });
     }
   });
@@ -3306,7 +3306,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const conversationId = parseInt(req.params.conversationId);
       const userId = parseInt(req.params.userId);
-      const count = await storage.getUnreadMessageCount(conversationId, userId);
+      const count = await storage.getUnreadMessageCount(conversationId);
       res.json({ count });
     } catch (error) {
       res.status(500).json({ error: "Failed to get unread count" });
@@ -3356,7 +3356,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log(`📖 ДЕМО: Пользователь ${userId} зашел на страницу сообщений`);
       
       if (userId === 3 || userId === 4) {
-        messagesPageVisited[userId] = true;
+        messagesPageVisited[userId as keyof typeof messagesPageVisited] = true;
         console.log(`✅ ДЕМО: Отмечено посещение страницы сообщений для пользователя ${userId}`);
       }
       
@@ -3523,7 +3523,7 @@ async function sendSMSCode(phoneNumber: string, code: string): Promise<{success:
       return { 
         success: true, 
         message: "SMS отправлен (демо-режим - VPS ошибка)",
-        code: code
+        codeValue: code
       };
     }
     
@@ -3535,7 +3535,7 @@ async function sendSMSCode(phoneNumber: string, code: string): Promise<{success:
     return { 
       success: true, 
       message: "SMS отправлен (демо-режим - VPS недоступен)",
-      code: code
+      codeValue: code
     };
   }
 }
