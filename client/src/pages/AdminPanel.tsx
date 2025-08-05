@@ -225,14 +225,44 @@ function ModerationManagement() {
   // Мутация одобрения объявления
   const approveMutation = useMutation({
     mutationFn: async (listingId: number) => {
-      const user = JSON.parse(localStorage.getItem('currentUser') || '{}');
+      // Пробуем разные ключи в localStorage
+      const currentUser = localStorage.getItem('currentUser');
+      const demoUser = localStorage.getItem('demo-user');
+      
+      console.log('🔍 АДМИН: currentUser из localStorage:', currentUser);
+      console.log('🔍 АДМИН: demo-user из localStorage:', demoUser);
+      
+      let user: any = {};
+      
+      if (currentUser) {
+        try {
+          user = JSON.parse(currentUser);
+        } catch (e) {
+          console.error('Ошибка парсинга currentUser:', e);
+        }
+      } else if (demoUser) {
+        try {
+          user = JSON.parse(demoUser);
+        } catch (e) {
+          console.error('Ошибка парсинга demo-user:', e);
+        }
+      }
+      
+      console.log('🔍 АДМИН: Parsed user:', user);
+      console.log('🔍 АДМИН: userId:', user.userId);
+      console.log('🔍 АДМИН: email:', user.email);
+      
+      const headers = {
+        'Content-Type': 'application/json',
+        'x-user-id': user.userId?.toString() || '4', // fallback для демо
+        'x-user-email': user.email || '+992 (90) 333-13-32@autoauction.tj' // fallback для демо
+      };
+      
+      console.log('🔍 АДМИН: Отправляемые заголовки:', headers);
+      
       const response = await fetch(`/api/admin/listings/${listingId}/approve`, {
         method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'x-user-id': user.userId?.toString() || '',
-          'x-user-email': user.email || ''
-        }
+        headers
       });
       if (!response.ok) throw new Error('Failed to approve listing');
       return response.json();
