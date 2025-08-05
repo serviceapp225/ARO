@@ -105,6 +105,13 @@ setInterval(() => {
   }
 }, 600000); // каждые 10 минут
 
+// Middleware для проверки админских прав
+const requireAdmin = (req: any, res: any, next: any) => {
+  // В реальном приложении здесь была бы проверка авторизации
+  // Пока что пропускаем все запросы для демонстрации
+  next();
+};
+
 // Безопасный middleware для валидации входных данных
 const sanitizeInput = (req: any, res: any, next: any) => {
   // Валидация и очистка заголовков
@@ -3015,12 +3022,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Middleware для проверки админских прав
-  const requireAdmin = (req: any, res: any, next: any) => {
-    // В реальном приложении здесь была бы проверка авторизации
-    // Пока что пропускаем все запросы для демонстрации
-    next();
-  };
+
 
   // Админские API роуты - только для номера +992903331332
   app.get("/api/admin/users", requireAdmin, async (req, res) => {
