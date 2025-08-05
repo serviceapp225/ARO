@@ -3128,6 +3128,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Маршрут для отклонения объявления (используется фронтендом)
+  app.post("/api/admin/listings/:id/reject", requireAdmin, async (req, res) => {
+    try {
+      const listingId = parseInt(req.params.id);
+      
+      console.log(`🔧 АДМИН: Отклонение объявления ${listingId}`);
+      
+      if (isNaN(listingId)) {
+        return res.status(400).json({ error: "Invalid listing ID" });
+      }
+      
+      // Отклонение = установка статуса "rejected"
+      const listing = await storage.updateListingStatus(listingId, 'rejected');
+      if (!listing) {
+        console.log(`❌ АДМИН: Объявление ${listingId} не найдено для отклонения`);
+        return res.status(404).json({ error: "Listing not found" });
+      }
+      
+      // Очищаем кеш при изменении статуса
+      clearAllCaches();
+      
+      console.log(`✅ АДМИН: Объявление ${listingId} успешно отклонено`);
+      res.json(listing);
+    } catch (error) {
+      console.error("❌ АДМИН: Ошибка отклонения объявления:", error);
+      res.status(500).json({ error: "Failed to reject listing" });
+    }
+  });
+
   app.get("/api/admin/stats", requireAdmin, async (req, res) => {
     try {
       const stats = await storage.getAdminStats();

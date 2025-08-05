@@ -225,9 +225,14 @@ function ModerationManagement() {
   // Мутация одобрения объявления
   const approveMutation = useMutation({
     mutationFn: async (listingId: number) => {
+      const user = JSON.parse(localStorage.getItem('currentUser') || '{}');
       const response = await fetch(`/api/admin/listings/${listingId}/approve`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' }
+        headers: { 
+          'Content-Type': 'application/json',
+          'x-user-id': user.userId?.toString() || '',
+          'x-user-email': user.email || ''
+        }
       });
       if (!response.ok) throw new Error('Failed to approve listing');
       return response.json();
@@ -253,9 +258,14 @@ function ModerationManagement() {
   // Мутация отклонения объявления
   const rejectMutation = useMutation({
     mutationFn: async (listingId: number) => {
+      const user = JSON.parse(localStorage.getItem('currentUser') || '{}');
       const response = await fetch(`/api/admin/listings/${listingId}/reject`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' }
+        headers: { 
+          'Content-Type': 'application/json',
+          'x-user-id': user.userId?.toString() || '',
+          'x-user-email': user.email || ''
+        }
       });
       if (!response.ok) throw new Error('Failed to reject listing');
       return response.json();
