@@ -108,6 +108,24 @@ export const carAlerts = pgTable("car_alerts", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// Таблица для управления активными сессиями пользователей
+export const userSessions = pgTable("user_sessions", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull(),
+  phoneNumber: text("phone_number").notNull(), // Номер телефона для удобства
+  sessionToken: text("session_token").notNull().unique(), // Уникальный токен сессии
+  deviceInfo: text("device_info"), // Информация об устройстве (User-Agent)
+  ipAddress: text("ip_address"), // IP адрес устройства
+  isActive: boolean("is_active").default(true),
+  lastActivity: timestamp("last_activity").defaultNow(),
+  createdAt: timestamp("created_at").defaultNow(),
+}, (table) => ({
+  userIdx: index("user_sessions_user_idx").on(table.userId),
+  phoneIdx: index("user_sessions_phone_idx").on(table.phoneNumber),
+  tokenIdx: index("user_sessions_token_idx").on(table.sessionToken),
+  activeIdx: index("user_sessions_active_idx").on(table.isActive),
+}));
+
 export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
   createdAt: true,
@@ -147,6 +165,12 @@ export const insertCarAlertSchema = createInsertSchema(carAlerts).omit({
   createdAt: true,
 });
 
+export const insertUserSessionSchema = createInsertSchema(userSessions).omit({
+  id: true,
+  createdAt: true,
+  lastActivity: true,
+});
+
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
 export type InsertCarListing = z.infer<typeof insertCarListingSchema>;
@@ -159,6 +183,8 @@ export type InsertNotification = z.infer<typeof insertNotificationSchema>;
 export type Notification = typeof notifications.$inferSelect;
 export type InsertCarAlert = z.infer<typeof insertCarAlertSchema>;
 export type CarAlert = typeof carAlerts.$inferSelect;
+export type InsertUserSession = z.infer<typeof insertUserSessionSchema>;
+export type UserSession = typeof userSessions.$inferSelect;
 
 export const banners = pgTable("banners", {
   id: serial("id").primaryKey(),

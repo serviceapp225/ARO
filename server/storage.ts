@@ -1,4 +1,4 @@
-import { users, carListings, bids, favorites, notifications, carAlerts, banners, sellCarSection, sellCarBanner, advertisementCarousel, documents, alertViews, userWins, conversations, messages, type User, type InsertUser, type CarListing, type InsertCarListing, type Bid, type InsertBid, type Favorite, type InsertFavorite, type Notification, type InsertNotification, type CarAlert, type InsertCarAlert, type Banner, type InsertBanner, type SellCarSection, type InsertSellCarSection, type SellCarBanner, type InsertSellCarBanner, type AdvertisementCarousel, type InsertAdvertisementCarousel, type Document, type InsertDocument, type AlertView, type InsertAlertView, type UserWin, type InsertUserWin, type Conversation, type InsertConversation, type Message, type InsertMessage } from "@shared/schema";
+import { users, carListings, bids, favorites, notifications, carAlerts, userSessions, banners, sellCarSection, sellCarBanner, advertisementCarousel, documents, alertViews, userWins, conversations, messages, type User, type InsertUser, type CarListing, type InsertCarListing, type Bid, type InsertBid, type Favorite, type InsertFavorite, type Notification, type InsertNotification, type CarAlert, type InsertCarAlert, type UserSession, type InsertUserSession, type Banner, type InsertBanner, type SellCarSection, type InsertSellCarSection, type SellCarBanner, type InsertSellCarBanner, type AdvertisementCarousel, type InsertAdvertisementCarousel, type Document, type InsertDocument, type AlertView, type InsertAlertView, type UserWin, type InsertUserWin, type Conversation, type InsertConversation, type Message, type InsertMessage } from "@shared/schema";
 import { db, pool } from "./db";
 import { eq, and, desc, sql, or, ilike, inArray, isNull, gte, lte } from "drizzle-orm";
 
@@ -195,6 +195,17 @@ export interface IStorage {
   markMessagesAsRead(conversationId: number, userId: number): Promise<void>;
   markMessageAsRead(messageId: number): Promise<boolean>;
   getUnreadMessageCount(userId: number): Promise<number>;
+
+  // Session management operations
+  createUserSession(session: InsertUserSession): Promise<UserSession>;
+  getUserSession(sessionToken: string): Promise<UserSession | undefined>;
+  getUserActiveSessions(userId: number): Promise<UserSession[]>;
+  getActiveSessionByPhone(phoneNumber: string): Promise<UserSession | undefined>;
+  deactivateUserSessions(userId: number): Promise<void>;
+  deactivateSessionsByPhone(phoneNumber: string): Promise<void>;
+  updateSessionActivity(sessionToken: string): Promise<void>;
+  deleteSession(sessionToken: string): Promise<boolean>;
+  cleanupExpiredSessions(): Promise<number>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -1695,6 +1706,122 @@ export class DatabaseStorage implements IStorage {
     await db
       .delete(carListings)
       .where(eq(carListings.id, listingId));
+  }
+
+  // Session management methods
+  async createUserSession(session: InsertUserSession): Promise<UserSession> {
+    // Валидация входных данных
+    const cleanSession = {
+      userId: sanitizeAndValidateInput(session.userId, 'number'),
+      phoneNumber: sanitizeAndValidateInput(session.phoneNumber, 'phone'),
+      sessionToken: sanitizeAndValidateInput(session.sessionToken, 'string'),
+      deviceInfo: sanitizeAndValidateInput(session.deviceInfo, 'string'),
+      ipAddress: sanitizeAndValidateInput(session.ipAddress, 'string'),
+      isActive: true
+    };
+
+    const [created] = await db
+      .insert(userSessions)
+      .values(cleanSession)
+      .returning();
+    return created;
+  }
+
+  async getUserSession(sessionToken: string): Promise<UserSession | undefined> {
+    const cleanToken = sanitizeAndValidateInput(sessionToken, 'string');
+    if (!cleanToken) return undefined;
+
+    const [session] = await db
+      .select()
+      .from(userSessions)
+      .where(and(
+        eq(userSessions.sessionToken, cleanToken),
+        eq(userSessions.isActive, true)
+      ))
+      .limit(1);
+    return session;
+  }
+
+  async getUserActiveSessions(userId: number): Promise<UserSession[]> {
+    const cleanUserId = sanitizeAndValidateInput(userId, 'number');
+    if (!cleanUserId) return [];
+
+    return await db
+      .select()
+      .from(userSessions)
+      .where(and(
+        eq(userSessions.userId, cleanUserId),
+        eq(userSessions.isActive, true)
+      ))
+      .orderBy(desc(userSessions.lastActivity));
+  }
+
+  async getActiveSessionByPhone(phoneNumber: string): Promise<UserSession | undefined> {
+    const cleanPhone = sanitizeAndValidateInput(phoneNumber, 'phone');
+    if (!cleanPhone) return undefined;
+
+    const [session] = await db
+      .select()
+      .from(userSessions)
+      .where(and(
+        eq(userSessions.phoneNumber, cleanPhone),
+        eq(userSessions.isActive, true)
+      ))
+      .orderBy(desc(userSessions.lastActivity))
+      .limit(1);
+    return session;
+  }
+
+  async deactivateUserSessions(userId: number): Promise<void> {
+    const cleanUserId = sanitizeAndValidateInput(userId, 'number');
+    if (!cleanUserId) return;
+
+    await db
+      .update(userSessions)
+      .set({ isActive: false })
+      .where(eq(userSessions.userId, cleanUserId));
+  }
+
+  async deactivateSessionsByPhone(phoneNumber: string): Promise<void> {
+    const cleanPhone = sanitizeAndValidateInput(phoneNumber, 'phone');
+    if (!cleanPhone) return;
+
+    await db
+      .update(userSessions)
+      .set({ isActive: false })
+      .where(eq(userSessions.phoneNumber, cleanPhone));
+  }
+
+  async updateSessionActivity(sessionToken: string): Promise<void> {
+    const cleanToken = sanitizeAndValidateInput(sessionToken, 'string');
+    if (!cleanToken) return;
+
+    await db
+      .update(userSessions)
+      .set({ lastActivity: new Date() })
+      .where(eq(userSessions.sessionToken, cleanToken));
+  }
+
+  async deleteSession(sessionToken: string): Promise<boolean> {
+    const cleanToken = sanitizeAndValidateInput(sessionToken, 'string');
+    if (!cleanToken) return false;
+
+    const result = await db
+      .delete(userSessions)
+      .where(eq(userSessions.sessionToken, cleanToken));
+    return result.rowCount > 0;
+  }
+
+  async cleanupExpiredSessions(): Promise<number> {
+    // Удаляем сессии старше 30 дней
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+    const result = await db
+      .delete(userSessions)
+      .where(sql`${userSessions.lastActivity} < ${thirtyDaysAgo}`);
+    
+    return result.rowCount || 0;
   }
 }
 
