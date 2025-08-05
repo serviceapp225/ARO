@@ -349,9 +349,19 @@ function ModerationManagement() {
   // Мутация удаления объявления
   const deleteMutation = useMutation({
     mutationFn: async (listingId: number) => {
+      console.log('🗑️ Отправка запроса на удаление пользователя с заголовками:', {
+        'Content-Type': 'application/json',
+        'x-user-id': user?.userId?.toString(),
+        'x-user-email': user?.email
+      });
+      
       const response = await fetch(`/api/admin/listings/${listingId}`, {
         method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' }
+        headers: { 
+          'Content-Type': 'application/json',
+          'x-user-id': user?.userId?.toString() || '',
+          'x-user-email': user?.email || ''
+        }
       });
       if (!response.ok) throw new Error('Failed to delete listing');
       return response.json();
