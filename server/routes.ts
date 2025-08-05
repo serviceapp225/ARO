@@ -36,6 +36,10 @@ const queryParamsSchema = z.object({
 const cache = new Map();
 const CACHE_TTL = 2000; // 2 seconds for ultra-fast updates
 
+// Кэш для готовых изображений (Buffer объекты)
+const imageCache = new Map<string, { buffer: Buffer; mimeType: string; timestamp: number }>();
+const IMAGE_CACHE_TTL = 3600000; // 1 час для изображений
+
 function getCached(key: string) {
   const cached = cache.get(key);
   if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
@@ -77,6 +81,29 @@ function clearCachePattern(pattern: string) {
   });
   console.log(`✅ Очищено ${deletedCount} ключей кэша`);
 }
+
+function clearImageCache() {
+  const size = imageCache.size;
+  imageCache.clear();
+  console.log(`🖼️ Очищено ${size} изображений из кэша`);
+}
+
+// Периодическая очистка устаревших изображений из кэша
+setInterval(() => {
+  const now = Date.now();
+  let deletedCount = 0;
+  
+  for (const [key, value] of imageCache.entries()) {
+    if (now - value.timestamp > IMAGE_CACHE_TTL) {
+      imageCache.delete(key);
+      deletedCount++;
+    }
+  }
+  
+  if (deletedCount > 0) {
+    console.log(`🕒 Удалено ${deletedCount} устаревших изображений из кэша`);
+  }
+}, 600000); // каждые 10 минут
 
 // Безопасный middleware для валидации входных данных
 const sanitizeInput = (req: any, res: any, next: any) => {
@@ -3573,9 +3600,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
           return res.status(400).json({ error: "Invalid image type" });
       }
       
+      // Проверяем кэш готовых изображений карусели
+      const cacheKey = `carousel-${carouselId}-${imageType}`;
+      const cached = imageCache.get(cacheKey);
+      if (cached && Date.now() - cached.timestamp < IMAGE_CACHE_TTL) {
+        res.set({
+          'Content-Type': cached.mimeType,
+          'Content-Length': cached.buffer.length.toString(),
+          'Cache-Control': 'public, max-age=86400' // 24 часа кэш
+        });
+        res.send(cached.buffer);
+        return;
+      }
+
       // Если есть локальные данные изображения
       if (imageData && mimeType) {
         const imageBuffer = ImageDownloadService.base64ToBuffer(imageData);
+        
+        // Сохраняем в кэш готовое изображение карусели
+        imageCache.set(cacheKey, {
+          buffer: imageBuffer,
+          mimeType: mimeType,
+          timestamp: Date.now()
+        });
         
         res.set({
           'Content-Type': mimeType,
@@ -3605,6 +3652,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const bannerId = parseInt(req.params.id);
       const imageType = req.params.type || 'background'; // background, rotation1, rotation2, rotation3, rotation4
+      
+      // Проверяем кэш готовых изображений
+      const cacheKey = `sell-banner-${bannerId}-${imageType}`;
+      const cached = imageCache.get(cacheKey);
+      if (cached && Date.now() - cached.timestamp < IMAGE_CACHE_TTL) {
+        res.set({
+          'Content-Type': cached.mimeType,
+          'Content-Length': cached.buffer.length.toString(),
+          'Cache-Control': 'public, max-age=86400' // 24 часа кэш
+        });
+        res.send(cached.buffer);
+        return;
+      }
       
       const sellBanner = await db.select()
         .from(sellCarBanner)
@@ -3654,6 +3714,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Если есть локальные данные изображения
       if (imageData && mimeType) {
         const imageBuffer = ImageDownloadService.base64ToBuffer(imageData);
+        
+        // Сохраняем в кэш готовое изображение
+        imageCache.set(cacheKey, {
+          buffer: imageBuffer,
+          mimeType: mimeType,
+          timestamp: Date.now()
+        });
         
         res.set({
           'Content-Type': mimeType,
