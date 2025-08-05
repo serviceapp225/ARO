@@ -8,12 +8,12 @@ packages = ["flutter", "sqlite"]
 
 [deployment]
 deploymentTarget = "gce"
-build = ["sh", "-c", "npm ci && NODE_OPTIONS='--max-old-space-size=4096' npm run build"]
+build = ["sh", "-c", "npm ci --only=production && npm run build"]
 run = ["sh", "-c", "npm start"]
 
 [[ports]]
 localPort = 3000
-externalPort = 80
+externalPort = 3000
 
 [workflows]
 runButton = "Start application"
