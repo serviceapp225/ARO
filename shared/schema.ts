@@ -123,25 +123,13 @@ export const insertCarListingSchema = createInsertSchema(carListings).omit({
   endedAt: true,
 }).extend({
   lotNumber: z.string().optional(),
-  // Electric vehicle fields - transform empty strings to undefined
-  batteryCapacity: z.union([
-    z.number().min(10).max(200),
-    z.literal(''),
-    z.null(),
-    z.undefined()
-  ]).optional().transform((val) => {
-    if (val === '' || val === null || val === undefined) return undefined;
-    return val;
-  }),
-  electricRange: z.union([
-    z.number().min(50).max(800),
-    z.literal(''),
-    z.null(),
-    z.undefined()
-  ]).optional().transform((val) => {
-    if (val === '' || val === null || val === undefined) return undefined;
-    return val;
-  }),
+  // Поля которые должны быть строками
+  engineVolume: z.string().optional().nullable(),
+  technicalInspectionDate: z.string().optional().nullable(), 
+  tintingDate: z.string().optional().nullable(),
+  // Electric vehicle fields - полностью опциональные
+  batteryCapacity: z.number().min(10).max(200).optional(),
+  electricRange: z.number().min(50).max(800).optional(),
 });
 
 export const insertBidSchema = createInsertSchema(bids).omit({

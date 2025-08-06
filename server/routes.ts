@@ -1114,6 +1114,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.log('⚡ Удалено пустое поле electricRange');
       }
       
+      // Удаляем все NaN значения
+      Object.keys(processedData).forEach(key => {
+        if (processedData[key] !== processedData[key]) { // проверка на NaN
+          delete processedData[key];
+          console.log(`🧹 Удалено NaN поле: ${key}`);
+        }
+      });
+      
       // Обработка числовых полей с проверкой на пустые строки
       ['year', 'mileage', 'auctionDuration'].forEach(field => {
         if (processedData[field] !== undefined) {
