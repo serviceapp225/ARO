@@ -1118,27 +1118,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
           if (photoData && photoData.startsWith('data:image/')) {
             const matches = photoData.match(/data:image\/([^;]+);base64,(.+)/);
             if (matches) {
-              const base64Data = matches[2];
-              const photoBuffer = Buffer.from(base64Data, 'base64');
-              
-              // Сжимаем фото перед сохранением
-              const compressedBuffer = await sharp(photoBuffer)
-                .jpeg({ 
-                  quality: 85,
-                  progressive: true,
-                  mozjpeg: true
-                })
-                .resize(1200, 900, {
-                  fit: 'inside',
-                  withoutEnlargement: true
-                })
-                .toBuffer();
-              
-              const fileName = `${i + 1}.jpg`;
-              await fileStorage.saveListingPhoto(listing.id, fileName, compressedBuffer);
-              fileNames.push(fileName);
-              
-              console.log(`📁 Сохранено фото ${fileName} для объявления ${listing.id} (размер: ${(compressedBuffer.length/1024).toFixed(1)}KB)`);
+              try {
+                const base64Data = matches[2];
+                const photoBuffer = Buffer.from(base64Data, 'base64');
+                
+                // Сжимаем фото перед сохранением с обработкой ошибок
+                const compressedBuffer = await sharp(photoBuffer)
+                  .jpeg({ 
+                    quality: 85,
+                    progressive: true,
+                    mozjpeg: true
+                  })
+                  .resize(1200, 900, {
+                    fit: 'inside',
+                    withoutEnlargement: true
+                  })
+                  .toBuffer();
+                
+                const fileName = `${i + 1}.jpg`;
+                await fileStorage.saveListingPhoto(listing.id, fileName, compressedBuffer);
+                fileNames.push(fileName);
+                
+                console.log(`📁 Сохранено фото ${fileName} для объявления ${listing.id} (размер: ${(compressedBuffer.length/1024).toFixed(1)}KB)`);
+              } catch (photoError) {
+                console.error(`❌ Ошибка обработки фото ${i + 1} для объявления ${listing.id}:`, photoError);
+                // Пропускаем проблемное фото и продолжаем с остальными
+                continue;
+              }
             }
           }
         }
@@ -1147,6 +1153,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (fileNames.length > 0) {
           await storage.updateListing(listing.id, { photos: fileNames });
           console.log(`✅ Обновлен объявление ${listing.id} с ${fileNames.length} файлами фотографий`);
+        } else if (req.body.photos.length > 0) {
+          // Если ни одно фото не удалось обработать, это ошибка
+          console.error(`❌ Не удалось обработать ни одного фото из ${req.body.photos.length} для объявления ${listing.id}`);
+          // Удаляем созданное объявление и возвращаем ошибку
+          await storage.deleteListing(listing.id);
+          return res.status(400).json({ 
+            error: "Failed to process photos", 
+            details: "Не удалось обработать загруженные изображения. Проверьте формат файлов." 
+          });
         }
       }
       

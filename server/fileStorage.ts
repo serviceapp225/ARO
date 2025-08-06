@@ -33,40 +33,33 @@ export class FileStorageManager {
   // Сохранение изображения с оптимизацией
   async saveListingPhoto(
     listingId: number, 
-    photoIndex: number, 
-    base64Data: string | any
+    photoIndex: number | string, 
+    imageData: string | Buffer
   ): Promise<string> {
     try {
       const listingPath = this.getListingPath(listingId);
       await fs.mkdir(listingPath, { recursive: true });
 
-      // Обеспечиваем что base64Data это строка
-      const base64String = typeof base64Data === 'string' ? base64Data : String(base64Data);
+      let imageBuffer: Buffer;
       
-      // Убираем data:image/jpeg;base64, префикс
-      const cleanBase64 = base64String.replace(/^data:image\/[a-z]+;base64,/, '');
-      const imageBuffer = Buffer.from(cleanBase64, 'base64');
-
-      // Оптимизация изображения через Sharp
-      // Автоматически определяем формат и конвертируем в JPEG
-      const optimizedBuffer = await sharp(imageBuffer)
-        .resize(1200, 800, { 
-          fit: 'inside',
-          withoutEnlargement: true 
-        })
-        .jpeg({ 
-          quality: 85, // Хорошее качество с компрессией
-          progressive: true 
-        })
-        .toBuffer();
+      // Обработка разных типов входных данных
+      if (Buffer.isBuffer(imageData)) {
+        // Если это уже буфер (из routes.ts после sharp обработки)
+        imageBuffer = imageData;
+      } else {
+        // Если это строка base64
+        const base64String = typeof imageData === 'string' ? imageData : String(imageData);
+        const cleanBase64 = base64String.replace(/^data:image\/[a-z]+;base64,/, '');
+        imageBuffer = Buffer.from(cleanBase64, 'base64');
+      }
 
       // Генерируем уникальное имя файла
       const filename = `${photoIndex}.jpg`;
       const filepath = path.join(listingPath, filename);
       
-      await fs.writeFile(filepath, optimizedBuffer);
+      await fs.writeFile(filepath, imageBuffer);
       
-      console.log(`📁 Сохранено фото ${filename} для объявления ${listingId} (${(optimizedBuffer.length / 1024).toFixed(1)}KB)`);
+      console.log(`📁 Сохранено фото ${filename} для объявления ${listingId} (${(imageBuffer.length / 1024).toFixed(1)}KB)`);
       
       return filename;
     } catch (error) {
