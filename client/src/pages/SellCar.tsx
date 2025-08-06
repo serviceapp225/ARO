@@ -449,7 +449,7 @@ export default function SellCar() {
       clearTimeout(timeoutId);
 
       // Accept both 200 (OK) and 201 (Created) as success
-      if (!response.ok && response.status !== 201) {
+      if (response.status !== 200 && response.status !== 201) {
         const errorData = await response.json().catch(() => ({}));
         throw new Error(errorData.error || 'Failed to create listing');
       }
