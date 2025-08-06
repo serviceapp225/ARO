@@ -156,31 +156,32 @@ export function SellCarBanner() {
       onClick={handleClick}
       className="relative h-44 rounded-2xl p-6 text-white overflow-hidden shadow-2xl cursor-pointer hover:shadow-3xl transition-all duration-300"
     >
-      {/* Фоновые изображения с плавными переходами */}
-      {hasAnyLoadedImage ? (
-        // Показываем реальные изображения только когда хотя бы одно загружено
-        carImages.map((imageUrl, index) => (
-          <div
-            key={`${imageUrl}-${index}`}
-            className={`absolute inset-0 rounded-2xl bg-cover bg-center bg-no-repeat transition-opacity duration-1000 ease-in-out ${
-              index === currentImageIndex && imageLoadState[imageUrl] === 'loaded' ? 'opacity-100' : 'opacity-0'
-            }`}
-            style={{
-              backgroundImage: imageLoadState[imageUrl] === 'loaded' 
-                ? `linear-gradient(135deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.4) 100%), url('${imageUrl}')`
-                : 'none'
-            }}
-          />
-        ))
-      ) : (
-        // SVG fallback пока не загружено ни одно реальное изображение
-        <div 
-          className="absolute inset-0 rounded-2xl bg-gradient-to-br from-slate-800 to-slate-900 bg-cover bg-center bg-no-repeat transition-opacity duration-1000 ease-in-out"
+      {/* SVG fallback - показывается до загрузки реальных изображений */}
+      <div 
+        className={`absolute inset-0 rounded-2xl bg-gradient-to-br from-slate-800 to-slate-900 bg-cover bg-center bg-no-repeat transition-opacity duration-1000 ease-in-out ${
+          hasAnyLoadedImage ? 'opacity-0' : 'opacity-100'
+        }`}
+        style={{
+          backgroundImage: `linear-gradient(135deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.4) 100%), url('${carBannerSvg}')`
+        }}
+      />
+      
+      {/* Реальные изображения с плавным появлением */}
+      {carImages.map((imageUrl, index) => (
+        <div
+          key={`${imageUrl}-${index}`}
+          className={`absolute inset-0 rounded-2xl bg-cover bg-center bg-no-repeat transition-opacity duration-1000 ease-in-out ${
+            hasAnyLoadedImage && index === currentImageIndex && imageLoadState[imageUrl] === 'loaded' 
+              ? 'opacity-100' 
+              : 'opacity-0'
+          }`}
           style={{
-            backgroundImage: `linear-gradient(135deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.4) 100%), url('${carBannerSvg}')`
+            backgroundImage: imageLoadState[imageUrl] === 'loaded' 
+              ? `linear-gradient(135deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.4) 100%), url('${imageUrl}')`
+              : 'none'
           }}
         />
-      )}
+      ))}
       
       {/* Content */}
       <div className="relative z-10 h-full flex flex-col justify-center items-center text-center space-y-2">
