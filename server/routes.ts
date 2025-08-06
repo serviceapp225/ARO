@@ -1080,12 +1080,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
           : processedData.electricRange;
       }
       
-      // 🚀 ФАЙЛОВАЯ СИСТЕМА: Обрабатываем фотографии перед валидацией
+      // 🚀 ФАЙЛОВАЯ СИСТЕМА: Сохраняем фотографии отдельно
       let fileNames: string[] = [];
+      let photosBackup: any[] = [];
       if (processedData.photos && Array.isArray(processedData.photos)) {
-        // Сначала создаем объявление без фото для получения ID
-        const photosBackup = processedData.photos;
-        processedData.photos = []; // Временно убираем фото из данных
+        // Сохраняем фото для последующей обработки
+        photosBackup = [...processedData.photos];
+        processedData.photos = []; // Временно убираем фото из валидации
       }
       
       const validatedData = insertCarListingSchema.parse(processedData);
@@ -1109,11 +1110,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const listing = await storage.createListing(listingWithPendingStatus);
       
       // 🚀 ФАЙЛОВАЯ СИСТЕМА: Теперь сохраняем фотографии в файлы
-      if (req.body.photos && Array.isArray(req.body.photos)) {
-        console.log(`📁 Сохраняем ${req.body.photos.length} фотографий для объявления ${listing.id}`);
+      if (photosBackup && Array.isArray(photosBackup) && photosBackup.length > 0) {
+        console.log(`📁 Сохраняем ${photosBackup.length} фотографий для объявления ${listing.id}`);
         
-        for (let i = 0; i < req.body.photos.length; i++) {
-          const photoData = req.body.photos[i];
+        for (let i = 0; i < photosBackup.length; i++) {
+          const photoData = photosBackup[i];
           
           if (photoData && photoData.startsWith('data:image/')) {
             const matches = photoData.match(/data:image\/([^;]+);base64,(.+)/);
@@ -1153,9 +1154,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (fileNames.length > 0) {
           await storage.updateListing(listing.id, { photos: fileNames });
           console.log(`✅ Обновлен объявление ${listing.id} с ${fileNames.length} файлами фотографий`);
-        } else if (req.body.photos.length > 0) {
+        } else if (photosBackup.length > 0) {
           // Если ни одно фото не удалось обработать, это ошибка
-          console.error(`❌ Не удалось обработать ни одного фото из ${req.body.photos.length} для объявления ${listing.id}`);
+          console.error(`❌ Не удалось обработать ни одного фото из ${photosBackup.length} для объявления ${listing.id}`);
           // Удаляем созданное объявление и возвращаем ошибку
           await storage.deleteListing(listing.id);
           return res.status(400).json({ 
