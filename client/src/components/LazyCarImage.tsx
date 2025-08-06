@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Car } from 'lucide-react';
+import defaultCarPlaceholder from '@/assets/default-car-placeholder.jpg';
 
 interface LazyCarImageProps {
   listingId: string;
@@ -52,8 +53,17 @@ export function LazyCarImage({ listingId, make, model, year, photos = [], classN
   // Показываем placeholder если нет фотографий или еще не видимо
   if (!isVisible || photos.length === 0) {
     return (
-      <div ref={imgRef} className={`bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center ${className}`}>
-        <Car className="w-12 h-12 text-gray-400" />
+      <div ref={imgRef} className={`relative overflow-hidden ${className}`}>
+        <img 
+          src={defaultCarPlaceholder}
+          alt="Автомобиль под тканью"
+          className="w-full h-full object-cover"
+        />
+        <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
+          <div className="bg-white/90 text-gray-700 text-sm px-3 py-1 rounded-full">
+            Загрузка...
+          </div>
+        </div>
       </div>
     );
   }
@@ -73,8 +83,17 @@ export function LazyCarImage({ listingId, make, model, year, photos = [], classN
       
       {/* Индикатор загрузки */}
       {!imageLoaded && (
-        <div className="absolute inset-0 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
-          <Car className="w-12 h-12 text-gray-400 animate-pulse" />
+        <div className="absolute inset-0 bg-gray-100 flex items-center justify-center">
+          <img 
+            src={defaultCarPlaceholder}
+            alt="Автомобиль под тканью"
+            className="w-full h-full object-cover opacity-50"
+          />
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="bg-white/90 text-gray-700 text-sm px-3 py-1 rounded-full animate-pulse">
+              Загрузка фото...
+            </div>
+          </div>
         </div>
       )}
       
