@@ -349,14 +349,34 @@ function ModerationManagement() {
   // Мутация удаления объявления
   const deleteMutation = useMutation({
     mutationFn: async (listingId: number) => {
+      // Получаем пользователя из localStorage как в других функциях
+      const currentUser = localStorage.getItem('currentUser');
+      const demoUser = localStorage.getItem('demo-user');
+      
+      let user: any = {};
+      
+      if (currentUser) {
+        try {
+          user = JSON.parse(currentUser);
+        } catch (e) {
+          console.error('Ошибка парсинга currentUser:', e);
+        }
+      } else if (demoUser) {
+        try {
+          user = JSON.parse(demoUser);
+        } catch (e) {
+          console.error('Ошибка парсинга demo-user:', e);
+        }
+      }
+      
       console.log('🗑️ DEBUG: Пользователь перед удалением:', user);
       console.log('🗑️ DEBUG: userId:', user?.userId);
       console.log('🗑️ DEBUG: email:', user?.email);
       
       const headers = {
         'Content-Type': 'application/json',
-        'x-user-id': user?.userId?.toString() || '',
-        'x-user-email': user?.email || ''
+        'x-user-id': user?.userId?.toString() || '4', // fallback для демо
+        'x-user-email': user?.email || '+992 (90) 333-13-32@autoauction.tj' // fallback для демо
       };
       
       console.log('🗑️ Отправка DELETE запроса с заголовками:', headers);
