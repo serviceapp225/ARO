@@ -1136,7 +1136,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
                   .toBuffer();
                 
                 const fileName = `${i + 1}.jpg`;
-                await fileStorage.saveListingPhoto(listing.id, fileName, compressedBuffer);
+                await fileStorage.saveListingPhoto(listing.id, i + 1, compressedBuffer);
                 fileNames.push(fileName);
                 
                 console.log(`📁 Сохранено фото ${fileName} для объявления ${listing.id} (размер: ${(compressedBuffer.length/1024).toFixed(1)}KB)`);
