@@ -34,25 +34,29 @@ export class FileStorageManager {
   async saveListingPhoto(
     listingId: number, 
     photoIndex: number, 
-    base64Data: string
+    base64Data: string | any
   ): Promise<string> {
     try {
       const listingPath = this.getListingPath(listingId);
       await fs.mkdir(listingPath, { recursive: true });
 
+      // Обеспечиваем что base64Data это строка
+      const base64String = typeof base64Data === 'string' ? base64Data : String(base64Data);
+      
       // Убираем data:image/jpeg;base64, префикс
-      const cleanBase64 = base64Data.replace(/^data:image\/[a-z]+;base64,/, '');
+      const cleanBase64 = base64String.replace(/^data:image\/[a-z]+;base64,/, '');
       const imageBuffer = Buffer.from(cleanBase64, 'base64');
 
       // Оптимизация изображения через Sharp
+      // Автоматически определяем формат и конвертируем в JPEG
       const optimizedBuffer = await sharp(imageBuffer)
-        .jpeg({ 
-          quality: 85, // Хорошее качество с компрессией
-          progressive: true 
-        })
         .resize(1200, 800, { 
           fit: 'inside',
           withoutEnlargement: true 
+        })
+        .jpeg({ 
+          quality: 85, // Хорошее качество с компрессией
+          progressive: true 
         })
         .toBuffer();
 

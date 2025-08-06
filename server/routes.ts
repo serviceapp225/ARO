@@ -9,6 +9,7 @@ import { carListings, notifications, alertViews, carAlerts, banners, advertiseme
 import { eq, sql } from "drizzle-orm";
 import sharp from "sharp";
 import { ImageDownloadService } from "./imageDownloadService";
+import { FileStorageManager } from "./fileStorage";
 import { insertCarListingSchema, insertBidSchema, insertFavoriteSchema, insertNotificationSchema, insertCarAlertSchema, insertBannerSchema, insertSellCarBannerSchema, type CarAlert } from "@shared/schema";
 import { z } from "zod";
 import AuctionWebSocketManager from "./websocket";
@@ -39,6 +40,87 @@ const CACHE_TTL = 2000; // 2 seconds for ultra-fast updates
 // Кэш для готовых изображений (Buffer объекты)
 const imageCache = new Map<string, { buffer: Buffer; mimeType: string; timestamp: number }>();
 const IMAGE_CACHE_TTL = 3600000; // 1 час для изображений
+
+// Инициализируем файловое хранилище
+const fileStorage = new FileStorageManager();
+
+// 🚀 Функция миграции base64 фотографий в файловую систему
+async function migratePhotosToFileSystem() {
+  try {
+    console.log('🔄 Начинаем миграцию фотографий в файловую систему...');
+    
+    const allListings = await db.select().from(carListings);
+    let migratedCount = 0;
+    let skippedCount = 0;
+    
+    for (const listing of allListings) {
+      if (!listing.photos || !Array.isArray(listing.photos) || listing.photos.length === 0) {
+        continue;
+      }
+      
+      // Проверяем, есть ли base64 фотографии
+      const hasBase64Photos = listing.photos.some(photo => 
+        typeof photo === 'string' && photo.startsWith('data:image/')
+      );
+      
+      if (!hasBase64Photos) {
+        console.log(`⏭️ Объявление ${listing.id} уже мигрировано или содержит имена файлов`);
+        skippedCount++;
+        continue;
+      }
+      
+      console.log(`📸 Мигрируем ${listing.photos.length} фотографий для объявления ${listing.id}`);
+      
+      const fileNames: string[] = [];
+      for (let i = 0; i < listing.photos.length; i++) {
+        const photoData = listing.photos[i];
+        
+        if (typeof photoData === 'string' && photoData.startsWith('data:image/')) {
+          const matches = photoData.match(/data:image\/([^;]+);base64,(.+)/);
+          if (matches) {
+            const base64Data = matches[2];
+            const photoBuffer = Buffer.from(base64Data, 'base64');
+            
+            // Сжимаем и сохраняем фото
+            const compressedBuffer = await sharp(photoBuffer)
+              .jpeg({ 
+                quality: 85,
+                progressive: true,
+                mozjpeg: true
+              })
+              .resize(1200, 900, {
+                fit: 'inside',
+                withoutEnlargement: true
+              })
+              .toBuffer();
+            
+            const fileName = `${i + 1}.jpg`;
+            await fileStorage.saveListingPhoto(listing.id, fileName, compressedBuffer);
+            fileNames.push(fileName);
+            
+            console.log(`✅ Сохранено ${fileName} для объявления ${listing.id} (${(compressedBuffer.length/1024).toFixed(1)}KB)`);
+          }
+        }
+      }
+      
+      // Обновляем запись в БД с именами файлов
+      if (fileNames.length > 0) {
+        await db.update(carListings)
+          .set({ photos: fileNames })
+          .where(eq(carListings.id, listing.id));
+        
+        migratedCount++;
+        console.log(`🎯 Объявление ${listing.id} мигрировано: ${fileNames.length} фотографий`);
+      }
+    }
+    
+    console.log(`✅ Миграция завершена! Мигрировано: ${migratedCount}, Пропущено: ${skippedCount}`);
+    return { migrated: migratedCount, skipped: skippedCount };
+  } catch (error) {
+    console.error('❌ Ошибка миграции:', error);
+    throw error;
+  }
+}
 
 function getCached(key: string) {
   const cached = cache.get(key);
@@ -676,7 +758,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Invalid parameters" });
       }
       
-      // Get photos directly from database for this endpoint only
+      // 🚀 НОВАЯ ФАЙЛОВАЯ СИСТЕМА: Сначала пробуем загрузить из файловой системы
+      try {
+        const fileName = `${photoIndex + 1}.jpg`; // Конвертируем индекс в имя файла (1.jpg, 2.jpg и т.д.)
+        const fileBuffer = await fileStorage.getListingPhoto(listingId, fileName);
+        
+        if (fileBuffer) {
+          console.log(`📁 Фото загружено из файловой системы: ${listingId}/${fileName}`);
+          
+          // Кэшируем загруженное изображение
+          photoCache.set(cacheKey, fileBuffer);
+          photoCacheTypes.set(cacheKey, 'image/jpeg');
+          
+          res.set('Content-Type', 'image/jpeg');
+          res.set('Cache-Control', 'public, max-age=2592000'); // 30 дней кэш для фото
+          res.send(fileBuffer);
+          return;
+        }
+      } catch (fileError) {
+        console.log(`📁 Файл не найден, пробуем base64 из БД: ${listingId}/${photoIndex}`);
+      }
+      
+      // 💾 FALLBACK: Если файла нет, берем из базы данных (для старых фото)
       const [listing] = await db.select({ photos: carListings.photos }).from(carListings).where(eq(carListings.id, listingId));
       if (!listing) {
         return res.status(404).json({ error: "Listing not found" });
@@ -701,6 +804,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
             const originalMimeType = `image/${matches[1]}`;
             const base64Data = matches[2];
             const originalBuffer = Buffer.from(base64Data, 'base64');
+            
+            console.log(`💾 Фото загружено из базы данных (base64): ${listingId}/${photoIndex}`);
             
             // Compress image automatically to reduce size while maintaining quality
             let compressedBuffer: Buffer;
@@ -975,6 +1080,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
           : processedData.electricRange;
       }
       
+      // 🚀 ФАЙЛОВАЯ СИСТЕМА: Обрабатываем фотографии перед валидацией
+      let fileNames: string[] = [];
+      if (processedData.photos && Array.isArray(processedData.photos)) {
+        // Сначала создаем объявление без фото для получения ID
+        const photosBackup = processedData.photos;
+        processedData.photos = []; // Временно убираем фото из данных
+      }
+      
       const validatedData = insertCarListingSchema.parse(processedData);
       
       // Generate lot number if not provided
@@ -994,6 +1107,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
       };
       
       const listing = await storage.createListing(listingWithPendingStatus);
+      
+      // 🚀 ФАЙЛОВАЯ СИСТЕМА: Теперь сохраняем фотографии в файлы
+      if (req.body.photos && Array.isArray(req.body.photos)) {
+        console.log(`📁 Сохраняем ${req.body.photos.length} фотографий для объявления ${listing.id}`);
+        
+        for (let i = 0; i < req.body.photos.length; i++) {
+          const photoData = req.body.photos[i];
+          
+          if (photoData && photoData.startsWith('data:image/')) {
+            const matches = photoData.match(/data:image\/([^;]+);base64,(.+)/);
+            if (matches) {
+              const base64Data = matches[2];
+              const photoBuffer = Buffer.from(base64Data, 'base64');
+              
+              // Сжимаем фото перед сохранением
+              const compressedBuffer = await sharp(photoBuffer)
+                .jpeg({ 
+                  quality: 85,
+                  progressive: true,
+                  mozjpeg: true
+                })
+                .resize(1200, 900, {
+                  fit: 'inside',
+                  withoutEnlargement: true
+                })
+                .toBuffer();
+              
+              const fileName = `${i + 1}.jpg`;
+              await fileStorage.saveListingPhoto(listing.id, fileName, compressedBuffer);
+              fileNames.push(fileName);
+              
+              console.log(`📁 Сохранено фото ${fileName} для объявления ${listing.id} (размер: ${(compressedBuffer.length/1024).toFixed(1)}KB)`);
+            }
+          }
+        }
+        
+        // Обновляем объявление с именами файлов вместо base64
+        if (fileNames.length > 0) {
+          await storage.updateListing(listing.id, { photos: fileNames });
+          console.log(`✅ Обновлен объявление ${listing.id} с ${fileNames.length} файлами фотографий`);
+        }
+      }
       
       // Clear all caches to force refresh
       clearAllCaches();
@@ -2722,6 +2877,84 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(stats);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch admin stats" });
+    }
+  });
+
+  // 🚀 ФАЙЛОВАЯ СИСТЕМА: Новые API endpoints для управления
+  
+  // Запуск миграции фотографий в файловую систему
+  app.post("/api/admin/migrate-photos", adminAuth, async (req, res) => {
+    try {
+      console.log('🚀 Админ запустил миграцию фотографий в файловую систему');
+      const result = await migratePhotosToFileSystem();
+      res.json({
+        success: true,
+        message: "Миграция завершена успешно",
+        migrated: result.migrated,
+        skipped: result.skipped
+      });
+    } catch (error) {
+      console.error('❌ Ошибка миграции:', error);
+      res.status(500).json({ 
+        error: "Failed to migrate photos", 
+        details: error instanceof Error ? error.message : 'Unknown error' 
+      });
+    }
+  });
+
+  // Проверка состояния файловой системы
+  app.get("/api/admin/photo-storage-status", adminAuth, async (req, res) => {
+    try {
+      const allListings = await db.select({ id: carListings.id, photos: carListings.photos }).from(carListings);
+      
+      let fileSystemCount = 0;
+      let base64Count = 0;
+      let noPhotosCount = 0;
+      const listingDetails: any[] = [];
+      
+      for (const listing of allListings) {
+        if (!listing.photos || !Array.isArray(listing.photos) || listing.photos.length === 0) {
+          noPhotosCount++;
+          listingDetails.push({
+            id: listing.id,
+            status: 'no_photos',
+            photoCount: 0
+          });
+          continue;
+        }
+        
+        const hasBase64Photos = listing.photos.some(photo => 
+          typeof photo === 'string' && photo.startsWith('data:image/')
+        );
+        
+        if (hasBase64Photos) {
+          base64Count++;
+          listingDetails.push({
+            id: listing.id,
+            status: 'base64',
+            photoCount: listing.photos.length
+          });
+        } else {
+          fileSystemCount++;
+          listingDetails.push({
+            id: listing.id,
+            status: 'filesystem',
+            photoCount: listing.photos.length
+          });
+        }
+      }
+      
+      res.json({
+        total: allListings.length,
+        fileSystem: fileSystemCount,
+        base64: base64Count,
+        noPhotos: noPhotosCount,
+        migrationNeeded: base64Count > 0,
+        details: listingDetails
+      });
+    } catch (error) {
+      console.error('❌ Ошибка проверки состояния хранилища:', error);
+      res.status(500).json({ error: "Failed to check storage status" });
     }
   });
 
