@@ -1085,46 +1085,102 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log('📁 Количество файлов:', req.files?.length || 0);
       console.log('📝 Данные формы:', Object.keys(req.body));
 
-      // Preprocess the data to handle electric vehicle fields
+      // Безопасная обработка FormData с проверкой типов
       const processedData = { ...req.body };
       
-      // Convert electric vehicle fields to correct types if they exist
-      if (processedData.batteryCapacity !== undefined && processedData.batteryCapacity !== null) {
-        processedData.batteryCapacity = typeof processedData.batteryCapacity === 'string' 
-          ? parseFloat(processedData.batteryCapacity) 
-          : processedData.batteryCapacity;
-      }
+      console.log('📋 Raw form data:', JSON.stringify(processedData, null, 2));
       
-      if (processedData.electricRange !== undefined && processedData.electricRange !== null) {
-        processedData.electricRange = typeof processedData.electricRange === 'string' 
-          ? parseInt(processedData.electricRange) 
-          : processedData.electricRange;
-      }
+      // Безопасная функция парсинга чисел
+      const safeParseInt = (value: any): number | undefined => {
+        if (value === '' || value === null || value === undefined) return undefined;
+        const parsed = parseInt(String(value));
+        return isNaN(parsed) ? undefined : parsed;
+      };
       
-      // Convert string fields to proper types for validation
-      ['year', 'mileage', 'sellerId', 'auctionDuration'].forEach(field => {
-        if (processedData[field] && typeof processedData[field] === 'string') {
-          processedData[field] = parseInt(processedData[field]);
+      const safeParseFloat = (value: any): number | undefined => {
+        if (value === '' || value === null || value === undefined) return undefined;
+        const parsed = parseFloat(String(value));
+        return isNaN(parsed) ? undefined : parsed;
+      };
+      
+      // Обработка числовых полей с проверкой на пустые строки
+      ['year', 'mileage', 'auctionDuration'].forEach(field => {
+        if (processedData[field] !== undefined) {
+          const parsed = safeParseInt(processedData[field]);
+          if (parsed !== undefined) {
+            processedData[field] = parsed;
+          } else {
+            delete processedData[field]; // Удаляем некорректные значения
+          }
         }
       });
       
       ['startingPrice', 'reservePrice'].forEach(field => {
-        if (processedData[field] && typeof processedData[field] === 'string') {
-          processedData[field] = parseFloat(processedData[field]);
+        if (processedData[field] !== undefined) {
+          const parsed = safeParseFloat(processedData[field]);
+          if (parsed !== undefined) {
+            processedData[field] = parsed;
+          } else {
+            delete processedData[field]; // Удаляем некорректные значения
+          }
         }
       });
       
-      // Convert boolean fields
+      // Обработка полей электромобилей
+      if (processedData.batteryCapacity !== undefined) {
+        const parsed = safeParseFloat(processedData.batteryCapacity);
+        if (parsed !== undefined) {
+          processedData.batteryCapacity = parsed;
+        } else {
+          delete processedData.batteryCapacity;
+        }
+      }
+      
+      if (processedData.electricRange !== undefined) {
+        const parsed = safeParseInt(processedData.electricRange);
+        if (parsed !== undefined) {
+          processedData.electricRange = parsed;
+        } else {
+          delete processedData.electricRange;
+        }
+      }
+      
+      // Обработка булевых полей
       ['customsCleared', 'recycled', 'technicalInspectionValid', 'tinted'].forEach(field => {
         if (processedData[field] === 'true') {
           processedData[field] = true;
         } else if (processedData[field] === 'false') {
           processedData[field] = false;
+        } else if (processedData[field] === 'yes') {
+          processedData[field] = true;
+        } else if (processedData[field] === 'no') {
+          processedData[field] = false;
         }
       });
       
+      // Добавляем sellerId пользователя
+      const user = getUserFromContext(req);
+      if (!user) {
+        return res.status(401).json({ error: "User not authenticated" });
+      }
+      processedData.sellerId = user.userId;
+      
       // Remove photos from processedData for validation (we'll handle files separately)
       delete processedData.photos;
+      
+      console.log('📋 Processed data before validation:', JSON.stringify(processedData, null, 2));
+      
+      try {
+        const validatedData = insertCarListingSchema.parse(processedData);
+        console.log('✅ Data validation successful');
+      } catch (validationError: any) {
+        console.error('❌ Validation failed:', validationError.errors);
+        return res.status(400).json({ 
+          error: "Invalid listing data", 
+          details: validationError.errors,
+          receivedData: processedData
+        });
+      }
       
       const validatedData = insertCarListingSchema.parse(processedData);
       
