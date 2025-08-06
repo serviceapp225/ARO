@@ -2873,9 +2873,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const listingId = parseInt(req.params.id);
       console.log('✅ Admin authenticated, proceeding to delete listing:', listingId);
       
+      // Сначала проверим существует ли объявление
+      const listing = await storage.getListing(listingId);
+      if (!listing) {
+        console.log(`❌ Listing ${listingId} not found in database`);
+        return res.status(404).json({ error: "Listing not found" });
+      }
+      
+      console.log(`📋 Found listing ${listingId}: ${listing.make} ${listing.model} (${listing.status})`);
+      
       const success = await storage.deleteListing(listingId);
       if (!success) {
-        return res.status(404).json({ error: "Listing not found" });
+        console.log(`❌ Failed to delete listing ${listingId} from storage`);
+        return res.status(500).json({ error: "Failed to delete listing from database" });
       }
       
       // Очищаем все кэши после удаления
