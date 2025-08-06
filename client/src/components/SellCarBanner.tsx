@@ -1,6 +1,6 @@
 import { Plus } from "lucide-react";
 import { useLocation } from "wouter";
-import carBannerSvg from "@/assets/car-banner.svg";
+import placeholderCarImage from "@assets/rodan-can-6cqJPeTIuls-unsplash_1754479984557.jpg";
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
@@ -162,7 +162,7 @@ export function SellCarBanner() {
           hasAnyLoadedImage ? 'opacity-0' : 'opacity-100'
         }`}
         style={{
-          backgroundImage: `linear-gradient(135deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.4) 100%), url('${carBannerSvg}')`
+          backgroundImage: `linear-gradient(135deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.4) 100%), url('${placeholderCarImage}')`
         }}
       />
       
