@@ -95,17 +95,23 @@ export function AdvertisementCarousel() {
     console.log('🔗 Загружаем изображение карусели через API:', getOptimizedImageUrl(activeAds[0], 'main'));
   }
 
-  // Предзагрузка локальных API endpoints (без лишней логики)
+  // Агрессивная предзагрузка всех изображений карусели
   useEffect(() => {
     activeAds.forEach((ad: AdvertisementItem) => {
-      // Предзагружаем оптимизированные изображения из нашего API
       const allImages = getRotationImages(ad);
       
+      // Создаем скрытые img элементы для принудительного кеширования
       allImages.forEach((apiUrl) => {
         if (apiUrl && !globalPreloadedImages.has(apiUrl)) {
           globalPreloadedImages.add(apiUrl);
           
-          // Простая предзагрузка без сложной логики
+          // Принудительная загрузка через скрытый img элемент
+          const img = new Image();
+          img.src = apiUrl;
+          img.onload = () => console.log(`✅ Предзагружено изображение карусели: ${apiUrl}`);
+          img.onerror = () => console.warn(`❌ Ошибка предзагрузки: ${apiUrl}`);
+          
+          // Также добавляем link preload для дополнительного кеширования
           const link = document.createElement('link');
           link.rel = 'preload';
           link.as = 'image';
