@@ -1089,6 +1089,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const processedData = { ...req.body };
       
       console.log('📋 Raw form data:', JSON.stringify(processedData, null, 2));
+      console.log('📋 Data types check:');
+      Object.keys(processedData).forEach(key => {
+        console.log(`  ${key}: ${typeof processedData[key]} = ${processedData[key]}`);
+      });
       
       // Безопасная функция парсинга чисел
       const safeParseInt = (value: any): number | undefined => {
@@ -1141,14 +1145,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       });
       
+      // Цены обрабатываем как строки для PostgreSQL numeric полей
       ['startingPrice', 'reservePrice'].forEach(field => {
         if (processedData[field] !== undefined) {
-          const parsed = safeParseFloat(processedData[field]);
-          if (parsed !== undefined) {
-            processedData[field] = parsed;
-          } else {
-            delete processedData[field]; // Удаляем некорректные значения
-          }
+          // Просто оставляем как строку для PostgreSQL numeric поля
+          processedData[field] = String(processedData[field]);
+          console.log(`💰 Price field ${field}: ${processedData[field]} (type: ${typeof processedData[field]})`);
         }
       });
       
