@@ -1188,11 +1188,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       console.log('📋 Processed data before validation:', JSON.stringify(processedData, null, 2));
       
+      // Проверка файлов для photos
+      if (!req.files || (req.files as Express.Multer.File[]).length === 0) {
+        return res.status(400).json({ error: "At least one photo is required" });
+      }
+      
       try {
+        // Устанавливаем photos как пустой массив для валидации (файлы обрабатываем отдельно)
+        processedData.photos = [];
+        
         const validatedData = insertCarListingSchema.parse(processedData);
         console.log('✅ Data validation successful');
       } catch (validationError: any) {
-        console.error('❌ Validation failed:', validationError.errors);
+        console.error('❌ Validation failed:', JSON.stringify(validationError.errors, null, 2));
         return res.status(400).json({ 
           error: "Invalid listing data", 
           details: validationError.errors,
@@ -1200,6 +1208,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
+      // Устанавливаем photos обратно для второй валидации
+      processedData.photos = [];
       const validatedData = insertCarListingSchema.parse(processedData);
       
       // Generate lot number if not provided
