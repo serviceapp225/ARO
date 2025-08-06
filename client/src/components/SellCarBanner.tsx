@@ -61,12 +61,44 @@ export function SellCarBanner() {
   
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   
-  // Состояние загрузки изображений (как в карусели)
+  // Состояние загрузки изображений с оптимизацией
   const [imageLoadState, setImageLoadState] = useState<{[url: string]: 'loading' | 'loaded' | 'error'}>({});
+  const [hasAnyLoadedImage, setHasAnyLoadedImage] = useState(false);
   
-  // Предзагрузка изображений (как в карусели)
+  // Сброс индекса при смене набора изображений
   useEffect(() => {
-    carImages.forEach((imageUrl) => {
+    if (hasAnyLoadedImage && carImages.length > 0) {
+      // Находим первое загруженное изображение и устанавливаем его как текущее
+      const firstLoadedIndex = carImages.findIndex(imageUrl => imageLoadState[imageUrl] === 'loaded');
+      if (firstLoadedIndex !== -1) {
+        setCurrentImageIndex(firstLoadedIndex);
+      }
+    }
+  }, [hasAnyLoadedImage, carImages, imageLoadState]);
+  
+  // Предзагрузка изображений с приоритетом первого
+  useEffect(() => {
+    if (carImages.length === 0) return;
+    
+    // Сначала загружаем первое изображение приоритетно
+    const firstImage = carImages[0];
+    if (firstImage && !imageLoadState[firstImage]) {
+      setImageLoadState(prev => ({ ...prev, [firstImage]: 'loading' }));
+      
+      const img = new Image();
+      img.onload = () => {
+        setImageLoadState(prev => ({ ...prev, [firstImage]: 'loaded' }));
+        setHasAnyLoadedImage(true);
+      };
+      img.onerror = () => {
+        setImageLoadState(prev => ({ ...prev, [firstImage]: 'error' }));
+      };
+      img.crossOrigin = 'anonymous';
+      img.src = firstImage;
+    }
+    
+    // Остальные изображения загружаем параллельно
+    carImages.slice(1).forEach((imageUrl) => {
       if (imageUrl && !imageLoadState[imageUrl]) {
         setImageLoadState(prev => ({ ...prev, [imageUrl]: 'loading' }));
         
@@ -83,16 +115,28 @@ export function SellCarBanner() {
     });
   }, [carImages]);
 
-  // Ротация изображений с настраиваемым интервалом
+  // Ротация изображений с настраиваемым интервалом - только для загруженных изображений
   useEffect(() => {
-    if (carImages.length <= 1) return; // Не ротируем если одно изображение или меньше
+    if (!hasAnyLoadedImage || carImages.length <= 1) return; // Не ротируем если нет загруженных изображений
     
     const interval = setInterval(() => {
-      setCurrentImageIndex((prev) => (prev + 1) % carImages.length);
+      setCurrentImageIndex((prev) => {
+        // Находим следующее загруженное изображение
+        let nextIndex = (prev + 1) % carImages.length;
+        let attempts = 0;
+        
+        // Ищем следующее загруженное изображение (максимум carImages.length попыток)
+        while (imageLoadState[carImages[nextIndex]] !== 'loaded' && attempts < carImages.length) {
+          nextIndex = (nextIndex + 1) % carImages.length;
+          attempts++;
+        }
+        
+        return nextIndex;
+      });
     }, rotationInterval);
     
     return () => clearInterval(interval);
-  }, [carImages.length, rotationInterval]);
+  }, [hasAnyLoadedImage, carImages.length, rotationInterval, imageLoadState]);
   
   const handleClick = () => {
     console.log('КЛИК РАБОТАЕТ! Переход на /sell');
@@ -113,24 +157,25 @@ export function SellCarBanner() {
       className="relative h-44 rounded-2xl p-6 text-white overflow-hidden shadow-2xl cursor-pointer hover:shadow-3xl transition-all duration-300"
     >
       {/* Фоновые изображения с плавными переходами */}
-      {carImages.length > 0 ? (
+      {hasAnyLoadedImage ? (
+        // Показываем реальные изображения только когда хотя бы одно загружено
         carImages.map((imageUrl, index) => (
           <div
             key={`${imageUrl}-${index}`}
-            className={`absolute inset-0 rounded-2xl bg-gradient-to-br from-slate-800 to-slate-900 bg-cover bg-center bg-no-repeat transition-opacity duration-1000 ease-in-out ${
-              index === currentImageIndex ? 'opacity-100' : 'opacity-0'
+            className={`absolute inset-0 rounded-2xl bg-cover bg-center bg-no-repeat transition-opacity duration-1000 ease-in-out ${
+              index === currentImageIndex && imageLoadState[imageUrl] === 'loaded' ? 'opacity-100' : 'opacity-0'
             }`}
             style={{
               backgroundImage: imageLoadState[imageUrl] === 'loaded' 
                 ? `linear-gradient(135deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.4) 100%), url('${imageUrl}')`
-                : `linear-gradient(135deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.4) 100%)`
+                : 'none'
             }}
           />
         ))
       ) : (
-        // Fallback к SVG если нет изображений из API
+        // SVG fallback пока не загружено ни одно реальное изображение
         <div 
-          className="absolute inset-0 rounded-2xl bg-gradient-to-br from-slate-800 to-slate-900 bg-cover bg-center bg-no-repeat"
+          className="absolute inset-0 rounded-2xl bg-gradient-to-br from-slate-800 to-slate-900 bg-cover bg-center bg-no-repeat transition-opacity duration-1000 ease-in-out"
           style={{
             backgroundImage: `linear-gradient(135deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.4) 100%), url('${carBannerSvg}')`
           }}
