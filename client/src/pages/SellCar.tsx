@@ -44,6 +44,7 @@ const TAJIKISTAN_CITIES = [
 export default function SellCar() {
   const { user } = useAuth();
   const [uploadedImages, setUploadedImages] = useState<string[]>([]);
+  const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [countdown, setCountdown] = useState(3);
@@ -107,11 +108,14 @@ export default function SellCar() {
         })
       );
       
-      // Добавляем сжатые фотографии без дополнительного серверного сжатия
-      setUploadedImages(prev => [...prev, ...newImages]);
+      // Создаем preview URLs для сжатых файлов
+      const previewUrls = newImages.map(file => URL.createObjectURL(file));
+      setUploadedImages(prev => [...prev, ...previewUrls]);
+      // Сохраняем сжатые файлы для FormData
+      setUploadedFiles(prev => [...prev, ...newImages]);
       
       // Показываем успешное уведомление
-      const totalSize = newImages.reduce((sum, img) => sum + Math.round((img.length * 3) / 4 / 1024), 0);
+      const totalSize = newImages.reduce((sum, file) => sum + Math.round(file.size / 1024), 0);
       toast({
         title: "Фотографии готовы",
         description: `${newImages.length} фото добавлено (${totalSize}KB)`,
@@ -120,7 +124,7 @@ export default function SellCar() {
     }
   };
 
-  const compressImage = (file: File, quality: number, maxWidth: number): Promise<string> => {
+  const compressImage = (file: File, quality: number, maxWidth: number): Promise<File> => {
     return new Promise((resolve) => {
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d')!;
@@ -146,9 +150,18 @@ export default function SellCar() {
         // Отрисовываем сжатое изображение
         ctx.drawImage(img, 0, 0, width, height);
         
-        // Конвертируем в JPEG с настроенным качеством
-        const compressedDataUrl = canvas.toDataURL('image/jpeg', quality);
-        resolve(compressedDataUrl);
+        // Конвертируем в Blob и создаем новый File
+        canvas.toBlob((blob) => {
+          if (blob) {
+            const compressedFile = new File([blob], file.name, {
+              type: 'image/jpeg',
+              lastModified: Date.now()
+            });
+            resolve(compressedFile);
+          } else {
+            resolve(file); // Fallback к оригинальному файлу
+          }
+        }, 'image/jpeg', quality);
         
         // Освобождаем память
         URL.revokeObjectURL(img.src);
@@ -159,7 +172,14 @@ export default function SellCar() {
   };
 
   const removeImage = (index: number) => {
+    // Освобождаем URL для предпросмотра
+    const urlToRevoke = uploadedImages[index];
+    if (urlToRevoke && urlToRevoke.startsWith('blob:')) {
+      URL.revokeObjectURL(urlToRevoke);
+    }
+    
     setUploadedImages(prev => prev.filter((_, i) => i !== index));
+    setUploadedFiles(prev => prev.filter((_, i) => i !== index));
   };
 
   const handleInputChange = (field: string, value: string) => {
@@ -437,12 +457,24 @@ export default function SellCar() {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
 
+      // Create FormData to send files instead of base64
+      const formDataToSend = new FormData();
+      
+      // Add all listing data as JSON
+      Object.entries(listingData).forEach(([key, value]) => {
+        if (key !== 'photos') {
+          formDataToSend.append(key, value !== null ? String(value) : '');
+        }
+      });
+      
+      // Add photo files
+      uploadedFiles.forEach((file, index) => {
+        formDataToSend.append(`photos`, file);
+      });
+
       const response = await fetch('/api/listings', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(listingData),
+        body: formDataToSend,
         signal: controller.signal,
       });
 
@@ -485,6 +517,7 @@ export default function SellCar() {
           customMakeModel: ""
         });
         setUploadedImages([]);
+        setUploadedFiles([]);
       }, 100);
 
       // Optimistic update - add new listing to cache without full reload
