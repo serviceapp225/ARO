@@ -120,11 +120,28 @@ export const insertCarListingSchema = createInsertSchema(carListings).omit({
   auctionStartTime: true,
   auctionEndTime: true,
   createdAt: true,
+  endedAt: true,
 }).extend({
   lotNumber: z.string().optional(),
-  // Electric vehicle fields as optional numbers
-  batteryCapacity: z.number().optional().nullable(),
-  electricRange: z.number().optional().nullable(),
+  // Electric vehicle fields - transform empty strings to undefined
+  batteryCapacity: z.union([
+    z.number().min(10).max(200),
+    z.literal(''),
+    z.null(),
+    z.undefined()
+  ]).optional().transform((val) => {
+    if (val === '' || val === null || val === undefined) return undefined;
+    return val;
+  }),
+  electricRange: z.union([
+    z.number().min(50).max(800),
+    z.literal(''),
+    z.null(),
+    z.undefined()
+  ]).optional().transform((val) => {
+    if (val === '' || val === null || val === undefined) return undefined;
+    return val;
+  }),
 });
 
 export const insertBidSchema = createInsertSchema(bids).omit({

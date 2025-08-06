@@ -1103,6 +1103,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return isNaN(parsed) ? undefined : parsed;
       };
       
+      // КРИТИЧЕСКИ ВАЖНО: Полностью удаляем поля электромобилей если они пустые
+      if (processedData.batteryCapacity === '' || processedData.batteryCapacity === null || processedData.batteryCapacity === undefined) {
+        delete processedData.batteryCapacity;
+        console.log('🔋 Удалено пустое поле batteryCapacity');
+      }
+      
+      if (processedData.electricRange === '' || processedData.electricRange === null || processedData.electricRange === undefined) {
+        delete processedData.electricRange;
+        console.log('⚡ Удалено пустое поле electricRange');
+      }
+      
       // Обработка числовых полей с проверкой на пустые строки
       ['year', 'mileage', 'auctionDuration'].forEach(field => {
         if (processedData[field] !== undefined) {
