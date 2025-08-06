@@ -4,7 +4,6 @@ import { storage } from "./storage";
 import fs from "fs";
 import path from "path";
 import express from "express";
-import multer from "multer";
 import { db } from "./db";
 import { carListings, notifications, alertViews, carAlerts, banners, advertisementCarousel, sellCarBanner } from "../shared/schema";
 import { eq, sql } from "drizzle-orm";
@@ -44,22 +43,6 @@ const IMAGE_CACHE_TTL = 3600000; // 1 час для изображений
 
 // Инициализируем файловое хранилище
 const fileStorage = new FileStorageManager();
-
-// Настраиваем multer для обработки FormData
-const upload = multer({
-  storage: multer.memoryStorage(),
-  limits: {
-    fileSize: 10 * 1024 * 1024, // 10MB per file
-    files: 20 // максимум 20 файлов
-  },
-  fileFilter: (req, file, cb) => {
-    if (file.mimetype.startsWith('image/')) {
-      cb(null, true);
-    } else {
-      cb(new Error('Only image files are allowed'));
-    }
-  }
-});
 
 // 🚀 Функция миграции base64 фотографий в файловую систему
 async function migratePhotosToFileSystem() {
@@ -1079,147 +1062,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/listings", upload.array('photos', 20), async (req, res) => {
+  app.post("/api/listings", async (req, res) => {
     try {
-      console.log('📤 Получен запрос на создание объявления с FormData');
-      console.log('📁 Количество файлов:', req.files?.length || 0);
-      console.log('📝 Данные формы:', Object.keys(req.body));
-
-      // Безопасная обработка FormData с проверкой типов
+      // Preprocess the data to handle electric vehicle fields
       const processedData = { ...req.body };
       
-      console.log('📋 Raw form data:', JSON.stringify(processedData, null, 2));
-      console.log('📋 Data types check:');
-      Object.keys(processedData).forEach(key => {
-        console.log(`  ${key}: ${typeof processedData[key]} = ${processedData[key]}`);
-      });
-      
-      // Безопасная функция парсинга чисел
-      const safeParseInt = (value: any): number | undefined => {
-        if (value === '' || value === null || value === undefined) return undefined;
-        const parsed = parseInt(String(value));
-        return isNaN(parsed) ? undefined : parsed;
-      };
-      
-      const safeParseFloat = (value: any): number | undefined => {
-        if (value === '' || value === null || value === undefined) return undefined;
-        const parsed = parseFloat(String(value));
-        return isNaN(parsed) ? undefined : parsed;
-      };
-      
-      // КРИТИЧЕСКИ ВАЖНО: Полностью удаляем поля электромобилей если они пустые
-      if (processedData.batteryCapacity === '' || processedData.batteryCapacity === null || processedData.batteryCapacity === undefined) {
-        delete processedData.batteryCapacity;
-        console.log('🔋 Удалено пустое поле batteryCapacity');
+      // Convert electric vehicle fields to correct types if they exist
+      if (processedData.batteryCapacity !== undefined && processedData.batteryCapacity !== null) {
+        processedData.batteryCapacity = typeof processedData.batteryCapacity === 'string' 
+          ? parseFloat(processedData.batteryCapacity) 
+          : processedData.batteryCapacity;
       }
       
-      if (processedData.electricRange === '' || processedData.electricRange === null || processedData.electricRange === undefined) {
-        delete processedData.electricRange;
-        console.log('⚡ Удалено пустое поле electricRange');
+      if (processedData.electricRange !== undefined && processedData.electricRange !== null) {
+        processedData.electricRange = typeof processedData.electricRange === 'string' 
+          ? parseInt(processedData.electricRange) 
+          : processedData.electricRange;
       }
       
-      // Удаляем все NaN значения
-      Object.keys(processedData).forEach(key => {
-        if (processedData[key] !== processedData[key]) { // проверка на NaN
-          delete processedData[key];
-          console.log(`🧹 Удалено NaN поле: ${key}`);
-        }
-      });
-      
-      // Обработка числовых полей с проверкой на пустые строки
-      ['year', 'mileage', 'auctionDuration'].forEach(field => {
-        if (processedData[field] !== undefined) {
-          const parsed = safeParseInt(processedData[field]);
-          if (parsed !== undefined) {
-            processedData[field] = parsed;
-          } else {
-            delete processedData[field]; // Удаляем некорректные значения
-          }
-        }
-      });
-      
-      // Обрабатываем строковые поля которые должны остаться строками
-      ['engineVolume'].forEach(field => {
-        if (processedData[field] !== undefined) {
-          processedData[field] = String(processedData[field]);
-        }
-      });
-      
-      // Цены обрабатываем как строки для PostgreSQL numeric полей
-      ['startingPrice', 'reservePrice'].forEach(field => {
-        if (processedData[field] !== undefined) {
-          // Просто оставляем как строку для PostgreSQL numeric поля
-          processedData[field] = String(processedData[field]);
-          console.log(`💰 Price field ${field}: ${processedData[field]} (type: ${typeof processedData[field]})`);
-        }
-      });
-      
-      // Обработка полей электромобилей - удаляем пустые поля
-      if (processedData.batteryCapacity !== undefined) {
-        const parsed = safeParseFloat(processedData.batteryCapacity);
-        if (parsed !== undefined) {
-          processedData.batteryCapacity = parsed;
-        } else {
-          delete processedData.batteryCapacity; // Полностью удаляем поле
-        }
+      // 🚀 ФАЙЛОВАЯ СИСТЕМА: Обрабатываем фотографии перед валидацией
+      let fileNames: string[] = [];
+      if (processedData.photos && Array.isArray(processedData.photos)) {
+        // Сначала создаем объявление без фото для получения ID
+        const photosBackup = processedData.photos;
+        processedData.photos = []; // Временно убираем фото из данных
       }
       
-      if (processedData.electricRange !== undefined) {
-        const parsed = safeParseInt(processedData.electricRange);
-        if (parsed !== undefined) {
-          processedData.electricRange = parsed;
-        } else {
-          delete processedData.electricRange; // Полностью удаляем поле
-        }
-      }
-      
-      // Обработка булевых полей
-      ['customsCleared', 'recycled', 'technicalInspectionValid', 'tinted'].forEach(field => {
-        if (processedData[field] === 'true') {
-          processedData[field] = true;
-        } else if (processedData[field] === 'false') {
-          processedData[field] = false;
-        } else if (processedData[field] === 'yes') {
-          processedData[field] = true;
-        } else if (processedData[field] === 'no') {
-          processedData[field] = false;
-        }
-      });
-      
-      // Добавляем sellerId пользователя
-      const user = getUserFromContext(req);
-      if (!user) {
-        return res.status(401).json({ error: "User not authenticated" });
-      }
-      processedData.sellerId = user.userId;
-      
-      // Remove photos from processedData for validation (we'll handle files separately)
-      delete processedData.photos;
-      
-      console.log('📋 Processed data before validation:', JSON.stringify(processedData, null, 2));
-      
-      // Проверка файлов для photos
-      if (!req.files || (req.files as Express.Multer.File[]).length === 0) {
-        return res.status(400).json({ error: "At least one photo is required" });
-      }
-      
-      try {
-        // Устанавливаем photos как пустой массив для валидации (файлы обрабатываем отдельно)
-        processedData.photos = [];
-        
-        const validatedData = insertCarListingSchema.parse(processedData);
-        console.log('✅ Data validation successful');
-      } catch (validationError: any) {
-        console.error('❌ Validation failed:', JSON.stringify(validationError.errors, null, 2));
-        return res.status(400).json({ 
-          error: "Invalid listing data", 
-          details: validationError.errors,
-          receivedData: processedData
-        });
-      }
-      
-      // Устанавливаем photos обратно для второй валидации
-      processedData.photos = [];
       const validatedData = insertCarListingSchema.parse(processedData);
       
       // Generate lot number if not provided
@@ -1240,40 +1108,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const listing = await storage.createListing(listingWithPendingStatus);
       
-      // 🚀 ФАЙЛОВАЯ СИСТЕМА: Обрабатываем загруженные файлы
-      let fileNames: string[] = [];
-      const files = req.files as Express.Multer.File[];
-      
-      if (files && files.length > 0) {
-        console.log(`📁 Сохраняем ${files.length} фотографий для объявления ${listing.id}`);
+      // 🚀 ФАЙЛОВАЯ СИСТЕМА: Теперь сохраняем фотографии в файлы
+      if (req.body.photos && Array.isArray(req.body.photos)) {
+        console.log(`📁 Сохраняем ${req.body.photos.length} фотографий для объявления ${listing.id}`);
         
-        for (let i = 0; i < files.length; i++) {
-          const file = files[i];
+        for (let i = 0; i < req.body.photos.length; i++) {
+          const photoData = req.body.photos[i];
           
-          // Сжимаем фото перед сохранением
-          const compressedBuffer = await sharp(file.buffer)
-            .jpeg({ 
-              quality: 85,
-              progressive: true,
-              mozjpeg: true
-            })
-            .resize(1200, 900, {
-              fit: 'inside',
-              withoutEnlargement: true
-            })
-            .toBuffer();
-          
-          const fileName = `${i + 1}.jpg`;
-          await fileStorage.saveListingPhoto(listing.id, fileName, compressedBuffer);
-          fileNames.push(fileName);
-          
-          console.log(`📁 Сохранено фото ${fileName} для объявления ${listing.id} (размер: ${(compressedBuffer.length/1024).toFixed(1)}KB)`);
+          if (photoData && photoData.startsWith('data:image/')) {
+            const matches = photoData.match(/data:image\/([^;]+);base64,(.+)/);
+            if (matches) {
+              const base64Data = matches[2];
+              const photoBuffer = Buffer.from(base64Data, 'base64');
+              
+              // Сжимаем фото перед сохранением
+              const compressedBuffer = await sharp(photoBuffer)
+                .jpeg({ 
+                  quality: 85,
+                  progressive: true,
+                  mozjpeg: true
+                })
+                .resize(1200, 900, {
+                  fit: 'inside',
+                  withoutEnlargement: true
+                })
+                .toBuffer();
+              
+              const fileName = `${i + 1}.jpg`;
+              await fileStorage.saveListingPhoto(listing.id, fileName, compressedBuffer);
+              fileNames.push(fileName);
+              
+              console.log(`📁 Сохранено фото ${fileName} для объявления ${listing.id} (размер: ${(compressedBuffer.length/1024).toFixed(1)}KB)`);
+            }
+          }
         }
         
-        // Обновляем объявление с именами файлов
+        // Обновляем объявление с именами файлов вместо base64
         if (fileNames.length > 0) {
           await storage.updateListing(listing.id, { photos: fileNames });
-          console.log(`✅ Обновлено объявление ${listing.id} с ${fileNames.length} файлами фотографий`);
+          console.log(`✅ Обновлен объявление ${listing.id} с ${fileNames.length} файлами фотографий`);
         }
       }
       
@@ -2967,19 +2840,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const listingId = parseInt(req.params.id);
       console.log('✅ Admin authenticated, proceeding to delete listing:', listingId);
       
-      // Сначала проверим существует ли объявление
-      const listing = await storage.getListing(listingId);
-      if (!listing) {
-        console.log(`❌ Listing ${listingId} not found in database`);
-        return res.status(404).json({ error: "Listing not found" });
-      }
-      
-      console.log(`📋 Found listing ${listingId}: ${listing.make} ${listing.model} (${listing.status})`);
-      
       const success = await storage.deleteListing(listingId);
       if (!success) {
-        console.log(`❌ Failed to delete listing ${listingId} from storage`);
-        return res.status(500).json({ error: "Failed to delete listing from database" });
+        return res.status(404).json({ error: "Listing not found" });
       }
       
       // Очищаем все кэши после удаления

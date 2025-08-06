@@ -120,16 +120,11 @@ export const insertCarListingSchema = createInsertSchema(carListings).omit({
   auctionStartTime: true,
   auctionEndTime: true,
   createdAt: true,
-  endedAt: true,
 }).extend({
   lotNumber: z.string().optional(),
-  // Поля которые должны быть строками
-  engineVolume: z.string().optional().nullable(),
-  technicalInspectionDate: z.string().optional().nullable(), 
-  tintingDate: z.string().optional().nullable(),
-  // Electric vehicle fields - полностью опциональные
-  batteryCapacity: z.number().min(10).max(200).optional(),
-  electricRange: z.number().min(50).max(800).optional(),
+  // Electric vehicle fields as optional numbers
+  batteryCapacity: z.number().optional().nullable(),
+  electricRange: z.number().optional().nullable(),
 });
 
 export const insertBidSchema = createInsertSchema(bids).omit({
