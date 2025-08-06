@@ -1115,6 +1115,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       });
       
+      // Обрабатываем строковые поля которые должны остаться строками
+      ['engineVolume'].forEach(field => {
+        if (processedData[field] !== undefined) {
+          processedData[field] = String(processedData[field]);
+        }
+      });
+      
       ['startingPrice', 'reservePrice'].forEach(field => {
         if (processedData[field] !== undefined) {
           const parsed = safeParseFloat(processedData[field]);
@@ -1126,13 +1133,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       });
       
-      // Обработка полей электромобилей
+      // Обработка полей электромобилей - удаляем пустые поля
       if (processedData.batteryCapacity !== undefined) {
         const parsed = safeParseFloat(processedData.batteryCapacity);
         if (parsed !== undefined) {
           processedData.batteryCapacity = parsed;
         } else {
-          delete processedData.batteryCapacity;
+          delete processedData.batteryCapacity; // Полностью удаляем поле
         }
       }
       
@@ -1141,7 +1148,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (parsed !== undefined) {
           processedData.electricRange = parsed;
         } else {
-          delete processedData.electricRange;
+          delete processedData.electricRange; // Полностью удаляем поле
         }
       }
       
