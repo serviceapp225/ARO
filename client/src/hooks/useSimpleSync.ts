@@ -6,10 +6,10 @@ export function useSimpleSync() {
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
-    // Каждые 10 секунд обновляем данные для отображения цен (более стабильно)
+    // Редкая синхронизация каждые 30 секунд как fallback (WebSocket основной источник)
     intervalRef.current = setInterval(() => {
       queryClient.invalidateQueries({ queryKey: ['/api/listings'] });
-    }, 10000);
+    }, 30000);
 
     return () => {
       if (intervalRef.current) {

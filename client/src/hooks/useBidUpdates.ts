@@ -4,10 +4,10 @@ import type { Bid } from "@shared/schema";
 export function useBidUpdates(listingId: number) {
   return useQuery<Bid[]>({
     queryKey: ['/api/listings', listingId, 'bids'],
-    refetchInterval: 2000, // Обновление каждые 2 секунды для реального времени
-    staleTime: 0, // Данные всегда считаются устаревшими
+    // Убираем refetchInterval - используем только WebSocket для обновлений ставок
+    staleTime: 10000, // Данные свежие 10 секунд, WebSocket обновляет мгновенно
     refetchOnWindowFocus: true,
     refetchOnMount: true,
-    refetchIntervalInBackground: true, // Обновление даже когда вкладка не активна
+    // Убираем refetchIntervalInBackground - WebSocket работает в фоне
   });
 }
