@@ -1063,9 +1063,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.post("/api/listings", async (req, res) => {
+    console.log(`🚨 НОВОЕ ОБЪЯВЛЕНИЕ: POST /api/listings запрос получен`);
+    console.log(`📦 Размер тела запроса: ${JSON.stringify(req.body).length} символов`);
+    
     try {
       // Preprocess the data to handle electric vehicle fields
       const processedData = { ...req.body };
+      
+      console.log(`🚗 Данные автомобиля: ${processedData.make} ${processedData.model} ${processedData.year}`);
+      console.log(`📸 Количество фотографий в запросе: ${processedData.photos?.length || 0}`);
       
       // Convert electric vehicle fields to correct types if they exist
       if (processedData.batteryCapacity !== undefined && processedData.batteryCapacity !== null) {
@@ -1086,18 +1092,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (processedData.photos && Array.isArray(processedData.photos)) {
         // Сохраняем фото для последующей обработки
         photosBackup = [...processedData.photos];
+        console.log(`📸 Резервная копия создана: ${photosBackup.length} фотографий`);
         processedData.photos = []; // Временно убираем фото из валидации
       }
       
+      console.log(`✅ ВАЛИДАЦИЯ: Данные прошли предварительную обработку`);
       const validatedData = insertCarListingSchema.parse(processedData);
+      console.log(`✅ ВАЛИДАЦИЯ: Схема данных успешно валидирована`);
       
       // Generate lot number if not provided
       let lotNumber = validatedData.lotNumber;
       if (!lotNumber) {
+        console.log(`🎯 ГЕНЕРАЦИЯ: Создаем уникальный номер лота`);
         const { generateUniqueLotNumber } = await import('./utils/lotNumberGenerator');
         const existingListings = await storage.getListingsByStatus('', 1000); // Get all to check lot numbers
         const existingLotNumbers = existingListings.map(l => l.lotNumber);
         lotNumber = generateUniqueLotNumber(existingLotNumbers);
+        console.log(`🎯 ГЕНЕРАЦИЯ: Создан номер лота ${lotNumber}`);
       }
       
       // Set new listings to pending status for moderation
@@ -1107,23 +1118,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
         status: 'pending'
       };
       
+      console.log(`💾 БАЗА ДАННЫХ: Создаем запись объявления в БД...`);
       const listing = await storage.createListing(listingWithPendingStatus);
+      console.log(`✅ БАЗА ДАННЫХ: Объявление создано с ID ${listing.id}`);
+      console.log(`🔍 ОТЛАДКА: Путь для фотографий будет uploads/listings/${Math.floor(listing.id / 1000) * 1000}/${listing.id}/`);
       
       // 🚀 ФАЙЛОВАЯ СИСТЕМА: Теперь сохраняем фотографии в файлы
       if (photosBackup && Array.isArray(photosBackup) && photosBackup.length > 0) {
-        console.log(`📁 Сохраняем ${photosBackup.length} фотографий для объявления ${listing.id}`);
+        console.log(`📁 СТАРТ СОХРАНЕНИЯ: Начинаем сохранение ${photosBackup.length} фотографий для объявления ${listing.id}`);
+        console.log(`🗂️ ПУТЬ: Файлы будут сохранены в uploads/listings/${Math.floor(listing.id / 1000) * 1000}/${listing.id}/`);
         
         for (let i = 0; i < photosBackup.length; i++) {
+          console.log(`📸 ФОТО ${i + 1}/${photosBackup.length}: Начинаем обработку...`);
           const photoData = photosBackup[i];
           
           if (photoData && photoData.startsWith('data:image/')) {
+            console.log(`📸 ФОТО ${i + 1}: Обнаружены base64 данные, размер: ${(photoData.length / 1024).toFixed(1)}KB`);
             const matches = photoData.match(/data:image\/([^;]+);base64,(.+)/);
             if (matches) {
               try {
                 const base64Data = matches[2];
                 const photoBuffer = Buffer.from(base64Data, 'base64');
+                console.log(`📸 ФОТО ${i + 1}: Декодирован buffer размером ${(photoBuffer.length / 1024).toFixed(1)}KB`);
                 
                 // Сжимаем фото перед сохранением с обработкой ошибок
+                console.log(`🔄 ФОТО ${i + 1}: Начинаем сжатие изображения...`);
                 const compressedBuffer = await sharp(photoBuffer)
                   .jpeg({ 
                     quality: 85,
@@ -1135,47 +1154,67 @@ export async function registerRoutes(app: Express): Promise<Server> {
                     withoutEnlargement: true
                   })
                   .toBuffer();
+                console.log(`✅ ФОТО ${i + 1}: Сжатие завершено, размер: ${(compressedBuffer.length / 1024).toFixed(1)}KB`);
                 
                 const fileName = `${i + 1}.jpg`;
+                console.log(`💾 ФОТО ${i + 1}: Вызываем fileStorage.saveListingPhoto(${listing.id}, ${i + 1}, buffer)`);
                 await fileStorage.saveListingPhoto(listing.id, i + 1, compressedBuffer);
                 fileNames.push(fileName);
                 
-                console.log(`📁 Сохранено фото ${fileName} для объявления ${listing.id} (размер: ${(compressedBuffer.length/1024).toFixed(1)}KB)`);
+                console.log(`✅ ФОТО ${i + 1}: Успешно сохранено как ${fileName} для объявления ${listing.id} (размер: ${(compressedBuffer.length/1024).toFixed(1)}KB)`);
               } catch (photoError) {
-                console.error(`❌ Ошибка обработки фото ${i + 1} для объявления ${listing.id}:`, photoError);
+                console.error(`❌ ФОТО ${i + 1}: КРИТИЧЕСКАЯ ОШИБКА обработки фото для объявления ${listing.id}:`, photoError);
+                console.error(`❌ ФОТО ${i + 1}: Stack trace:`, photoError.stack);
                 // Пропускаем проблемное фото и продолжаем с остальными
                 continue;
               }
+            } else {
+              console.error(`❌ ФОТО ${i + 1}: Не удалось извлечь base64 данные из формата`);
             }
+          } else {
+            console.error(`❌ ФОТО ${i + 1}: Неверный формат данных фото (не base64)`);
           }
         }
         
+        console.log(`📊 ИТОГИ СОХРАНЕНИЯ: Успешно обработано ${fileNames.length} из ${photosBackup.length} фотографий`);
+        console.log(`📊 ИМЕНА ФАЙЛОВ: [${fileNames.join(', ')}]`);
+        
         // Обновляем объявление с именами файлов вместо base64
         if (fileNames.length > 0) {
+          console.log(`💾 ОБНОВЛЕНИЕ БД: Записываем имена файлов в базу данных...`);
           await storage.updateListing(listing.id, { photos: fileNames });
-          console.log(`✅ Обновлен объявление ${listing.id} с ${fileNames.length} файлами фотографий`);
+          console.log(`✅ ОБНОВЛЕНИЕ БД: Объявление ${listing.id} обновлено с ${fileNames.length} файлами фотографий`);
+          console.log(`🎯 ФИНАЛЬНЫЙ СТАТУС: Объявление ${listing.id} создано УСПЕШНО с фотографиями`);
         } else if (photosBackup.length > 0) {
           // Если ни одно фото не удалось обработать, это ошибка
-          console.error(`❌ Не удалось обработать ни одного фото из ${photosBackup.length} для объявления ${listing.id}`);
+          console.error(`❌ КРИТИЧЕСКАЯ ОШИБКА: Не удалось обработать ни одного фото из ${photosBackup.length} для объявления ${listing.id}`);
+          console.error(`🗑️ ОТКАТ: Удаляем созданное объявление из базы данных...`);
           // Удаляем созданное объявление и возвращаем ошибку
           await storage.deleteListing(listing.id);
+          console.error(`🗑️ ОТКАТ: Объявление ${listing.id} удалено из базы данных`);
           return res.status(400).json({ 
             error: "Failed to process photos", 
             details: "Не удалось обработать загруженные изображения. Проверьте формат файлов." 
           });
         }
+      } else {
+        console.log(`📸 ФОТОГРАФИИ: Нет фотографий для сохранения (объявление без фото)`);
       }
       
       // Clear all caches to force refresh
+      console.log(`🧹 КЭШИ: Очищаем все кэши после создания объявления`);
       clearAllCaches();
       
       // УБРАНО: Не отправляем уведомления при создании объявления
       // Уведомления будут отправляться только при одобрении админом (pending → active)
       
+      console.log(`🎉 УСПЕХ: Объявление ${listing.id} создано и возвращается клиенту`);
       res.status(201).json(listing);
     } catch (error) {
-      console.error('Error creating listing:', error);
+      console.error(`💥 КРИТИЧЕСКАЯ ОШИБКА создания объявления:`, error);
+      console.error(`💥 Stack trace:`, error instanceof Error ? error.stack : 'No stack trace');
       if (error instanceof z.ZodError) {
+        console.error(`📋 Ошибки валидации Zod:`, error.errors);
         return res.status(400).json({ error: "Invalid listing data", details: error.errors });
       }
       res.status(500).json({ error: "Failed to create listing", details: error instanceof Error ? error.message : 'Unknown error' });
