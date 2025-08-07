@@ -39,6 +39,11 @@ export function LazyCarImage({ listingId, make, model, year, photos = [], classN
     return () => observer.disconnect();
   }, []);
 
+  // Сбрасываем imageLoaded при смене фотографии
+  useEffect(() => {
+    setImageLoaded(false);
+  }, [currentImageIndex]);
+
   // Автоматическая ротация фотографий каждые 3 секунды (только если есть фотографии)
   useEffect(() => {
     if (!isVisible || photos.length <= 1) return;
