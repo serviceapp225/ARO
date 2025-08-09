@@ -8,6 +8,7 @@ import { storage } from "./storage";
 import { ImageUpdateService } from "./imageUpdateService";
 import fs from "fs";
 import path from "path";
+import multer from "multer";
 
 // Функция для создания дефолтного банера "Продай свое авто"
 async function ensureDefaultSellCarBanner() {
@@ -78,7 +79,16 @@ app.use((req, res, next) => {
   next();
 });
 
-// Увеличиваем лимиты и устанавливаем правильный порядок парсеров
+// Настройка multer для файловых загрузок
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 20 * 1024 * 1024, // 20MB per file
+    files: 20 // max 20 files
+  }
+});
+
+// Увеличиваем лимиты для JSON и добавляем multer для файлов
 app.use(express.json({ limit: '150mb', strict: false }));
 app.use(express.urlencoded({ extended: true, limit: '150mb', parameterLimit: 50000 }));
 

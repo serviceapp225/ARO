@@ -449,14 +449,28 @@ export default function SellCar() {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
 
-      console.log('🚨 About to send listing data:', JSON.stringify(listingData, null, 2));
+      console.log('🚨 About to send listing data:', JSON.stringify({...listingData, photos: `[${listingData.photos.length} photos]`}, null, 2));
+
+      // Create FormData to handle file uploads instead of huge JSON
+      const formData = new FormData();
+      
+      // Add all non-photo fields
+      Object.entries(listingData).forEach(([key, value]) => {
+        if (key !== 'photos' && value !== null && value !== undefined) {
+          formData.append(key, String(value));
+        }
+      });
+      
+      // Add photos as individual files
+      for (let i = 0; i < uploadedImages.length; i++) {
+        const base64Data = uploadedImages[i];
+        const blob = await fetch(base64Data).then(r => r.blob());
+        formData.append(`photo_${i}`, blob, `photo_${i}.jpg`);
+      }
 
       const response = await fetch('/api/listings', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(listingData),
+        body: formData, // Send as FormData instead of JSON
         signal: controller.signal,
       });
 

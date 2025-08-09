@@ -15,6 +15,7 @@ import { z } from "zod";
 import AuctionWebSocketManager from "./websocket";
 import { createHash } from "crypto";
 import { getDatabaseStatus } from "./deploymentSafeInit";
+import multer from "multer";
 
 // Input validation schemas
 const idParamSchema = z.object({
@@ -1062,10 +1063,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/listings", (req, res, next) => {
+  // Настройка multer для обработки файлов
+  const upload = multer({
+    storage: multer.memoryStorage(),
+    limits: {
+      fileSize: 20 * 1024 * 1024, // 20MB per file
+      files: 20 // max 20 files
+    }
+  });
+
+  app.post("/api/listings", upload.any(), (req, res, next) => {
     console.log(`🚨 MIDDLEWARE: POST /api/listings получен`);
     console.log(`📦 MIDDLEWARE: req.body.sellerId = ${req.body?.sellerId}`);
     console.log(`📦 MIDDLEWARE: req.body keys = ${Object.keys(req.body || {})}`);
+    console.log(`📸 MIDDLEWARE: req.files = ${req.files?.length || 0} файлов`);
     next();
   }, getUserFromContext, async (req, res) => {
     console.log(`🚨 НОВОЕ ОБЪЯВЛЕНИЕ: POST /api/listings запрос получен`);
@@ -1105,7 +1116,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       processedData.sellerId = actualSellerId;
       
       console.log(`🚗 Данные автомобиля: ${processedData.make} ${processedData.model} ${processedData.year}`);
-      console.log(`📸 Количество фотографий в запросе: ${processedData.photos?.length || 0}`);
+      console.log(`📸 Количество файлов в запросе: ${req.files?.length || 0}`);
       
       // Convert electric vehicle fields to correct types if they exist
       if (processedData.batteryCapacity !== undefined && processedData.batteryCapacity !== null) {
@@ -1120,15 +1131,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
           : processedData.electricRange;
       }
       
-      // 🚀 ФАЙЛОВАЯ СИСТЕМА: Сохраняем фотографии отдельно
+      // 🚀 ФАЙЛОВАЯ СИСТЕМА: Обрабатываем загруженные файлы
       let fileNames: string[] = [];
-      let photosBackup: any[] = [];
-      if (processedData.photos && Array.isArray(processedData.photos)) {
-        // Сохраняем фото для последующей обработки
-        photosBackup = [...processedData.photos];
-        console.log(`📸 Резервная копия создана: ${photosBackup.length} фотографий`);
-        processedData.photos = []; // Временно убираем фото из валидации
+      let uploadedFiles: any[] = [];
+      
+      // Получаем файлы из FormData
+      if (req.files && Array.isArray(req.files)) {
+        uploadedFiles = req.files;
+        console.log(`📸 Получено файлов: ${uploadedFiles.length}`);
       }
+      
+      // Убираем photos из валидации - теперь используем файлы
+      processedData.photos = [];
       
       console.log(`✅ ВАЛИДАЦИЯ: Данные прошли предварительную обработку`);
       const validatedData = insertCarListingSchema.parse(processedData);
