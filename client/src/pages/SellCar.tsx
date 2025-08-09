@@ -408,6 +408,8 @@ export default function SellCar() {
     try {
       console.log('Current user for listing:', user);
       console.log('User ID:', (user as any)?.userId);
+      console.log('Selected User ID:', selectedUserId);
+      console.log('Final sellerId:', selectedUserId || (user as any)?.userId || (user as any)?.id || 2);
       
       // Create listing data matching database schema
       const listingData = {

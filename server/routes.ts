@@ -1074,11 +1074,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const isAdmin = currentUser?.fullName === 'ADMIN' || currentUser?.role === 'admin';
       const targetSellerId = req.body.sellerId; // sellerId from frontend (selected user)
       
-      let actualSellerId = currentUser?.userId; // Default to current user
+      let actualSellerId = currentUser?.userId || currentUser?.id; // Default to current user
       let targetUser = currentUser;
       
       // If admin and target user specified, use target user
-      if (isAdmin && targetSellerId && targetSellerId !== currentUser?.userId) {
+      if (isAdmin && targetSellerId && targetSellerId !== (currentUser?.userId || currentUser?.id)) {
         console.log(`👑 АДМИН: Создание объявления от имени пользователя ${targetSellerId}`);
         targetUser = await storage.getUser(targetSellerId);
         if (targetUser) {
