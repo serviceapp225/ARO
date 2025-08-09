@@ -1120,6 +1120,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (targetUser) {
           actualSellerId = targetSellerIdNum; // Use the number version
           console.log(`✅ АДМИН: Найден целевой пользователь ${targetUser.phoneNumber} - ${targetUser.fullName}`);
+          console.log(`🔍 АДМИН: actualSellerId установлен в ${actualSellerId} (тип: ${typeof actualSellerId})`);
         } else {
           console.error(`❌ АДМИН: Пользователь ${targetSellerIdNum} не найден`);
           return res.status(400).json({ error: "Target user not found" });
