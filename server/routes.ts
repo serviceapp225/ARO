@@ -1092,8 +1092,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const isAdmin = currentUser?.fullName === 'ADMIN' || currentUser?.role === 'admin';
       const targetSellerId = req.body.sellerId; // sellerId from frontend (selected user)
       
+      console.log(`🔍 ДЕТАЛЬНАЯ ОТЛАДКА currentUser:`, {
+        userId: currentUser?.userId,
+        id: currentUser?.id,
+        fullName: currentUser?.fullName,
+        role: currentUser?.role,
+        phoneNumber: currentUser?.phoneNumber
+      });
+      
       let actualSellerId = currentUser?.userId || currentUser?.id; // Default to current user
-      console.log(`🎯 actualSellerId calculated as:`, actualSellerId);
+      console.log(`🎯 actualSellerId calculated as:`, actualSellerId, `(тип: ${typeof actualSellerId})`);
+      
+      if (!actualSellerId) {
+        console.error(`❌ КРИТИЧЕСКАЯ ОШИБКА: actualSellerId undefined!`);
+        console.error(`❌ currentUser?.userId:`, currentUser?.userId);
+        console.error(`❌ currentUser?.id:`, currentUser?.id);
+        return res.status(500).json({ error: "User identification failed" });
+      }
+      
       let targetUser = currentUser;
       
       // If admin and target user specified, use target user
