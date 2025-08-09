@@ -480,8 +480,12 @@ export default function SellCar() {
       
       const response = await fetch('/api/listings', {
         method: 'POST',
-        body: multipartData, // Send as FormData instead of JSON
+        body: multipartData,
         signal: controller.signal,
+        headers: {
+          'x-user-id': user?.userId?.toString() || '',
+          'x-user-email': user?.email || ''
+        }
       });
       
       console.log('📡 Response status:', response.status);
