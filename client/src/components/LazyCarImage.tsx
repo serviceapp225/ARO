@@ -15,7 +15,21 @@ export function LazyCarImage({ listingId, make, model, year, photos = [], classN
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isVisible, setIsVisible] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
+  const [isTransitioning, setIsTransitioning] = useState(false);
   const imgRef = useRef<HTMLDivElement>(null);
+
+  // Функция для плавного изменения индекса
+  const changeImageIndex = (newIndex: number) => {
+    if (isTransitioning || newIndex === currentImageIndex) return;
+    
+    setIsTransitioning(true);
+    
+    // Создаем эффект crossfade
+    setTimeout(() => {
+      setCurrentImageIndex(newIndex);
+      setTimeout(() => setIsTransitioning(false), 50);
+    }, 150);
+  };
 
   // Intersection Observer для ленивой загрузки
   useEffect(() => {
@@ -46,14 +60,15 @@ export function LazyCarImage({ listingId, make, model, year, photos = [], classN
 
   // Автоматическая ротация фотографий каждые 3 секунды (только если есть фотографии)
   useEffect(() => {
-    if (!isVisible || photos.length <= 1) return;
+    if (!isVisible || photos.length <= 1 || isTransitioning) return;
     
     const intervalId = setInterval(() => {
-      setCurrentImageIndex((prevIndex) => (prevIndex + 1) % photos.length);
+      const nextIndex = (currentImageIndex + 1) % photos.length;
+      changeImageIndex(nextIndex);
     }, 3000);
 
     return () => clearInterval(intervalId);
-  }, [photos.length, isVisible]);
+  }, [photos.length, isVisible, currentImageIndex, isTransitioning]);
 
   // Показываем placeholder если нет фотографий или еще не видимо
   if (!isVisible || photos.length === 0) {
@@ -74,12 +89,16 @@ export function LazyCarImage({ listingId, make, model, year, photos = [], classN
   }
 
   return (
-    <div ref={imgRef} className={`relative ${className}`}>
+    <div ref={imgRef} className={`relative overflow-hidden ${className}`}>
+      {/* Основное изображение с плавными crossfade переходами */}
       <img 
+        key={`car-image-${currentImageIndex}`}
         src={photos[currentImageIndex]} 
         alt={`${year} ${make} ${model}`}
-        className={`w-full h-full object-cover transition-opacity duration-500 ${
-          imageLoaded ? 'opacity-100' : 'opacity-0'
+        className={`w-full h-full object-cover select-none transition-all duration-300 ease-out ${
+          imageLoaded 
+            ? (isTransitioning ? 'opacity-30 scale-105' : 'opacity-100 scale-100')
+            : 'opacity-0'
         }`}
         loading="lazy"
         onLoad={() => setImageLoaded(true)}
@@ -102,9 +121,9 @@ export function LazyCarImage({ listingId, make, model, year, photos = [], classN
         </div>
       )}
       
-      {/* Индикатор количества фотографий */}
+      {/* Индикатор количества фотографий с улучшенным дизайном */}
       {photos.length > 1 && imageLoaded && (
-        <div className="absolute bottom-2 right-2 bg-black/50 text-white text-xs px-2 py-1 rounded-full">
+        <div className="absolute bottom-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded-full backdrop-blur-sm transition-all duration-200">
           {currentImageIndex + 1}/{photos.length}
         </div>
       )}
