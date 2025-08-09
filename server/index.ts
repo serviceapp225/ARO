@@ -78,8 +78,9 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use(express.json({ limit: '100mb' }));
-app.use(express.urlencoded({ extended: false, limit: '100mb' }));
+// Увеличиваем лимиты и устанавливаем правильный порядок парсеров
+app.use(express.json({ limit: '150mb', strict: false }));
+app.use(express.urlencoded({ extended: true, limit: '150mb', parameterLimit: 50000 }));
 
 app.use((req, res, next) => {
   // ВРЕМЕННО ВКЛЮЧАЕМ логгирование для диагностики POST запросов
