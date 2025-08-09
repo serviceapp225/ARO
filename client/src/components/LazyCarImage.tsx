@@ -14,7 +14,7 @@ interface LazyCarImageProps {
 export function LazyCarImage({ listingId, make, model, year, photos = [], className = "" }: LazyCarImageProps) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isVisible, setIsVisible] = useState(false);
-  const [imageLoaded, setImageLoaded] = useState(false);
+  const [loadedImages, setLoadedImages] = useState<Set<number>>(new Set());
   const [isTransitioning, setIsTransitioning] = useState(false);
   const imgRef = useRef<HTMLDivElement>(null);
 
@@ -53,10 +53,20 @@ export function LazyCarImage({ listingId, make, model, year, photos = [], classN
     return () => observer.disconnect();
   }, []);
 
-  // Сбрасываем imageLoaded при смене фотографии
+  // Предзагрузка следующих изображений для плавных переходов
   useEffect(() => {
-    setImageLoaded(false);
-  }, [currentImageIndex]);
+    if (!isVisible || photos.length <= 1) return;
+    
+    photos.forEach((photo, index) => {
+      if (!loadedImages.has(index)) {
+        const img = new Image();
+        img.onload = () => {
+          setLoadedImages(prev => new Set(prev).add(index));
+        };
+        img.src = photo;
+      }
+    });
+  }, [photos, isVisible, loadedImages]);
 
   // Автоматическая ротация фотографий каждые 3 секунды (только если есть фотографии)
   useEffect(() => {
@@ -96,17 +106,17 @@ export function LazyCarImage({ listingId, make, model, year, photos = [], classN
         src={photos[currentImageIndex]} 
         alt={`${year} ${make} ${model}`}
         className={`w-full h-full object-cover select-none transition-all duration-300 ease-out ${
-          imageLoaded 
+          loadedImages.has(currentImageIndex)
             ? (isTransitioning ? 'opacity-30 scale-105' : 'opacity-100 scale-100')
             : 'opacity-0'
         }`}
         loading="lazy"
-        onLoad={() => setImageLoaded(true)}
+        onLoad={() => setLoadedImages(prev => new Set(prev).add(currentImageIndex))}
         onError={() => console.error(`Ошибка загрузки фото ${currentImageIndex} для ${make} ${model}`)}
       />
       
-      {/* Индикатор загрузки */}
-      {!imageLoaded && (
+      {/* Индикатор загрузки только для первого изображения */}
+      {!loadedImages.has(currentImageIndex) && (
         <div className="absolute inset-0 bg-gray-100 flex items-center justify-center">
           <img 
             src={defaultCarPlaceholder}
@@ -122,7 +132,7 @@ export function LazyCarImage({ listingId, make, model, year, photos = [], classN
       )}
       
       {/* Индикатор количества фотографий с улучшенным дизайном */}
-      {photos.length > 1 && imageLoaded && (
+      {photos.length > 1 && loadedImages.has(currentImageIndex) && (
         <div className="absolute bottom-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded-full backdrop-blur-sm transition-all duration-200">
           {currentImageIndex + 1}/{photos.length}
         </div>
