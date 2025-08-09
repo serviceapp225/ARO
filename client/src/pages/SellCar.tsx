@@ -449,6 +449,8 @@ export default function SellCar() {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
 
+      console.log('🚨 About to send listing data:', JSON.stringify(listingData, null, 2));
+
       const response = await fetch('/api/listings', {
         method: 'POST',
         headers: {
