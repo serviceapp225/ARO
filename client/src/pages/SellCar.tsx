@@ -483,8 +483,9 @@ export default function SellCar() {
 
       // Accept both 200 (OK) and 201 (Created) as success
       if (response.status !== 200 && response.status !== 201) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || 'Failed to create listing');
+        const errorText = await response.text().catch(() => 'Unknown error');
+        console.error('❌ Ошибка HTTP:', response.status, errorText);
+        throw new Error(`HTTP ${response.status}: ${errorText}`);
       }
 
       const newListing = await response.json();
