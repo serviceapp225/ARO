@@ -1068,6 +1068,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     
     const currentUser = (req as any).user;
     console.log(`👤 Текущий пользователь:`, currentUser?.phoneNumber, currentUser?.fullName);
+    console.log(`🔍 currentUser full object:`, JSON.stringify(currentUser, null, 2));
+    console.log(`📦 req.body.sellerId:`, req.body.sellerId);
     
     try {
       // Check if admin is creating on behalf of another user
@@ -1075,6 +1077,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const targetSellerId = req.body.sellerId; // sellerId from frontend (selected user)
       
       let actualSellerId = currentUser?.userId || currentUser?.id; // Default to current user
+      console.log(`🎯 actualSellerId calculated as:`, actualSellerId);
       let targetUser = currentUser;
       
       // If admin and target user specified, use target user
