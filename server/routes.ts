@@ -1129,8 +1129,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Preprocess the data to handle electric vehicle fields
       const processedData = { ...req.body };
       
-      // Override sellerId with actual seller
-      processedData.sellerId = actualSellerId;
+      // Override sellerId with actual seller - ensure it's a number
+      processedData.sellerId = typeof actualSellerId === 'string' ? parseInt(actualSellerId) : actualSellerId;
       
       console.log(`🎯 ПОСЛЕ ЗАМЕНЫ: processedData.sellerId = ${processedData.sellerId} (тип: ${typeof processedData.sellerId})`);
       console.log(`🚗 Данные автомобиля: ${processedData.make} ${processedData.model} ${processedData.year}`);
