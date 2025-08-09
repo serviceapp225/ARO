@@ -173,13 +173,13 @@ export default function SellCar() {
   };
 
   const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormFields(prev => ({ ...prev, [field]: value }));
     
     // When make changes, update available models and reset model selection
     if (field === "make") {
       const models = getModelsForMake(value);
       setAvailableModels(models);
-      setFormData(prev => ({ ...prev, model: "" }));
+      setFormFields(prev => ({ ...prev, model: "" }));
     }
   };
 
@@ -199,7 +199,7 @@ export default function SellCar() {
       formattedValue = limitedNumbers.slice(0, 2) + '.' + limitedNumbers.slice(2, 4) + '.' + limitedNumbers.slice(4);
     }
     
-    setFormData(prev => ({ ...prev, [field]: formattedValue }));
+    setFormFields(prev => ({ ...prev, [field]: formattedValue }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
