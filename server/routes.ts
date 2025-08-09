@@ -1185,8 +1185,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       processedData.photos = [];
       
       console.log(`🔍 ПЕРЕД ВАЛИДАЦИЕЙ: sellerId = ${processedData.sellerId} (тип: ${typeof processedData.sellerId})`);
-      console.log(`🔍 ПЕРЕД ВАЛИДАЦИЕЙ: все ключи processedData:`, Object.keys(processedData));
-      console.log(`🔍 ПЕРЕД ВАЛИДАЦИЕЙ: processedData =`, JSON.stringify(processedData, null, 2));
+      
+      // КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Принудительно конвертируем sellerId в число перед валидацией
+      if (processedData.sellerId && typeof processedData.sellerId === 'string') {
+        processedData.sellerId = parseInt(processedData.sellerId);
+        console.log(`🔧 ИСПРАВЛЕНИЕ: Преобразовали sellerId в число: ${processedData.sellerId} (тип: ${typeof processedData.sellerId})`);
+      }
       
       console.log(`✅ ВАЛИДАЦИЯ: Данные прошли предварительную обработку`);
       const validatedData = insertCarListingSchema.parse(processedData);
