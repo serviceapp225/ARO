@@ -468,11 +468,16 @@ export default function SellCar() {
         formData.append(`photo_${i}`, blob, `photo_${i}.jpg`);
       }
 
+      console.log('🚀 Отправляем FormData запрос...');
+      
       const response = await fetch('/api/listings', {
         method: 'POST',
         body: formData, // Send as FormData instead of JSON
         signal: controller.signal,
       });
+      
+      console.log('📡 Response status:', response.status);
+      console.log('📡 Response headers:', response.headers);
 
       clearTimeout(timeoutId);
 
