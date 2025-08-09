@@ -462,10 +462,18 @@ export default function SellCar() {
       });
       
       // Add photos as individual files
+      console.log('📷 Обрабатываем фотографии:', uploadedImages.length);
       for (let i = 0; i < uploadedImages.length; i++) {
-        const base64Data = uploadedImages[i];
-        const blob = await fetch(base64Data).then(r => r.blob());
-        formData.append(`photo_${i}`, blob, `photo_${i}.jpg`);
+        try {
+          console.log(`📷 Обрабатываем фото ${i}...`);
+          const base64Data = uploadedImages[i];
+          const blob = await fetch(base64Data).then(r => r.blob());
+          formData.append(`photo_${i}`, blob, `photo_${i}.jpg`);
+          console.log(`✅ Фото ${i} добавлено в FormData`);
+        } catch (error) {
+          console.error(`❌ Ошибка обработки фото ${i}:`, error);
+          throw error;
+        }
       }
 
       console.log('🚀 Отправляем FormData запрос...');
