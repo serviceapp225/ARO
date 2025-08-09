@@ -23,6 +23,20 @@ export function AutoImageCarousel({
   const [mouseStart, setMouseStart] = useState<number | null>(null);
   const [mouseEnd, setMouseEnd] = useState<number | null>(null);
   const [isDragging, setIsDragging] = useState(false);
+  const [isTransitioning, setIsTransitioning] = useState(false);
+
+  // Функция для плавного изменения индекса
+  const changeIndex = (newIndex: number) => {
+    if (isTransitioning || newIndex === currentIndex) return;
+    
+    setIsTransitioning(true);
+    
+    // Создаем небольшую задержку для fade эффекта
+    setTimeout(() => {
+      setCurrentIndex(newIndex);
+      setTimeout(() => setIsTransitioning(false), 50);
+    }, 150);
+  };
 
   useEffect(() => {
     if (!images || images.length <= 1 || autoPlayPaused) return;
@@ -34,9 +48,7 @@ export function AutoImageCarousel({
     const initialTimer = setTimeout(() => {
       // Начинаем интервал после случайной задержки
       interval = setInterval(() => {
-        setCurrentIndex((prevIndex) => 
-          prevIndex === images.length - 1 ? 0 : prevIndex + 1
-        );
+        changeIndex(currentIndex === images.length - 1 ? 0 : currentIndex + 1);
       }, autoPlayInterval);
     }, randomDelay);
 
@@ -44,7 +56,7 @@ export function AutoImageCarousel({
       clearTimeout(initialTimer);
       if (interval) clearInterval(interval);
     };
-  }, [images, autoPlayInterval, autoPlayPaused]);
+  }, [images, autoPlayInterval, autoPlayPaused, currentIndex, isTransitioning]);
 
   const handleImageError = () => {
     setImageError(true);
@@ -79,10 +91,10 @@ export function AutoImageCarousel({
     const isRightSwipe = distance < -minSwipeDistance;
 
     if (isLeftSwipe) {
-      setCurrentIndex(prev => prev === images.length - 1 ? 0 : prev + 1);
+      changeIndex(currentIndex === images.length - 1 ? 0 : currentIndex + 1);
     }
     if (isRightSwipe) {
-      setCurrentIndex(prev => prev === 0 ? images.length - 1 : prev - 1);
+      changeIndex(currentIndex === 0 ? images.length - 1 : currentIndex - 1);
     }
 
     // Возобновляем автопроигрывание через 3 секунды после взаимодействия
@@ -114,10 +126,10 @@ export function AutoImageCarousel({
     const isRightDrag = distance < -minSwipeDistance;
 
     if (isLeftDrag) {
-      setCurrentIndex(prev => prev === images.length - 1 ? 0 : prev + 1);
+      changeIndex(currentIndex === images.length - 1 ? 0 : currentIndex + 1);
     }
     if (isRightDrag) {
-      setCurrentIndex(prev => prev === 0 ? images.length - 1 : prev - 1);
+      changeIndex(currentIndex === 0 ? images.length - 1 : currentIndex - 1);
     }
     
     setIsDragging(false);
@@ -139,7 +151,7 @@ export function AutoImageCarousel({
 
   return (
     <div 
-      className={`relative touch-none ${isDragging ? 'cursor-grabbing' : 'cursor-grab'} ${className}`}
+      className={`relative touch-none overflow-hidden ${isDragging ? 'cursor-grabbing' : 'cursor-grab'} ${className}`}
       onTouchStart={onTouchStart}
       onTouchMove={onTouchMove}
       onTouchEnd={onTouchEnd}
@@ -148,23 +160,29 @@ export function AutoImageCarousel({
       onMouseUp={onMouseUp}
       onMouseLeave={onMouseLeave}
     >
+      {/* Основное изображение с плавными переходами */}
       <img 
+        key={`image-${currentIndex}`}
         src={images[currentIndex]} 
         alt={`${alt} - Image ${currentIndex + 1}`}
-        className="w-full h-full object-cover transition-opacity duration-500 select-none"
+        className={`w-full h-full object-cover select-none transition-all duration-300 ease-out ${
+          isTransitioning ? 'opacity-30 scale-105' : 'opacity-100 scale-100'
+        }`}
         onError={handleImageError}
         onLoad={handleImageLoad}
         draggable={false}
       />
       
-      {/* Индикаторы точек (только для отображения) */}
+      {/* Индикаторы точек с улучшенными переходами */}
       {images.length > 1 && (
-        <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex space-x-1">
+        <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex space-x-1 bg-black/20 rounded-full px-2 py-1 backdrop-blur-sm">
           {images.map((_, index) => (
             <div
               key={index}
-              className={`w-1.5 h-1.5 rounded-full transition-all duration-300 ${
-                index === currentIndex ? 'bg-white scale-125' : 'bg-white/50'
+              className={`rounded-full transition-all duration-300 ease-out ${
+                index === currentIndex 
+                  ? 'w-2 h-2 bg-white scale-110 shadow-sm' 
+                  : 'w-1.5 h-1.5 bg-white/60 hover:bg-white/80'
               }`}
             />
           ))}
