@@ -1112,16 +1112,16 @@ export default function SellCar() {
                           </button>
                         </div>
                         <div className="border-t">
-                          {allUsers.map((userItem: any) => (
+                          {allUsers.map((userItem: any, index: number) => (
                             <button
-                              key={`user-${userItem.userId}`}
+                              key={`user-${userItem.userId || userItem.id || index}`}
                               type="button"
                               onClick={() => {
-                                setSelectedUserId(userItem.userId);
+                                setSelectedUserId(userItem.userId || userItem.id);
                                 setShowUserSelector(false);
                               }}
                               className={`w-full text-left p-3 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors ${
-                                selectedUserId === userItem.userId ? 'bg-blue-100 dark:bg-blue-900 border-2 border-blue-500' : 'border-2 border-transparent'
+                                selectedUserId === (userItem.userId || userItem.id) ? 'bg-blue-100 dark:bg-blue-900 border-2 border-blue-500' : 'border-2 border-transparent'
                               }`}
                             >
                               <div className="font-medium">{userItem.phoneNumber}</div>
