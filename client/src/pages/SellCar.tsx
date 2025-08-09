@@ -1112,22 +1112,27 @@ export default function SellCar() {
                           </button>
                         </div>
                         <div className="border-t">
-                          {allUsers.map((userItem: any, index: number) => (
-                            <button
-                              key={`user-${userItem.userId || userItem.id || index}`}
-                              type="button"
-                              onClick={() => {
-                                setSelectedUserId(userItem.userId || userItem.id);
-                                setShowUserSelector(false);
-                              }}
-                              className={`w-full text-left p-3 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors ${
-                                selectedUserId === (userItem.userId || userItem.id) ? 'bg-blue-100 dark:bg-blue-900 border-2 border-blue-500' : 'border-2 border-transparent'
-                              }`}
-                            >
-                              <div className="font-medium">{userItem.phoneNumber}</div>
-                              <div className="text-sm text-muted-foreground">{userItem.fullName}</div>
-                            </button>
-                          ))}
+                          {allUsers.map((userItem: any, index: number) => {
+                            // Получаем уникальный ID пользователя
+                            const userUniqueId = userItem.userId || userItem.id || `temp-${index}`;
+                            
+                            return (
+                              <button
+                                key={`user-${userUniqueId}`}
+                                type="button"
+                                onClick={() => {
+                                  setSelectedUserId(userUniqueId);
+                                  setShowUserSelector(false);
+                                }}
+                                className={`w-full text-left p-3 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors ${
+                                  selectedUserId === userUniqueId ? 'bg-blue-100 dark:bg-blue-900 border-2 border-blue-500' : 'border-2 border-transparent'
+                                }`}
+                              >
+                                <div className="font-medium">{userItem.phoneNumber}</div>
+                                <div className="text-sm text-muted-foreground">{userItem.fullName}</div>
+                              </button>
+                            );
+                          })}
                         </div>
                       </div>
                       <Button 
