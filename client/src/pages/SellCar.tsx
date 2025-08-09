@@ -1078,7 +1078,12 @@ export default function SellCar() {
                     <div className="space-y-3">
                       <p className="text-sm text-muted-foreground">
                         {selectedUserId ? 
-                          `Создается от имени: ${allUsers.find(u => u.userId === selectedUserId)?.phoneNumber} - ${allUsers.find(u => u.userId === selectedUserId)?.fullName}` :
+                          (() => {
+                            const selectedUser = allUsers.find(u => (u.userId || u.id) === selectedUserId);
+                            return selectedUser ? 
+                              `Создается от имени: ${selectedUser.phoneNumber} - ${selectedUser.fullName}` :
+                              "Пользователь не найден";
+                          })() :
                           "По умолчанию создается от вашего имени"
                         }
                       </p>
