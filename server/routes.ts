@@ -1062,7 +1062,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/listings", getUserFromContext, async (req, res) => {
+  app.post("/api/listings", (req, res, next) => {
+    console.log(`🚨 MIDDLEWARE: POST /api/listings получен`);
+    console.log(`📦 MIDDLEWARE: req.body.sellerId = ${req.body?.sellerId}`);
+    console.log(`📦 MIDDLEWARE: req.body keys = ${Object.keys(req.body || {})}`);
+    next();
+  }, getUserFromContext, async (req, res) => {
     console.log(`🚨 НОВОЕ ОБЪЯВЛЕНИЕ: POST /api/listings запрос получен`);
     console.log(`📦 Размер тела запроса: ${JSON.stringify(req.body).length} символов`);
     
