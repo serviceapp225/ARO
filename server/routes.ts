@@ -1062,13 +1062,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/listings", async (req, res) => {
+  app.post("/api/listings", getUserFromContext, async (req, res) => {
     console.log(`🚨 НОВОЕ ОБЪЯВЛЕНИЕ: POST /api/listings запрос получен`);
     console.log(`📦 Размер тела запроса: ${JSON.stringify(req.body).length} символов`);
     
+    const currentUser = (req as any).user;
+    console.log(`👤 Текущий пользователь:`, currentUser?.phoneNumber, currentUser?.fullName);
+    
     try {
+      // Check if admin is creating on behalf of another user
+      const isAdmin = currentUser?.fullName === 'ADMIN' || currentUser?.role === 'admin';
+      const targetSellerId = req.body.sellerId; // sellerId from frontend (selected user)
+      
+      let actualSellerId = currentUser?.userId; // Default to current user
+      let targetUser = currentUser;
+      
+      // If admin and target user specified, use target user
+      if (isAdmin && targetSellerId && targetSellerId !== currentUser?.userId) {
+        console.log(`👑 АДМИН: Создание объявления от имени пользователя ${targetSellerId}`);
+        targetUser = await storage.getUser(targetSellerId);
+        if (targetUser) {
+          actualSellerId = targetSellerId;
+          console.log(`✅ АДМИН: Найден целевой пользователь ${targetUser.phoneNumber} - ${targetUser.fullName}`);
+        } else {
+          console.error(`❌ АДМИН: Пользователь ${targetSellerId} не найден`);
+          return res.status(400).json({ error: "Target user not found" });
+        }
+      }
+      
       // Preprocess the data to handle electric vehicle fields
       const processedData = { ...req.body };
+      
+      // Override sellerId with actual seller
+      processedData.sellerId = actualSellerId;
       
       console.log(`🚗 Данные автомобиля: ${processedData.make} ${processedData.model} ${processedData.year}`);
       console.log(`📸 Количество фотографий в запросе: ${processedData.photos?.length || 0}`);
@@ -1205,8 +1231,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log(`🧹 КЭШИ: Очищаем все кэши после создания объявления`);
       clearAllCaches();
       
-      // УБРАНО: Не отправляем уведомления при создании объявления
-      // Уведомления будут отправляться только при одобрении админом (pending → active)
+      // Send SMS notification if admin created listing for another user
+      if (isAdmin && targetSellerId && targetSellerId !== currentUser?.userId && targetUser) {
+        try {
+          const smsMessage = `AutoBid.tj: Ваша машина ${processedData.make} ${processedData.model} добавлена в аукцион. Лот №${lotNumber}. Проверьте в приложении.`;
+          console.log(`📱 SMS: Отправляем уведомление пользователю ${targetUser.phoneNumber}`);
+          
+          const smsResult = await sendSMSNotification(targetUser.phoneNumber, smsMessage);
+          console.log(`📱 SMS результат:`, smsResult);
+          
+          if (smsResult.success) {
+            console.log(`✅ SMS: Уведомление успешно отправлено пользователю ${targetUser.phoneNumber}`);
+          } else {
+            console.error(`❌ SMS: Ошибка отправки уведомления пользователю ${targetUser.phoneNumber}:`, smsResult.message);
+          }
+        } catch (smsError) {
+          console.error(`❌ SMS: Критическая ошибка при отправке SMS:`, smsError);
+        }
+      }
       
       console.log(`🎉 УСПЕХ: Объявление ${listing.id} создано и возвращается клиенту`);
       res.status(201).json(listing);
