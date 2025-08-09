@@ -1115,6 +1115,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Override sellerId with actual seller
       processedData.sellerId = actualSellerId;
       
+      console.log(`🎯 ПОСЛЕ ЗАМЕНЫ: processedData.sellerId = ${processedData.sellerId} (тип: ${typeof processedData.sellerId})`);
       console.log(`🚗 Данные автомобиля: ${processedData.make} ${processedData.model} ${processedData.year}`);
       console.log(`📸 Количество файлов в запросе: ${req.files?.length || 0}`);
       
@@ -1123,7 +1124,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (processedData.year) processedData.year = parseInt(processedData.year);
       if (processedData.mileage) processedData.mileage = parseInt(processedData.mileage);
       if (processedData.auctionDuration) processedData.auctionDuration = parseInt(processedData.auctionDuration);
-      if (processedData.sellerId) processedData.sellerId = parseInt(processedData.sellerId);
+      // sellerId is already a number from actualSellerId calculation, no need to parse
       
       // Booleans - convert 'yes'/'no' from frontend to actual booleans
       if (processedData.customsCleared !== undefined) {
