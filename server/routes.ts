@@ -1113,14 +1113,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       let targetUser = currentUser;
       
       // If admin and target user specified, use target user
-      if (isAdmin && targetSellerId && targetSellerId !== (currentUser?.userId || currentUser?.id)) {
-        console.log(`👑 АДМИН: Создание объявления от имени пользователя ${targetSellerId}`);
-        targetUser = await storage.getUser(targetSellerId);
+      if (isAdmin && targetSellerId && parseInt(targetSellerId) !== (currentUser?.userId || currentUser?.id)) {
+        const targetSellerIdNum = parseInt(targetSellerId); // Convert string to number
+        console.log(`👑 АДМИН: Создание объявления от имени пользователя ${targetSellerIdNum}`);
+        targetUser = await storage.getUser(targetSellerIdNum);
         if (targetUser) {
-          actualSellerId = targetSellerId;
+          actualSellerId = targetSellerIdNum; // Use the number version
           console.log(`✅ АДМИН: Найден целевой пользователь ${targetUser.phoneNumber} - ${targetUser.fullName}`);
         } else {
-          console.error(`❌ АДМИН: Пользователь ${targetSellerId} не найден`);
+          console.error(`❌ АДМИН: Пользователь ${targetSellerIdNum} не найден`);
           return res.status(400).json({ error: "Target user not found" });
         }
       }
