@@ -1118,6 +1118,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log(`🚗 Данные автомобиля: ${processedData.make} ${processedData.model} ${processedData.year}`);
       console.log(`📸 Количество файлов в запросе: ${req.files?.length || 0}`);
       
+      // Convert ALL FormData string values to correct types BEFORE validation
+      // Numbers
+      if (processedData.year) processedData.year = parseInt(processedData.year);
+      if (processedData.mileage) processedData.mileage = parseInt(processedData.mileage);
+      if (processedData.auctionDuration) processedData.auctionDuration = parseInt(processedData.auctionDuration);
+      if (processedData.sellerId) processedData.sellerId = parseInt(processedData.sellerId);
+      
+      // Booleans - convert 'yes'/'no' from frontend to actual booleans
+      if (processedData.customsCleared !== undefined) {
+        processedData.customsCleared = processedData.customsCleared === 'true';
+      }
+      if (processedData.recycled !== undefined) {
+        processedData.recycled = processedData.recycled === 'true';
+      }
+      if (processedData.technicalInspectionValid !== undefined) {
+        processedData.technicalInspectionValid = processedData.technicalInspectionValid === 'true';
+      }
+      if (processedData.tinted !== undefined) {
+        processedData.tinted = processedData.tinted === 'true';
+      }
+      
       // Convert electric vehicle fields to correct types if they exist
       if (processedData.batteryCapacity !== undefined && processedData.batteryCapacity !== null) {
         processedData.batteryCapacity = typeof processedData.batteryCapacity === 'string' 
