@@ -184,11 +184,10 @@ export function useAuctionWebSocket(): AuctionWebSocketHook {
   }, [currentUserId]);
   
   const handleWebSocketMessage = (message: WebSocketMessage) => {
-    // Детальная отладка для поиска "user is not defined"
-    console.log('🔍 handleWebSocketMessage - user:', user);
-    console.log('🔍 handleWebSocketMessage - typeof user:', typeof user);
-    console.log('🔍 handleWebSocketMessage - currentUserId:', currentUserId);
-    console.log('🔍 handleWebSocketMessage - typeof currentUserId:', typeof currentUserId);
+    // Убираем избыточные логи для лучшей производительности
+    if (message.type !== 'pong') {
+      console.log('📩 WebSocket сообщение:', message.type, message.listingId || '');
+    }
     
     switch (message.type) {
       case 'connected':

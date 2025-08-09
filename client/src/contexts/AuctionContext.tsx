@@ -47,17 +47,17 @@ export function AuctionProvider({ children }: { children: ReactNode }) {
     pollingInterval: 5000, // Fallback только если WebSocket недоступен
   });
 
-  // Оптимизированный запрос данных для главной страницы
+  // Ультра-оптимизированный запрос данных для главной страницы
   const { data: listings = [], isLoading, refetch } = useQuery<any[]>({
     queryKey: ['/api/listings'],
-    staleTime: 15000, // Данные считаются свежими 15 секунд - WebSocket обновляет мгновенно
-    gcTime: 300000, // Кэш живет 5 минут
-    refetchOnWindowFocus: true, // Обновляем при возврате на страницу
-    refetchOnMount: true, // Получаем свежие данные при загрузке
-    refetchOnReconnect: true, // Обновляем при восстановлении соединения
-    refetchInterval: 15000, // Мягкое обновление каждые 15 секунд (WebSocket первичен)
-    retry: 3, // Повторные попытки при ошибках
-    retryDelay: 2000, // Задержка между попытками 2 секунды
+    staleTime: 5 * 60 * 1000, // Данные свежи 5 минут - WebSocket управляет обновлениями
+    gcTime: 15 * 60 * 1000, // Кэш живет 15 минут
+    refetchOnWindowFocus: false, // WebSocket обеспечивает актуальность
+    refetchOnMount: false, // Используем кэшированные данные
+    refetchOnReconnect: true, // Обновляем только при восстановлении соединения
+    refetchInterval: false, // Полностью полагаемся на WebSocket
+    retry: 2, // Меньше попыток
+    retryDelay: 1000, // Быстрые попытки
   });
 
   // Transform listings to auctions format  

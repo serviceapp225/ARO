@@ -23,20 +23,21 @@ export function SellCarBanner() {
   const [, setLocation] = useLocation();
   const { user } = useAuth();
   
-  // Загружаем данные банера из API
+  // Ультра-оптимизированная загрузка банера
   const { data: bannerData } = useQuery<SellCarBannerData>({
     queryKey: ['/api/sell-car-banner'],
     enabled: true,
-    staleTime: 0, // Данные сразу становятся устаревшими
-    refetchInterval: 10000, // Обновляем каждые 10 секунд
+    staleTime: 10 * 60 * 1000, // Данные свежи 10 минут - баннер статичный
+    gcTime: 30 * 60 * 1000, // Кэш живет 30 минут
+    refetchInterval: false, // Отключаем авто-обновления - баннер статичный
+    refetchOnWindowFocus: false, // Не обновляем при фокусе
+    refetchOnMount: false, // Используем кэш при монтировании
   });
   
   // Функция для получения оптимизированного URL изображения баннера продажи
   const getOptimizedImageUrl = (imageType: 'background' | 'rotation1' | 'rotation2' | 'rotation3' | 'rotation4'): string => {
     if (!bannerData?.id) return '';
-    const url = `/api/images/sell-car-banner/${bannerData.id}/${imageType}`;
-    console.log('🏷️ Загружаем изображение SellCarBanner через API:', url);
-    return url;
+    return `/api/images/sell-car-banner/${bannerData.id}/${imageType}`;
   };
 
   // Изображения для ротации из API endpoints (оптимизированные)

@@ -9,7 +9,7 @@ import { ReservePriceIndicator } from './ReservePriceIndicator';
 import { useAuctions } from '@/contexts/AuctionContext';
 import { useFavorites } from '@/contexts/FavoritesContext';
 import { useLocation } from 'wouter';
-import { useState, useEffect, useMemo, memo, useCallback } from 'react';
+import { useState, useEffect, useMemo, memo, useCallback, useRef } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 
 
@@ -18,27 +18,37 @@ interface ActiveAuctionsProps {
   customListings?: any[];
 }
 
-export function ActiveAuctions({ searchQuery = "", customListings }: ActiveAuctionsProps) {
+export const ActiveAuctions = memo(function ActiveAuctions({ searchQuery = "", customListings }: ActiveAuctionsProps) {
   const { auctions, loading, refreshAuctions } = useAuctions();
   const { isFavorite, addToFavorites, removeFromFavorites } = useFavorites();
   const queryClient = useQueryClient();
   
-  // Убираем дублирующее фоновое обновление - теперь все управляется через WebSocket и умный хук
-
   const [, setLocation] = useLocation();
   const [page, setPage] = useState(1);
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [sortBy, setSortBy] = useState("recent");
   const [loadingTimeout, setLoadingTimeout] = useState(false);
+  
+  // Ref для предыдущих аукционов чтобы избежать лишних пересчетов
+  const prevAuctionsRef = useRef<any[]>([]);
+  const prevSearchRef = useRef<string>("");
 
   const ITEMS_PER_PAGE = 20;
 
   // Use custom listings if provided, otherwise use filtered auctions
   const sourceAuctions = customListings || auctions;
   
-  // Memoize filtered and sorted auctions for better performance
+  // Ультра-оптимизированная мемоизация с проверкой изменений
   const displayedAuctions = useMemo(() => {
+    // Быстрая проверка - изменились ли данные
+    const currentDataHash = JSON.stringify([sourceAuctions.length, searchQuery, sortBy]);
+    const prevDataHash = JSON.stringify([prevAuctionsRef.current.length, prevSearchRef.current, sortBy]);
+    
+    if (currentDataHash === prevDataHash && prevAuctionsRef.current.length > 0) {
+      return prevAuctionsRef.current; // Возвращаем кэшированный результат
+    }
+
     // Include both active auctions and recently won auctions (ended status)
     const relevantAuctions = sourceAuctions.filter((auction: any) => 
       auction.status === 'active' || auction.status === 'ended'
@@ -75,7 +85,13 @@ export function ActiveAuctions({ searchQuery = "", customListings }: ActiveAucti
     });
 
     // Calculate displayed auctions based on current page
-    return sortedAuctions.slice(0, page * ITEMS_PER_PAGE);
+    const result = sortedAuctions.slice(0, page * ITEMS_PER_PAGE);
+    
+    // Обновляем кэш
+    prevAuctionsRef.current = result;
+    prevSearchRef.current = searchQuery;
+    
+    return result;
   }, [sourceAuctions, searchQuery, sortBy, page]);
 
   // Debounced предзагрузка данных при наведении на карточку
@@ -419,4 +435,4 @@ export function ActiveAuctions({ searchQuery = "", customListings }: ActiveAucti
       )}
     </div>
   );
-}
+});
