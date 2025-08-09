@@ -1183,6 +1183,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Убираем photos из валидации - теперь используем файлы
       processedData.photos = [];
       
+      console.log(`🔍 ПЕРЕД ВАЛИДАЦИЕЙ: sellerId = ${processedData.sellerId} (тип: ${typeof processedData.sellerId})`);
+      console.log(`🔍 ПЕРЕД ВАЛИДАЦИЕЙ: все ключи processedData:`, Object.keys(processedData));
+      console.log(`🔍 ПЕРЕД ВАЛИДАЦИЕЙ: processedData =`, JSON.stringify(processedData, null, 2));
+      
       console.log(`✅ ВАЛИДАЦИЯ: Данные прошли предварительную обработку`);
       const validatedData = insertCarListingSchema.parse(processedData);
       console.log(`✅ ВАЛИДАЦИЯ: Схема данных успешно валидирована`);
