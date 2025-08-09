@@ -1114,7 +1114,7 @@ export default function SellCar() {
                         <div className="border-t">
                           {allUsers.map((userItem: any) => (
                             <button
-                              key={userItem.userId}
+                              key={`user-${userItem.userId}`}
                               type="button"
                               onClick={() => {
                                 setSelectedUserId(userItem.userId);
