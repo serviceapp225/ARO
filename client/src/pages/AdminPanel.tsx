@@ -16,6 +16,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { Link } from 'wouter';
 import { UserDetailModal } from '@/components/UserDetailModal';
+import { CreateUserModal } from '@/components/CreateUserModal';
 import { ListingEditModal } from '@/components/ListingEditModal';
 import type { User, CarListing, Notification, AdvertisementCarousel } from '@shared/schema';
 
@@ -848,6 +849,7 @@ function UsersManagement() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
+  const [showCreateModal, setShowCreateModal] = useState(false);
 
   const handleRefreshUsers = () => {
     console.log('Обновление списка пользователей...');
@@ -882,14 +884,25 @@ function UsersManagement() {
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
             Управление пользователями
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={handleRefreshUsers}
-            >
-              <RefreshCw className="w-4 h-4 mr-2" />
-              Обновить
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button 
+                variant="default"
+                size="sm"
+                onClick={() => setShowCreateModal(true)}
+                className="bg-green-600 hover:bg-green-700"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Создать новый аккаунт
+              </Button>
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={handleRefreshUsers}
+              >
+                <RefreshCw className="w-4 h-4 mr-2" />
+                Обновить
+              </Button>
+            </div>
           </CardTitle>
           <CardDescription>
             Активация и деактивация пользователей системы
@@ -945,6 +958,11 @@ function UsersManagement() {
         userId={selectedUserId}
         isOpen={!!selectedUserId}
         onClose={() => setSelectedUserId(null)}
+      />
+
+      <CreateUserModal
+        isOpen={showCreateModal}
+        onClose={() => setShowCreateModal(false)}
       />
     </div>
   );

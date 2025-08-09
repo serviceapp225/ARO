@@ -2925,6 +2925,73 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Создание нового пользователя админом
+  app.post("/api/admin/users/create", adminAuth, async (req, res) => {
+    try {
+      const { phoneNumber, fullName, role = 'buyer', isActive = false, sendSMS = true } = req.body;
+      
+      console.log('📝 АДМИН: Создание нового пользователя:', { phoneNumber, fullName, role, isActive, sendSMS });
+      
+      if (!phoneNumber || !fullName) {
+        return res.status(400).json({ error: "Phone number and full name are required" });
+      }
+      
+      // Нормализуем номер телефона
+      const normalizedPhone = phoneNumber.replace(/[^\d+]/g, '');
+      console.log(`📱 Нормализация номера: ${phoneNumber} → ${normalizedPhone}`);
+      
+      // Генерируем email на основе номера телефона
+      const email = `${normalizedPhone}@autoauction.tj`;
+      
+      // Проверяем, что пользователь не существует
+      const existingUser = await storage.getUserByEmail(email);
+      if (existingUser) {
+        return res.status(409).json({ error: "User with this phone number already exists" });
+      }
+      
+      // Создаем пользователя
+      const user = await storage.createUser({
+        email,
+        username: fullName,
+        fullName,
+        phoneNumber: normalizedPhone,
+        role,
+        isActive
+      });
+      
+      console.log(`✅ АДМИН: Создан пользователь ${user.id} (${user.email})`);
+      
+      // Отправляем SMS уведомление если требуется
+      if (sendSMS) {
+        const smsMessage = "AutoBid.tj: Регистрация завершена! Скачайте приложение в Play Market или App Store и участвуйте в аукционах. Выгодные цены каждый день!";
+        
+        try {
+          console.log(`📱 АДМИН: Отправка SMS уведомления на ${normalizedPhone}`);
+          const smsResult = await sendSMSNotification(normalizedPhone, smsMessage);
+          
+          if (smsResult.success) {
+            console.log(`✅ АДМИН: SMS уведомление отправлено пользователю ${user.id}`);
+          } else {
+            console.warn(`⚠️ АДМИН: Не удалось отправить SMS пользователю ${user.id}: ${smsResult.message}`);
+          }
+        } catch (smsError) {
+          console.error(`❌ АДМИН: Ошибка отправки SMS пользователю ${user.id}:`, smsError);
+        }
+      }
+      
+      res.status(201).json({ 
+        user,
+        smsMessage: sendSMS ? "SMS уведомление отправлено" : "SMS уведомление не отправлялось"
+      });
+    } catch (error) {
+      console.error("❌ АДМИН: Ошибка создания пользователя:", error);
+      res.status(500).json({ 
+        error: "Failed to create user",
+        details: error instanceof Error ? error.message : String(error)
+      });
+    }
+  });
+
   // Статистика для админа
   app.get("/api/admin/stats", adminAuth, async (req, res) => {
     try {
