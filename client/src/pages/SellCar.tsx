@@ -452,12 +452,12 @@ export default function SellCar() {
       console.log('🚨 About to send listing data:', JSON.stringify({...listingData, photos: `[${listingData.photos.length} photos]`}, null, 2));
 
       // Create FormData to handle file uploads instead of huge JSON
-      const formData = new FormData();
+      const multipartData = new FormData();
       
       // Add all non-photo fields
       Object.entries(listingData).forEach(([key, value]) => {
         if (key !== 'photos' && value !== null && value !== undefined) {
-          formData.append(key, String(value));
+          multipartData.append(key, String(value));
         }
       });
       
@@ -468,7 +468,7 @@ export default function SellCar() {
           console.log(`📷 Обрабатываем фото ${i}...`);
           const base64Data = uploadedImages[i];
           const blob = await fetch(base64Data).then(r => r.blob());
-          formData.append(`photo_${i}`, blob, `photo_${i}.jpg`);
+          multipartData.append(`photo_${i}`, blob, `photo_${i}.jpg`);
           console.log(`✅ Фото ${i} добавлено в FormData`);
         } catch (error) {
           console.error(`❌ Ошибка обработки фото ${i}:`, error);
@@ -480,7 +480,7 @@ export default function SellCar() {
       
       const response = await fetch('/api/listings', {
         method: 'POST',
-        body: formData, // Send as FormData instead of JSON
+        body: multipartData, // Send as FormData instead of JSON
         signal: controller.signal,
       });
       
