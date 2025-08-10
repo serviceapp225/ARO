@@ -3548,6 +3548,97 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Создание нового объявления администратором
+  app.post("/api/admin/create-listing", requireAdmin, async (req, res) => {
+    try {
+      const {
+        sellerId, make, model, year, mileage, description, 
+        startingBid, reservePrice, auctionDuration = 7
+      } = req.body;
+
+      // Проверяем обязательные поля
+      if (!sellerId || !make || !model || !year || !startingBid) {
+        return res.status(400).json({ 
+          error: "Обязательные поля: sellerId, make, model, year, startingBid" 
+        });
+      }
+
+      // Проверяем что пользователь существует
+      const user = await storage.getUserById(sellerId);
+      if (!user) {
+        return res.status(404).json({ error: "Пользователь не найден" });
+      }
+
+      // Генерируем уникальный номер лота
+      const lotNumber = Math.floor(100000 + Math.random() * 900000).toString();
+
+      // Создаем объявление
+      const newListing = await storage.createListing({
+        sellerId: sellerId,
+        make: make.trim(),
+        model: model.trim(),
+        year: parseInt(year),
+        mileage: parseInt(mileage) || 0,
+        description: description?.trim() || '',
+        startingPrice: parseFloat(startingBid),
+        currentPrice: parseFloat(startingBid),
+        reservePrice: parseFloat(reservePrice) || parseFloat(startingBid),
+        status: 'active', // Админские объявления сразу активны
+        lotNumber,
+        photos: [], // Пустой массив, фото можно добавить позже
+        auctionDuration: parseInt(auctionDuration)
+      });
+
+      console.log(`✅ ADMIN: Создано объявление ${newListing.id} для пользователя ${sellerId} (${user.phoneNumber})`);
+
+      // Отправляем SMS уведомление пользователю
+      try {
+        const smsText = `Ваша машина ${make} ${model} добавлена в аукцион. Лот №${lotNumber}`;
+        
+        // Получаем номер телефона пользователя
+        const phoneNumber = user.phoneNumber;
+        if (phoneNumber) {
+          console.log(`📱 Отправляем SMS уведомление на ${phoneNumber}: ${smsText}`);
+          
+          // Отправляем через VPS прокси (если настроен)
+          const VPS_PROXY_URL = process.env.VPS_PROXY_URL || 'http://localhost:3000';
+          const response = await fetch(`${VPS_PROXY_URL}/send-sms`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              to: phoneNumber,
+              text: smsText
+            })
+          });
+
+          if (response.ok) {
+            console.log(`✅ SMS отправлена пользователю ${phoneNumber}: ${smsText}`);
+          } else {
+            console.log(`⚠️ Ошибка отправки SMS: ${response.status}`);
+          }
+        } else {
+          console.log(`⚠️ У пользователя ${sellerId} нет номера телефона для SMS`);
+        }
+      } catch (smsError) {
+        console.error('❌ Ошибка отправки SMS:', smsError);
+        // Не прерываем выполнение если SMS не отправилась
+      }
+
+      // Очищаем кэши
+      clearAllCaches();
+
+      res.status(201).json({
+        success: true,
+        listing: newListing,
+        message: `Объявление создано для ${user.phoneNumber} - ${user.fullName}`
+      });
+
+    } catch (error) {
+      console.error("Error creating admin listing:", error);
+      res.status(500).json({ error: "Ошибка создания объявления" });
+    }
+  });
+
   app.patch("/api/admin/listings/:id/status", requireAdmin, async (req, res) => {
     try {
       const listingId = parseInt(req.params.id);
@@ -4352,7 +4443,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
 // Функция для отправки SMS через VPS прокси (статический IP 188.166.61.86)
 async function sendSMSCode(phoneNumber: string, code: string): Promise<{success: boolean, message?: string}> {
-  const VPS_PROXY_URL = "http://188.166.61.86:3000/api/send-sms";
+  const VPS_PROXY_URL = process.env.VPS_PROXY_URL || "http://localhost:3000/api/send-sms";
   
   console.log(`[SMS VPS PROXY] Отправка SMS на ${phoneNumber}: ${code}`);
   
@@ -4442,7 +4533,7 @@ async function sendSMSCode(phoneNumber: string, code: string): Promise<{success:
 // Функция для отправки SMS уведомлений через VPS прокси
 async function sendSMSNotification(phoneNumber: string, message: string): Promise<{success: boolean, message?: string}> {
   // URL VPS прокси сервера
-  const VPS_PROXY_URL = "http://188.166.61.86:3000/api/send-sms";
+  const VPS_PROXY_URL = process.env.VPS_PROXY_URL || "http://localhost:3000/api/send-sms";
   
   console.log(`[SMS VPS PROXY] Отправка SMS уведомления на ${phoneNumber}: ${message}`);
   

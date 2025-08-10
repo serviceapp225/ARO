@@ -36,7 +36,7 @@ async function sendSMSViaProxy(phoneNumber: string, message: string): Promise<{s
     return { success: false, message: "Invalid phone number or message format" };
   }
   
-  const VPS_PROXY_URL = process.env.VPS_PROXY_URL || "http://188.166.61.86:3000/api/send-sms";
+  const VPS_PROXY_URL = process.env.VPS_PROXY_URL || "http://localhost:3000/api/send-sms";
   
   try {
     const response = await fetch(VPS_PROXY_URL, {
