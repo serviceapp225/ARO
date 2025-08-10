@@ -1,0 +1,302 @@
+# Команды для создания файлов на VPS
+
+# 1. Создать shared/schema.ts
+cat > shared/schema.ts << 'EOF'
+import { pgTable, text, serial, integer, boolean, timestamp, numeric, jsonb, index } from "drizzle-orm/pg-core";
+import { createInsertSchema } from "drizzle-zod";
+import { z } from "zod";
+
+export const users = pgTable("users", {
+  id: serial("id").primaryKey(),
+  email: text("email").notNull().unique(),
+  username: text("username").notNull().unique(),
+  fullName: text("full_name"),
+  role: text("role").notNull(),
+  profilePhoto: text("profile_photo"),
+  phoneNumber: text("phone_number"),
+  isActive: boolean("is_active").default(false),
+  invitedBy: text("invited_by"),
+  isInvited: boolean("is_invited").default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const carListings = pgTable("car_listings", {
+  id: serial("id").primaryKey(),
+  sellerId: integer("seller_id").notNull(),
+  lotNumber: text("lot_number").notNull(),
+  make: text("make").notNull(),
+  model: text("model").notNull(),
+  customMakeModel: text("custom_make_model"),
+  year: integer("year").notNull(),
+  mileage: integer("mileage").notNull(),
+  description: text("description").notNull(),
+  startingPrice: numeric("starting_price", { precision: 12, scale: 2 }).notNull(),
+  reservePrice: numeric("reserve_price", { precision: 12, scale: 2 }),
+  currentBid: numeric("current_bid", { precision: 12, scale: 2 }),
+  photos: jsonb("photos").notNull(),
+  auctionDuration: integer("auction_duration").notNull(),
+  status: text("status").notNull().default("pending_approval"),
+  auctionStartTime: timestamp("auction_start_time"),
+  auctionEndTime: timestamp("auction_end_time"),
+  endedAt: timestamp("ended_at"),
+  customsCleared: boolean("customs_cleared").default(false),
+  recycled: boolean("recycled").default(false),
+  technicalInspectionValid: boolean("technical_inspection_valid").default(false),
+  technicalInspectionDate: text("technical_inspection_date"),
+  tinted: boolean("tinted").default(false),
+  tintingDate: text("tinting_date"),
+  engine: text("engine"),
+  transmission: text("transmission"),
+  fuelType: text("fuel_type"),
+  bodyType: text("body_type"),
+  driveType: text("drive_type"),
+  color: text("color"),
+  condition: text("condition"),
+  vin: text("vin"),
+  location: text("location"),
+  batteryCapacity: numeric("battery_capacity", { precision: 6, scale: 1 }),
+  electricRange: integer("electric_range"),
+  createdAt: timestamp("created_at").defaultNow(),
+}, (table) => ({
+  statusIdx: index("car_listings_status_idx").on(table.status),
+  sellerIdx: index("car_listings_seller_idx").on(table.sellerId),
+  createdAtIdx: index("car_listings_created_at_idx").on(table.createdAt),
+}));
+
+export const bids = pgTable("bids", {
+  id: serial("id").primaryKey(),
+  listingId: integer("listing_id").notNull(),
+  bidderId: integer("bidder_id").notNull(),
+  amount: numeric("amount", { precision: 12, scale: 2 }).notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+}, (table) => ({
+  listingIdx: index("bids_listing_idx").on(table.listingId),
+  bidderIdx: index("bids_bidder_idx").on(table.bidderId),
+}));
+
+export const favorites = pgTable("favorites", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull(),
+  listingId: integer("listing_id").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const notifications = pgTable("notifications", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull(),
+  title: text("title").notNull(),
+  message: text("message").notNull(),
+  type: text("type").notNull().default("info"),
+  isRead: boolean("is_read").default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const carAlerts = pgTable("car_alerts", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull(),
+  make: text("make"),
+  model: text("model"),
+  yearFrom: integer("year_from"),
+  yearTo: integer("year_to"),
+  maxPrice: numeric("max_price", { precision: 12, scale: 2 }),
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const banners = pgTable("banners", {
+  id: serial("id").primaryKey(),
+  title: text("title").notNull(),
+  description: text("description"),
+  imageUrl: text("image_url").notNull(),
+  linkUrl: text("link_url"),
+  buttonText: text("button_text"),
+  isActive: boolean("is_active").default(true),
+  order: integer("order").default(1),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export type User = typeof users.$inferSelect;
+export type NewUser = typeof users.$inferInsert;
+export type CarListing = typeof carListings.$inferSelect;
+export type NewCarListing = typeof carListings.$inferInsert;
+export type Bid = typeof bids.$inferSelect;
+export type NewBid = typeof bids.$inferInsert;
+
+export const insertUserSchema = createInsertSchema(users);
+export const insertCarListingSchema = createInsertSchema(carListings);
+export const insertBidSchema = createInsertSchema(bids);
+EOF
+
+# 2. Создать server/digitalOceanStorage.ts
+cat > server/digitalOceanStorage.ts << 'EOF'
+import AWS from 'aws-sdk';
+import sharp from 'sharp';
+import { createHash } from 'crypto';
+import path from 'path';
+
+export class DigitalOceanStorageService {
+  private s3: AWS.S3;
+  private bucketName: string;
+  private endpoint: string;
+  private cdnEndpoint: string;
+
+  constructor() {
+    this.bucketName = process.env.DO_SPACES_BUCKET || 'autobid-storage';
+    this.endpoint = process.env.DO_SPACES_ENDPOINT || 'ams3.digitaloceanspaces.com';
+    this.cdnEndpoint = process.env.DO_SPACES_CDN_ENDPOINT || `https://${this.bucketName}.ams3.cdn.digitaloceanspaces.com`;
+
+    this.s3 = new AWS.S3({
+      endpoint: `https://${this.endpoint}`,
+      accessKeyId: process.env.DO_SPACES_ACCESS_KEY,
+      secretAccessKey: process.env.DO_SPACES_SECRET_KEY,
+      s3ForcePathStyle: false,
+      signatureVersion: 'v4',
+      region: 'ams3'
+    });
+  }
+
+  async testConnection(): Promise<boolean> {
+    try {
+      await this.s3.headBucket({ Bucket: this.bucketName }).promise();
+      console.log('✅ Подключение к DigitalOcean Spaces успешно');
+      return true;
+    } catch (error) {
+      console.error('❌ Ошибка подключения к DigitalOcean Spaces:', error);
+      return false;
+    }
+  }
+
+  async uploadCarImage(
+    buffer: Buffer,
+    carId: number,
+    imageType: 'main' | 'rotation1' | 'rotation2' | 'rotation3' | 'rotation4' = 'main',
+    originalName?: string
+  ): Promise<string> {
+    try {
+      const optimizedBuffer = await sharp(buffer)
+        .resize(1200, 900, { fit: 'inside', withoutEnlargement: true })
+        .jpeg({ quality: 85, progressive: true })
+        .toBuffer();
+
+      const hash = createHash('md5').update(buffer).digest('hex');
+      const extension = originalName ? path.extname(originalName) : '.jpg';
+      const fileName = `cars/${carId}/${imageType}_${hash}${extension}`;
+
+      const uploadResult = await this.s3.upload({
+        Bucket: this.bucketName,
+        Key: fileName,
+        Body: optimizedBuffer,
+        ACL: 'public-read',
+        ContentType: 'image/jpeg',
+        CacheControl: 'max-age=31536000'
+      }).promise();
+
+      return `${this.cdnEndpoint}/${fileName}`;
+    } catch (error) {
+      console.error('Ошибка загрузки изображения в Spaces:', error);
+      throw error;
+    }
+  }
+
+  async deleteCarImages(carId: number): Promise<void> {
+    try {
+      const listParams = {
+        Bucket: this.bucketName,
+        Prefix: `cars/${carId}/`
+      };
+
+      const listedObjects = await this.s3.listObjectsV2(listParams).promise();
+      
+      if (listedObjects.Contents && listedObjects.Contents.length > 0) {
+        const deleteParams = {
+          Bucket: this.bucketName,
+          Delete: {
+            Objects: listedObjects.Contents.map(obj => ({ Key: obj.Key! }))
+          }
+        };
+        
+        await this.s3.deleteObjects(deleteParams).promise();
+        console.log(`✅ Удалены изображения для автомобиля ${carId}`);
+      }
+    } catch (error) {
+      console.error('Ошибка удаления изображений из Spaces:', error);
+      throw error;
+    }
+  }
+}
+
+export const digitalOceanStorage = new DigitalOceanStorageService();
+EOF
+
+# 3. Создать минимальный server/index.ts
+cat > server/index.ts << 'EOF'
+import express, { type Request, Response } from "express";
+import compression from "compression";
+import { digitalOceanStorage } from "./digitalOceanStorage.js";
+import { neon } from "@neondatabase/serverless";
+
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+// Middleware
+app.use(compression());
+app.use(express.json());
+app.use(express.static('public'));
+
+// Database connection
+const sql = neon(process.env.DATABASE_URL!);
+
+// Health check
+app.get('/health', (req: Request, res: Response) => {
+  res.json({ status: 'OK', timestamp: new Date().toISOString() });
+});
+
+// Test infrastructure
+app.get('/test-infrastructure', async (req: Request, res: Response) => {
+  try {
+    // Test database
+    const dbResult = await sql`SELECT 1 as test`;
+    const dbStatus = dbResult.length > 0 ? 'OK' : 'ERROR';
+
+    // Test Spaces
+    const spacesStatus = await digitalOceanStorage.testConnection() ? 'OK' : 'ERROR';
+
+    res.json({
+      database: dbStatus,
+      spaces: spacesStatus,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('Infrastructure test failed:', error);
+    res.status(500).json({ error: 'Infrastructure test failed' });
+  }
+});
+
+// Basic API endpoints
+app.get('/api/listings', async (req: Request, res: Response) => {
+  try {
+    const listings = await sql`
+      SELECT id, make, model, year, starting_price as "startingPrice", 
+             current_bid as "currentBid", status, lot_number as "lotNumber"
+      FROM car_listings 
+      WHERE status = 'active' 
+      ORDER BY created_at DESC
+      LIMIT 10
+    `;
+    res.json(listings);
+  } catch (error) {
+    console.error('Error fetching listings:', error);
+    res.status(500).json({ error: 'Failed to fetch listings' });
+  }
+});
+
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`🚀 Server running on port ${PORT}`);
+  console.log(`📊 Health check: http://localhost:${PORT}/health`);
+  console.log(`🔧 Infrastructure test: http://localhost:${PORT}/test-infrastructure`);
+});
+EOF
+
+echo "✅ Все файлы созданы!"
+echo "📝 Отредактируйте .env файл с реальными данными подключения"
+echo "🔧 Запустите: npm run build && npm start"
