@@ -1,125 +1,117 @@
 #!/bin/bash
-
-# Скрипт развертывания AUTOBID.TJ на VPS
-# Использование: ./deploy-vps.sh
+# Скрипт автоматической настройки production на DigitalOcean VPS
 
 set -e
 
-echo "🚀 Развертывание AUTOBID.TJ на VPS"
+echo "🚀 Начинаем настройку production окружения на VPS..."
 
-# Проверяем права sudo
-if [ "$EUID" -ne 0 ]; then 
-    echo "Запустите скрипт с sudo: sudo ./deploy-vps.sh"
-    exit 1
-fi
+# Переменные
+APP_DIR="/root/autobid-tj"
+SERVICE_NAME="autobid"
+DOMAIN="autobid.tj"
 
-# Обновляем систему
+# Обновление системы
 echo "📦 Обновление системы..."
 apt update && apt upgrade -y
 
-# Устанавливаем Node.js 18
-echo "📦 Установка Node.js 18..."
-curl -fsSL https://deb.nodesource.com/setup_18.x | bash -
-apt-get install -y nodejs
+# Установка Node.js 20
+echo "⚙️ Установка Node.js 20..."
+curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+apt-get install -y nodejs git nginx certbot python3-certbot-nginx
 
-# Устанавливаем PostgreSQL
-echo "🗄️ Установка PostgreSQL..."
-apt install -y postgresql postgresql-contrib
+# Проверка версий
+echo "✅ Версии установленного ПО:"
+node --version
+npm --version
+git --version
 
-# Устанавливаем Nginx
-echo "🌐 Установка Nginx..."
-apt install -y nginx
+# Клонирование или обновление репозитория
+if [ -d "$APP_DIR" ]; then
+    echo "📁 Обновление существующего репозитория..."
+    cd $APP_DIR
+    git pull origin main
+else
+    echo "📥 Клонирование репозитория..."
+    git clone $REPOSITORY_URL $APP_DIR
+    cd $APP_DIR
+fi
 
-# Устанавливаем PM2 для управления процессами
-echo "⚙️ Установка PM2..."
-npm install -g pm2
-
-# Создаем пользователя для приложения
-echo "👤 Создание пользователя autobid..."
-useradd -m -s /bin/bash autobid || echo "Пользователь уже существует"
-
-# Настраиваем PostgreSQL
-echo "🗄️ Настройка базы данных..."
-sudo -u postgres psql -c "CREATE USER autobid WITH PASSWORD 'secure_password_2024';" || echo "Пользователь уже существует"
-sudo -u postgres psql -c "CREATE DATABASE autoauction OWNER autobid;" || echo "База данных уже существует"
-sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE autoauction TO autobid;"
-
-# Создаем директорию приложения
-echo "📁 Создание директории приложения..."
-mkdir -p /var/www/autobid
-chown autobid:autobid /var/www/autobid
-
-# Клонируем репозиторий (замените на ваш репозиторий)
-echo "📥 Скачивание кода приложения..."
-cd /var/www/autobid
-
-# Если у вас есть Git репозиторий:
-# git clone https://github.com/your-username/autobid-app.git .
-
-# Или скопируйте файлы вручную и раскомментируйте:
-echo "⚠️  Скопируйте файлы приложения в /var/www/autobid"
-echo "⚠️  Затем выполните: chown -R autobid:autobid /var/www/autobid"
-
-# Устанавливаем зависимости
+# Установка зависимостей
 echo "📦 Установка зависимостей..."
-sudo -u autobid npm install
+npm install
 
-# Собираем приложение
+# Настройка переменных окружения
+echo "⚙️ Настройка переменных окружения..."
+if [ ! -f .env ]; then
+    cp .env.production.do .env
+    echo "❗ Отредактируйте файл .env с вашими данными подключения"
+    echo "❗ Затем запустите: systemctl start $SERVICE_NAME"
+    exit 1
+fi
+
+# Тестирование подключений
+echo "🧪 Тестирование инфраструктуры..."
+node server/scripts/testInfrastructure.js
+
+if [ $? -ne 0 ]; then
+    echo "❌ Тесты инфраструктуры не прошли. Проверьте .env файл"
+    exit 1
+fi
+
+# Инициализация базы данных
+echo "🗄️ Инициализация базы данных..."
+npm run db:push
+
+# Миграция изображений
+echo "📸 Миграция изображений в Spaces..."
+if [ -d "uploads" ]; then
+    node server/scripts/migrateToSpaces.js
+fi
+
+# Сборка приложения
 echo "🔨 Сборка приложения..."
-sudo -u autobid npm run build
+npm run build
 
-# Создаем файл окружения
-echo "⚙️ Создание файла окружения..."
-cat > /var/www/autobid/.env << EOF
-NODE_ENV=production
-PORT=5000
-DATABASE_URL=postgresql://autobid:secure_password_2024@localhost:5432/autoauction
+# Создание systemd сервиса
+echo "⚙️ Создание systemd сервиса..."
+cat > /etc/systemd/system/$SERVICE_NAME.service << EOF
+[Unit]
+Description=AutoBid.TJ Car Auction Platform
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=$APP_DIR
+Environment=NODE_ENV=production
+ExecStart=/usr/bin/npm start
+Restart=always
+RestartSec=10
+
+# Логирование
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=$SERVICE_NAME
+
+[Install]
+WantedBy=multi-user.target
 EOF
 
-chown autobid:autobid /var/www/autobid/.env
-chmod 600 /var/www/autobid/.env
+# Перезагрузка systemd и запуск сервиса
+echo "🔄 Запуск сервиса..."
+systemctl daemon-reload
+systemctl enable $SERVICE_NAME
+systemctl start $SERVICE_NAME
 
-# Создаем конфигурацию PM2
-echo "⚙️ Создание конфигурации PM2..."
-cat > /var/www/autobid/ecosystem.config.js << EOF
-module.exports = {
-  apps: [{
-    name: 'autobid-app',
-    script: 'dist/index.js',
-    cwd: '/var/www/autobid',
-    instances: 'max',
-    exec_mode: 'cluster',
-    env: {
-      NODE_ENV: 'production',
-      PORT: 5000
-    },
-    error_file: '/var/log/autobid/error.log',
-    out_file: '/var/log/autobid/out.log',
-    log_file: '/var/log/autobid/combined.log',
-    time: true
-  }]
-};
-EOF
-
-# Создаем директорию для логов
-mkdir -p /var/log/autobid
-chown autobid:autobid /var/log/autobid
-
-# Запускаем приложение через PM2
-echo "🚀 Запуск приложения..."
-sudo -u autobid pm2 start /var/www/autobid/ecosystem.config.js
-sudo -u autobid pm2 save
-sudo -u autobid pm2 startup
-
-# Настраиваем Nginx
+# Настройка Nginx
 echo "🌐 Настройка Nginx..."
-cat > /etc/nginx/sites-available/autobid << EOF
+cat > /etc/nginx/sites-available/$DOMAIN << EOF
 server {
     listen 80;
-    server_name your-domain.com www.your-domain.com;
+    server_name $DOMAIN www.$DOMAIN;
 
     location / {
-        proxy_pass http://localhost:5000;
+        proxy_pass http://localhost:3000;
         proxy_http_version 1.1;
         proxy_set_header Upgrade \$http_upgrade;
         proxy_set_header Connection 'upgrade';
@@ -129,33 +121,40 @@ server {
         proxy_set_header X-Forwarded-Proto \$scheme;
         proxy_cache_bypass \$http_upgrade;
     }
+
+    # WebSocket поддержка
+    location /ws {
+        proxy_pass http://localhost:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade \$http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \$scheme;
+    }
 }
 EOF
 
-# Активируем сайт
-ln -sf /etc/nginx/sites-available/autobid /etc/nginx/sites-enabled/
+# Активация конфигурации Nginx
+ln -sf /etc/nginx/sites-available/$DOMAIN /etc/nginx/sites-enabled/
 rm -f /etc/nginx/sites-enabled/default
+nginx -t && systemctl reload nginx
 
-# Тестируем и перезапускаем Nginx
-nginx -t && systemctl restart nginx
+# Получение SSL сертификата
+echo "🔒 Получение SSL сертификата..."
+certbot --nginx -d $DOMAIN -d www.$DOMAIN --non-interactive --agree-tos --email admin@$DOMAIN
 
-# Настраиваем автозапуск
-systemctl enable nginx
-systemctl enable postgresql
+# Проверка статуса сервисов
+echo "✅ Проверка статуса сервисов..."
+systemctl status $SERVICE_NAME --no-pager -l
+systemctl status nginx --no-pager -l
 
-# Настраиваем файрвол
-echo "🔥 Настройка файрвола..."
-ufw allow 22
-ufw allow 80
-ufw allow 443
-ufw --force enable
-
-echo "✅ Развертывание завершено!"
+echo "🎉 Настройка завершена!"
 echo ""
-echo "📋 Следующие шаги:"
-echo "1. Обновите домен в /etc/nginx/sites-available/autobid"
-echo "2. Установите SSL сертификат: sudo certbot --nginx"
-echo "3. Создайте таблицы БД: cd /var/www/autobid && npm run db:push"
-echo "4. Проверьте статус: sudo -u autobid pm2 status"
+echo "📋 Полезные команды:"
+echo "  Логи приложения: journalctl -u $SERVICE_NAME -f"
+echo "  Перезапуск: systemctl restart $SERVICE_NAME"
+echo "  Статус: systemctl status $SERVICE_NAME"
 echo ""
-echo "🌐 Приложение доступно по адресу: http://your-domain.com"
+echo "🌐 Сайт доступен: https://$DOMAIN"
