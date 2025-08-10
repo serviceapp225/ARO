@@ -27,6 +27,7 @@ Preferred communication style: Simple, everyday language in Russian.
 
 ### Database
 - **Primary Database**: PostgreSQL (via Neon serverless for production) - **ACTIVE** (restored January 2025)
+- **Migration Target**: DigitalOcean Managed PostgreSQL (Amsterdam AMS3) - **READY** (January 2025)
 - **Development Database**: SQLite
 - **Schema Management**: Drizzle Kit for migrations
 - **Key Tables**: users, car_listings, bids, favorites, notifications, car_alerts, banners
@@ -61,6 +62,7 @@ Preferred communication style: Simple, everyday language in Russian.
 - Environment variable handling for sensitive data.
 - Health check endpoints for monitoring.
 - Compatibility with Replit's Reserved VM deployment for persistent storage and WebSocket support.
+- **DigitalOcean Migration Ready**: Full infrastructure prepared with PostgreSQL ($15/month), Spaces CDN ($5/month), and VPS upgrade ($24/month) for $44 total monthly cost.
 
 ## External Dependencies
 
