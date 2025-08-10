@@ -10,7 +10,7 @@ import { createServer } from "http";
 import { WebSocketServer } from "ws";
 
 // Переменные окружения для deployment
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 5000;
 const NODE_ENV = process.env.NODE_ENV || 'production';
 
 console.log(`🚀 DEPLOYMENT СЕРВЕР ЗАПУЩЕН`);
