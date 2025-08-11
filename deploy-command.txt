@@ -1,0 +1,128 @@
+# 🚀 КОМАНДА ДЛЯ РАЗВЕРТЫВАНИЯ AUTOBID.TJ
+
+Скопируйте и выполните эту команду в терминале вашего компьютера (НЕ в Replit):
+
+```bash
+ssh root@188.166.61.86 << 'DEPLOY_SCRIPT'
+echo "🚀 Начинаем развертывание AutoBid.TJ..."
+
+# Создание структуры
+mkdir -p ~/autobid-tj && cd ~/autobid-tj
+
+# Создание приложения
+cat > app.js << 'APP_CODE'
+const express = require('express');
+const app = express();
+const PORT = 3001;
+
+app.use(express.json());
+app.use(express.static('public'));
+
+app.get('/health', (req, res) => {
+  res.json({ 
+    status: 'OK', 
+    service: 'AutoBid.TJ',
+    timestamp: new Date().toISOString(),
+    port: PORT
+  });
+});
+
+app.get('/', (req, res) => {
+  res.send(`
+<!DOCTYPE html>
+<html>
+<head>
+    <title>AutoBid.TJ - Автомобильные Аукционы</title>
+    <meta charset="utf-8">
+    <style>
+        body { font-family: Arial; background: #667eea; color: white; text-align: center; padding: 50px; }
+        .container { background: white; color: #333; padding: 40px; border-radius: 20px; max-width: 800px; margin: 0 auto; }
+        .success { background: #4CAF50; color: white; padding: 20px; border-radius: 10px; margin: 20px 0; }
+        .btn { background: #667eea; color: white; padding: 15px 30px; text-decoration: none; border-radius: 25px; margin: 10px; display: inline-block; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚗 AutoBid.TJ</h1>
+        <p>Платформа автомобильных аукционов Таджикистана</p>
+        
+        <div class="success">
+            ✅ Приложение успешно развернуто и работает!
+        </div>
+        
+        <p><strong>Время запуска:</strong> ${new Date().toLocaleString('ru-RU')}</p>
+        <p><strong>Сервер:</strong> 188.166.61.86:${PORT}</p>
+        <p><strong>Версия:</strong> Production v1.0.0</p>
+        
+        <div>
+            <a href="/health" class="btn">🏥 Проверка здоровья</a>
+        </div>
+        
+        <hr style="margin: 40px 0;">
+        <p><strong>AutoBid.TJ</strong> © 2025 | Разработано в Таджикистане</p>
+    </div>
+</body>
+</html>
+  `);
+});
+
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(\`🚀 AutoBid.TJ запущен на http://188.166.61.86:\${PORT}\`);
+});
+APP_CODE
+
+# Создание package.json
+echo '{"name":"autobid-tj","version":"1.0.0","main":"app.js","scripts":{"start":"node app.js"},"dependencies":{"express":"^4.18.2"}}' > package.json
+
+# Установка Node.js (если не установлен)
+if ! command -v node &> /dev/null; then
+    curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+    sudo apt-get install -y nodejs
+fi
+
+# Установка зависимостей
+npm install
+
+# Создание systemd службы
+sudo tee /etc/systemd/system/autobid.service > /dev/null << 'SERVICE'
+[Unit]
+Description=AutoBid.TJ
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/root/autobid-tj
+ExecStart=/usr/bin/node app.js
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+SERVICE
+
+# Запуск службы
+sudo systemctl daemon-reload
+sudo systemctl enable autobid
+sudo systemctl start autobid
+
+echo "✅ AutoBid.TJ развернут!"
+echo "🌐 Откройте: http://188.166.61.86"
+echo "🏥 Health: http://188.166.61.86/health"
+
+# Проверка статуса
+sudo systemctl status autobid
+DEPLOY_SCRIPT
+```
+
+## После выполнения команды:
+
+Вы получите:
+- Рабочий сайт на http://188.166.61.86
+- Автоматический запуск при перезагрузке
+- Systemd службу для управления
+
+## Проверка результата:
+1. Откройте http://188.166.61.86
+2. Проверьте http://188.166.61.86/health
+
+Команда выполнится за 2-3 минуты и даст полностью рабочее приложение на DigitalOcean VPS.
