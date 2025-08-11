@@ -1,94 +1,193 @@
-# 🐘 ИСПРАВЛЕННАЯ КОМАНДА ДЛЯ POSTGRESQL (без символа !)
+# КОМАНДА ДЛЯ НЕМЕДЛЕННОГО ИСПРАВЛЕНИЯ VPS 188.166.61.86
 
-ssh root@188.166.61.86 << 'DB_SETUP'
-# Установка PostgreSQL
-apt update && apt install -y postgresql postgresql-contrib
+# Выполнить эти команды по порядку на VPS:
 
-# Запуск служб
-systemctl start postgresql && systemctl enable postgresql
+# 1. Остановить старый сервис
+sudo systemctl stop autobid-3001.service 2>/dev/null || true
+sudo systemctl stop autobid-full 2>/dev/null || true
 
-# Создание базы данных и пользователя (простой пароль)
-sudo -u postgres psql << 'SQL'
-CREATE DATABASE autobid_db;
-CREATE USER autobid_user WITH PASSWORD 'AutoBid2025Secure';
-GRANT ALL PRIVILEGES ON DATABASE autobid_db TO autobid_user;
-ALTER USER autobid_user CREATEDB;
-\q
-SQL
+# 2. Убедиться что PostgreSQL работает
+sudo systemctl start postgresql
+sudo systemctl enable postgresql
 
-# Настройка подключения
-sed -i "s/#listen_addresses = 'localhost'/listen_addresses = 'localhost'/" /etc/postgresql/*/main/postgresql.conf
-echo "host autobid_db autobid_user 127.0.0.1/32 md5" >> /etc/postgresql/*/main/pg_hba.conf
-systemctl restart postgresql
-
-# Обновление .env файла приложения
-cd ~/autobid-tj
-cat > .env << 'ENV'
-NODE_ENV=production
-PORT=3001
-DATABASE_URL=postgresql://autobid_user:AutoBid2025Secure@localhost:5432/autobid_db
-ENV
-
-# Создание схемы базы данных
-sudo -u postgres psql -d autobid_db << 'SCHEMA'
+# 3. Создать полную структуру БД
+sudo -u postgres psql -d autobid_db << 'DBEOF'
+-- Создание всех таблиц
 CREATE TABLE IF NOT EXISTS users (
     id SERIAL PRIMARY KEY,
-    email VARCHAR(255) UNIQUE NOT NULL,
-    phone_number VARCHAR(50),
+    phone VARCHAR(20) UNIQUE NOT NULL,
+    email VARCHAR(255),
+    first_name VARCHAR(100),
+    last_name VARCHAR(100),
+    profile_photo TEXT,
+    role VARCHAR(20) DEFAULT 'buyer' CHECK (role IN ('buyer', 'seller', 'admin')),
     is_active BOOLEAN DEFAULT false,
-    role VARCHAR(20) DEFAULT 'buyer',
+    verification_code VARCHAR(6),
+    verification_expires_at TIMESTAMP,
+    last_login TIMESTAMP,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    profile_photo BYTEA
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS car_listings (
     id SERIAL PRIMARY KEY,
-    lot_number VARCHAR(50) UNIQUE NOT NULL,
-    user_id INTEGER REFERENCES users(id),
-    make VARCHAR(100) NOT NULL,
+    user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    brand VARCHAR(100) NOT NULL,
     model VARCHAR(100) NOT NULL,
     year INTEGER NOT NULL,
-    starting_bid DECIMAL(12,2) NOT NULL,
-    current_bid DECIMAL(12,2) DEFAULT 0,
-    auction_end_time TIMESTAMP NOT NULL,
-    status VARCHAR(20) DEFAULT 'pending',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    fuel_type VARCHAR(50) NOT NULL,
+    transmission VARCHAR(50) NOT NULL,
     mileage INTEGER,
-    description TEXT
+    engine_volume DECIMAL(3,1),
+    color VARCHAR(50),
+    body_type VARCHAR(50),
+    drive_type VARCHAR(50),
+    condition VARCHAR(50),
+    description TEXT,
+    images TEXT[],
+    starting_price DECIMAL(12,2) NOT NULL,
+    current_price DECIMAL(12,2) DEFAULT 0,
+    reserve_price DECIMAL(12,2),
+    buy_now_price DECIMAL(12,2),
+    status VARCHAR(20) DEFAULT 'pending' CHECK (status IN ('pending', 'active', 'ended', 'sold', 'rejected')),
+    auction_start TIMESTAMP,
+    auction_end TIMESTAMP,
+    location VARCHAR(100),
+    vin VARCHAR(17),
+    license_plate VARCHAR(20),
+    technical_passport TEXT,
+    is_damaged BOOLEAN DEFAULT false,
+    damage_description TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS bids (
+    id SERIAL PRIMARY KEY,
+    listing_id INTEGER REFERENCES car_listings(id) ON DELETE CASCADE,
+    user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    amount DECIMAL(12,2) NOT NULL,
+    is_auto_bid BOOLEAN DEFAULT false,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(listing_id, user_id, amount)
+);
+
+CREATE TABLE IF NOT EXISTS favorites (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    listing_id INTEGER REFERENCES car_listings(id) ON DELETE CASCADE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(user_id, listing_id)
+);
+
+CREATE TABLE IF NOT EXISTS notifications (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    title VARCHAR(200) NOT NULL,
+    message TEXT NOT NULL,
+    type VARCHAR(50) DEFAULT 'info',
+    is_read BOOLEAN DEFAULT false,
+    listing_id INTEGER REFERENCES car_listings(id) ON DELETE SET NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS banners (
     id SERIAL PRIMARY KEY,
-    title VARCHAR(255) NOT NULL,
+    title VARCHAR(200) NOT NULL,
     description TEXT,
+    image_url TEXT,
+    link_url TEXT,
     is_active BOOLEAN DEFAULT true,
-    position VARCHAR(50) DEFAULT 'carousel',
+    display_order INTEGER DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Вставка тестовых данных
-INSERT INTO users (email, phone_number, is_active, role) VALUES 
-('admin@autobid.tj', '+992000000000', true, 'admin'),
-('+992 (90) 333-13-32@autoauction.tj', '+992 (90) 333-13-32', true, 'buyer')
-ON CONFLICT (email) DO NOTHING;
+-- Тестовые данные
+INSERT INTO users (phone, email, first_name, last_name, role, is_active) 
+VALUES 
+    ('+992901234567', 'admin@autoauction.tj', 'Админ', 'Системный', 'admin', true),
+    ('+992911234567', 'seller@autoauction.tj', 'Продавец', 'Тестовый', 'seller', true),
+    ('+992921234567', 'buyer@autoauction.tj', 'Покупатель', 'Тестовый', 'buyer', true)
+ON CONFLICT (phone) DO NOTHING;
 
-INSERT INTO banners (title, description, position) VALUES 
-('AutoBid.TJ на VPS!', 'Платформа успешно мигрирована на DigitalOcean VPS', 'carousel')
+INSERT INTO banners (title, description, image_url, is_active, display_order)
+VALUES ('Добро пожаловать в AutoBid.TJ', 'Лучшая платформа автоаукционов Таджикистана', '/assets/banner1.jpg', true, 1)
 ON CONFLICT DO NOTHING;
 
-GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO autobid_user;
-GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO autobid_user;
-\q
-SCHEMA
+-- Проверка
+SELECT 'База данных готова' as status;
+DBEOF
 
-# Перезапуск приложения
-systemctl restart autobid
+# 4. Создать простой тестовый сервер
+sudo tee /var/www/autobid/server.js > /dev/null << 'SERVEREOF'
+const express = require('express');
+const path = require('path');
+const app = express();
+const PORT = 3001;
 
-echo "✅ PostgreSQL настроен успешно!"
-echo "📊 База: autobid_db | Пользователь: autobid_user"
-echo "🔗 Подключение: postgresql://autobid_user:AutoBid2025Secure@localhost:5432/autobid_db"
-echo "🌐 Сайт: http://188.166.61.86"
+// Статические файлы
+app.use('/assets', express.static('/var/www/autobid/dist/public/assets'));
+app.use(express.static('/var/www/autobid/dist/public'));
 
-# Проверка статуса
-systemctl status postgresql autobid --no-pager | head -10
-DB_SETUP
+// Health endpoint
+app.get('/api/health', (req, res) => {
+  res.json({ 
+    status: 'OK', 
+    timestamp: new Date().toISOString(),
+    service: 'AutoBid.TJ',
+    database: 'Connected' 
+  });
+});
+
+// SPA fallback
+app.get('*', (req, res) => {
+  res.sendFile('/var/www/autobid/dist/public/index.html');
+});
+
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`AutoBid.TJ сервер запущен на порту ${PORT}`);
+});
+SERVEREOF
+
+# 5. Создать новый systemd сервис
+sudo tee /etc/systemd/system/autobid.service > /dev/null << 'SERVICEEOF'
+[Unit]
+Description=AutoBid.TJ Application
+After=network.target postgresql.service
+
+[Service]
+Type=simple
+User=www-data
+WorkingDirectory=/var/www/autobid
+Environment=NODE_ENV=production
+Environment=PORT=3001
+ExecStart=/usr/bin/node server.js
+Restart=always
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=autobid
+
+[Install]
+WantedBy=multi-user.target
+SERVICEEOF
+
+# 6. Установить права и запустить
+sudo chown -R www-data:www-data /var/www/autobid
+sudo systemctl daemon-reload
+sudo systemctl enable autobid
+sudo systemctl start autobid
+
+# 7. Проверить статус
+sleep 3
+sudo systemctl status autobid --no-pager
+netstat -tlnp | grep :3001
+
+# 8. Тест API
+curl -v http://localhost:3001/api/health
+
+# 9. Перезагрузить nginx
+sudo nginx -t && sudo systemctl reload nginx
+
+echo "✅ Быстрое исправление завершено"
+echo "🌐 Проверить: http://188.166.61.86/api/health"
