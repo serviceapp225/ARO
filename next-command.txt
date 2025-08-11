@@ -1,0 +1,22 @@
+# Следующая команда для nginx
+
+ssh root@188.166.61.86 << 'NGINX'
+apt update && apt install -y nginx
+cat > /etc/nginx/sites-available/autobid << 'CONF'
+server {
+    listen 80;
+    server_name 188.166.61.86;
+    location / {
+        proxy_pass http://localhost:3001;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_cache_bypass $http_upgrade;
+    }
+}
+CONF
+ln -sf /etc/nginx/sites-available/autobid /etc/nginx/sites-enabled/
+rm -f /etc/nginx/sites-enabled/default  
+nginx -t && systemctl restart nginx && systemctl enable nginx
+echo "✅ Nginx настроен! Сайт: http://188.166.61.86"
+NGINX
