@@ -1,0 +1,21 @@
+# 🚀 ОДНА КОМАНДА ДЛЯ КОПИРОВАНИЯ НА VPS
+
+# Скопируйте ВСЮ команду ниже и выполните на VPS:
+
+systemctl stop autobid && cd ~/autobid-tj && cat > app.js << 'SIMPLE_APP'
+const express = require('express');
+const app = express();
+app.get('/', (req, res) => {
+  res.send(`<!DOCTYPE html><html lang="ru"><head><meta charset="utf-8"><title>AutoBid.TJ VPS</title><style>body { font-family: Arial; background: linear-gradient(135deg, #667eea, #764ba2); margin: 0; padding: 50px; color: white; text-align: center; } .card { background: white; color: #333; padding: 30px; border-radius: 15px; max-width: 500px; margin: 0 auto; box-shadow: 0 10px 30px rgba(0,0,0,0.2); } .ok { background: #4CAF50; color: white; padding: 15px; border-radius: 8px; margin: 20px 0; } .info { background: #f0f8ff; padding: 10px; border-radius: 5px; margin: 10px 0; }</style></head><body><h1>🚗 AutoBid.TJ</h1><div class="card"><div class="ok">✅ VPS приложение работает!</div><div class="info">Сервер: 188.166.61.86</div><div class="info">Nginx: Настроен</div><div class="info">Работает: ${Math.floor(process.uptime())} сек</div><p><a href="/health" style="background: #667eea; color: white; padding: 10px 20px; text-decoration: none; border-radius: 20px;">Health Check</a></p><p style="margin-top: 20px; color: #666;">Следующий шаг: PostgreSQL база данных</p></div></body></html>`);
+});
+app.get('/health', (req, res) => {
+  res.json({ status: 'OK', service: 'AutoBid.TJ', server: '188.166.61.86', uptime: process.uptime(), database: 'Not installed', next: 'PostgreSQL installation' });
+});
+app.listen(3001, '0.0.0.0', () => { console.log('AutoBid.TJ запущен на порту 3001'); });
+SIMPLE_APP
+systemctl start autobid && sleep 2 && apt update && DEBIAN_FRONTEND=noninteractive apt install -y postgresql postgresql-contrib && systemctl start postgresql && systemctl enable postgresql && sudo -u postgres createdb autobid_db && sudo -u postgres createuser autobid_user && sudo -u postgres psql -c "ALTER USER autobid_user WITH PASSWORD 'AutoBid2025';" && sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE autobid_db TO autobid_user;" && cat > .env << 'ENV_FILE'
+NODE_ENV=production  
+PORT=3001
+DATABASE_URL=postgresql://autobid_user:AutoBid2025@localhost:5432/autobid_db
+ENV_FILE
+echo "🎉 ГОТОВО! Сайт: http://188.166.61.86" && systemctl status autobid postgresql --no-pager | head -6
