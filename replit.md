@@ -58,12 +58,13 @@ Preferred communication style: Simple, everyday language in Russian.
 
 ### Deployment Strategy
 - **DigitalOcean VPS Deployed**: Successfully deployed on 188.166.61.86 (January 2025)
-- **Current Status**: Basic Express.js application running on port 3001 with systemd service
-- **Infrastructure**: Node.js 18, nginx proxy (being configured), automated startup
-- **Migration Completed**: From Replit to DigitalOcean VPS using manual deployment approach
+- **Current Status**: Basic Express.js application running with nginx proxy on port 80
+- **Infrastructure**: Node.js 18, nginx configured, PostgreSQL ready for setup, automated startup
+- **Migration Progress**: VPS ✅ | nginx ✅ | PostgreSQL (in progress) | Full App (pending)
+- **Database Migration**: PostgreSQL setup commands prepared, schema defined, ready for deployment
 - **Health Endpoints**: /health endpoint active, application monitoring in place
-- **Next Steps**: PostgreSQL connection, full application features, domain configuration
-- **Migration Scripts**: `simple-deploy.sh`, `one-command-deploy.sh`, `nginx-setup.sh` created and tested
+- **Access**: http://188.166.61.86 (nginx proxy) and http://188.166.61.86:3001 (direct)
+- **Migration Scripts**: Complete deployment automation with database setup ready
 
 ## External Dependencies
 
