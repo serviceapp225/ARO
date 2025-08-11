@@ -388,6 +388,50 @@ const getUserFromRequest = async (req: any) => {
 };
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Health check endpoint для App Platform и мониторинга
+  app.get('/health', async (req, res) => {
+    try {
+      // Проверяем статус базы данных
+      const dbStatus = await getDatabaseStatus();
+      
+      // Проверяем доступность файлового хранилища
+      const uploadsPath = path.join(process.cwd(), 'uploads');
+      const uploadsExists = fs.existsSync(uploadsPath);
+      
+      const healthStatus = {
+        status: 'healthy',
+        timestamp: new Date().toISOString(),
+        version: process.env.npm_package_version || '1.0.0',
+        database: {
+          connected: dbStatus.connected,
+          tablesExist: dbStatus.tablesExist
+        },
+        fileStorage: {
+          uploadsDirectory: uploadsExists
+        },
+        environment: {
+          nodeEnv: process.env.NODE_ENV || 'development',
+          port: process.env.PORT || 3000
+        }
+      };
+      
+      // Если база данных недоступна, возвращаем 503
+      if (!dbStatus.connected) {
+        healthStatus.status = 'unhealthy';
+        return res.status(503).json(healthStatus);
+      }
+      
+      res.status(200).json(healthStatus);
+    } catch (error) {
+      console.error('Health check failed:', error);
+      res.status(503).json({
+        status: 'unhealthy',
+        timestamp: new Date().toISOString(),
+        error: 'Health check failed'
+      });
+    }
+  });
+
   // КРИТИЧНО: Обработка статических файлов ПЕРЕД всеми другими middleware
   const assetsPath = path.join(process.cwd(), 'dist', 'public', 'assets');
   console.log(`🔧 ROUTES: Настройка обработки /assets для директории: ${assetsPath}`);

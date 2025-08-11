@@ -1,0 +1,56 @@
+# DigitalOcean App Platform конфигурация для AutoBid.TJ
+name: autobid-tj
+services:
+- name: web
+  source_dir: /
+  dockerfile_path: Dockerfile
+  build_command: npm run build
+  run_command: node dist/index.js
+  instance_count: 1
+  instance_size_slug: professional-xs
+  http_port: 3000
+  routes:
+  - path: /
+  health_check:
+    http_path: /health
+    initial_delay_seconds: 10
+    period_seconds: 10
+    timeout_seconds: 5
+    success_threshold: 1
+    failure_threshold: 3
+  envs:
+  - key: NODE_ENV
+    value: production
+  - key: DATABASE_URL
+    scope: RUN_AND_BUILD_TIME
+    type: SECRET
+  - key: SESSION_SECRET
+    scope: RUN_AND_BUILD_TIME
+    type: SECRET
+  - key: SPACES_ENDPOINT
+    value: "ams3.digitaloceanspaces.com"
+  - key: SPACES_BUCKET
+    value: "autobid-storage"
+  - key: SPACES_REGION
+    value: "ams3"
+  - key: SPACES_KEY
+    scope: RUN_AND_BUILD_TIME
+    type: SECRET
+  - key: SPACES_SECRET
+    scope: RUN_AND_BUILD_TIME
+    type: SECRET
+  - key: SMS_API_URL
+    scope: RUN_AND_BUILD_TIME
+    type: SECRET
+  - key: SMS_API_TOKEN
+    scope: RUN_AND_BUILD_TIME
+    type: SECRET
+  - key: PORT
+    value: "3000"
+
+# Static assets могут быть служены отдельно для лучшей производительности
+static_sites:
+- name: assets
+  source_dir: client/dist
+  routes:
+  - path: /assets

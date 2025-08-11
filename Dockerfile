@@ -1,13 +1,15 @@
-# Многоэтапная сборка для оптимизации размера
-FROM node:18-alpine as builder
+# Multi-stage build для оптимизации размера
+FROM node:20-alpine AS builder
 
+# Устанавливаем рабочую директорию
 WORKDIR /app
 
-# Копируем файлы зависимостей
+# Копируем package files
 COPY package*.json ./
+COPY tsconfig.json ./
 
-# Устанавливаем все зависимости для сборки
-RUN npm ci
+# Устанавливаем зависимости
+RUN npm ci --only=production
 
 # Копируем исходный код
 COPY . .
@@ -15,34 +17,40 @@ COPY . .
 # Собираем приложение
 RUN npm run build
 
-# Продакшн образ
-FROM node:18-alpine as production
+# Production stage
+FROM node:20-alpine AS production
 
+# Устанавливаем рабочую директорию
 WORKDIR /app
 
 # Создаем пользователя для безопасности
 RUN addgroup -g 1001 -S nodejs
-RUN adduser -S autobid -u 1001
+RUN adduser -S nextjs -u 1001
 
-# Копируем package.json для установки только продакшн зависимостей
+# Копируем package files
 COPY package*.json ./
 
-# Устанавливаем только продакшн зависимости
+# Устанавливаем только production зависимости
 RUN npm ci --only=production && npm cache clean --force
 
-# Копируем собранное приложение из builder этапа
-COPY --from=builder --chown=autobid:nodejs /app/dist ./dist
-COPY --from=builder --chown=autobid:nodejs /app/public ./public
+# Копируем собранное приложение из builder stage
+COPY --from=builder --chown=nextjs:nodejs /app/dist ./dist
+COPY --from=builder --chown=nextjs:nodejs /app/client/dist ./client/dist
+COPY --from=builder --chown=nextjs:nodejs /app/uploads ./uploads
+COPY --from=builder --chown=nextjs:nodejs /app/shared ./shared
 
-# Устанавливаем права пользователя
-USER autobid
+# Создаем директорию для uploads если не существует
+RUN mkdir -p uploads && chown -R nextjs:nodejs uploads
+
+# Переключаемся на пользователя nodejs
+USER nextjs
 
 # Открываем порт
-EXPOSE 5000
+EXPOSE 3000
 
-# Проверка здоровья контейнера
+# Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD node -e "require('http').get('http://localhost:5000/api/health', (r) => { process.exit(r.statusCode === 200 ? 0 : 1) })"
+  CMD node -e "require('http').get('http://localhost:3000/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })"
 
 # Запускаем приложение
 CMD ["node", "dist/index.js"]
