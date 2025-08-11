@@ -1,0 +1,333 @@
+# AutoBid.TJ - Полное развертывание на VPS одной командой
+
+# 1. Остановка текущего тестового сервиса
+sudo systemctl stop autobid-3001.service 2>/dev/null || true
+
+# 2. Создание резервной копии
+sudo cp -r /var/www/autobid /var/www/autobid-backup-$(date +%Y%m%d-%H%M%S) 2>/dev/null || true
+
+# 3. Создание структуры директорий
+sudo mkdir -p /var/www/autobid/{dist,uploads,node_modules} /var/log/autobid
+
+# 4. Миграция базы данных (полная схема)
+sudo -u postgres psql -d autobid_db << 'SQLEOF'
+-- Создание таблицы пользователей
+CREATE TABLE IF NOT EXISTS users (
+    id SERIAL PRIMARY KEY,
+    phone VARCHAR(20) UNIQUE NOT NULL,
+    email VARCHAR(255),
+    first_name VARCHAR(100),
+    last_name VARCHAR(100),
+    profile_photo TEXT,
+    role VARCHAR(20) DEFAULT 'buyer' CHECK (role IN ('buyer', 'seller', 'admin')),
+    is_active BOOLEAN DEFAULT false,
+    verification_code VARCHAR(6),
+    verification_expires_at TIMESTAMP,
+    last_login TIMESTAMP,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Создание таблицы объявлений
+CREATE TABLE IF NOT EXISTS car_listings (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    brand VARCHAR(100) NOT NULL,
+    model VARCHAR(100) NOT NULL,
+    year INTEGER NOT NULL,
+    fuel_type VARCHAR(50) NOT NULL,
+    transmission VARCHAR(50) NOT NULL,
+    mileage INTEGER,
+    engine_volume DECIMAL(3,1),
+    color VARCHAR(50),
+    body_type VARCHAR(50),
+    drive_type VARCHAR(50),
+    condition VARCHAR(50),
+    description TEXT,
+    images TEXT[],
+    starting_price DECIMAL(12,2) NOT NULL,
+    current_price DECIMAL(12,2) DEFAULT 0,
+    reserve_price DECIMAL(12,2),
+    buy_now_price DECIMAL(12,2),
+    status VARCHAR(20) DEFAULT 'pending' CHECK (status IN ('pending', 'active', 'ended', 'sold', 'rejected')),
+    auction_start TIMESTAMP,
+    auction_end TIMESTAMP,
+    location VARCHAR(100),
+    vin VARCHAR(17),
+    license_plate VARCHAR(20),
+    technical_passport TEXT,
+    is_damaged BOOLEAN DEFAULT false,
+    damage_description TEXT,
+    electric_range INTEGER,
+    battery_capacity INTEGER,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Остальные таблицы
+CREATE TABLE IF NOT EXISTS bids (
+    id SERIAL PRIMARY KEY,
+    listing_id INTEGER REFERENCES car_listings(id) ON DELETE CASCADE,
+    user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    amount DECIMAL(12,2) NOT NULL,
+    is_auto_bid BOOLEAN DEFAULT false,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(listing_id, user_id, amount)
+);
+
+CREATE TABLE IF NOT EXISTS favorites (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    listing_id INTEGER REFERENCES car_listings(id) ON DELETE CASCADE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(user_id, listing_id)
+);
+
+CREATE TABLE IF NOT EXISTS notifications (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    title VARCHAR(200) NOT NULL,
+    message TEXT NOT NULL,
+    type VARCHAR(50) DEFAULT 'info' CHECK (type IN ('info', 'success', 'warning', 'error', 'bid', 'auction')),
+    is_read BOOLEAN DEFAULT false,
+    listing_id INTEGER REFERENCES car_listings(id) ON DELETE SET NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS car_alerts (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    brand VARCHAR(100),
+    model VARCHAR(100),
+    year_from INTEGER,
+    year_to INTEGER,
+    price_from DECIMAL(12,2),
+    price_to DECIMAL(12,2),
+    fuel_type VARCHAR(50),
+    transmission VARCHAR(50),
+    body_type VARCHAR(50),
+    location VARCHAR(100),
+    is_active BOOLEAN DEFAULT true,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS banners (
+    id SERIAL PRIMARY KEY,
+    title VARCHAR(200) NOT NULL,
+    description TEXT,
+    image_url TEXT,
+    link_url TEXT,
+    is_active BOOLEAN DEFAULT true,
+    display_order INTEGER DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS messages (
+    id SERIAL PRIMARY KEY,
+    sender_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    recipient_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    listing_id INTEGER REFERENCES car_listings(id) ON DELETE CASCADE,
+    message TEXT NOT NULL,
+    is_read BOOLEAN DEFAULT false,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS auto_bids (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    listing_id INTEGER REFERENCES car_listings(id) ON DELETE CASCADE,
+    max_amount DECIMAL(12,2) NOT NULL,
+    increment DECIMAL(12,2) DEFAULT 100.00,
+    is_active BOOLEAN DEFAULT true,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(user_id, listing_id)
+);
+
+-- Создание индексов
+CREATE INDEX IF NOT EXISTS idx_users_phone ON users(phone);
+CREATE INDEX IF NOT EXISTS idx_car_listings_status ON car_listings(status);
+CREATE INDEX IF NOT EXISTS idx_bids_listing_id ON bids(listing_id);
+CREATE INDEX IF NOT EXISTS idx_notifications_user_id ON notifications(user_id);
+
+-- Тестовые данные
+INSERT INTO users (phone, email, first_name, last_name, role, is_active) 
+VALUES 
+    ('+992901234567', 'admin@autoauction.tj', 'Админ', 'Системный', 'admin', true),
+    ('+992911234567', 'seller@autoauction.tj', 'Продавец', 'Тестовый', 'seller', true),
+    ('+992921234567', 'buyer@autoauction.tj', 'Покупатель', 'Тестовый', 'buyer', true)
+ON CONFLICT (phone) DO NOTHING;
+
+INSERT INTO banners (title, description, image_url, is_active, display_order)
+VALUES ('Добро пожаловать в AutoBid.TJ', 'Лучшая платформа для автомобильных аукционов в Таджикистане', '/assets/banner1.jpg', true, 1)
+ON CONFLICT DO NOTHING;
+SQLEOF
+
+# 5. Создание .env файла
+sudo tee /var/www/autobid/.env > /dev/null << 'ENVEOF'
+NODE_ENV=production
+PORT=3001
+HOST=0.0.0.0
+DATABASE_URL=postgresql://autobid_user:AutoBid2025@localhost:5432/autobid_db
+
+# SMS API
+SMS_API_URL=https://oson.tj/smsservice.php
+SMS_USERNAME=your_username
+SMS_PASSWORD=your_password
+
+# Session
+SESSION_SECRET=$(openssl rand -hex 32)
+
+# File Upload
+MAX_FILE_SIZE=10485760
+UPLOAD_PATH=/var/www/autobid/uploads
+
+# Cache
+CACHE_TTL=3600
+ENABLE_CACHE=true
+
+# Logging
+LOG_LEVEL=info
+LOG_FILE=/var/log/autobid/app.log
+ENVEOF
+
+# 6. Создание systemd сервиса
+sudo tee /etc/systemd/system/autobid-full.service > /dev/null << 'SERVICEEOF'
+[Unit]
+Description=AutoBid.TJ Full Application
+After=network.target postgresql.service
+Wants=postgresql.service
+
+[Service]
+Type=simple
+User=www-data
+WorkingDirectory=/var/www/autobid
+Environment=NODE_ENV=production
+Environment=PORT=3001
+EnvironmentFile=/var/www/autobid/.env
+ExecStart=/usr/bin/node dist/index.js
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=autobid-full
+LimitNOFILE=65536
+LimitNPROC=32768
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/www/autobid/uploads /var/log/autobid
+
+[Install]
+WantedBy=multi-user.target
+SERVICEEOF
+
+# 7. Обновление Nginx конфигурации
+sudo tee /etc/nginx/sites-available/autobid > /dev/null << 'NGINXEOF'
+server {
+    listen 80;
+    server_name 188.166.61.86;
+    
+    client_max_body_size 50M;
+    client_body_timeout 60s;
+    client_header_timeout 60s;
+    
+    root /var/www/autobid/dist/public;
+    index index.html;
+    
+    # Статические файлы
+    location /assets/ {
+        alias /var/www/autobid/dist/public/assets/;
+        expires 1y;
+        add_header Cache-Control "public, immutable";
+        gzip on;
+        gzip_types text/css application/javascript image/svg+xml;
+    }
+    
+    # API запросы
+    location /api/ {
+        proxy_pass http://localhost:3001;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_cache_bypass $http_upgrade;
+        proxy_read_timeout 86400;
+        proxy_send_timeout 86400;
+    }
+    
+    # WebSocket
+    location /ws {
+        proxy_pass http://localhost:3001;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_read_timeout 86400;
+        proxy_send_timeout 86400;
+    }
+    
+    # Загруженные файлы
+    location /uploads/ {
+        alias /var/www/autobid/uploads/;
+        expires 30d;
+        add_header Cache-Control "public";
+    }
+    
+    # SPA
+    location / {
+        try_files $uri $uri/ /index.html;
+        expires -1;
+        add_header Cache-Control "no-cache, no-store, must-revalidate";
+    }
+    
+    gzip on;
+    gzip_vary on;
+    gzip_min_length 1024;
+    gzip_proxied any;
+    gzip_comp_level 6;
+    gzip_types text/plain text/css text/xml text/javascript application/json application/javascript application/xml+rss application/atom+xml image/svg+xml;
+    
+    add_header X-Frame-Options "SAMEORIGIN" always;
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header X-XSS-Protection "1; mode=block" always;
+    add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+    
+    access_log /var/log/nginx/autobid.access.log;
+    error_log /var/log/nginx/autobid.error.log;
+}
+NGINXEOF
+
+# 8. Установка разрешений
+sudo chown -R www-data:www-data /var/www/autobid
+sudo chmod -R 755 /var/www/autobid
+sudo chmod 644 /var/www/autobid/.env
+
+# 9. Включение и запуск сервисов
+sudo systemctl daemon-reload
+sudo systemctl enable autobid-full.service
+sudo systemctl start autobid-full.service
+
+# 10. Перезагрузка Nginx
+sudo nginx -t && sudo systemctl reload nginx
+
+# 11. Финальная проверка
+echo "=== Проверка сервисов ==="
+sudo systemctl status postgresql --no-pager -l
+sudo systemctl status autobid-full --no-pager -l  
+sudo systemctl status nginx --no-pager -l
+
+echo "=== Проверка доступности ==="
+sleep 5
+curl -I http://localhost/ 2>/dev/null | head -1
+curl -s http://localhost/api/health 2>/dev/null || echo "API проверяется..."
+curl -I http://188.166.61.86/ 2>/dev/null | head -1
+
+echo "✅ Развертывание AutoBid.TJ завершено!"
+echo "🌐 Доступ: http://188.166.61.86"
