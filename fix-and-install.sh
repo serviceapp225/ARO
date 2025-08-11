@@ -1,9 +1,15 @@
-// Фиксация падающего приложения на VPS
+#!/bin/bash
+# 🔧 ИСПРАВЛЕНИЕ ПРИЛОЖЕНИЯ И УСТАНОВКА POSTGRESQL
 
-const fs = require('fs');
+ssh root@188.166.61.86 << 'FIX_AND_INSTALL'
+echo "🔧 Исправляю падающее приложение..."
 
-// Простое рабочее приложение без зависимостей от БД
-const workingApp = `
+# Остановка службы
+systemctl stop autobid
+
+# Создание рабочего приложения
+cd ~/autobid-tj
+cat > app.js << 'WORKING_APP'
 const express = require('express');
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -12,7 +18,7 @@ app.use(express.json());
 app.use(express.static('public'));
 
 app.get('/', (req, res) => {
-  res.send(\`<!DOCTYPE html>
+  res.send(`<!DOCTYPE html>
 <html lang="ru">
 <head>
   <meta charset="utf-8">
@@ -33,7 +39,7 @@ app.get('/', (req, res) => {
     <div class="info"><strong>Сервер:</strong> 188.166.61.86</div>
     <div class="info"><strong>Nginx:</strong> Настроен на порту 80</div>
     <div class="info"><strong>Статус:</strong> Готов к PostgreSQL</div>
-    <div class="info"><strong>Время работы:</strong> \${Math.floor(process.uptime())} сек</div>
+    <div class="info"><strong>Время работы:</strong> ${Math.floor(process.uptime())} сек</div>
     
     <a href="/health" class="btn">Health Check</a>
   </div>
@@ -42,7 +48,7 @@ app.get('/', (req, res) => {
     Следующий шаг: установка PostgreSQL базы данных
   </p>
 </body>
-</html>\`);
+</html>`);
 });
 
 app.get('/health', (req, res) => {
@@ -61,22 +67,6 @@ app.listen(PORT, '0.0.0.0', () => {
   console.log(\`AutoBid.TJ запущен на http://188.166.61.86:\${PORT}\`);
   console.log('Готов к установке PostgreSQL');
 });
-`;
-
-// Команда для исправления падающего приложения и установки PostgreSQL
-const fixCommand = `
-# 🔧 ИСПРАВЛЕНИЕ ПРИЛОЖЕНИЯ И УСТАНОВКА POSTGRESQL
-
-ssh root@188.166.61.86 << 'FIX_AND_INSTALL'
-echo "🔧 Исправляю падающее приложение..."
-
-# Остановка службы
-systemctl stop autobid
-
-# Создание рабочего приложения
-cd ~/autobid-tj
-cat > app.js << 'WORKING_APP'
-${workingApp.replace(/`/g, '\\`')}
 WORKING_APP
 
 # Запуск приложения
@@ -127,20 +117,3 @@ echo "📊 Статус служб:"
 systemctl status autobid --no-pager | head -3
 systemctl status postgresql --no-pager | head -3
 FIX_AND_INSTALL
-`;
-
-// Сохранение файлов
-fs.writeFileSync('working-app.js', workingApp);
-fs.writeFileSync('fix-and-install.sh', fixCommand);
-
-console.log('✅ Созданы файлы для исправления:');
-console.log('   📄 working-app.js - Рабочее приложение без БД');
-console.log('   📄 fix-and-install.sh - Команда исправления + PostgreSQL');
-console.log('');
-console.log('🔧 Выполните: bash fix-and-install.sh');
-console.log('');
-console.log('Эта команда:');
-console.log('1. Исправит падающее приложение');
-console.log('2. Установит PostgreSQL');
-console.log('3. Создаст базу данных');
-console.log('4. Покажет статус всех служб');

@@ -1,22 +1,21 @@
-# Следующая команда для nginx
+# 🚀 ГОТОВАЯ КОМАНДА ДЛЯ ИСПРАВЛЕНИЯ VPS
 
-ssh root@188.166.61.86 << 'NGINX'
-apt update && apt install -y nginx
-cat > /etc/nginx/sites-available/autobid << 'CONF'
-server {
-    listen 80;
-    server_name 188.166.61.86;
-    location / {
-        proxy_pass http://localhost:3001;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_cache_bypass $http_upgrade;
-    }
-}
-CONF
-ln -sf /etc/nginx/sites-available/autobid /etc/nginx/sites-enabled/
-rm -f /etc/nginx/sites-enabled/default  
-nginx -t && systemctl restart nginx && systemctl enable nginx
-echo "✅ Nginx настроен! Сайт: http://188.166.61.86"
-NGINX
+Скопируйте и выполните эту команду в терминале:
+
+bash one-command-deploy.sh
+
+# Эта команда автоматически:
+# 1. ✅ Исправит падающее приложение
+# 2. 🐘 Установит PostgreSQL  
+# 3. 🗄️ Создаст базу данных autobid_db
+# 4. 👤 Создаст пользователя autobid_user
+# 5. 🔐 Установит пароль AutoBid2025
+# 6. 🌐 Проверит работу сайта
+
+# Результат:
+# - Сайт: http://188.166.61.86
+# - Health: http://188.166.61.86/health
+# - База данных готова к работе
+
+# После выполнения можете проверить статус:
+# ssh root@188.166.61.86 "systemctl status autobid postgresql"
