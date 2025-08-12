@@ -38,6 +38,7 @@ COPY --from=builder --chown=nextjs:nodejs /app/dist ./dist
 COPY --from=builder --chown=nextjs:nodejs /app/client/dist ./client/dist
 COPY --from=builder --chown=nextjs:nodejs /app/uploads ./uploads
 COPY --from=builder --chown=nextjs:nodejs /app/shared ./shared
+COPY --from=builder --chown=nextjs:nodejs /app/attached_assets ./attached_assets
 
 # Создаем директорию для uploads если не существует
 RUN mkdir -p uploads && chown -R nextjs:nodejs uploads
