@@ -785,7 +785,7 @@ export default function AuctionDetail() {
       setShowConfetti(true);
       
       try {
-        import('@assets/celebration_1750167957407.mp3').then((audioModule) => {
+        import('@assets/Act_1750167905387.mp3').then((audioModule) => {
           const audio = new Audio(audioModule.default);
           audio.volume = 0.7;
           audio.play().catch(() => {
