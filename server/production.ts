@@ -109,6 +109,11 @@ app.use((req: Request, res: Response, next: NextFunction) => {
     console.log(`❌ Не найдена assets директория, /assets может не работать`);
   }
 
+  // Добавляем health check endpoint ПЕРЕД API роутами
+  app.get('/health', (req, res) => {
+    res.status(200).json({ status: 'OK', timestamp: new Date().toISOString() });
+  });
+
   // Регистрируем API роуты (включая WebSocket)
   const server = await registerRoutes(app);
 

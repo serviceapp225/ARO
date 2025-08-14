@@ -29,16 +29,23 @@ dist/
     └── assets/
 ```
 
+### 3. Health Check исправлен
+- Добавлен `/health` endpoint в production.ts перед API роутами
+- Увеличен timeout в .do/app.yaml: `initial_delay_seconds: 60`
+- Увеличено количество попыток: `failure_threshold: 5`
+
 ## Результат
 
 ✅ **Локальная сборка успешна**: `npm run build` + esbuild production.ts  
 ✅ **Production entry point работает**: без ошибок Replit зависимостей  
 ✅ **Dockerfile готов**: собирает и запускает production.js  
+✅ **Health check исправлен**: endpoint добавлен с увеличенным timeout  
 ✅ **Сохранена совместимость**: dev режим работает как прежде  
 
 ## Файлы изменены
 - `Dockerfile` - исправлена установка зависимостей и команда запуска
-- `server/production.ts` - новый файл (production entry point)
+- `server/production.ts` - новый файл (production entry point + health check)
+- `.do/app.yaml` - увеличен health check timeout
 
 ## Готово к деплою
 Приложение готово к деплою на DigitalOcean App Platform без ошибок Replit зависимостей.
