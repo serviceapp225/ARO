@@ -5,10 +5,10 @@ services:
   source_dir: /
   dockerfile_path: Dockerfile
   build_command: npm run build
-  run_command: node dist/index.js
+  run_command: npm start
   instance_count: 1
   instance_size_slug: professional-xs
-  http_port: 3000
+  http_port: 8080
   routes:
   - path: /
   health_check:
@@ -46,7 +46,7 @@ services:
     scope: RUN_AND_BUILD_TIME
     type: SECRET
   - key: PORT
-    value: "3000"
+    value: "8080"
 
 # Static assets могут быть служены отдельно для лучшей производительности
 static_sites:
