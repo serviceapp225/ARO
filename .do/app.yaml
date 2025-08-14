@@ -1,11 +1,8 @@
-# DigitalOcean App Platform конфигурация для AutoBid.TJ
 name: autobid-tj
 services:
 - name: web
   source_dir: /
   dockerfile_path: Dockerfile
-  build_command: npm run build
-  run_command: npm start
   instance_count: 1
   instance_size_slug: professional-xs
   http_port: 8080
@@ -47,10 +44,3 @@ services:
     type: SECRET
   - key: PORT
     value: "8080"
-
-# Static assets могут быть служены отдельно для лучшей производительности
-static_sites:
-- name: assets
-  source_dir: client/dist
-  routes:
-  - path: /assets
