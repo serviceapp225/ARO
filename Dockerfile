@@ -14,8 +14,8 @@ RUN npm ci
 # Копируем исходный код
 COPY . .
 
-# Собираем приложение  
-RUN npm run build && npx esbuild server/production-minimal.ts --platform=node --packages=external --bundle --format=esm --outfile=dist/production-minimal.js
+# Собираем только фронтенд и minimal server (БЕЗ проблемного index.js с Replit плагинами)
+RUN vite build && npx esbuild server/production-minimal.ts --platform=node --packages=external --bundle --format=esm --outfile=dist/production-minimal.js
 
 # Production stage
 FROM node:20-alpine AS production
@@ -30,16 +30,12 @@ RUN adduser -S nextjs -u 1001
 # Копируем package files
 COPY package*.json ./
 
-# Устанавливаем все зависимости (нужны для runtime Vite plugins)
-RUN npm ci && npm cache clean --force
+# Устанавливаем только production зависимости (без Replit dev плагинов)
+RUN npm ci --only=production && npm cache clean --force
 
-# Копируем собранное приложение из builder stage
+# Копируем собранное приложение из builder stage (БЕЗ исходников сервера с Replit зависимостями)
 COPY --from=builder --chown=nextjs:nodejs /app/dist ./dist
 COPY --from=builder --chown=nextjs:nodejs /app/uploads ./uploads
-COPY --from=builder --chown=nextjs:nodejs /app/shared ./shared
-COPY --from=builder --chown=nextjs:nodejs /app/server ./server
-COPY --from=builder --chown=nextjs:nodejs /app/vite.config.ts ./vite.config.ts
-COPY --from=builder --chown=nextjs:nodejs /app/tsconfig.json ./tsconfig.json
 
 # Создаем директорию для uploads если не существует
 RUN mkdir -p uploads && chown -R nextjs:nodejs uploads

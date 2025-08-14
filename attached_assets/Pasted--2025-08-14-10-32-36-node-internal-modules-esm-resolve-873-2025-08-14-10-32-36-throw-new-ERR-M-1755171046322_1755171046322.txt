@@ -1,0 +1,39 @@
+[2025-08-14 10:32:36] node:internal/modules/esm/resolve:873
+[2025-08-14 10:32:36]   throw new ERR_MODULE_NOT_FOUND(packageName, fileURLToPath(base), null);
+[2025-08-14 10:32:36]         ^
+[2025-08-14 10:32:36] 
+[2025-08-14 10:32:36] Error [ERR_MODULE_NOT_FOUND]: Cannot find package '@replit/vite-plugin-runtime-error-modal' imported from /app/dist/index.js
+[2025-08-14 10:32:36]     at packageResolve (node:internal/modules/esm/resolve:873:9)
+[2025-08-14 10:32:36]     at moduleResolve (node:internal/modules/esm/resolve:946:18)
+[2025-08-14 10:32:36]     at defaultResolve (node:internal/modules/esm/resolve:1188:11)
+[2025-08-14 10:32:36]     at ModuleLoader.defaultResolve (node:internal/modules/esm/loader:642:12)
+[2025-08-14 10:32:36]     at #cachedDefaultResolve (node:internal/modules/esm/loader:591:25)
+[2025-08-14 10:32:36]     at ModuleLoader.resolve (node:internal/modules/esm/loader:574:38)
+[2025-08-14 10:32:36]     at ModuleLoader.getModuleJobForImport (node:internal/modules/esm/loader:236:38)
+[2025-08-14 10:32:36]     at ModuleJob._link (node:internal/modules/esm/module_job:130:49) {
+[2025-08-14 10:32:36]   code: 'ERR_MODULE_NOT_FOUND'
+[2025-08-14 10:32:36] }
+[2025-08-14 10:32:36] 
+[2025-08-14 10:32:36] Node.js v20.19.4
+[2025-08-14 10:32:35] node:internal/modules/esm/resolve:873
+[2025-08-14 10:32:35]   throw new ERR_MODULE_NOT_FOUND(packageName, fileURLToPath(base), null);
+[2025-08-14 10:32:35]         ^
+[2025-08-14 10:32:35] 
+[2025-08-14 10:32:35] Error [ERR_MODULE_NOT_FOUND]: Cannot find package '@replit/vite-plugin-runtime-error-modal' imported from /app/dist/index.js
+[2025-08-14 10:32:35]     at packageResolve (node:internal/modules/esm/resolve:873:9)
+[2025-08-14 10:32:35]     at moduleResolve (node:internal/modules/esm/resolve:946:18)
+[2025-08-14 10:32:35]     at defaultResolve (node:internal/modules/esm/resolve:1188:11)
+[2025-08-14 10:32:35]     at ModuleLoader.defaultResolve (node:internal/modules/esm/loader:642:12)
+[2025-08-14 10:32:35]     at #cachedDefaultResolve (node:internal/modules/esm/loader:591:25)
+[2025-08-14 10:32:35]     at ModuleLoader.resolve (node:internal/modules/esm/loader:574:38)
+[2025-08-14 10:32:35]     at ModuleLoader.getModuleJobForImport (node:internal/modules/esm/loader:236:38)
+[2025-08-14 10:32:35]     at ModuleJob._link (node:internal/modules/esm/module_job:130:49) {
+[2025-08-14 10:32:35]   code: 'ERR_MODULE_NOT_FOUND'
+[2025-08-14 10:32:35] }
+[2025-08-14 10:32:35] 
+[2025-08-14 10:32:35] Node.js v20.19.4
+[2025-08-14 10:32:35] ERROR failed health checks after 3 attempts with error Readiness probe failed: dial tcp 10.244.250.219:8080: connect: connection refused
+[2025-08-14 10:32:36] ERROR failed health checks after 3 attempts with error Readiness probe failed: dial tcp 10.244.15.16:8080: connect: connection refused
+[2025-08-14 10:32:36] ERROR component terminated with non-zero exit code: 1,
+[2025-08-14 10:32:35] ERROR component terminated with non-zero exit code: 1,
+[]

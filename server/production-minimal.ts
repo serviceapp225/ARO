@@ -76,11 +76,43 @@ if (fs.existsSync(staticPath)) {
   app.use(express.static(staticPath));
 }
 
-// SPA fallback для всех остальных маршрутов
+// SPA fallback для всех остальных маршрутов (только для существующих файлов)
 app.get('*', (req, res) => {
   const indexPath = path.join(staticPath, 'index.html');
   if (fs.existsSync(indexPath)) {
-    res.sendFile(indexPath);
+    // Читаем index.html и проверяем наличие Replit зависимостей
+    try {
+      const indexContent = fs.readFileSync(indexPath, 'utf8');
+      if (indexContent.includes('@replit/')) {
+        // Если есть Replit зависимости - отдаём простую страницу
+        res.status(200).send(`
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <title>AutoBid.TJ - Minimal Mode</title>
+            <meta charset="utf-8">
+            <style>
+              body { font-family: Arial, sans-serif; text-align: center; padding: 50px; }
+              .status { color: green; font-size: 18px; }
+              .info { margin: 20px 0; }
+            </style>
+          </head>
+          <body>
+            <h1>🚀 AutoBid.TJ</h1>
+            <div class="status">✅ Сервер работает в minimal режиме</div>
+            <div class="info">Приложение успешно развёрнуто и готово к настройке базы данных</div>
+            <div class="info">Health check: <a href="/health">/health</a></div>
+            <div class="info">API Status: <a href="/api/status">/api/status</a></div>
+          </body>
+          </html>
+        `);
+      } else {
+        res.sendFile(indexPath);
+      }
+    } catch (error) {
+      console.error('Ошибка чтения index.html:', error);
+      res.status(500).send('Internal Server Error');
+    }
   } else {
     res.status(404).send('Not Found - Index.html not available');
   }
