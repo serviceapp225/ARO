@@ -21,7 +21,7 @@ COPY . .
 RUN mkdir -p dist uploads
 
 # Собираем фронтенд и production server
-RUN npx vite build && npx esbuild server/production.ts --platform=node --packages=external --bundle --format=esm --outfile=dist/production.js
+RUN npx vite build && npx esbuild server/production-minimal.ts --platform=node --packages=external --bundle --format=esm --outfile=dist/production.js
 
 # Production stage
 FROM node:20-alpine AS production

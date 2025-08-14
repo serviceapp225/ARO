@@ -1,0 +1,46 @@
+[2025-08-14 19:22:14] Error fetching listings: ErrorEvent {
+[2025-08-14 19:22:14]   [Symbol(kTarget)]: WebSocket {
+[2025-08-14 19:22:14]     _events: [Object: null prototype] {
+[2025-08-14 19:22:14]       error: [Function],
+[2025-08-14 19:22:14]       message: [Function],
+[2025-08-14 19:22:14]       close: [Function],
+[2025-08-14 19:22:14]       open: [Function]
+[2025-08-14 19:22:14]     },
+[2025-08-14 19:22:14]     _eventsCount: 4,
+[2025-08-14 19:22:14]     _maxListeners: undefined,
+[2025-08-14 19:22:14]     _binaryType: 'arraybuffer',
+[2025-08-14 19:22:14]     _closeCode: 1006,
+[2025-08-14 19:22:14]     _closeFrameReceived: false,
+[2025-08-14 19:22:14]     _closeFrameSent: false,
+[2025-08-14 19:22:14]     _closeMessage: <Buffer >,
+[2025-08-14 19:22:14]     _closeTimer: null,
+[2025-08-14 19:22:14]     _errorEmitted: true,
+[2025-08-14 19:22:14]     _extensions: {},
+[2025-08-14 19:22:14]     _paused: false,
+[2025-08-14 19:22:14]     _protocol: '',
+[2025-08-14 19:22:14]     _readyState: 3,
+[2025-08-14 19:22:14]     _receiver: null,
+[2025-08-14 19:22:14]     _sender: null,
+[2025-08-14 19:22:14]     _socket: null,
+[2025-08-14 19:22:14]     _bufferedAmount: 0,
+[2025-08-14 19:22:14]     _isServer: false,
+[2025-08-14 19:22:14]     _redirects: 0,
+[2025-08-14 19:22:14]     _autoPong: true,
+[2025-08-14 19:22:14]     _url: 'wss://autobid-production-do-user-24204575-0.m.db.ondigitalocean.com/v2',
+[2025-08-14 19:22:14]     _req: null,
+[2025-08-14 19:22:14]     [Symbol(shapeMode)]: false,
+[2025-08-14 19:22:14]     [Symbol(kCapture)]: false
+[2025-08-14 19:22:14]   },
+[2025-08-14 19:22:14]   [Symbol(kType)]: 'error',
+[2025-08-14 19:22:14]   [Symbol(kError)]: Error: connect ETIMEDOUT 104.248.93.17:443
+[2025-08-14 19:22:14]       at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16) {
+[2025-08-14 19:22:14]     errno: -110,
+[2025-08-14 19:22:14]     code: 'ETIMEDOUT',
+[2025-08-14 19:22:14]     syscall: 'connect',
+[2025-08-14 19:22:14]     address: '104.248.93.17',
+[2025-08-14 19:22:14]     port: 443
+[2025-08-14 19:22:14]   },
+[2025-08-14 19:22:14]   [Symbol(kMessage)]: 'connect ETIMEDOUT 104.248.93.17:443'
+[2025-08-14 19:22:14] }
+[2025-08-14 19:22:10] ERROR failed health checks after 16 attempts with error Readiness probe failed: dial tcp 10.244.209.135:8080: connect: connection refused
+[]
