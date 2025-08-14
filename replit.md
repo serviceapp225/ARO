@@ -79,9 +79,10 @@ Preferred communication style: Simple, everyday language in Russian.
   - ✅ Added proper directory creation in both builder and production stages
 - **Production Entry Point**: server/production.ts - fully independent of Replit dependencies
 - **Docker Configuration**: Multi-stage build with production-only runtime dependencies
-- **Deployment Status**: ПОЛНОСТЬЮ ГОТОВО - все критические ошибки решены (август 2025):
+- **Deployment Status**: ДИАГНОСТИКА HEALTH CHECK - основные ошибки решены (август 2025):
   - ✅ "command exited with code 127" - исправлено
   - ✅ "no such file or directory /uploads" - исправлено
+  - ⚠️ "connection refused :8080" - диагностируется (приложение не запускается)
 - **Next Steps**: Create Managed Database → Create Spaces bucket → Configure secrets → Deploy
 
 ## External Dependencies

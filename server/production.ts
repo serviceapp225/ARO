@@ -71,8 +71,19 @@ app.use((req: Request, res: Response, next: NextFunction) => {
     
     // Инициализация только если есть подключение к БД
     if (process.env.DATABASE_URL) {
+      console.log("🔌 Подключение к базе данных PostgreSQL");
       await deploymentSafeInit();
-      ImageUpdateService.initializeOnStartup();
+      console.log("✅ Безопасная инициализация БД завершена");
+      
+      // Инициализация системы изображений в фоне
+      setTimeout(() => {
+        try {
+          ImageUpdateService.initializeOnStartup();
+          console.log("✅ Система обновления изображений запущена");
+        } catch (err) {
+          console.log("⚠️ Ошибка запуска системы изображений:", err);
+        }
+      }, 5000); // Запускаем через 5 секунд после старта
     } else {
       console.log("⚠️ PRODUCTION: База данных не настроена, запускаем в режиме static server");
     }
@@ -80,7 +91,7 @@ app.use((req: Request, res: Response, next: NextFunction) => {
     console.log("✅ DEPLOYMENT: Инициализация завершена успешно");
   } catch (error) {
     console.error("⚠️ DEPLOYMENT: Ошибка инициализации БД:", error);
-    console.log("📝 DEPLOYMENT: Продолжаем запуск приложения...");
+    console.log("📝 DEPLOYMENT: Продолжаем запуск приложения без БД...");
   }
   
   // Статические файлы assets ПЕРЕД API роутами
@@ -128,11 +139,27 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 
   // Добавляем health check endpoint ПЕРЕД API роутами
   app.get('/health', (req, res) => {
-    res.status(200).json({ status: 'OK', timestamp: new Date().toISOString() });
+    console.log('🏥 Health check запрошен');
+    res.status(200).json({ 
+      status: 'OK', 
+      timestamp: new Date().toISOString(),
+      env: process.env.NODE_ENV || 'development',
+      port: process.env.PORT || '8080'
+    });
   });
 
-  // Регистрируем API роуты (включая WebSocket)
-  const server = await registerRoutes(app);
+  // Регистрируем API роуты (включая WebSocket) с обработкой ошибок
+  let server;
+  try {
+    server = await registerRoutes(app);
+    console.log("✅ API роуты зарегистрированы успешно");
+  } catch (error) {
+    console.error("⚠️ Ошибка регистрации API роутов:", error);
+    // Создаем простой HTTP server если registerRoutes не работает
+    const http = await import('http');
+    server = http.createServer(app);
+    console.log("✅ Создан базовый HTTP сервер");
+  }
 
   // Обслуживание статических файлов для продакшена
   const staticPath = path.join(process.cwd(), 'dist', 'public');
