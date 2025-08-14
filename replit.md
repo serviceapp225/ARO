@@ -75,9 +75,13 @@ Preferred communication style: Simple, everyday language in Russian.
   - ✅ Fixed esbuild command: npx vite build && npx esbuild server/production.ts
   - ✅ Optimized health check timing (30s initial delay vs 60s)
   - ✅ Synchronized port configuration (8080)
+  - ✅ Fixed Docker COPY commands for missing directories (uploads, cache)
+  - ✅ Added proper directory creation in both builder and production stages
 - **Production Entry Point**: server/production.ts - fully independent of Replit dependencies
 - **Docker Configuration**: Multi-stage build with production-only runtime dependencies
-- **Deployment Status**: ПОЛНОСТЬЮ ГОТОВО - ошибка "command exited with code 127" решена (август 2025)
+- **Deployment Status**: ПОЛНОСТЬЮ ГОТОВО - все критические ошибки решены (август 2025):
+  - ✅ "command exited with code 127" - исправлено
+  - ✅ "no such file or directory /uploads" - исправлено
 - **Next Steps**: Create Managed Database → Create Spaces bucket → Configure secrets → Deploy
 
 ## External Dependencies

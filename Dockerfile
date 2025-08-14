@@ -17,6 +17,9 @@ RUN npm ci --include=dev
 # Копируем исходный код
 COPY . .
 
+# Создаем необходимые директории для сборки
+RUN mkdir -p dist uploads
+
 # Собираем фронтенд и production server
 RUN npx vite build && npx esbuild server/production.ts --platform=node --packages=external --bundle --format=esm --outfile=dist/production.js
 
@@ -37,11 +40,10 @@ COPY package*.json ./
 RUN npm ci --only=production && npm cache clean --force
 
 # Копируем собранное приложение из builder stage
-COPY --from=builder --chown=nextjs:nodejs /app/dist ./dist  
-COPY --from=builder --chown=nextjs:nodejs /app/uploads ./uploads
+COPY --from=builder --chown=nextjs:nodejs /app/dist ./dist
 
-# Создаем директорию для uploads если не существует
-RUN mkdir -p uploads && chown -R nextjs:nodejs uploads
+# Создаем необходимые директории для runtime
+RUN mkdir -p uploads cache && chown -R nextjs:nodejs uploads cache
 
 # Переключаемся на пользователя nodejs
 USER nextjs
