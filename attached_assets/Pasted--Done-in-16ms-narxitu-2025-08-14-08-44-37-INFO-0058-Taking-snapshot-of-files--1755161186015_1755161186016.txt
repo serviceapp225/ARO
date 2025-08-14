@@ -1,0 +1,24 @@
+ Done in 16ms
+[narxitu] [2025-08-14 08:44:37] │ INFO[0058] Taking snapshot of files...                  
+[narxitu] [2025-08-14 08:44:37] │ INFO[0059] Pushing layer <registry-uri-4> to cache now 
+[narxitu] [2025-08-14 08:44:37] │ INFO[0059] Pushing image to <registry-uri-5> 
+[narxitu] [2025-08-14 08:44:38] │ INFO[0059] Pushed <registry-uri-6> 
+[narxitu] [2025-08-14 08:44:44] │ INFO[0065] Pushed <registry-uri-7> 
+[narxitu] [2025-08-14 08:44:44] │ INFO[0065] Saving file app/dist for later use           
+[narxitu] [2025-08-14 08:44:44] │ INFO[0065] Saving file app/uploads for later use        
+[narxitu] [2025-08-14 08:44:44] │ INFO[0065] Saving file app/shared for later use         
+[narxitu] [2025-08-14 08:44:44] │ INFO[0065] Deleting filesystem...                       
+[narxitu] [2025-08-14 08:44:45] │ INFO[0066] Retrieving image manifest node:20-alpine     
+[narxitu] [2025-08-14 08:44:45] │ INFO[0066] Returning cached image manifest              
+[narxitu] [2025-08-14 08:44:45] │ INFO[0066] Retrieving image manifest node:20-alpine     
+[narxitu] [2025-08-14 08:44:45] │ INFO[0066] Returning cached image manifest              
+[narxitu] [2025-08-14 08:44:45] │ INFO[0066] Executing 0 build triggers                   
+[narxitu] [2025-08-14 08:44:45] │ INFO[0066] Building stage 'node:20-alpine' [idx: '1', base-idx: '-1'] 
+[narxitu] [2025-08-14 08:44:45] │ INFO[0066] Checking for cached layer <registry-uri-8> 
+[narxitu] [2025-08-14 08:44:45] │ INFO[0067] No cached layer found for cmd RUN addgroup -g 1001 -S nodejs 
+[narxitu] [2025-08-14 08:44:45] │ INFO[0067] Resolving srcs [package*.json]...            
+[narxitu] [2025-08-14 08:44:45] │ error building image: error building stage: failed to optimize instructions: failed to get files used from context: failed to get fileinfo for /kaniko/0/app/client/dist: lstat /kaniko/0/app/client/dist: no such file or directory
+[narxitu] [2025-08-14 08:44:45] │ 
+[narxitu] [2025-08-14 08:44:45] │ command exited with code 1
+[narxitu] [2025-08-14 08:44:45] │ 
+[narxitu] [2025-08-14 08:44:45] │  ✘ build failed
