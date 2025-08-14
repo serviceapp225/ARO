@@ -15,7 +15,7 @@ RUN npm ci
 COPY . .
 
 # Собираем приложение
-RUN npm run build
+RUN npm run build && npx esbuild server/production.ts --platform=node --packages=external --bundle --format=esm --outdir=dist
 
 # Production stage
 FROM node:20-alpine AS production
@@ -30,8 +30,8 @@ RUN adduser -S nextjs -u 1001
 # Копируем package files
 COPY package*.json ./
 
-# Устанавливаем только production зависимости
-RUN npm ci --only=production && npm cache clean --force
+# Устанавливаем все зависимости (нужны для runtime Vite plugins)
+RUN npm ci && npm cache clean --force
 
 # Копируем собранное приложение из builder stage
 COPY --from=builder --chown=nextjs:nodejs /app/dist ./dist
@@ -54,5 +54,5 @@ EXPOSE 8080
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
   CMD node -e "require('http').get('http://localhost:8080/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })"
 
-# Запускаем приложение
-CMD ["node", "dist/index.js"]
+# Запускаем приложение в production режиме (без Vite плагинов)
+CMD ["node", "dist/production.js"]

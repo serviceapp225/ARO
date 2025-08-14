@@ -73,6 +73,10 @@ Preferred communication style: Simple, everyday language in Russian.
   - Fixed Dockerfile client/dist copying issue
   - Corrected .do/app.yaml format (removed problematic build_command syntax)
   - Synchronized port configuration (8080)
+  - **КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ**: Решена проблема с Replit dev-зависимостями в production
+- **Production Entry Point**: Создан server/production.ts для деплоя без Replit плагинов
+- **Docker Configuration**: Dockerfile обновлен для сборки production.js с полными зависимостями
+- **Deployment Status**: ПОЛНОСТЬЮ ГОТОВО - все проблемы сборки решены (август 2025)
 - **Next Steps**: Create Managed Database → Create Spaces bucket → Deploy using .do/app.yaml
 
 ## External Dependencies
