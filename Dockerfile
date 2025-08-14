@@ -1,6 +1,9 @@
 # Multi-stage build для оптимизации размера
 FROM node:20-alpine AS builder
 
+# Устанавливаем необходимые системные зависимости
+RUN apk add --no-cache python3 make g++
+
 # Устанавливаем рабочую директорию
 WORKDIR /app
 
@@ -9,13 +12,13 @@ COPY package*.json ./
 COPY tsconfig.json ./
 
 # Устанавливаем ВСЕ зависимости (включая dev для сборки)
-RUN npm ci
+RUN npm ci --include=dev
 
 # Копируем исходный код
 COPY . .
 
-# Собираем только фронтенд и minimal server (БЕЗ проблемного index.js с Replit плагинами)
-RUN vite build && npx esbuild server/production-minimal.ts --platform=node --packages=external --bundle --format=esm --outfile=dist/production-minimal.js
+# Собираем фронтенд и production server
+RUN npx vite build && npx esbuild server/production.ts --platform=node --packages=external --bundle --format=esm --outfile=dist/production.js
 
 # Production stage
 FROM node:20-alpine AS production
@@ -33,8 +36,8 @@ COPY package*.json ./
 # Устанавливаем только production зависимости (без Replit dev плагинов)
 RUN npm ci --only=production && npm cache clean --force
 
-# Копируем собранное приложение из builder stage (БЕЗ исходников сервера с Replit зависимостями)
-COPY --from=builder --chown=nextjs:nodejs /app/dist ./dist
+# Копируем собранное приложение из builder stage
+COPY --from=builder --chown=nextjs:nodejs /app/dist ./dist  
 COPY --from=builder --chown=nextjs:nodejs /app/uploads ./uploads
 
 # Создаем директорию для uploads если не существует
@@ -50,5 +53,5 @@ EXPOSE 8080
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
   CMD node -e "require('http').get('http://localhost:8080/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })"
 
-# Запускаем приложение в production режиме (без Vite плагинов)
-CMD ["node", "dist/production-minimal.js"]
+# Запускаем приложение в production режиме
+CMD ["node", "dist/production.js"]

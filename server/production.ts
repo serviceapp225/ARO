@@ -3,7 +3,16 @@ import compression from "compression";
 import { registerRoutes } from "./routes";
 import { deploymentSafeInit } from "./deploymentSafeInit";
 import { createTables } from "./createTables";
-import { serveStatic, log } from "./vite";
+// Простая функция логирования для production
+function log(message: string, source = "express") {
+  const formattedTime = new Date().toLocaleTimeString("en-US", {
+    hour: "numeric",
+    minute: "2-digit", 
+    second: "2-digit",
+    hour12: true,
+  });
+  console.log(`${formattedTime} [${source}] ${message}`);
+}
 import { storage } from "./storage";
 import { ImageUpdateService } from "./imageUpdateService";
 import fs from "fs";

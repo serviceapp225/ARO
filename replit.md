@@ -58,26 +58,27 @@ Preferred communication style: Simple, everyday language in Russian.
 
 ### Deployment Strategy
 - **Target Platform**: DigitalOcean App Platform (READY FOR DEPLOYMENT - August 2025)
-- **Migration Status**: 🎯 DEPLOYMENT READY - All build issues resolved
+- **Migration Status**: 🎯 DEPLOYMENT READY - All critical build issues resolved
 - **Infrastructure Choice**: App Platform + Managed PostgreSQL + Spaces storage for scalability
-- **Cost**: ~$55-60/month (vs $24/month VPS) - reliability trade-off accepted
+- **Cost**: ~$45-55/month (App Platform Professional XS + PostgreSQL + Spaces)
 - **Components Ready**: 
-  - ✅ Dockerfile (multi-stage, fixed build issues)
-  - ✅ .do/app.yaml (corrected App Platform config format)
+  - ✅ Dockerfile (multi-stage, production-optimized with system dependencies)
+  - ✅ .do/app.yaml (corrected App Platform config, optimized health checks)
   - ✅ Health check endpoint (/health)
   - ✅ DigitalOcean Spaces integration (server/spacesService.ts)
-  - ✅ Migration script (server/migrateToSpaces.ts)
-  - ✅ Missing file references cleaned up (Act_*.mp3, rodan-can-*.jpg)
-- **Build Fixes Applied (August 2025)**:
-  - Removed references to missing audio/image files
-  - Fixed Dockerfile client/dist copying issue
-  - Corrected .do/app.yaml format (removed problematic build_command syntax)
-  - Synchronized port configuration (8080)
-  - **КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ**: Решена проблема с Replit dev-зависимостями в production
-- **Production Entry Point**: Создан server/production.ts для деплоя без Replit плагинов
-- **Docker Configuration**: Dockerfile обновлен для сборки production.js с полными зависимостями
-- **Deployment Status**: ПОЛНОСТЬЮ ГОТОВО - все проблемы сборки решены (август 2025)
-- **Next Steps**: Create Managed Database → Create Spaces bucket → Deploy using .do/app.yaml
+  - ✅ .dockerignore (optimized for App Platform deployment)
+- **Critical Fixes Applied (August 2025)**:
+  - ✅ Added system dependencies (python3, make, g++) to Dockerfile
+  - ✅ Fixed npm dependencies installation with --include=dev
+  - ✅ Removed Replit vite.ts dependencies from production.ts
+  - ✅ Created standalone log function in production.ts
+  - ✅ Fixed esbuild command: npx vite build && npx esbuild server/production.ts
+  - ✅ Optimized health check timing (30s initial delay vs 60s)
+  - ✅ Synchronized port configuration (8080)
+- **Production Entry Point**: server/production.ts - fully independent of Replit dependencies
+- **Docker Configuration**: Multi-stage build with production-only runtime dependencies
+- **Deployment Status**: ПОЛНОСТЬЮ ГОТОВО - ошибка "command exited with code 127" решена (август 2025)
+- **Next Steps**: Create Managed Database → Create Spaces bucket → Configure secrets → Deploy
 
 ## External Dependencies
 
