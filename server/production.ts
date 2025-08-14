@@ -8,7 +8,7 @@ import { storage } from "./storage";
 import { ImageUpdateService } from "./imageUpdateService";
 import fs from "fs";
 import path from "path";
-import multer from "multer";
+
 
 const app = express();
 
@@ -55,10 +55,18 @@ app.use((req: Request, res: Response, next: NextFunction) => {
   console.log("🚀 Запуск приложения в продакшене с безопасной инициализацией...");
   
   try {
-    await deploymentSafeInit();
+    // Простая проверка переменных окружения
+    console.log(`🔧 PRODUCTION: NODE_ENV = ${process.env.NODE_ENV}`);
+    console.log(`🔧 PRODUCTION: PORT = ${process.env.PORT || '8080'}`);
+    console.log(`🔧 PRODUCTION: DATABASE_URL = ${process.env.DATABASE_URL ? 'SET' : 'NOT SET'}`);
     
-    // Инициализация автоматического скачивания изображений
-    ImageUpdateService.initializeOnStartup();
+    // Инициализация только если есть подключение к БД
+    if (process.env.DATABASE_URL) {
+      await deploymentSafeInit();
+      ImageUpdateService.initializeOnStartup();
+    } else {
+      console.log("⚠️ PRODUCTION: База данных не настроена, запускаем в режиме static server");
+    }
     
     console.log("✅ DEPLOYMENT: Инициализация завершена успешно");
   } catch (error) {

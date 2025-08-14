@@ -14,8 +14,8 @@ RUN npm ci
 # Копируем исходный код
 COPY . .
 
-# Собираем приложение
-RUN npm run build && npx esbuild server/production.ts --platform=node --packages=external --bundle --format=esm --outdir=dist
+# Собираем приложение  
+RUN npm run build && npx esbuild server/production-minimal.ts --platform=node --packages=external --bundle --format=esm --outfile=dist/production-minimal.js
 
 # Production stage
 FROM node:20-alpine AS production
@@ -37,7 +37,7 @@ RUN npm ci && npm cache clean --force
 COPY --from=builder --chown=nextjs:nodejs /app/dist ./dist
 COPY --from=builder --chown=nextjs:nodejs /app/uploads ./uploads
 COPY --from=builder --chown=nextjs:nodejs /app/shared ./shared
-COPY --from=builder --chown=nextjs:nodejs /app/client ./client
+COPY --from=builder --chown=nextjs:nodejs /app/server ./server
 COPY --from=builder --chown=nextjs:nodejs /app/vite.config.ts ./vite.config.ts
 COPY --from=builder --chown=nextjs:nodejs /app/tsconfig.json ./tsconfig.json
 
@@ -55,4 +55,4 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
   CMD node -e "require('http').get('http://localhost:8080/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })"
 
 # Запускаем приложение в production режиме (без Vite плагинов)
-CMD ["node", "dist/production.js"]
+CMD ["node", "dist/production-minimal.js"]
