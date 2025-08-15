@@ -1,33 +1,36 @@
 #!/bin/bash
 
-echo "🏗️ Сборка для DigitalOcean App Platform..."
+echo "🏗️ Полная сборка для DigitalOcean App Platform..."
 
-# Шаг 1: Сборка фронтенда
-echo "📦 Сборка фронтенда..."
-npm run build:frontend
+# Шаг 1: Стандартная сборка
+echo "📦 Стандартная сборка..."
+npm run build
 
-# Шаг 2: Сборка продакшн сервера 
+# Шаг 2: Сборка продакшн сервера
 echo "🔧 Сборка продакшн сервера..."
 npx esbuild server/production.ts --platform=node --packages=external --bundle --format=esm --outfile=dist/production.js
 
-# Шаг 3: Копирование статических файлов
-echo "📁 Копирование статических файлов..."
-if [ -d "client/dist" ]; then
-    mkdir -p dist/public
-    cp -r client/dist/* dist/public/
-    echo "✅ Статические файлы скопированы"
-else
-    echo "❌ Директория client/dist не найдена"
-    exit 1
-fi
-
-# Шаг 4: Создание альтернативного index.js
-echo "🔄 Создание index.js который запускает production.js..."
+# Шаг 3: Создание правильного index.js для DigitalOcean
+echo "🔄 Создание index.js для DigitalOcean..."
 cat > dist/index.js << 'EOF'
-// Перенаправление на production.js для обратной совместимости
-import('./production.js').catch(console.error);
+#!/usr/bin/env node
+
+// Запуск production сервера для DigitalOcean
+import('./production.js')
+  .then(() => {
+    console.log('✅ Production server started successfully');
+  })
+  .catch((error) => {
+    console.error('❌ Failed to start production server:', error);
+    process.exit(1);
+  });
 EOF
 
 echo "✅ Сборка для DigitalOcean завершена!"
-echo "📊 Размеры файлов:"
+echo "📊 Финальные файлы:"
 ls -lah dist/
+echo ""
+echo "🎯 Готово для деплоя в DigitalOcean!"
+echo "   • dist/index.js - точка входа (импортирует production.js)"
+echo "   • dist/production.js - независимый сервер"
+echo "   • dist/public/ - статические файлы"
