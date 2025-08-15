@@ -1,0 +1,53 @@
+name: autobid-tj
+services:
+- name: web
+  source_dir: /
+  github:
+    repo: your-repo/autobid-tj
+    branch: main
+    deploy_on_push: true
+  run_command: npm start
+  environment_slug: node-js
+  instance_count: 1
+  instance_size_slug: basic-xxs
+  http_port: 5000
+  health_check:
+    http_path: /health
+    initial_delay_seconds: 15
+    period_seconds: 10
+    timeout_seconds: 5
+    success_threshold: 1
+    failure_threshold: 3
+  envs:
+  - key: NODE_ENV
+    value: production
+  - key: PORT
+    value: "5000"
+  - key: DATABASE_URL
+    value: ${db.DATABASE_URL}
+  - key: GOOGLE_CLOUD_PROJECT_ID
+    scope: RUN_TIME
+    type: SECRET
+  - key: GOOGLE_CLOUD_PRIVATE_KEY
+    scope: RUN_TIME
+    type: SECRET
+  - key: GOOGLE_CLOUD_CLIENT_EMAIL
+    scope: RUN_TIME
+    type: SECRET
+  - key: GOOGLE_CLOUD_BUCKET_NAME
+    scope: RUN_TIME
+    type: SECRET
+  - key: SMS_API_KEY
+    scope: RUN_TIME
+    type: SECRET
+  - key: SMS_API_SECRET
+    scope: RUN_TIME
+    type: SECRET
+  - key: JWT_SECRET
+    scope: RUN_TIME
+    type: SECRET
+databases:
+- name: autobid-db
+  engine: PG
+  version: "15"
+  size: db-s-dev-database
