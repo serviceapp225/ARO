@@ -1,0 +1,70 @@
+ │        
+[narxitu2] [2025-08-15 16:45:27] │ -----> Build succeeded!
+[narxitu2] [2025-08-15 16:45:27] │ Procfile: configuring type "web" process: "node dist/production.js"
+[narxitu2] [2025-08-15 16:45:27] │ Procfile: will set process 'web' as the default process
+[narxitu2] [2025-08-15 16:45:27] │ Running custom build command: cp package.digitalocean.json package.json && 
+[narxitu2] [2025-08-15 16:45:27] │ npm install --production=false && 
+[narxitu2] [2025-08-15 16:45:27] │ npm run build
+[narxitu2] [2025-08-15 16:45:28] │ npm warn config production Use `--omit=dev` instead.
+[narxitu2] [2025-08-15 16:45:33] │ npm warn ERESOLVE overriding peer dependency
+[narxitu2] [2025-08-15 16:45:33] │ npm warn While resolving: autobid-tj@1.0.0
+[narxitu2] [2025-08-15 16:45:33] │ npm warn Found: @neondatabase/serverless@0.10.4
+[narxitu2] [2025-08-15 16:45:33] │ npm warn node_modules/@neondatabase/serverless
+[narxitu2] [2025-08-15 16:45:33] │ npm warn   @neondatabase/serverless@"^0.15.4" from the root project
+[narxitu2] [2025-08-15 16:45:33] │ npm warn   1 more (drizzle-orm)
+[narxitu2] [2025-08-15 16:45:33] │ npm warn
+[narxitu2] [2025-08-15 16:45:33] │ npm warn Could not resolve dependency:
+[narxitu2] [2025-08-15 16:45:33] │ npm warn peerOptional @neondatabase/serverless@">=0.10.0" from drizzle-orm@0.39.1
+[narxitu2] [2025-08-15 16:45:33] │ npm warn node_modules/drizzle-orm
+[narxitu2] [2025-08-15 16:45:33] │ npm warn   drizzle-orm@"^0.39.1" from the root project
+[narxitu2] [2025-08-15 16:45:33] │ npm warn   1 more (drizzle-zod)
+[narxitu2] [2025-08-15 16:45:33] │ npm warn ERESOLVE overriding peer dependency
+[narxitu2] [2025-08-15 16:45:33] │ npm warn While resolving: autobid-tj@1.0.0
+[narxitu2] [2025-08-15 16:45:33] │ npm warn Found: @neondatabase/serverless@0.10.4
+[narxitu2] [2025-08-15 16:45:33] │ npm warn node_modules/@neondatabase/serverless
+[narxitu2] [2025-08-15 16:45:33] │ npm warn   @neondatabase/serverless@"^0.15.4" from the root project
+[narxitu2] [2025-08-15 16:45:33] │ npm warn   1 more (drizzle-orm)
+[narxitu2] [2025-08-15 16:45:33] │ npm warn
+[narxitu2] [2025-08-15 16:45:33] │ npm warn Could not resolve dependency:
+[narxitu2] [2025-08-15 16:45:33] │ npm warn peerOptional @neondatabase/serverless@">=0.10.0" from drizzle-orm@0.39.1
+[narxitu2] [2025-08-15 16:45:33] │ npm warn node_modules/drizzle-orm
+[narxitu2] [2025-08-15 16:45:33] │ npm warn   drizzle-orm@"^0.39.1" from the root project
+[narxitu2] [2025-08-15 16:45:33] │ npm warn   1 more (drizzle-zod)
+[narxitu2] [2025-08-15 16:45:33] │ npm warn ERESOLVE overriding peer dependency
+[narxitu2] [2025-08-15 16:45:33] │ npm warn While resolving: autobid-tj@1.0.0
+[narxitu2] [2025-08-15 16:45:33] │ npm warn Found: @uppy/drag-drop@4.2.2
+[narxitu2] [2025-08-15 16:45:33] │ npm warn node_modules/@uppy/drag-drop
+[narxitu2] [2025-08-15 16:45:33] │ npm warn   @uppy/drag-drop@"^4.3.2" from the root project
+[narxitu2] [2025-08-15 16:45:33] │ npm warn   1 more (@uppy/react)
+[narxitu2] [2025-08-15 16:45:33] │ npm warn
+[narxitu2] [2025-08-15 16:45:33] │ npm warn Could not resolve dependency:
+[narxitu2] [2025-08-15 16:45:33] │ npm warn peerOptional @uppy/drag-drop@"^4.2.2" from @uppy/react@4.5.2
+[narxitu2] [2025-08-15 16:45:33] │ npm warn node_modules/@uppy/react
+[narxitu2] [2025-08-15 16:45:33] │ npm warn   @uppy/react@"^4.5.2" from the root project
+[narxitu2] [2025-08-15 16:45:33] │ npm warn ERESOLVE overriding peer dependency
+[narxitu2] [2025-08-15 16:45:33] │ npm warn While resolving: autobid-tj@1.0.0
+[narxitu2] [2025-08-15 16:45:33] │ npm warn Found: @uppy/file-input@4.2.2
+[narxitu2] [2025-08-15 16:45:33] │ npm warn node_modules/@uppy/file-input
+[narxitu2] [2025-08-15 16:45:33] │ npm warn   @uppy/file-input@"^4.3.2" from the root project
+[narxitu2] [2025-08-15 16:45:33] │ npm warn   1 more (@uppy/react)
+[narxitu2] [2025-08-15 16:45:33] │ npm warn
+[narxitu2] [2025-08-15 16:45:33] │ npm warn Could not resolve dependency:
+[narxitu2] [2025-08-15 16:45:33] │ npm warn peerOptional @uppy/file-input@"^4.2.2" from @uppy/react@4.5.2
+[narxitu2] [2025-08-15 16:45:33] │ npm warn node_modules/@uppy/react
+[narxitu2] [2025-08-15 16:45:33] │ npm warn   @uppy/react@"^4.5.2" from the root project
+[narxitu2] [2025-08-15 16:45:33] │ npm error code ETARGET
+[narxitu2] [2025-08-15 16:45:33] │ npm error notarget No matching version found for @neondatabase/serverless@^0.15.4.
+[narxitu2] [2025-08-15 16:45:33] │ npm error notarget In most cases you or one of your dependencies are requesting
+[narxitu2] [2025-08-15 16:45:33] │ npm error notarget a package version that doesn't exist.
+[narxitu2] [2025-08-15 16:45:33] │ npm notice
+[narxitu2] [2025-08-15 16:45:33] │ npm notice New major version of npm available! 10.9.2 -> 11.5.2
+[narxitu2] [2025-08-15 16:45:33] │ npm notice Changelog: https://github.com/npm/cli/releases/tag/v11.5.2
+[narxitu2] [2025-08-15 16:45:33] │ npm notice To update run: npm install -g npm@11.5.2
+[narxitu2] [2025-08-15 16:45:33] │ npm notice
+[narxitu2] [2025-08-15 16:45:33] │ npm error A complete log of this run can be found in: /home/apps/.npm/_logs/2025-08-15T16_45_27_974Z-debug-0.log
+[narxitu2] [2025-08-15 16:45:33] │ building: exit status 1
+[narxitu2] [2025-08-15 16:45:33] │ Timer: Builder ran for 38.140045771s and ended at 2025-08-15T16:45:33Z
+[narxitu2] [2025-08-15 16:45:33] │ ERROR: failed to build: exit status 1
+[narxitu2] [2025-08-15 16:45:33] │ 
+[narxitu2] [2025-08-15 16:45:33] │ 
+[narxitu2] [2025-08-15 16:45:33] │  ✘ build failed
