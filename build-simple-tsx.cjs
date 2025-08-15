@@ -4,7 +4,13 @@ const { execSync } = require('child_process');
 
 console.log('🚀 DigitalOcean: TypeScript Build (tsx runtime)');
 
-// 1. Собираем frontend через Vite
+// 1. Сначала копируем правильный package.json
+if (fs.existsSync('package.digitalocean.json')) {
+  fs.copyFileSync('package.digitalocean.json', 'package.json');
+  console.log('✅ Скопирован package.digitalocean.json (с Vite в dependencies)');
+}
+
+// 2. Собираем frontend через Vite
 console.log('📦 Собираем frontend...');
 execSync('npx vite build', { stdio: 'inherit' });
 
@@ -25,14 +31,9 @@ if (!fs.existsSync('dist/server')) {
 fs.copyFileSync('server/production.ts', 'dist/server/production.ts');
 fs.copyFileSync('server/routes.ts', 'dist/server/routes.ts');
 
-// 5. Копируем специальный package.json для DigitalOcean (с Vite в dependencies)
-if (fs.existsSync('package.digitalocean.json')) {
-  fs.copyFileSync('package.digitalocean.json', 'dist/package.json');
-  console.log('✅ Используем package.digitalocean.json (Vite в dependencies)');
-} else {
-  fs.copyFileSync('package.json', 'dist/package.json');
-  console.log('⚠️ Используем стандартный package.json');
-}
+// 5. Копируем package.json в dist (уже содержит правильные зависимости)
+fs.copyFileSync('package.json', 'dist/package.json');
+console.log('✅ Package.json скопирован в dist/');
 
 console.log('✅ TypeScript сборка завершена!');
 console.log('📁 Структура dist:');
