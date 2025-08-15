@@ -25,8 +25,14 @@ if (!fs.existsSync('dist/server')) {
 fs.copyFileSync('server/production.ts', 'dist/server/production.ts');
 fs.copyFileSync('server/routes.ts', 'dist/server/routes.ts');
 
-// 5. Копируем package.json для зависимостей
-fs.copyFileSync('package.json', 'dist/package.json');
+// 5. Копируем специальный package.json для DigitalOcean (с Vite в dependencies)
+if (fs.existsSync('package.digitalocean.json')) {
+  fs.copyFileSync('package.digitalocean.json', 'dist/package.json');
+  console.log('✅ Используем package.digitalocean.json (Vite в dependencies)');
+} else {
+  fs.copyFileSync('package.json', 'dist/package.json');
+  console.log('⚠️ Используем стандартный package.json');
+}
 
 console.log('✅ TypeScript сборка завершена!');
 console.log('📁 Структура dist:');

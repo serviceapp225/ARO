@@ -9,6 +9,11 @@
 
 ### 🏗️ Конфигурация сборки (.do/app.yaml)
 
+**Рабочая директория:**
+```yaml
+working_dir: /workspace
+```
+
 **Build Command:**
 ```bash
 npm ci && node build-simple-tsx.cjs
@@ -18,6 +23,11 @@ npm ci && node build-simple-tsx.cjs
 ```bash
 node start.cjs
 ```
+
+**Ключевые исправления:**
+- ✅ `working_dir: /workspace` - правильная рабочая директория
+- ✅ `dist/server/` - структура файлов для DigitalOcean
+- ✅ Vite перенесен в dependencies через package.digitalocean.json
 
 ### 🔧 Решение проблем деплоя
 
