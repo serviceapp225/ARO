@@ -9,15 +9,23 @@ console.log('=== DigitalOcean Production Starter ===');
 console.log('Working directory:', process.cwd());
 console.log('Contents:', fs.readdirSync('.').join(', '));
 
-// Возможные пути к production файлам (приоритет TypeScript для полной совместимости)
+// Определяем базовую директорию (DigitalOcean использует /workspace)
+const baseDir = process.cwd().includes('/workspace') ? '/workspace' : '.';
+console.log('Base directory:', baseDir);
+
+// Возможные пути к production файлам (приоритет TypeScript)
 const possiblePaths = [
+  { path: `${baseDir}/server/production.ts`, command: 'npx tsx' },
   { path: './server/production.ts', command: 'npx tsx' },
   { path: '/workspace/server/production.ts', command: 'npx tsx' },
+  { path: `${baseDir}/dist/production.js`, command: 'node' },
   { path: './dist/production.js', command: 'node' },
   { path: '/workspace/dist/production.js', command: 'node' },
+  { path: `${baseDir}/server/production.js`, command: 'node' },
   { path: './server/production.js', command: 'node' },
-  { path: './production.js', command: 'node' },
   { path: '/workspace/server/production.js', command: 'node' },
+  { path: `${baseDir}/production.js`, command: 'node' },
+  { path: './production.js', command: 'node' },
   { path: '/workspace/production.js', command: 'node' }
 ];
 

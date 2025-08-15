@@ -41,12 +41,31 @@ if (!fs.existsSync('dist')) {
 // Сохраняем как JS файл
 fs.writeFileSync('dist/production.js', jsContent);
 
-// 3. Копируем необходимые файлы
-console.log('📂 Копируем вспомогательные файлы...');
+// 3. Конвертируем routes.ts в routes.js
+console.log('📂 Конвертируем routes.ts в routes.js...');
 
-// Копируем routes если есть (компилированная версия не нужна, tsx справится)
 if (fs.existsSync('server/routes.ts')) {
-  fs.copyFileSync('server/routes.ts', 'dist/routes.ts');
+  const routesContent = fs.readFileSync('server/routes.ts', 'utf8');
+  const routesJs = routesContent
+    // Убираем import type декларации полностью
+    .replace(/import type .+?;/g, '')
+    .replace(/import\s*{[^}]*type\s+[^}]*}/g, (match) => {
+      return match.replace(/,?\s*type\s+\w+/g, '').replace(/{\s*,/, '{').replace(/,\s*}/, '}');
+    })
+    // Убираем все типы из импортов
+    .replace(/,\s*type\s+\w+/g, '')
+    .replace(/type\s+\w+\s*,/g, '')
+    // Убираем все аннотации типов
+    .replace(/: \s*[A-Z][a-zA-Z]*(\[\])?/g, '')
+    .replace(/: \s*[a-z][a-zA-Z]*(\[\])?/g, '')  
+    .replace(/: \s*\w+\.\w+/g, '')
+    .replace(/ as \w+/g, '')
+    .replace(/\(\s*\w+:\s*[^,)]+,\s*\w+:\s*[^,)]+,\s*\w+:\s*[^)]+\)/g, (match) => {
+      const params = match.slice(1, -1).split(',').map(p => p.split(':')[0].trim());
+      return `(${params.join(', ')})`;
+    });
+
+  fs.writeFileSync('dist/routes.js', routesJs);
 }
 
 console.log('✅ Сборка завершена!');

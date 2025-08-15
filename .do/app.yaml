@@ -6,7 +6,7 @@ services:
     repo: your-repo/autobid-tj
     branch: main
     deploy_on_push: true
-  build_command: npm ci && npx vite build --config vite.digitalocean.mjs
+  build_command: npm ci && node build-simple-tsx.cjs
   run_command: node start.cjs
   environment_slug: node-js
   instance_count: 1
