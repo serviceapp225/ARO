@@ -6,7 +6,7 @@ console.log('🚀 DigitalOcean: TypeScript Build (tsx runtime)');
 
 // 1. Собираем frontend через Vite
 console.log('📦 Собираем frontend...');
-execSync('npx vite build --config vite.digitalocean.mjs', { stdio: 'inherit' });
+execSync('npx vite build', { stdio: 'inherit' });
 
 // 2. Создаем dist директорию если нет
 if (!fs.existsSync('dist')) {
