@@ -6,7 +6,7 @@
 
 **Build Command:**
 ```bash
-npm ci && npx vite build --config vite.digitalocean.mjs && npx esbuild server/production.ts --platform=node --packages=external --bundle --format=esm --outfile=dist/production.js
+npm ci && npx vite build --config vite.digitalocean.mjs
 ```
 
 **Run Command:**
@@ -22,17 +22,19 @@ node start.cjs
 - Только базовые плагины: React + alias настройки
 
 **2. Универсальный стартер** (`start.cjs`):
-- Автоматически находит production.js в любой локации:
+- Автоматически находит production файлы (.ts или .js):
+  - `./server/production.ts` (TypeScript исходник)
+  - `./server/production.js` (JavaScript версия)
   - `./production.js` (корень)
-  - `./dist/production.js` (dist папка)  
-  - `/workspace/production.js` (абсолютный путь)
-  - `/workspace/dist/production.js` (полный путь)
-- Решает проблемы с разными рабочими директориями при build/runtime
+  - `./dist/production.js` (скомпилированный)  
+- Использует `npx tsx` для TypeScript файлов, `node` для JavaScript
+- Решает проблемы с модульной системой и зависимостями
 
 **3. Правильная структура файлов**:
-- `dist/production.js` - основной сервер (315KB)
+- `server/production.ts` - TypeScript сервер (запускается через tsx)
 - `public/` - статические файлы (730KB JS, 117KB CSS)  
-- Production сервер обслуживает файлы из `../public/` относительно `dist/`
+- `node_modules/` - все зависимости доступны напрямую
+- Production сервер обслуживает файлы из правильных путей
 
 ### 📋 Environment Variables (13 переменных)
 

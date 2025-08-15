@@ -9,32 +9,36 @@ console.log('=== DigitalOcean Production Starter ===');
 console.log('Working directory:', process.cwd());
 console.log('Contents:', fs.readdirSync('.').join(', '));
 
-// Возможные пути к production.js
+// Возможные пути к production файлам (js и ts)
 const possiblePaths = [
-  './production.js',
-  './dist/production.js',
-  '/workspace/production.js',
-  '/workspace/dist/production.js'
+  { path: './server/production.ts', command: 'npx tsx' },
+  { path: './server/production.js', command: 'node' },
+  { path: './production.js', command: 'node' },
+  { path: './dist/production.js', command: 'node' },
+  { path: '/workspace/server/production.ts', command: 'npx tsx' },
+  { path: '/workspace/server/production.js', command: 'node' },
+  { path: '/workspace/production.js', command: 'node' },
+  { path: '/workspace/dist/production.js', command: 'node' }
 ];
 
-let foundPath = null;
+let foundConfig = null;
 
-for (const testPath of possiblePaths) {
+for (const config of possiblePaths) {
   try {
-    if (fs.existsSync(testPath)) {
-      console.log(`✅ Found production.js at: ${testPath}`);
-      foundPath = testPath;
+    if (fs.existsSync(config.path)) {
+      console.log(`✅ Found production file at: ${config.path}`);
+      foundConfig = config;
       break;
     } else {
-      console.log(`❌ Not found: ${testPath}`);
+      console.log(`❌ Not found: ${config.path}`);
     }
   } catch (err) {
-    console.log(`❌ Error checking ${testPath}:`, err.message);
+    console.log(`❌ Error checking ${config.path}:`, err.message);
   }
 }
 
-if (!foundPath) {
-  console.error('❌ ERROR: production.js not found in any expected location');
+if (!foundConfig) {
+  console.error('❌ ERROR: production file not found in any expected location');
   console.error('Available files in current directory:');
   try {
     const files = fs.readdirSync('.');
@@ -48,10 +52,14 @@ if (!foundPath) {
   process.exit(1);
 }
 
-console.log(`🚀 Starting server: node ${foundPath}`);
+console.log(`🚀 Starting server: ${foundConfig.command} ${foundConfig.path}`);
 
-// Запускаем production.js
-const child = spawn('node', [foundPath], {
+// Запускаем production файл с правильной командой
+const args = foundConfig.command === 'npx tsx' 
+  ? ['tsx', foundConfig.path] 
+  : [foundConfig.path];
+
+const child = spawn(foundConfig.command === 'npx tsx' ? 'npx' : 'node', args, {
   stdio: 'inherit',
   env: process.env
 });
