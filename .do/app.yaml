@@ -6,7 +6,8 @@ services:
     repo: your-repo/autobid-tj
     branch: main
     deploy_on_push: true
-  run_command: node dist/production.js
+  build_command: ./build-digitalocean.sh
+  run_command: npm start
   environment_slug: node-js
   instance_count: 1
   instance_size_slug: basic-xxs
