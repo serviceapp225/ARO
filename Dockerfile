@@ -16,7 +16,7 @@ RUN npm ci
 COPY . .
 
 # Собираем приложение
-RUN npm run build:production
+RUN npx vite build && npx esbuild server/production.ts --platform=node --packages=external --bundle --format=esm --outfile=dist/production.js
 
 # Продакшн образ
 FROM node:18-alpine as production
@@ -41,11 +41,11 @@ COPY --from=builder --chown=autobid:nodejs /app/public ./public
 USER autobid
 
 # Открываем порт
-EXPOSE 5000
+EXPOSE 8080
 
 # Проверка здоровья контейнера
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD node -e "require('http').get('http://localhost:5000/health', (r) => { process.exit(r.statusCode === 200 ? 0 : 1) })"
+  CMD node -e "require('http').get('http://localhost:8080/health', (r) => { process.exit(r.statusCode === 200 ? 0 : 1) })"
 
 # Запускаем приложение
 CMD ["node", "dist/production.js"]
