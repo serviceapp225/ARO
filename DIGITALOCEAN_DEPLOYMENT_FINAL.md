@@ -1,18 +1,25 @@
 # 🚀 DigitalOcean App Platform - Финальная конфигурация деплоя
 
-## ✅ Готовность к деплою: ПОЛНАЯ
+## ✅ Готовность к деплою: ПОЛНАЯ - ПРОТЕСТИРОВАНО
 
 ### 🏗️ Конфигурация сборки (.do/app.yaml)
 
 **Build Command:**
 ```bash
-npx vite build && npx esbuild server/production.ts --platform=node --packages=external --bundle --format=esm --outfile=dist/production.js
+npm ci && npx vite build --config vite.digitalocean.mjs && npx esbuild server/production.ts --platform=node --packages=external --bundle --format=esm --outfile=dist/production.js
 ```
 
 **Run Command:**
 ```bash
 node dist/production.js
 ```
+
+### 🔧 Решение проблемы с Vite
+
+Создан упрощенный конфиг `vite.digitalocean.mjs` без Replit-специфичных плагинов:
+- Убраны @replit/vite-plugin-runtime-error-modal
+- Убраны @replit/vite-plugin-cartographer  
+- Только базовые плагины: React + alias настройки
 
 ### 📋 Environment Variables (13 переменных)
 

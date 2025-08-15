@@ -1,0 +1,36 @@
+  Run `npm audit` for details.
+[2025-08-15 11:20:37] │        npm notice
+[2025-08-15 11:20:37] │        npm notice New major version of npm available! 10.9.2 -> 11.5.2
+[2025-08-15 11:20:37] │        npm notice Changelog: https://github.com/npm/cli/releases/tag/v11.5.2
+[2025-08-15 11:20:37] │        npm notice To update run: npm install -g npm@11.5.2
+[2025-08-15 11:20:37] │        npm notice
+[2025-08-15 11:20:37] │        
+[2025-08-15 11:20:37] │ -----> Build succeeded!
+[2025-08-15 11:20:38] │ Procfile: configuring type "web" process: "node dist/production.js"
+[2025-08-15 11:20:38] │ Procfile: will set process 'web' as the default process
+[2025-08-15 11:20:38] │ Running custom build command: npx vite build && npx esbuild server/production.ts --platform=node --packages=external --bundle --format=esm --outfile=dist/production.js
+[2025-08-15 11:20:39] │ npm warn exec The following package was not found and will be installed: vite@7.1.2
+[2025-08-15 11:20:42] │ failed to load config from /workspace/vite.config.ts
+[2025-08-15 11:20:42] │ error during build:
+[2025-08-15 11:20:42] │ Error [ERR_MODULE_NOT_FOUND]: Cannot find package 'vite' imported from /workspace/node_modules/.vite-temp/vite.config.ts.timestamp-1755256842226-452853a953251.mjs
+[2025-08-15 11:20:42] │     at Object.getPackageJSONURL (node:internal/modules/package_json_reader:256:9)
+[2025-08-15 11:20:42] │     at packageResolve (node:internal/modules/esm/resolve:768:81)
+[2025-08-15 11:20:42] │     at moduleResolve (node:internal/modules/esm/resolve:854:18)
+[2025-08-15 11:20:42] │     at defaultResolve (node:internal/modules/esm/resolve:984:11)
+[2025-08-15 11:20:42] │     at ModuleLoader.defaultResolve (node:internal/modules/esm/loader:780:12)
+[2025-08-15 11:20:42] │     at #cachedDefaultResolve (node:internal/modules/esm/loader:704:25)
+[2025-08-15 11:20:42] │     at ModuleLoader.resolve (node:internal/modules/esm/loader:687:38)
+[2025-08-15 11:20:42] │     at ModuleLoader.getModuleJobForImport (node:internal/modules/esm/loader:305:38)
+[2025-08-15 11:20:42] │     at ModuleJob._link (node:internal/modules/esm/module_job:137:49)
+[2025-08-15 11:20:42] │ npm notice
+[2025-08-15 11:20:42] │ npm notice New major version of npm available! 10.9.2 -> 11.5.2
+[2025-08-15 11:20:42] │ npm notice Changelog: https://github.com/npm/cli/releases/tag/v11.5.2
+[2025-08-15 11:20:42] │ npm notice To update run: npm install -g npm@11.5.2
+[2025-08-15 11:20:42] │ npm notice
+[2025-08-15 11:20:42] │ building: exit status 1
+[2025-08-15 11:20:42] │ Timer: Builder ran for 38.541417268s and ended at 2025-08-15T11:20:42Z
+[2025-08-15 11:20:42] │ ERROR: failed to build: exit status 1
+[2025-08-15 11:20:42] │ 
+[2025-08-15 11:20:42] │ 
+[2025-08-15 11:20:42] │  ✘ build failed
+[]
