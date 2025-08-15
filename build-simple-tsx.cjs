@@ -18,7 +18,14 @@ console.log('📋 Копируем TypeScript файлы...');
 fs.copyFileSync('server/production.ts', 'dist/production.ts');
 fs.copyFileSync('server/routes.ts', 'dist/routes.ts');
 
-// 4. Копируем package.json для зависимостей
+// 4. Создаем структуру server/ для DigitalOcean
+if (!fs.existsSync('dist/server')) {
+  fs.mkdirSync('dist/server', { recursive: true });
+}
+fs.copyFileSync('server/production.ts', 'dist/server/production.ts');
+fs.copyFileSync('server/routes.ts', 'dist/server/routes.ts');
+
+// 5. Копируем package.json для зависимостей
 fs.copyFileSync('package.json', 'dist/package.json');
 
 console.log('✅ TypeScript сборка завершена!');

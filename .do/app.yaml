@@ -2,6 +2,7 @@ name: autobid-tj
 services:
 - name: web
   source_dir: /
+  working_dir: /workspace
   github:
     repo: your-repo/autobid-tj
     branch: main
