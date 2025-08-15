@@ -54,8 +54,8 @@ app.get('/health', (req, res) => {
 // API routes
 registerRoutes(app);
 
-// Serve static files from dist/public
-app.use(express.static(path.join(__dirname, '../dist/public')));
+// Serve static files from public directory (same level as production.js)
+app.use(express.static(path.join(__dirname, '../public')));
 
 // SPA fallback - serve index.html for all non-API routes
 app.get('*', (req, res) => {
@@ -64,7 +64,7 @@ app.get('*', (req, res) => {
     return res.status(404).json({ error: 'API endpoint not found' });
   }
   
-  res.sendFile(path.join(__dirname, '../dist/public/index.html'));
+  res.sendFile(path.join(__dirname, '../public/index.html'));
 });
 
 // Error handling middleware

@@ -6,20 +6,25 @@
 
 **Build Command:**
 ```bash
-npm ci && npx vite build --config vite.digitalocean.mjs && npx esbuild server/production.ts --platform=node --packages=external --bundle --format=esm --outfile=dist/production.js
+npm ci && npx vite build --config vite.digitalocean.mjs && npx esbuild server/production.ts --platform=node --packages=external --bundle --format=esm --outfile=production.js
 ```
 
 **Run Command:**
 ```bash
-node dist/production.js
+node production.js
 ```
 
-### 🔧 Решение проблемы с Vite
+### 🔧 Решение проблем деплоя
 
-Создан упрощенный конфиг `vite.digitalocean.mjs` без Replit-специфичных плагинов:
+**1. Упрощенная Vite конфигурация** (`vite.digitalocean.mjs`):
 - Убраны @replit/vite-plugin-runtime-error-modal
 - Убраны @replit/vite-plugin-cartographer  
 - Только базовые плагины: React + alias настройки
+
+**2. Исправлена структура файлов**:
+- `production.js` создается в корне проекта (не в dist/)
+- `public/` директория с статическими файлами рядом с production.js
+- Production сервер настроен на обслуживание файлов из `public/`
 
 ### 📋 Environment Variables (13 переменных)
 
