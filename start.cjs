@@ -9,16 +9,16 @@ console.log('=== DigitalOcean Production Starter ===');
 console.log('Working directory:', process.cwd());
 console.log('Contents:', fs.readdirSync('.').join(', '));
 
-// Возможные пути к production файлам (js и ts)
+// Возможные пути к production файлам (приоритет TypeScript для полной совместимости)
 const possiblePaths = [
   { path: './server/production.ts', command: 'npx tsx' },
+  { path: '/workspace/server/production.ts', command: 'npx tsx' },
+  { path: './dist/production.js', command: 'node' },
+  { path: '/workspace/dist/production.js', command: 'node' },
   { path: './server/production.js', command: 'node' },
   { path: './production.js', command: 'node' },
-  { path: './dist/production.js', command: 'node' },
-  { path: '/workspace/server/production.ts', command: 'npx tsx' },
   { path: '/workspace/server/production.js', command: 'node' },
-  { path: '/workspace/production.js', command: 'node' },
-  { path: '/workspace/dist/production.js', command: 'node' }
+  { path: '/workspace/production.js', command: 'node' }
 ];
 
 let foundConfig = null;
