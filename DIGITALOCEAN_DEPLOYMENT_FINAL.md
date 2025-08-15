@@ -16,7 +16,7 @@ working_dir: /workspace
 
 **Build Command:**
 ```bash
-cp package.digitalocean.json package.json && rm -f package-lock.json && npm install && node build-simple-tsx.cjs
+cp package.digitalocean.json package.json && npm ci && node build-simple-tsx.cjs
 ```
 
 **Run Command:**

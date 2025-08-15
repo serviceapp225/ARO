@@ -7,7 +7,7 @@ services:
     repo: your-repo/autobid-tj
     branch: main
     deploy_on_push: true
-  build_command: cp package.digitalocean.json package.json && rm -f package-lock.json && npm install && node build-simple-tsx.cjs
+  build_command: cp package.digitalocean.json package.json && npm ci && node build-simple-tsx.cjs
   run_command: node start.cjs
   environment_slug: node-js
   instance_count: 1
