@@ -213,11 +213,11 @@ app.use((req, res, next) => {
     throw err;
   });
 
-  // VPS DEPLOYMENT: Use PORT from environment variable
-  // For VPS deployment, PORT environment variable must be set explicitly
-  // Fallback to 5000 for development mode only
+  // DEPLOYMENT: Use PORT from environment or fallback to 80 for Replit deployment
+  // Replit deployment expects port 80 to be the primary port
+  // Development mode uses 5000 as configured in workflow
   
-  const port = process.env.PORT || 5000;
+  const port = process.env.PORT || (process.env.NODE_ENV === 'production' ? 80 : 5000);
   server.listen({
     port: Number(port),
     host: "0.0.0.0",

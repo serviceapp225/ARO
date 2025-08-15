@@ -1,5 +1,6 @@
 import { Plus } from "lucide-react";
 import { useLocation } from "wouter";
+import placeholderCarImage from "@assets/rodan-can-6cqJPeTIuls-unsplash_1754479984557.jpg";
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
@@ -156,11 +157,14 @@ export function SellCarBanner() {
       onClick={handleClick}
       className="relative h-44 rounded-2xl p-6 text-white overflow-hidden shadow-2xl cursor-pointer hover:shadow-3xl transition-all duration-300"
     >
-      {/* Градиентный фон - показывается до загрузки реальных изображений */}
+      {/* SVG fallback - показывается до загрузки реальных изображений */}
       <div 
-        className={`absolute inset-0 rounded-2xl bg-gradient-to-br from-blue-600 via-purple-600 to-blue-800 transition-opacity duration-1000 ease-in-out ${
+        className={`absolute inset-0 rounded-2xl bg-gradient-to-br from-slate-800 to-slate-900 bg-cover bg-center bg-no-repeat transition-opacity duration-1000 ease-in-out ${
           hasAnyLoadedImage ? 'opacity-0' : 'opacity-100'
         }`}
+        style={{
+          backgroundImage: `linear-gradient(135deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.4) 100%), url('${placeholderCarImage}')`
+        }}
       />
       
       {/* Реальные изображения с плавным появлением */}

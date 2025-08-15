@@ -975,25 +975,9 @@ function ListingsManagement() {
   const queryClient = useQueryClient();
   const [selectedListingId, setSelectedListingId] = useState<number | null>(null);
   const [searchLotNumber, setSearchLotNumber] = useState('');
-  const [showCreateForm, setShowCreateForm] = useState(false);
-  const [selectedUserId, setSelectedUserId] = useState<string>('');
-  const [newListingData, setNewListingData] = useState({
-    make: '',
-    model: '',
-    year: '',
-    mileage: '',
-    description: '',
-    startingBid: '',
-    reservePrice: '',
-    auctionDuration: '7'
-  });
 
   const { data: allListings = [], isLoading } = useQuery<CarListing[]>({
     queryKey: ['/api/admin/listings'],
-  });
-
-  const { data: allUsers = [] } = useQuery<User[]>({
-    queryKey: ['/api/admin/users'],
   });
 
   // Фильтрация объявлений по номеру лота
@@ -1055,61 +1039,6 @@ function ListingsManagement() {
     }
   });
 
-  const createListingMutation = useMutation({
-    mutationFn: async (listingData: any) => {
-      const response = await fetch('/api/admin/create-listing', {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'x-user-id': user?.userId?.toString() || '',
-          'x-user-email': user?.email || ''
-        },
-        body: JSON.stringify({
-          ...listingData,
-          sellerId: parseInt(selectedUserId),
-          year: parseInt(listingData.year),
-          mileage: parseInt(listingData.mileage),
-          startingBid: parseFloat(listingData.startingBid),
-          reservePrice: parseFloat(listingData.reservePrice),
-          auctionDuration: parseInt(listingData.auctionDuration)
-        })
-      });
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to create listing');
-      }
-      return response.json();
-    },
-    onSuccess: () => {
-      toast({
-        title: "Объявление создано",
-        description: "Новое объявление успешно добавлено и SMS уведомление отправлено",
-        duration: 3000
-      });
-      setShowCreateForm(false);
-      setSelectedUserId('');
-      setNewListingData({
-        make: '',
-        model: '',
-        year: '',
-        mileage: '',
-        description: '',
-        startingBid: '',
-        reservePrice: '',
-        auctionDuration: '7'
-      });
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/listings'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/listings'] });
-    },
-    onError: (error) => {
-      toast({
-        title: "Ошибка создания",
-        description: error.message,
-        variant: "destructive"
-      });
-    }
-  });
-
   const endAuctionMutation = useMutation({
     mutationFn: async (listingId: number) => {
       const response = await fetch(`/api/admin/listings/${listingId}/end-auction`, {
@@ -1153,169 +1082,24 @@ function ListingsManagement() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {/* Кнопка создания нового объявления */}
-          <div className="mb-6 flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-            <Button 
-              onClick={() => setShowCreateForm(!showCreateForm)}
-              className="bg-green-600 hover:bg-green-700 text-white"
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              {showCreateForm ? 'Скрыть форму' : 'Создать объявление'}
-            </Button>
-            
-            {/* Поиск по номеру лота */}
-            <div className="flex-1 max-w-md">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                <Input
-                  type="text"
-                  placeholder="Поиск по номеру лота..."
-                  value={searchLotNumber}
-                  onChange={(e) => setSearchLotNumber(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-              {searchLotNumber && (
-                <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
-                  Найдено объявлений: {listings.length}
-                </p>
-              )}
+          {/* Поиск по номеру лота */}
+          <div className="mb-6">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Input
+                type="text"
+                placeholder="Поиск по номеру лота..."
+                value={searchLotNumber}
+                onChange={(e) => setSearchLotNumber(e.target.value)}
+                className="pl-10"
+              />
             </div>
+            {searchLotNumber && (
+              <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
+                Найдено объявлений: {listings.length}
+              </p>
+            )}
           </div>
-
-          {/* Форма создания нового объявления */}
-          {showCreateForm && (
-            <Card className="mb-6 border-green-200 bg-green-50 dark:bg-green-950 dark:border-green-800">
-              <CardHeader>
-                <CardTitle className="text-green-800 dark:text-green-200">Создать новое объявление</CardTitle>
-                <CardDescription>Выберите пользователя и заполните данные автомобиля</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {/* Выбор пользователя */}
-                <div>
-                  <Label htmlFor="user-select">Пользователь (владелец автомобиля)</Label>
-                  <Select value={selectedUserId} onValueChange={setSelectedUserId}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Выберите пользователя" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {allUsers.map((user) => (
-                        <SelectItem key={user.id} value={user.id.toString()}>
-                          {formatPhoneNumber(user.phoneNumber)} - {user.fullName}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {/* Данные автомобиля */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="make">Марка</Label>
-                    <Input
-                      id="make"
-                      value={newListingData.make}
-                      onChange={(e) => setNewListingData({...newListingData, make: e.target.value})}
-                      placeholder="Toyota, BMW, Audi..."
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="model">Модель</Label>
-                    <Input
-                      id="model"
-                      value={newListingData.model}
-                      onChange={(e) => setNewListingData({...newListingData, model: e.target.value})}
-                      placeholder="Camry, X5, A4..."
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="year">Год</Label>
-                    <Input
-                      id="year"
-                      type="number"
-                      value={newListingData.year}
-                      onChange={(e) => setNewListingData({...newListingData, year: e.target.value})}
-                      placeholder="2020"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="mileage">Пробег (км)</Label>
-                    <Input
-                      id="mileage"
-                      type="number"
-                      value={newListingData.mileage}
-                      onChange={(e) => setNewListingData({...newListingData, mileage: e.target.value})}
-                      placeholder="50000"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="startingBid">Стартовая ставка (Сомони)</Label>
-                    <Input
-                      id="startingBid"
-                      type="number"
-                      value={newListingData.startingBid}
-                      onChange={(e) => setNewListingData({...newListingData, startingBid: e.target.value})}
-                      placeholder="10000"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="reservePrice">Резервная цена (Сомони)</Label>
-                    <Input
-                      id="reservePrice"
-                      type="number"
-                      value={newListingData.reservePrice}
-                      onChange={(e) => setNewListingData({...newListingData, reservePrice: e.target.value})}
-                      placeholder="15000"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <Label htmlFor="description">Описание</Label>
-                  <Textarea
-                    id="description"
-                    value={newListingData.description}
-                    onChange={(e) => setNewListingData({...newListingData, description: e.target.value})}
-                    placeholder="Подробное описание автомобиля..."
-                    rows={3}
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="duration">Длительность аукциона (дни)</Label>
-                  <Select 
-                    value={newListingData.auctionDuration} 
-                    onValueChange={(value) => setNewListingData({...newListingData, auctionDuration: value})}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="3">3 дня</SelectItem>
-                      <SelectItem value="7">7 дней</SelectItem>
-                      <SelectItem value="14">14 дней</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="flex gap-4 pt-4">
-                  <Button 
-                    onClick={() => createListingMutation.mutate(newListingData)}
-                    disabled={!selectedUserId || !newListingData.make || !newListingData.model || createListingMutation.isPending}
-                    className="bg-green-600 hover:bg-green-700"
-                  >
-                    {createListingMutation.isPending ? 'Создание...' : 'Создать объявление'}
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    onClick={() => setShowCreateForm(false)}
-                  >
-                    Отмена
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          )}
 
           <div className="space-y-4">
             {listings.length === 0 ? (

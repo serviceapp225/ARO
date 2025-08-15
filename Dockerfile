@@ -1,59 +1,48 @@
-# Multi-stage build для оптимизации размера
-FROM node:20-alpine AS builder
+# Многоэтапная сборка для оптимизации размера
+FROM node:18-alpine as builder
 
-# Устанавливаем необходимые системные зависимости
-RUN apk add --no-cache python3 make g++
-
-# Устанавливаем рабочую директорию
 WORKDIR /app
 
-# Копируем package files
+# Копируем файлы зависимостей
 COPY package*.json ./
-COPY tsconfig.json ./
 
-# Устанавливаем ВСЕ зависимости (включая dev для сборки)
-RUN npm ci --include=dev
+# Устанавливаем все зависимости для сборки
+RUN npm ci
 
 # Копируем исходный код
 COPY . .
 
-# Создаем необходимые директории для сборки
-RUN mkdir -p dist uploads
+# Собираем приложение
+RUN npm run build
 
-# Собираем фронтенд и production server
-RUN npx vite build && npx esbuild server/production-minimal.ts --platform=node --packages=external --bundle --format=esm --outfile=dist/production.js
+# Продакшн образ
+FROM node:18-alpine as production
 
-# Production stage
-FROM node:20-alpine AS production
-
-# Устанавливаем рабочую директорию
 WORKDIR /app
 
 # Создаем пользователя для безопасности
 RUN addgroup -g 1001 -S nodejs
-RUN adduser -S nextjs -u 1001
+RUN adduser -S autobid -u 1001
 
-# Копируем package files
+# Копируем package.json для установки только продакшн зависимостей
 COPY package*.json ./
 
-# Устанавливаем только production зависимости (без Replit dev плагинов)
+# Устанавливаем только продакшн зависимости
 RUN npm ci --only=production && npm cache clean --force
 
-# Копируем собранное приложение из builder stage
-COPY --from=builder --chown=nextjs:nodejs /app/dist ./dist
+# Копируем собранное приложение из builder этапа
+COPY --from=builder --chown=autobid:nodejs /app/dist ./dist
+COPY --from=builder --chown=autobid:nodejs /app/public ./public
 
-# Создаем необходимые директории для runtime
-RUN mkdir -p uploads cache && chown -R nextjs:nodejs uploads cache
-
-# Переключаемся на пользователя nodejs
-USER nextjs
+# Устанавливаем права пользователя
+USER autobid
 
 # Открываем порт
-EXPOSE 8080
+EXPOSE 5000
 
-# Health check
+# Проверка здоровья контейнера
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD node -e "require('http').get('http://localhost:8080/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })"
+  CMD node -e "require('http').get('http://localhost:5000/api/health', (r) => { process.exit(r.statusCode === 200 ? 0 : 1) })"
 
-# Запускаем приложение в production режиме
-CMD ["node", "dist/production.js"]
+# Запускаем приложение
+CMD ["node", "dist/index.js"]

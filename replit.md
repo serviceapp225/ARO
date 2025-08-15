@@ -57,34 +57,13 @@ Preferred communication style: Simple, everyday language in Russian.
 - Confetti and sound effects for successful bids.
 
 ### Deployment Strategy
-- **Target Platform**: DigitalOcean App Platform (READY FOR DEPLOYMENT - August 2025)
-- **Migration Status**: 🎯 DEPLOYMENT READY - All critical build issues resolved
-- **Infrastructure Choice**: App Platform + Managed PostgreSQL + Spaces storage for scalability
-- **Cost**: ~$45-55/month (App Platform Professional XS + PostgreSQL + Spaces)
-- **Components Ready**: 
-  - ✅ Dockerfile (multi-stage, production-optimized with system dependencies)
-  - ✅ .do/app.yaml (corrected App Platform config, optimized health checks)
-  - ✅ Health check endpoint (/health)
-  - ✅ DigitalOcean Spaces integration (server/spacesService.ts)
-  - ✅ .dockerignore (optimized for App Platform deployment)
-- **Critical Fixes Applied (August 2025)**:
-  - ✅ Added system dependencies (python3, make, g++) to Dockerfile
-  - ✅ Fixed npm dependencies installation with --include=dev
-  - ✅ Removed Replit vite.ts dependencies from production.ts
-  - ✅ Created standalone log function in production.ts
-  - ✅ Fixed esbuild command: npx vite build && npx esbuild server/production.ts
-  - ✅ Optimized health check timing (30s initial delay vs 60s)
-  - ✅ Synchronized port configuration (8080)
-  - ✅ Fixed Docker COPY commands for missing directories (uploads, cache)
-  - ✅ Added proper directory creation in both builder and production stages
-- **Production Entry Point**: server/production.ts - fully independent of Replit dependencies
-- **Docker Configuration**: Multi-stage build with production-only runtime dependencies
-- **Deployment Status**: ДИАГНОСТИКА HEALTH CHECK - тестируем минимальный сервер (август 2025):
-  - ✅ "command exited with code 127" - исправлено
-  - ✅ "no such file or directory /uploads" - исправлено  
-  - ⚠️ "connection refused :8080" - тестируем минимальный сервер для изоляции проблемы
-  - 🔧 Создан production-minimal.ts для диагностики
-- **Next Steps**: Create Managed Database → Create Spaces bucket → Configure secrets → Deploy
+- Containerized deployment with Docker.
+- Optimized builds for production (Vite for frontend, esbuild for backend).
+- Environment variable handling for sensitive data.
+- Health check endpoints for monitoring.
+- Compatibility with Replit's Reserved VM deployment for persistent storage and WebSocket support.
+- **DigitalOcean Migration Ready**: Full infrastructure prepared with PostgreSQL ($15/month), Spaces CDN ($5/month), and VPS upgrade ($24/month) for $44 total monthly cost.
+- **Migration Scripts**: Automated deployment script `deploy-vps.sh`, infrastructure testing, and image migration tools created.
 
 ## External Dependencies
 

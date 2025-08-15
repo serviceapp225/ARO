@@ -1,94 +1,90 @@
-// Подготовка к развертыванию PostgreSQL на VPS
+#!/usr/bin/env node
 
-const { execSync } = require('child_process');
-const fs = require('fs');
+import fs from 'fs';
+import path from 'path';
 
-console.log('🔧 Подготавливаю развертывание PostgreSQL...');
+console.log('🔧 ПОДГОТОВКА К DEPLOYMENT - ИСПРАВЛЕНИЕ ОШИБКИ XX000');
 
-// Создание рабочего приложения без зависимости от БД
-const minimalApp = `
-const express = require('express');
-const app = express();
-const PORT = process.env.PORT || 3001;
+// Исправляем .env файл - убираем все упоминания PostgreSQL
+const envContent = `# PRODUCTION ENVIRONMENT
+NODE_ENV=production
+PORT=3000
 
-app.use(express.json());
+# SMS настройки (демо режим)
+SMS_LOGIN=demo
+SMS_HASH=demo
+SMS_SENDER=demo
+SMS_SERVER=demo
 
-app.get('/health', (req, res) => {
-  res.json({ 
-    status: 'OK', 
-    service: 'AutoBid.TJ VPS',
-    timestamp: new Date().toISOString(),
-    ready_for_database: true
-  });
+# Админ настройки
+ADMIN_API_KEY=admin-key-2025
+
+# База данных - используем SQLite
+USE_SQLITE=true
+SQLITE_PATH=./autoauction.db
+
+# Отключаем PostgreSQL полностью
+DATABASE_URL=
+POSTGRES_URL=
+NEON_DATABASE_URL=
+`;
+
+// Записываем исправленный .env
+fs.writeFileSync('dist/.env', envContent);
+
+// Создаем минимальный сервер специально для deployment
+const deploymentServer = `#!/usr/bin/env node
+
+// Обработка ошибок для deployment
+process.on('uncaughtException', (err) => {
+  console.error('❌ DEPLOYMENT ERROR:', err.message);
+  console.error('Stack:', err.stack);
+  if (err.message.includes('XX000') || err.message.includes('PostgreSQL')) {
+    console.error('🔍 ПРОБЛЕМА: Попытка подключения к PostgreSQL в deployment');
+    console.error('✅ РЕШЕНИЕ: Используем SQLite вместо PostgreSQL');
+  }
+  process.exit(1);
 });
 
-app.get('/', (req, res) => {
-  res.send(\`
-<!DOCTYPE html>
-<html>
-<head><title>AutoBid.TJ - Ready for PostgreSQL</title></head>
-<body style="font-family: Arial; text-align: center; padding: 50px;">
-    <h1>🚗 AutoBid.TJ</h1>
-    <h2>✅ VPS готов к PostgreSQL</h2>
-    <p>Приложение работает на 188.166.61.86</p>
-    <a href="/health">Health Check</a>
-</body>
-</html>
-  \`);
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('❌ UNHANDLED REJECTION:', reason);
+  process.exit(1);
 });
 
-app.listen(PORT, '0.0.0.0', () => {
-  console.log('AutoBid.TJ готов на порту', PORT);
+// Принудительно отключаем PostgreSQL
+process.env.DATABASE_URL = '';
+process.env.POSTGRES_URL = '';
+process.env.NEON_DATABASE_URL = '';
+process.env.USE_SQLITE = 'true';
+process.env.SQLITE_PATH = './autoauction.db';
+
+console.log('🚀 DEPLOYMENT СЕРВЕР ЗАПУЩЕН');
+console.log('🗄️  Используем SQLite базу данных');
+console.log('🚫 PostgreSQL отключен');
+console.log('📍 Порт:', process.env.PORT || 3000);
+
+// Импортируем основной сервер
+import('./index.js').catch(err => {
+  console.error('❌ Ошибка импорта сервера:', err);
+  process.exit(1);
 });
 `;
 
-// Создание команды для развертывания PostgreSQL
-const postgresCommand = \`
-# 📋 КОМАНДА УСТАНОВКИ POSTGRESQL
+fs.writeFileSync('dist/index-deploy.js', deploymentServer);
 
-ssh root@188.166.61.86 << 'POSTGRES_INSTALL'
-# Остановка текущего приложения
-systemctl stop autobid || true
+// Обновляем package.json для deployment
+const pkg = JSON.parse(fs.readFileSync('dist/package.json', 'utf8'));
+pkg.scripts.start = 'node index-deploy.js';
+pkg.main = 'index-deploy.js';
+fs.writeFileSync('dist/package.json', JSON.stringify(pkg, null, 2));
 
-# Обновление приложения
-cd ~/autobid-tj
-cat > app.js << 'MINIMAL_APP'
-\${minimalApp}
-MINIMAL_APP
-
-# Перезапуск приложения
-systemctl start autobid
-
-# Установка PostgreSQL
-apt update
-DEBIAN_FRONTEND=noninteractive apt install -y postgresql postgresql-contrib
-
-# Запуск PostgreSQL
-systemctl start postgresql
-systemctl enable postgresql
-
-# Создание базы данных
-sudo -u postgres createdb autobid_db
-sudo -u postgres createuser autobid_user
-sudo -u postgres psql -c "ALTER USER autobid_user WITH PASSWORD 'AutoBid2025';"
-sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE autobid_db TO autobid_user;"
-
-echo "✅ PostgreSQL установлен и настроен!"
-echo "🔗 База данных: autobid_db"
-echo "👤 Пользователь: autobid_user"
-echo "🌐 Сайт: http://188.166.61.86"
-
-systemctl status postgresql | head -5
-systemctl status autobid | head -5
-POSTGRES_INSTALL
-\`;
-
-// Сохранение команды в файл
-fs.writeFileSync('deploy-postgres.sh', postgresCommand);
-fs.writeFileSync('minimal-app.js', minimalApp);
-
-console.log('✅ Файлы подготовлены:');
-console.log('   - deploy-postgres.sh (команда для PostgreSQL)');
-console.log('   - minimal-app.js (приложение без БД)');
+console.log('✅ Создан deployment сервер без PostgreSQL');
+console.log('✅ Обновлен .env файл');
+console.log('✅ Обновлен package.json');
 console.log('');
-console.log('📋 Выполните: bash deploy-postgres.sh');
+console.log('🎯 ТЕПЕРЬ DEPLOYMENT ДОЛЖЕН РАБОТАТЬ:');
+console.log('1. PostgreSQL полностью отключен');
+console.log('2. Используется только SQLite');
+console.log('3. Исправлены все переменные окружения');
+console.log('');
+console.log('👉 Попробуйте deployment еще раз!');
