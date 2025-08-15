@@ -6,11 +6,11 @@ services:
     repo: your-repo/autobid-tj
     branch: main
     deploy_on_push: true
-  run_command: npm start
+  run_command: node dist/production.js
   environment_slug: node-js
   instance_count: 1
   instance_size_slug: basic-xxs
-  http_port: 5000
+  http_port: 8080
   health_check:
     http_path: /health
     initial_delay_seconds: 15
@@ -22,7 +22,7 @@ services:
   - key: NODE_ENV
     value: production
   - key: PORT
-    value: "5000"
+    value: "8080"
   - key: DATABASE_URL
     value: ${db.DATABASE_URL}
   - key: GOOGLE_CLOUD_PROJECT_ID
