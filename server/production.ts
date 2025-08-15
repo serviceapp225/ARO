@@ -54,7 +54,7 @@ app.get('/health', (req, res) => {
 // API routes
 registerRoutes(app);
 
-// Serve static files from public directory (same level as production.js)
+// Serve static files from public directory  
 app.use(express.static(path.join(__dirname, '../public')));
 
 // SPA fallback - serve index.html for all non-API routes

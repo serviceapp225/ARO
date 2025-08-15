@@ -6,12 +6,12 @@
 
 **Build Command:**
 ```bash
-npm ci && npx vite build --config vite.digitalocean.mjs && npx esbuild server/production.ts --platform=node --packages=external --bundle --format=esm --outfile=production.js
+npm ci && npx vite build --config vite.digitalocean.mjs && npx esbuild server/production.ts --platform=node --packages=external --bundle --format=esm --outfile=dist/production.js
 ```
 
 **Run Command:**
 ```bash
-node production.js
+node dist/production.js
 ```
 
 ### 🔧 Решение проблем деплоя
@@ -21,10 +21,10 @@ node production.js
 - Убраны @replit/vite-plugin-cartographer  
 - Только базовые плагины: React + alias настройки
 
-**2. Исправлена структура файлов**:
-- `production.js` создается в корне проекта (не в dist/)
-- `public/` директория с статическими файлами рядом с production.js
-- Production сервер настроен на обслуживание файлов из `public/`
+**2. Правильная структура файлов**:
+- `dist/production.js` - основной сервер (315KB)
+- `public/` - статические файлы (730KB JS, 117KB CSS)  
+- Production сервер обслуживает файлы из `../public/` относительно `dist/`
 
 ### 📋 Environment Variables (13 переменных)
 
