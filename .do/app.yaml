@@ -6,8 +6,8 @@ services:
     repo: your-repo/autobid-tj
     branch: main
     deploy_on_push: true
-  build_command: ./build-digitalocean.sh
-  run_command: npm start
+  build_command: npx vite build && npx esbuild server/production.ts --platform=node --packages=external --bundle --format=esm --outfile=dist/production.js
+  run_command: node dist/production.js
   environment_slug: node-js
   instance_count: 1
   instance_size_slug: basic-xxs
