@@ -4,6 +4,10 @@
   "description": "Car Auction Platform - Production Build",
   "type": "module",
   "main": "production.js",
+  "engines": {
+    "node": "22.x",
+    "npm": "10.x"
+  },
   "scripts": {
     "start": "node start.cjs",
     "build": "node build-simple-tsx.cjs"
