@@ -1,0 +1,65 @@
+[2025-08-15 17:46:35] │ -----> Creating runtime environment
+[2025-08-15 17:46:35] │        
+[2025-08-15 17:46:35] │        NPM_CONFIG_LOGLEVEL=error
+[2025-08-15 17:46:35] │        NODE_VERBOSE=false
+[2025-08-15 17:46:35] │        NODE_ENV=production
+[2025-08-15 17:46:35] │        NODE_MODULES_CACHE=true
+[2025-08-15 17:46:35] │        
+[2025-08-15 17:46:35] │ -----> Installing binaries
+[2025-08-15 17:46:35] │        engines.node (package.json):   22.x
+[2025-08-15 17:46:35] │        engines.npm (package.json):    10.x
+[2025-08-15 17:46:35] │        
+[2025-08-15 17:46:35] │        Resolving node version 22.x...
+[2025-08-15 17:46:35] │        Downloading and installing node 22.16.0...
+[2025-08-15 17:46:43] │        Bootstrapping npm 10.x (replacing 10.9.2)...
+[2025-08-15 17:46:47] │        npm 10.9.3 installed
+[2025-08-15 17:46:48] │        
+[2025-08-15 17:46:48] │ -----> Installing dependencies
+[2025-08-15 17:46:48] │        Installing node modules
+[2025-08-15 17:46:49] │        npm error code EUSAGE
+[2025-08-15 17:46:49] │        npm error
+[2025-08-15 17:46:49] │        npm error `npm ci` can only install packages when your package.json and package-lock.json or npm-shrinkwrap.json are in sync. Please update your lock file with `npm install` before continuing.
+[2025-08-15 17:46:49] │        npm error
+[2025-08-15 17:46:49] │        npm error Invalid: lock file's @tanstack/react-query@5.60.5 does not satisfy @tanstack/react-query@5.85.3
+[2025-08-15 17:46:49] │        npm error Invalid: lock file's @tanstack/query-core@5.60.5 does not satisfy @tanstack/query-core@5.85.3
+[2025-08-15 17:46:49] │        npm error
+[2025-08-15 17:46:49] │        npm error Clean install a project
+[2025-08-15 17:46:49] │        npm error
+[2025-08-15 17:46:49] │        npm error Usage:
+[2025-08-15 17:46:49] │        npm error npm ci
+[2025-08-15 17:46:49] │        npm error
+[2025-08-15 17:46:49] │        npm error Options:
+[2025-08-15 17:46:49] │        npm error [--install-strategy <hoisted|nested|shallow|linked>] [--legacy-bundling]
+[2025-08-15 17:46:49] │        npm error [--global-style] [--omit <dev|optional|peer> [--omit <dev|optional|peer> ...]]
+[2025-08-15 17:46:49] │        npm error [--include <prod|dev|optional|peer> [--include <prod|dev|optional|peer> ...]]
+[2025-08-15 17:46:49] │        npm error [--strict-peer-deps] [--foreground-scripts] [--ignore-scripts] [--no-audit]
+[2025-08-15 17:46:49] │        npm error [--no-bin-links] [--no-fund] [--dry-run]
+[2025-08-15 17:46:49] │        npm error [-w|--workspace <workspace-name> [-w|--workspace <workspace-name> ...]]
+[2025-08-15 17:46:49] │        npm error [-ws|--workspaces] [--include-workspace-root] [--install-links]
+[2025-08-15 17:46:49] │        npm error
+[2025-08-15 17:46:49] │        npm error aliases: clean-install, ic, install-clean, isntall-clean
+[2025-08-15 17:46:49] │        npm error
+[2025-08-15 17:46:49] │        npm error Run "npm help ci" for more info
+[2025-08-15 17:46:49] │        npm notice
+[2025-08-15 17:46:49] │        npm notice New major version of npm available! 10.9.3 -> 11.5.2
+[2025-08-15 17:46:49] │        npm notice Changelog: https://github.com/npm/cli/releases/tag/v11.5.2
+[2025-08-15 17:46:49] │        npm notice To update run: npm install -g npm@11.5.2
+[2025-08-15 17:46:49] │        npm notice
+[2025-08-15 17:46:49] │        npm error A complete log of this run can be found in: /tmp/npmcache.4VxVd/_logs/2025-08-15T17_46_48_150Z-debug-0.log
+[2025-08-15 17:46:49] │ 
+[2025-08-15 17:46:49] │ -----> Build failed
+[2025-08-15 17:46:49] │        
+[2025-08-15 17:46:49] │        We're sorry this build is failing! You can troubleshoot common issues here:
+[2025-08-15 17:46:49] │        https://devcenter.heroku.com/articles/troubleshooting-node-deploys
+[2025-08-15 17:46:49] │        
+[2025-08-15 17:46:49] │        If you're stuck, please submit a ticket so we can help:
+[2025-08-15 17:46:49] │        https://help.heroku.com/
+[2025-08-15 17:46:49] │        
+[2025-08-15 17:46:49] │        Love,
+[2025-08-15 17:46:49] │        Heroku
+[2025-08-15 17:46:49] │        
+[2025-08-15 17:46:49] │ Timer: Builder ran for 14.986801008s and ended at 2025-08-15T17:46:49Z
+[2025-08-15 17:46:49] │ ERROR: failed to build: exit status 1
+[2025-08-15 17:46:49] │ 
+[2025-08-15 17:46:49] │ 
+[2025-08-15 17:46:49] │  ✘ build failed
