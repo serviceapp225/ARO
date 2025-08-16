@@ -4357,13 +4357,34 @@ async function sendSMSCode(phoneNumber: string, code: string): Promise<{success:
   console.log(`[SMS VPS PROXY] Отправка SMS на ${phoneNumber}: ${code}`);
   
   try {
-    // Отправляем запрос к VPS прокси с правильными параметрами для OSON SMS API
+    // Подготавливаем данные для OSON SMS API
+    const login = "zarex";
+    const sender = "OsonSMS";
+    const to = phoneNumber.replace(/[^0-9]/g, '');
+    const text = `Ваш код подтверждения AUTOBID.TJ: ${code}`;
+    const passSaltHash = "a6d5d8b47551199899862d6d768a4cb1"; // Предоставленный хеш пароля
+    
+    // Генерируем txn_id (уникальный идентификатор транзакции)
+    const txnId = Date.now().toString();
+    
+    // Формируем строку для хеширования: txn_id + ";" + login + ";" + from + ";" + phone_number + ";" + pass_salt_hash
+    const hashString = `${txnId};${login};${sender};${to};${passSaltHash}`;
+    
+    // Генерируем SHA256 хеш
+    const crypto = await import('crypto');
+    const hash = crypto.createHash('sha256').update(hashString).digest('hex');
+    
+    console.log(`[SMS VPS PROXY] Генерация хеша:`);
+    console.log(`[SMS VPS PROXY] Hash string: ${hashString}`);
+    console.log(`[SMS VPS PROXY] Generated hash: ${hash}`);
+    
     const smsPayload = {
-      login: "zarex",
-      hash: "a6d5d8b47551199899862d6d768a4cb1", 
-      sender: "OsonSMS",
-      to: phoneNumber.replace(/[^0-9]/g, ''),
-      text: `Ваш код подтверждения AUTOBID.TJ: ${code}`
+      login,
+      hash,
+      sender,
+      to,
+      text,
+      txn_id: txnId
     };
     
     console.log(`[SMS VPS PROXY] ⚡ ДЕТАЛЬНАЯ ДИАГНОСТИКА ⚡`);
