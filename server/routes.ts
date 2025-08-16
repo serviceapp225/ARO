@@ -4377,14 +4377,16 @@ async function sendSMSCode(phoneNumber: string, code: string): Promise<{success:
     console.log(`[SMS VPS PROXY] Hash string: ${hashString}`);
     console.log(`[SMS VPS PROXY] Generated strHash: ${strHash}`);
     
-    // Параметры согласно Laravel пакету (GET параметры в POST запросе)
+    // Параметры в формате, который ожидает текущий VPS сервер
     const smsPayload = {
-      from: senderName,
-      phone_number: cleanPhoneNumber,
-      msg: message,
-      str_hash: strHash,
+      login: login,
+      hash: strHash,
+      sender: senderName,
+      to: cleanPhoneNumber,
+      text: message,
+      // Дополнительные параметры для отладки
       txn_id: txnId,
-      login: login
+      debug_hash_string: hashString
     };
     
     console.log(`[SMS VPS PROXY] ⚡ ПРАВИЛЬНЫЕ ПАРАМЕТРЫ OSON SMS API ⚡`);
