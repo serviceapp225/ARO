@@ -4357,37 +4357,37 @@ async function sendSMSCode(phoneNumber: string, code: string): Promise<{success:
   console.log(`[SMS VPS PROXY] Отправка SMS на ${phoneNumber}: ${code}`);
   
   try {
-    // Подготавливаем данные для OSON SMS API
+    // Параметры OSON SMS API согласно Laravel пакету
     const login = "zarex";
-    const sender = "OsonSMS";
-    const to = phoneNumber.replace(/[^0-9]/g, '');
-    const text = `Ваш код подтверждения AUTOBID.TJ: ${code}`;
-    const passSaltHash = "a6d5d8b47551199899862d6d768a4cb1"; // Предоставленный хеш пароля
+    const senderName = "OsonSMS";
+    const cleanPhoneNumber = phoneNumber.replace(/[^0-9]/g, '');
+    const message = `Ваш код подтверждения AUTOBID.TJ: ${code}`;
+    const passSaltHash = "a6d5d8b47551199899862d6d768a4cb1";
     
-    // Генерируем txn_id (уникальный идентификатор транзакции)
-    const txnId = Date.now().toString();
+    // Генерируем уникальный transaction ID
+    const txnId = Date.now().toString() + Math.random().toString(36).substr(2, 5);
     
-    // Формируем строку для хеширования: txn_id + ";" + login + ";" + from + ";" + phone_number + ";" + pass_salt_hash
-    const hashString = `${txnId};${login};${sender};${to};${passSaltHash}`;
-    
-    // Генерируем SHA256 хеш
+    // Правильный алгоритм хеширования из Laravel пакета OSON SMS
+    // hash('sha256', txnId + ";" + login + ";" + senderName + ";" + phoneNumber + ";" + passSaltHash)
     const crypto = await import('crypto');
-    const hash = crypto.createHash('sha256').update(hashString).digest('hex');
+    const hashString = `${txnId};${login};${senderName};${cleanPhoneNumber};${passSaltHash}`;
+    const strHash = crypto.createHash('sha256').update(hashString).digest('hex');
     
-    console.log(`[SMS VPS PROXY] Генерация хеша:`);
+    console.log(`[SMS VPS PROXY] ПРАВИЛЬНЫЙ алгоритм хеширования:`);
     console.log(`[SMS VPS PROXY] Hash string: ${hashString}`);
-    console.log(`[SMS VPS PROXY] Generated hash: ${hash}`);
+    console.log(`[SMS VPS PROXY] Generated strHash: ${strHash}`);
     
+    // Параметры согласно Laravel пакету (GET параметры в POST запросе)
     const smsPayload = {
-      login,
-      hash,
-      sender,
-      to,
-      text,
-      txn_id: txnId
+      from: senderName,
+      phone_number: cleanPhoneNumber,
+      msg: message,
+      str_hash: strHash,
+      txn_id: txnId,
+      login: login
     };
     
-    console.log(`[SMS VPS PROXY] ⚡ ДЕТАЛЬНАЯ ДИАГНОСТИКА ⚡`);
+    console.log(`[SMS VPS PROXY] ⚡ ПРАВИЛЬНЫЕ ПАРАМЕТРЫ OSON SMS API ⚡`);
     console.log(`[SMS VPS PROXY] URL: ${VPS_PROXY_URL}`);
     console.log(`[SMS VPS PROXY] Payload:`, JSON.stringify(smsPayload, null, 2));
     
