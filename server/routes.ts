@@ -4360,7 +4360,7 @@ async function sendSMSCode(phoneNumber: string, code: string): Promise<{success:
     // Отправляем запрос к VPS прокси с правильными параметрами для OSON SMS API
     const smsPayload = {
       login: "zarex",
-      password: "a6d5d8b47551199899862d6d768a4cb1", 
+      hash: "a6d5d8b47551199899862d6d768a4cb1", 
       sender: "OsonSMS",
       to: phoneNumber.replace(/[^0-9]/g, ''),
       text: `Ваш код подтверждения AUTOBID.TJ: ${code}`
@@ -4374,8 +4374,7 @@ async function sendSMSCode(phoneNumber: string, code: string): Promise<{success:
         'Content-Type': 'application/json',
         'User-Agent': 'AUTOBID.TJ Replit Client'
       },
-      body: JSON.stringify(smsPayload),
-      timeout: 15000 // 15 секунд таймаут
+      body: JSON.stringify(smsPayload)
     });
     
     // Проверяем что ответ в JSON формате
@@ -4456,7 +4455,7 @@ async function sendSMSNotification(phoneNumber: string, message: string): Promis
       },
       body: JSON.stringify({
         login: "zarex",
-        password: "a6d5d8b47551199899862d6d768a4cb1",
+        hash: "a6d5d8b47551199899862d6d768a4cb1",
         sender: "OsonSMS",
         to: phoneNumber.replace(/[^0-9]/g, ''),
         text: message

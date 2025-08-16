@@ -47,7 +47,7 @@ async function sendSMSViaProxy(phoneNumber: string, message: string): Promise<{s
       },
       body: JSON.stringify({
         login: process.env.SMS_LOGIN || "zarex",
-        password: process.env.SMS_PASSWORD,
+        hash: process.env.SMS_HASH || "a6d5d8b47551199899862d6d768a4cb1",
         sender: process.env.SMS_SENDER || "OsonSMS",
         to: cleanPhone.replace(/[^0-9]/g, ''),
         text: cleanMessage.slice(0, 160) // SMS лимит
