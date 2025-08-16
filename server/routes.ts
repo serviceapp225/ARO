@@ -4366,7 +4366,9 @@ async function sendSMSCode(phoneNumber: string, code: string): Promise<{success:
       text: `Ваш код подтверждения AUTOBID.TJ: ${code}`
     };
     
-    console.log(`[SMS VPS PROXY] Payload:`, smsPayload);
+    console.log(`[SMS VPS PROXY] ⚡ ДЕТАЛЬНАЯ ДИАГНОСТИКА ⚡`);
+    console.log(`[SMS VPS PROXY] URL: ${VPS_PROXY_URL}`);
+    console.log(`[SMS VPS PROXY] Payload:`, JSON.stringify(smsPayload, null, 2));
     
     const response = await fetch(VPS_PROXY_URL, {
       method: 'POST',
@@ -4384,7 +4386,9 @@ async function sendSMSCode(phoneNumber: string, code: string): Promise<{success:
     }
     
     const responseData = await response.json();
-    console.log(`[SMS VPS PROXY] Ответ прокси сервера:`, responseData);
+    console.log(`[SMS VPS PROXY] ⚡ ОТВЕТ ОТ VPS ⚡`);
+    console.log(`[SMS VPS PROXY] HTTP статус: ${response.status}`);
+    console.log(`[SMS VPS PROXY] Ответ прокси сервера:`, JSON.stringify(responseData, null, 2));
     
     if (response.ok && responseData.success) {
       console.log(`✅ SMS успешно отправлен через VPS прокси`);
