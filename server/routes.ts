@@ -4441,9 +4441,10 @@ async function sendSMSCode(phoneNumber: string, code: string): Promise<{success:
       
       // Автоматически переходим в демо-режим при ошибке VPS
       console.log(`[SMS DEMO FALLBACK] VPS прокси ошибка. Демо-режим для ${phoneNumber}: ${code}`);
+      console.log(`[SMS DEMO] Код для входа: ${code}`);
       return { 
         success: true, 
-        message: "SMS отправлен (демо-режим - VPS ошибка)",
+        message: `SMS код отправлен (демо-режим). Код: ${code}`,
         codeValue: code
       };
     }
