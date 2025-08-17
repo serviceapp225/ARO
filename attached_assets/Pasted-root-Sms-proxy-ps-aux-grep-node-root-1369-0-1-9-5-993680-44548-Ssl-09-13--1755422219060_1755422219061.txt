@@ -1,0 +1,39 @@
+root@Sms-proxy:~# ps aux | grep node
+root        1369  0.1  9.5 993680 44548 ?        Ssl  09:13   0:00 /usr/bin/node server-v2.js
+root        1695  0.0  0.4   7008  2056 pts/0    S+   09:16   0:00 grep --color=auto node
+root@Sms-proxy:~# netstat -tulpn | grep node
+# или
+ss -tulpn | grep node
+tcp        0      0 0.0.0.0:3000            0.0.0.0:*               LISTEN      1369/node
+tcp   LISTEN 0      511          0.0.0.0:3000      0.0.0.0:*    users:(("node",pid=1369,fd=18))
+root@Sms-proxy:~# lsof -i :3000
+# или
+netstat -tulpn | grep :3000
+COMMAND  PID USER   FD   TYPE DEVICE SIZE/OFF NODE NAME
+node    1369 root   18u  IPv4  21756      0t0  TCP *:3000 (LISTEN)
+tcp        0      0 0.0.0.0:3000            0.0.0.0:*               LISTEN      1369/node
+root@Sms-proxy:~# ps -ef | grep node
+root        1369       1  0 09:13 ?        00:00:00 /usr/bin/node server-v2.js
+root        1767     876  0 09:16 pts/0    00:00:00 grep --color=auto node
+root@Sms-proxy:~# pm2 list
+pm2 status
+┌────┬────────────────────┬──────────┬──────┬───────────┬──────────┬──────────┐
+│ id │ name               │ mode     │ ↺    │ status    │ cpu      │ memory   │
+└────┴────────────────────┴──────────┴──────┴───────────┴──────────┴──────────┘
+┌────┬────────────────────┬──────────┬──────┬───────────┬──────────┬──────────┐
+│ id │ name               │ mode     │ ↺    │ status    │ cpu      │ memory   │
+└────┴────────────────────┴──────────┴──────┴───────────┴──────────┴──────────┘
+root@Sms-proxy:~# pstree -p | grep node
+           |-node(1369)-+-{node}(1370)
+           |            |-{node}(1371)
+           |            |-{node}(1372)
+           |            |-{node}(1373)
+           |            |-{node}(1374)
+           |            `-{node}(1375)
+           |-node(1811)-+-{node}(1812)
+           |            |-{node}(1813)
+           |            |-{node}(1814)
+           |            |-{node}(1815)
+           |            |-{node}(1816)
+           |            `-{node}(1817)
+root@Sms-proxy:~#
