@@ -4366,36 +4366,22 @@ async function sendSMSCode(phoneNumber: string, code: string): Promise<{success:
   console.log(`[SMS VPS PROXY] Отправка SMS на ${phoneNumber}: ${code}`);
   
   try {
-    // Параметры OSON SMS API согласно Laravel пакету
+    // Параметры OSON SMS API - VPS v6 использует простой пароль
     const login = "zarex";
     const senderName = "OsonSMS";
     const cleanPhoneNumber = phoneNumber.replace(/[^0-9]/g, '');
     const message = `Ваш код подтверждения AUTOBID.TJ: ${code}`;
-    const passSaltHash = "a6d5d8b47551199899862d6d768a4cb1";
+    const password = "a6d5d8b47551199899862d6d768a4cb1";  // VPS v6 ожидает простой пароль
     
-    // Генерируем уникальный transaction ID
-    const txnId = Date.now().toString() + Math.random().toString(36).substr(2, 5);
+    console.log(`[SMS VPS PROXY] VPS v6 - используем простой пароль (не хеш)`);
     
-    // Правильный алгоритм хеширования из Laravel пакета OSON SMS
-    // hash('sha256', txnId + ";" + login + ";" + senderName + ";" + phoneNumber + ";" + passSaltHash)
-    const crypto = await import('crypto');
-    const hashString = `${txnId};${login};${senderName};${cleanPhoneNumber};${passSaltHash}`;
-    const strHash = crypto.createHash('sha256').update(hashString).digest('hex');
-    
-    console.log(`[SMS VPS PROXY] ПРАВИЛЬНЫЙ алгоритм хеширования:`);
-    console.log(`[SMS VPS PROXY] Hash string: ${hashString}`);
-    console.log(`[SMS VPS PROXY] Generated strHash: ${strHash}`);
-    
-    // Параметры в формате, который ожидает текущий VPS сервер
+    // Параметры в формате для VPS v6 сервера
     const smsPayload = {
       login: login,
-      password: strHash,  // VPS сервер ожидает 'password', а не 'hash'
+      password: password,  // VPS v6 сам генерирует правильный хеш
       sender: senderName,
       to: cleanPhoneNumber,
-      text: message,
-      // Дополнительные параметры для отладки
-      txn_id: txnId,
-      debug_hash_string: hashString
+      text: message
     };
     
     console.log(`[SMS VPS PROXY] ⚡ ПРАВИЛЬНЫЕ ПАРАМЕТРЫ OSON SMS API ⚡`);
