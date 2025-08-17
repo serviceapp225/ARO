@@ -80,9 +80,9 @@ const server = http.createServer((req, res) => {
       }
 
       console.log('📞 VPS v5: Получен запрос на отправку SMS');
-      
+
       const { login, sender, to, text, password } = data;
-      
+
       if (!login || !sender || !to || !text || !password) {
         res.writeHead(400, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({
@@ -94,10 +94,10 @@ const server = http.createServer((req, res) => {
 
       const cleanPhone = to.replace(/^\+?992/, '').replace(/[^0-9]/g, '');
       const txn_id = `autobid_${Date.now()}`;
-      
+
       // Генерируем правильный хеш
       const str_hash = generateOsonHash(txn_id, login, sender, cleanPhone, password);
-      
+
       const params = querystring.stringify({
         from: sender,
         phone_number: cleanPhone,
@@ -116,14 +116,14 @@ const server = http.createServer((req, res) => {
         }
       }, (response) => {
         let responseData = '';
-        
+
         response.on('data', (chunk) => {
           responseData += chunk;
         });
-        
+
         response.on('end', () => {
           console.log(`📡 OSON SMS ответ (${response.statusCode}):`, responseData);
-          
+
           res.writeHead(200, { 'Content-Type': 'application/json' });
           res.end(JSON.stringify({
             success: true,
