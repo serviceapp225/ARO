@@ -466,35 +466,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
         bidCountsCache.set(listing.id, bidCount);
       }
       
-      const fastListings = listings.map(listing => ({
-        id: listing.id,
-        lotNumber: listing.lotNumber,
-        make: listing.make,
-        model: listing.model,
-        year: listing.year,
-        mileage: listing.mileage,
-        currentBid: listing.currentBid,
-        startingPrice: listing.startingPrice,
-        status: listing.status,
-        auctionEndTime: listing.auctionEndTime,
-        auctionStartTime: listing.auctionStartTime,
-        customsCleared: listing.customsCleared,
-        recycled: listing.recycled,
-        technicalInspectionValid: listing.technicalInspectionValid,
-        technicalInspectionDate: listing.technicalInspectionDate,
-        tinted: listing.tinted,
-        tintingDate: listing.tintingDate,
-        engine: listing.engine,
-        transmission: listing.transmission,
-        fuelType: listing.fuelType,
-        color: listing.color,
-        condition: listing.condition,
-        location: listing.location,
-        batteryCapacity: listing.batteryCapacity,
-        electricRange: listing.electricRange,
-        bidCount: bidCountsCache.get(listing.id) || 0,
-        photos: listing.photos || [] // Добавляем фотографии в кэш для отображения
-      }));
+      const fastListings = listings.map(listing => {
+        // 🚀 УНИФИЦИРОВАННЫЕ ФОТО: Всегда возвращаем URL'ы для API endpoints
+        let photoUrls: string[] = [];
+        if (listing.photos && Array.isArray(listing.photos) && listing.photos.length > 0) {
+          // Конвертируем в API URL'ы независимо от формата хранения в БД
+          photoUrls = listing.photos.map((photo, index) => `/api/listings/${listing.id}/photo/${index}`);
+        }
+        
+        return {
+          id: listing.id,
+          lotNumber: listing.lotNumber,
+          make: listing.make,
+          model: listing.model,
+          year: listing.year,
+          mileage: listing.mileage,
+          currentBid: listing.currentBid,
+          startingPrice: listing.startingPrice,
+          status: listing.status,
+          auctionEndTime: listing.auctionEndTime,
+          auctionStartTime: listing.auctionStartTime,
+          customsCleared: listing.customsCleared,
+          recycled: listing.recycled,
+          technicalInspectionValid: listing.technicalInspectionValid,
+          technicalInspectionDate: listing.technicalInspectionDate,
+          tinted: listing.tinted,
+          tintingDate: listing.tintingDate,
+          engine: listing.engine,
+          transmission: listing.transmission,
+          fuelType: listing.fuelType,
+          color: listing.color,
+          condition: listing.condition,
+          location: listing.location,
+          batteryCapacity: listing.batteryCapacity,
+          electricRange: listing.electricRange,
+          bidCount: bidCountsCache.get(listing.id) || 0,
+          photos: photoUrls // Унифицированные URL'ы для всех аукционов
+        };
+      });
       
       cachedListings = fastListings;
       lastCacheUpdate = Date.now();
