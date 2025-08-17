@@ -4389,7 +4389,7 @@ async function sendSMSCode(phoneNumber: string, code: string): Promise<{success:
     // Параметры в формате, который ожидает текущий VPS сервер
     const smsPayload = {
       login: login,
-      hash: strHash,
+      password: strHash,  // VPS сервер ожидает 'password', а не 'hash'
       sender: senderName,
       to: cleanPhoneNumber,
       text: message,
