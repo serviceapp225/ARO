@@ -64,6 +64,7 @@ Preferred communication style: Simple, everyday language in Russian.
 - Compatibility with Replit's Reserved VM deployment for persistent storage and WebSocket support.
 - **DigitalOcean Migration Ready**: Full infrastructure prepared with PostgreSQL ($15/month), Spaces CDN ($5/month), and VPS upgrade ($24/month) for $44 total monthly cost.
 - **Migration Scripts**: Automated deployment script `deploy-vps.sh`, infrastructure testing, and image migration tools created.
+- **Mobile Applications**: Capacitor integration for iOS and Android apps, with automated build scripts and app store deployment preparation ready.
 
 ## External Dependencies
 
@@ -84,3 +85,4 @@ Preferred communication style: Simple, everyday language in Russian.
 - **OSON SMS API (via VPS proxy)**: For SMS authentication and notifications.
 - **PostgreSQL**: Production database.
 - **SQLite**: Development database.
+- **Capacitor**: Cross-platform mobile app development framework for iOS and Android apps.
