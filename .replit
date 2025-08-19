@@ -9,7 +9,7 @@ packages = ["flutter", "sqlite"]
 [deployment]
 deploymentTarget = "gce"
 run = ["sh", "-c", "npm start"]
-build = ["sh", "-c", "npm install"]
+build = ["sh", "-c", "npm run build"]
 
 [[ports]]
 localPort = 80
