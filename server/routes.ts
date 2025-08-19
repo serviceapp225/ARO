@@ -4367,11 +4367,11 @@ async function sendSMSCode(phoneNumber: string, code: string): Promise<{success:
   
   try {
     // Параметры OSON SMS API - VPS v6 использует простой пароль
-    const login = "zarex";
-    const senderName = "OsonSMS";
+    const login = process.env.SMS_LOGIN || "zarex";
+    const senderName = process.env.SMS_SENDER || "OsonSMS";
     const cleanPhoneNumber = phoneNumber.replace(/[^0-9]/g, '');
     const message = `Ваш код подтверждения AUTOBID.TJ: ${code}`;
-    const password = "a6d5d8b47551199899862d6d768a4cb1";  // VPS v6 ожидает простой пароль
+    const password = process.env.SMS_HASH || ""; // VPS v6 ожидает простой пароль
     
     console.log(`[SMS VPS PROXY] VPS v6 - используем простой пароль (не хеш)`);
     
@@ -4477,9 +4477,9 @@ async function sendSMSNotification(phoneNumber: string, message: string): Promis
         'User-Agent': 'AUTOBID.TJ Replit Client'
       },
       body: JSON.stringify({
-        login: "zarex",
-        hash: "a6d5d8b47551199899862d6d768a4cb1",
-        sender: "OsonSMS",
+        login: process.env.SMS_LOGIN || "zarex",
+        hash: process.env.SMS_HASH || "",
+        sender: process.env.SMS_SENDER || "OsonSMS",
         to: phoneNumber.replace(/[^0-9]/g, ''),
         text: message
       })
