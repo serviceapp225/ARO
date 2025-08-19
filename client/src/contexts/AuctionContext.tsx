@@ -14,7 +14,7 @@ interface Auction {
   startingPrice: string;
   bidCount: number;
   endTime: Date;
-  status: 'active' | 'ended';
+  status: 'active' | 'ended' | 'pending';
   customsCleared: boolean;
   recycled: boolean;
   technicalInspectionValid: boolean;
@@ -157,7 +157,7 @@ export function AuctionProvider({ children }: { children: ReactNode }) {
       startingPrice: listing.startingPrice || '0',
       bidCount: listing.bidCount || 0,
       endTime: endTime,
-      status: (listing.status === 'ended' || isExpired) ? 'ended' : 'active',
+      status: (listing.status === 'ended' || isExpired) ? 'ended' : listing.status,
       customsCleared: listing.customsCleared || false,
       recycled: listing.recycled || false,
       technicalInspectionValid: listing.technicalInspectionValid || false,

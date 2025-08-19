@@ -50,6 +50,7 @@ export const ActiveAuctions = memo(function ActiveAuctions({ searchQuery = "", c
     }
 
     // Include both active auctions and recently won auctions (ended status)
+    // Exclude pending auctions from public display - they should only appear in admin panel
     const relevantAuctions = sourceAuctions.filter((auction: any) => 
       auction.status === 'active' || auction.status === 'ended'
     );
