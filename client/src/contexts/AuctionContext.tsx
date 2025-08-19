@@ -1,5 +1,5 @@
-import { createContext, useContext, useState, ReactNode } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useOptimizedRealTime } from "@/hooks/useOptimizedRealTime";
 
 interface Auction {
@@ -33,12 +33,14 @@ interface AuctionContextType {
   selectedAuction: Auction | null;
   setSelectedAuction: (auction: Auction | null) => void;
   refreshAuctions: () => void;
+  updateAuctionRealTime: (listingId: number, updates: Partial<Auction>) => void;
 }
 
 const AuctionContext = createContext<AuctionContextType | undefined>(undefined);
 
 export function AuctionProvider({ children }: { children: ReactNode }) {
   const [selectedAuction, setSelectedAuction] = useState<Auction | null>(null);
+  const queryClient = useQueryClient();
 
   // Оптимизированная система real-time обновлений
   const { isConnected, forceUpdate } = useOptimizedRealTime({
@@ -46,6 +48,84 @@ export function AuctionProvider({ children }: { children: ReactNode }) {
     enablePolling: false, // Отключаем polling, так как WebSocket работает
     pollingInterval: 5000, // Fallback только если WebSocket недоступен
   });
+
+  // WebSocket соединение для real-time обновлений карточек
+  const [webSocket, setWebSocket] = useState<WebSocket | null>(null);
+
+  // Инициализация WebSocket для обновления карточек
+  useEffect(() => {
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const wsUrl = `${protocol}//${window.location.host}/ws`;
+    
+    console.log('🔌 Создание WebSocket для обновления карточек:', wsUrl);
+    
+    const ws = new WebSocket(wsUrl);
+    
+    ws.onopen = () => {
+      console.log('✅ WebSocket для карточек подключен');
+      setWebSocket(ws);
+    };
+    
+    ws.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        console.log('📩 WebSocket событие для карточек:', data.type, data);
+        
+        if (data.type === 'bid_placed') {
+          // Мгновенно обновляем карточку аукциона
+          updateAuctionCard(data.listingId, {
+            currentBid: parseFloat(data.currentBid) || 0,
+            bidCount: data.bidCount || 0
+          });
+        }
+      } catch (error) {
+        console.error('❌ Ошибка обработки WebSocket сообщения:', error);
+      }
+    };
+    
+    ws.onclose = () => {
+      console.log('🔌 WebSocket для карточек отключен');
+      setWebSocket(null);
+    };
+    
+    ws.onerror = (error) => {
+      console.error('❌ Ошибка WebSocket для карточек:', error);
+    };
+    
+    return () => {
+      if (ws.readyState === WebSocket.OPEN) {
+        ws.close();
+      }
+    };
+  }, []);
+
+  // Функция для мгновенного обновления карточки аукциона
+  const updateAuctionCard = (listingId: number, updates: Partial<{ currentBid: number; bidCount: number }>) => {
+    console.log('⚡ Мгновенное обновление карточки:', listingId, updates);
+    
+    // Обновляем кэш listings в React Query
+    queryClient.setQueryData(['/api/listings'], (oldData: any[]) => {
+      if (!Array.isArray(oldData)) return oldData;
+      
+      return oldData.map(listing => 
+        listing.id === listingId 
+          ? { 
+              ...listing, 
+              currentBid: updates.currentBid?.toString() || listing.currentBid,
+              bidCount: updates.bidCount || listing.bidCount
+            }
+          : listing
+      );
+    });
+  };
+
+  // Обновить конкретный аукцион (для внешнего использования)
+  const updateAuctionRealTime = (listingId: number, updates: Partial<Auction>) => {
+    updateAuctionCard(listingId, {
+      currentBid: updates.currentBid,
+      bidCount: updates.bidCount
+    });
+  };
 
   // Ультра-оптимизированный запрос данных для главной страницы
   const { data: listings = [], isLoading, refetch } = useQuery<any[]>({
@@ -102,7 +182,8 @@ export function AuctionProvider({ children }: { children: ReactNode }) {
       loading: isLoading,
       selectedAuction,
       setSelectedAuction,
-      refreshAuctions
+      refreshAuctions,
+      updateAuctionRealTime
     }}>
       {children}
     </AuctionContext.Provider>
