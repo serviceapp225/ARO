@@ -25,6 +25,7 @@ interface Auction {
   fuelType?: string;
   electricRange?: number;
   batteryCapacity?: number;
+  location?: string;
 }
 
 interface AuctionContextType {
@@ -167,7 +168,8 @@ export function AuctionProvider({ children }: { children: ReactNode }) {
       condition: listing.condition || 'good',
       fuelType: listing.fuelType,
       electricRange: listing.electricRange,
-      batteryCapacity: listing.batteryCapacity
+      batteryCapacity: listing.batteryCapacity,
+      location: listing.location
     };
   }) : [];
 
