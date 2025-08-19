@@ -98,15 +98,22 @@ export default function HomePage() {
           </form>
         </div>
 
-        {/* Sell Car Banner - статический банер с красивыми фото */}
-        <SellCarBanner />
+        {/* Hero Section - горизонтальная раскладка для планшетов и десктопа */}
+        <div className="hero-section flex flex-col gap-6 md:flex-row md:gap-8">
+          {/* Sell Car Banner - первый элемент (слева на десктопе) */}
+          <div className="sell-banner-container md:flex-1">
+            <SellCarBanner />
+          </div>
 
-        {/* Advertisement Carousel - показываем с плейсхолдером */}
-        {carouselLoading ? (
-          <div className="h-44 rounded-2xl bg-gray-200 animate-pulse"></div>
-        ) : (
-          <AdvertisementCarousel />
-        )}
+          {/* Advertisement Carousel - второй элемент (справа на десктопе) */}
+          <div className="carousel-container md:flex-[2]">
+            {carouselLoading ? (
+              <div className="h-44 rounded-2xl bg-gray-200 animate-pulse"></div>
+            ) : (
+              <AdvertisementCarousel />
+            )}
+          </div>
+        </div>
 
         {/* Security Banner - статическое содержимое, всегда показываем */}
         <div className="bg-green-50 border border-green-200 rounded-xl p-4">

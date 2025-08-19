@@ -213,7 +213,7 @@ export const ActiveAuctions = memo(function ActiveAuctions({ searchQuery = "", c
 
   if (loading && !loadingTimeout) {
     return (
-      <div className="grid grid-cols-2 gap-3 mb-20">
+      <div className="grid grid-cols-1 xs:grid-cols-2 md:grid-cols-4 lg:grid-cols-3 xl:grid-cols-4 gap-3 mb-20">
         {[1, 2, 3, 4, 5, 6].map((i) => (
           <Card key={i} className="animate-pulse rounded-xl overflow-hidden">
             <div className="h-48 bg-gray-200" />
@@ -273,7 +273,7 @@ export const ActiveAuctions = memo(function ActiveAuctions({ searchQuery = "", c
           </Button>
         </div>
       ) : (
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 xs:grid-cols-2 md:grid-cols-4 lg:grid-cols-3 xl:grid-cols-4 gap-3">
           {displayedAuctions.map((auction, index) => (
             <Card
               key={`${auction.id}-${index}`}
