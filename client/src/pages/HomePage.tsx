@@ -106,7 +106,7 @@ export default function HomePage() {
           </div>
 
           {/* Advertisement Carousel - второй элемент (справа на десктопе) */}
-          <div className="carousel-container md:flex-[2]">
+          <div className="carousel-container md:flex-1">
             {carouselLoading ? (
               <div className="h-44 rounded-2xl bg-gray-200 animate-pulse"></div>
             ) : (
