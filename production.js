@@ -474,7 +474,7 @@ async function sendSMSViaProxy(phoneNumber, message) {
   if (!cleanPhone || !cleanMessage) {
     return { success: false, message: "Invalid phone number or message format" };
   }
-  const VPS_PROXY_URL = process.env.VPS_PROXY_URL || "http://188.166.61.86:3000/api/send-sms";
+  const VPS_PROXY_URL = process.env.VPS_PROXY_URL || "https://188.166.61.86:3000/api/send-sms";
   try {
     const response = await fetch(VPS_PROXY_URL, {
       method: "POST",
@@ -5442,7 +5442,7 @@ async function registerRoutes(app2) {
   return httpServer;
 }
 async function sendSMSCode(phoneNumber, code) {
-  const VPS_PROXY_URL = "http://188.166.61.86:3000/api/send-sms";
+  const VPS_PROXY_URL = "https://188.166.61.86:3000/api/send-sms";
   console.log(`[SMS VPS PROXY] \u041E\u0442\u043F\u0440\u0430\u0432\u043A\u0430 SMS \u043D\u0430 ${phoneNumber}: ${code}`);
   try {
     const smsPayload = {
@@ -5512,7 +5512,7 @@ async function sendSMSCode(phoneNumber, code) {
   }
 }
 async function sendSMSNotification(phoneNumber, message) {
-  const VPS_PROXY_URL = "http://188.166.61.86:3000/api/send-sms";
+  const VPS_PROXY_URL = "https://188.166.61.86:3000/api/send-sms";
   console.log(`[SMS VPS PROXY] \u041E\u0442\u043F\u0440\u0430\u0432\u043A\u0430 SMS \u0443\u0432\u0435\u0434\u043E\u043C\u043B\u0435\u043D\u0438\u044F \u043D\u0430 ${phoneNumber}: ${message}`);
   try {
     const response = await fetch(VPS_PROXY_URL, {
