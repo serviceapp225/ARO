@@ -35,6 +35,12 @@ async function sendSMSViaProxy(phoneNumber: string, message: string): Promise<{s
   if (!cleanPhone || !cleanMessage) {
     return { success: false, message: "Invalid phone number or message format" };
   }
+
+  // Проверка обязательных переменных окружения
+  if (!process.env.SMS_LOGIN || !process.env.SMS_HASH || !process.env.SMS_SENDER) {
+    console.log(`[SMS DEMO] SMS credentials not configured. Demo mode for ${phoneNumber}: ${message}`);
+    return { success: true, message: "SMS sent (demo mode - credentials not configured)" };
+  }
   
   const VPS_PROXY_URL = process.env.VPS_PROXY_URL || "http://188.166.61.86:3000/api/send-sms";
   
@@ -46,9 +52,9 @@ async function sendSMSViaProxy(phoneNumber: string, message: string): Promise<{s
         'User-Agent': 'AUTOBID.TJ Replit Client'
       },
       body: JSON.stringify({
-        login: process.env.SMS_LOGIN || "zarex",
-        hash: process.env.SMS_HASH || "a6d5d8b47551199899862d6d768a4cb1",
-        sender: process.env.SMS_SENDER || "OsonSMS",
+        login: process.env.SMS_LOGIN,
+        hash: process.env.SMS_HASH,
+        sender: process.env.SMS_SENDER,
         to: cleanPhone.replace(/[^0-9]/g, ''),
         text: cleanMessage.slice(0, 160) // SMS лимит
       })
