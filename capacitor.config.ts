@@ -6,10 +6,10 @@ const config: CapacitorConfig = {
   webDir: 'dist/public',
   server: {
     // Подключение к вашему Replit серверу с базой данных
-    url: 'https://your-repl-name.replit.app',
+    url: 'https://autobidtj-serviceapp225.replit.app',
     cleartext: true,
-    // Разрешить HTTP в development
-    allowNavigation: ['https://your-repl-name.replit.app']
+    // Разрешить навигацию к серверу
+    allowNavigation: ['https://autobidtj-serviceapp225.replit.app/*']
   },
   plugins: {
     // Настройки для пуш-уведомлений
