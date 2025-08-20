@@ -8,7 +8,7 @@ public class MainActivity extends BridgeActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         
-        // Принудительно устанавливаем URL сервера для подключения к базе данных
-        this.bridge.setServerUrl("https://autobidtj-serviceapp225.replit.app");
+        // URL сервера настроен в capacitor.config.json
+        // https://autobidtj-serviceapp225.replit.app
     }
 }
