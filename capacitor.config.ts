@@ -5,9 +5,11 @@ const config: CapacitorConfig = {
   appName: 'AutoBid.TJ',
   webDir: 'dist/public',
   server: {
-    // Для development можно указать IP сервера
-    // url: 'http://localhost:5000',
-    // cleartext: true
+    // Подключение к вашему Replit серверу с базой данных
+    url: 'https://your-repl-name.replit.app',
+    cleartext: true,
+    // Разрешить HTTP в development
+    allowNavigation: ['https://your-repl-name.replit.app']
   },
   plugins: {
     // Настройки для пуш-уведомлений
