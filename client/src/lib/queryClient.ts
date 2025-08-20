@@ -26,6 +26,11 @@ export async function apiRequest(
   url: string,
   data?: unknown | undefined,
 ): Promise<Response> {
+  // Определяем базовый URL для Capacitor приложения
+  const isCapacitor = (window as any).Capacitor?.isNativePlatform?.();
+  const baseUrl = isCapacitor ? 'https://autobidtj-serviceapp225.replit.app' : '';
+  const fullUrl = url.startsWith('http') ? url : `${baseUrl}${url}`;
+  
   // Получаем информацию о пользователе из localStorage для аутентификации
   const userStr = localStorage.getItem('demo-user') || localStorage.getItem('currentUser');
   const headers: HeadersInit = data ? { "Content-Type": "application/json" } : {};
@@ -44,7 +49,7 @@ export async function apiRequest(
     }
   }
 
-  const res = await fetch(url, {
+  const res = await fetch(fullUrl, {
     method,
     headers,
     body: data ? JSON.stringify(data) : undefined,
@@ -61,6 +66,12 @@ export const getQueryFn: <T>(options: {
 }) => QueryFunction<T> =
   ({ on401: unauthorizedBehavior }) =>
   async ({ queryKey }) => {
+    // Определяем базовый URL для Capacitor приложения  
+    const isCapacitor = (window as any).Capacitor?.isNativePlatform?.();
+    const baseUrl = isCapacitor ? 'https://autobidtj-serviceapp225.replit.app' : '';
+    const url = queryKey[0] as string;
+    const fullUrl = url.startsWith('http') ? url : `${baseUrl}${url}`;
+    
     // Получаем информацию о пользователе для GET запросов
     const userStr = localStorage.getItem('demo-user') || localStorage.getItem('currentUser');
     const headers: HeadersInit = {};
@@ -79,7 +90,7 @@ export const getQueryFn: <T>(options: {
       }
     }
 
-    const res = await fetch(queryKey[0] as string, {
+    const res = await fetch(fullUrl, {
       headers,
       credentials: "include",
     });

@@ -95,7 +95,11 @@ export function useAuctionWebSocket(): AuctionWebSocketHook {
     }
     
     try {
-      const wsUrl = `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.host}/ws`;
+      // Определяем базовый URL для Capacitor приложения
+      const isCapacitor = (window as any).Capacitor?.isNativePlatform?.();
+      const baseUrl = isCapacitor ? 'autobidtj-serviceapp225.replit.app' : window.location.host;
+      const protocol = isCapacitor ? 'wss:' : (window.location.protocol === 'https:' ? 'wss:' : 'ws:');
+      const wsUrl = `${protocol}//${baseUrl}/ws`;
       console.log('🔌 Создание нового WebSocket соединения:', wsUrl);
       wsRef.current = new WebSocket(wsUrl);
       

@@ -39,8 +39,11 @@ class WebSocketManager {
     }
 
     try {
-      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-      const wsUrl = `${protocol}//${window.location.host}/ws`;
+      // Определяем базовый URL для Capacitor приложения
+      const isCapacitor = (window as any).Capacitor?.isNativePlatform?.();
+      const baseUrl = isCapacitor ? 'autobidtj-serviceapp225.replit.app' : window.location.host;
+      const protocol = isCapacitor ? 'wss:' : (window.location.protocol === 'https:' ? 'wss:' : 'ws:');
+      const wsUrl = `${protocol}//${baseUrl}/ws`;
       
       console.log('🔌 Создание ЕДИНОГО WebSocket соединения:', wsUrl);
       this.ws = new WebSocket(wsUrl);

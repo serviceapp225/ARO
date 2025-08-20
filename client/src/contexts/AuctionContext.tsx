@@ -55,8 +55,11 @@ export function AuctionProvider({ children }: { children: ReactNode }) {
 
   // Инициализация WebSocket для обновления карточек
   useEffect(() => {
-    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const wsUrl = `${protocol}//${window.location.host}/ws`;
+    // Определяем базовый URL для Capacitor приложения
+    const isCapacitor = (window as any).Capacitor?.isNativePlatform?.();
+    const baseUrl = isCapacitor ? 'autobidtj-serviceapp225.replit.app' : window.location.host;
+    const protocol = isCapacitor ? 'wss:' : (window.location.protocol === 'https:' ? 'wss:' : 'ws:');
+    const wsUrl = `${protocol}//${baseUrl}/ws`;
     
     console.log('🔌 Создание WebSocket для обновления карточек:', wsUrl);
     

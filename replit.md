@@ -46,6 +46,7 @@ Preferred communication style: Simple, everyday language in Russian.
 - **Real-time Price Updates**: Main page auction cards automatically refresh every 3 seconds and immediately update via WebSocket when new bids are placed, ensuring users always see current auction prices without manual page refresh.
 - **Stable Authentication**: Fixed issue where users were logged out during page refresh or network errors by preventing localStorage clearing on API failures.
 - **File-based Image Storage**: Migrated from base64 database storage to optimized filesystem storage with Sharp compression, reducing database size and improving performance for 10,000+ vehicle capacity.
+- **Mobile App URL Configuration**: Fixed Capacitor mobile app connectivity by detecting native platform and using correct server URLs instead of localhost for API requests and WebSocket connections.
 
 ### UI/UX Decisions
 - Mobile-first design.
