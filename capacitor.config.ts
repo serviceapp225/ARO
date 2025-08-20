@@ -9,7 +9,11 @@ const config: CapacitorConfig = {
     url: 'https://autobidtj-serviceapp225.replit.app',
     cleartext: true,
     // Разрешить навигацию к серверу
-    allowNavigation: ['https://autobidtj-serviceapp225.replit.app/*']
+    allowNavigation: ['https://autobidtj-serviceapp225.replit.app/*'],
+    // Для Android эмулятора разрешаем HTTP запросы
+    androidScheme: 'https',
+    // Включаем поддержку CORS
+    iosScheme: 'https'
   },
   plugins: {
     // Настройки для пуш-уведомлений
