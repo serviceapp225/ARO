@@ -47,6 +47,7 @@ Preferred communication style: Simple, everyday language in Russian.
 - **Stable Authentication**: Fixed issue where users were logged out during page refresh or network errors by preventing localStorage clearing on API failures.
 - **File-based Image Storage**: Migrated from base64 database storage to optimized filesystem storage with Sharp compression, reducing database size and improving performance for 10,000+ vehicle capacity.
 - **Mobile App URL Configuration**: Fixed Capacitor mobile app connectivity by detecting native platform and using correct server URLs instead of localhost for API requests and WebSocket connections.
+- **Android Studio Integration**: Successfully resolved compilation errors and established proper server connectivity for Android app production deployment (August 2025).
 
 ### UI/UX Decisions
 - Mobile-first design.
