@@ -1,7 +1,7 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.autobid.tj',
+  appId: 'com.narxi.tu',
   appName: 'NARXI TU',
   webDir: 'dist/public',
   server: {
