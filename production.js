@@ -5446,8 +5446,8 @@ async function sendSMSCode(phoneNumber, code) {
   console.log(`[SMS VPS PROXY] \u041E\u0442\u043F\u0440\u0430\u0432\u043A\u0430 SMS \u043D\u0430 ${phoneNumber}: ${code}`);
   try {
     const smsPayload = {
-      login: "zarex",
-      password: "a6d5d8b47551199899862d6d768a4cb1",
+      login: process.env.SMS_API_LOGIN || "zarex",
+      password: process.env.SMS_API_PASSWORD || "demo",
       sender: "OsonSMS",
       to: phoneNumber.replace(/[^0-9]/g, ""),
       text: `\u0412\u0430\u0448 \u043A\u043E\u0434 \u043F\u043E\u0434\u0442\u0432\u0435\u0440\u0436\u0434\u0435\u043D\u0438\u044F AUTOBID.TJ: ${code}`
@@ -5522,8 +5522,8 @@ async function sendSMSNotification(phoneNumber, message) {
         "User-Agent": "AUTOBID.TJ Replit Client"
       },
       body: JSON.stringify({
-        login: "zarex",
-        password: "a6d5d8b47551199899862d6d768a4cb1",
+        login: process.env.SMS_API_LOGIN || "zarex",
+        password: process.env.SMS_API_PASSWORD || "demo",
         sender: "OsonSMS",
         to: phoneNumber.replace(/[^0-9]/g, ""),
         text: message
