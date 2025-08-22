@@ -144,7 +144,7 @@ export function TopHeader({
 
       {/* Центр - название */}
       <h1 className="text-lg font-semibold text-gray-900 dark:text-white absolute left-1/2 transform -translate-x-1/2 flex items-center gap-2">
-        {(getTitle() === "Narxi Tu") && (
+        {(getTitle() === "NARXI TU") && (
           <Gavel className="w-5 h-5" />
         )}
         {getTitle()}
