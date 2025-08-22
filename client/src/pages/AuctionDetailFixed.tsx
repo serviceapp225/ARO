@@ -1762,7 +1762,7 @@ export default function AuctionDetail() {
           <DialogFooter className="flex flex-col items-center space-y-3 mt-4">
             <Button 
               onClick={() => {
-                window.open("https://wa.me/992000000000?text=Здравствуйте! Мне нужно активировать аккаунт на AUTOBID.TJ", "_blank");
+                window.open("https://wa.me/992000000000?text=Здравствуйте! Мне нужно активировать аккаунт на Narxi Tu", "_blank");
                 setShowActivationDialog(false);
               }}
               className="bg-green-600 hover:bg-green-700 w-full max-w-xs"

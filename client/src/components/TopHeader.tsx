@@ -77,7 +77,7 @@ export function TopHeader({
     switch (location) {
       case "/":
       case "/home":
-        return "AUTOBID.TJ";
+        return "Narxi Tu";
       case "/auctions":
         return "Аукционы";
       case "/favorites":
@@ -93,7 +93,7 @@ export function TopHeader({
       case "/messages":
         return "Сообщения";
       default:
-        return "AUTOBID.TJ";
+        return "Narxi Tu";
     }
   };
 
@@ -144,7 +144,7 @@ export function TopHeader({
 
       {/* Центр - название */}
       <h1 className="text-lg font-semibold text-gray-900 dark:text-white absolute left-1/2 transform -translate-x-1/2 flex items-center gap-2">
-        {(getTitle() === "AUTOBID.TJ") && (
+        {(getTitle() === "Narxi Tu") && (
           <Gavel className="w-5 h-5" />
         )}
         {getTitle()}

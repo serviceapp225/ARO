@@ -42,13 +42,13 @@ export function ReferralModal({ isOpen, onClose }: ReferralModalProps) {
     }
   };
 
-  const shareText = `Присоединяйтесь к AUTOBID.TJ - лучшей площадке автомобильных аукционов! При регистрации укажите мой номер телефона: ${user?.phoneNumber || 'номер не указан'}`;
+  const shareText = `Присоединяйтесь к Narxi Tu - лучшей площадке автомобильных аукционов! При регистрации укажите мой номер телефона: ${user?.phoneNumber || 'номер не указан'}`;
 
   const handleShare = async () => {
     if (navigator.share) {
       try {
         await navigator.share({
-          title: 'AUTOBID.TJ - Реферальная программа',
+          title: 'Narxi Tu - Реферальная программа',
           text: shareText,
         });
       } catch (error) {
@@ -99,7 +99,7 @@ export function ReferralModal({ isOpen, onClose }: ReferralModalProps) {
             Пригласи друга получи 1000 сомони с первой покупки
           </DialogTitle>
           <DialogDescription className="text-center text-gray-600">
-            Реферальная программа AUTOBID.TJ
+            Реферальная программа Narxi Tu
           </DialogDescription>
         </DialogHeader>
         

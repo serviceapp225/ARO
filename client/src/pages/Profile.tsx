@@ -242,7 +242,7 @@ export default function Profile() {
                 </p>
                 <div className="flex gap-2">
                   <button
-                    onClick={() => window.open("https://wa.me/992903331332?text=Здравствуйте! Мне нужно активировать аккаунт на AUTOBID.TJ", "_blank")}
+                    onClick={() => window.open("https://wa.me/992903331332?text=Здравствуйте! Мне нужно активировать аккаунт на Narxi Tu", "_blank")}
                     className="bg-yellow-600 text-white px-6 py-2 rounded-lg text-sm font-medium hover:bg-yellow-700 transition-colors"
                   >
                     Связаться с поддержкой

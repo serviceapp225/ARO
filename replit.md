@@ -1,8 +1,8 @@
-# AUTOBID.TJ - Car Auction Platform
+# NARXI TU - Car Auction Platform
 
 ## Overview
 
-AUTOBID.TJ is a full-stack car auction platform designed for viewing, bidding on, and selling cars through an auction system. It aims to provide a mobile-first experience with comprehensive administrative controls and integrated SMS authentication. The platform is built to offer a robust and efficient car auction marketplace.
+NARXI TU is a full-stack car auction platform designed for viewing, bidding on, and selling cars through an auction system. It aims to provide a mobile-first experience with comprehensive administrative controls and integrated SMS authentication. The platform is built to offer a robust and efficient car auction marketplace.
 
 ## User Preferences
 

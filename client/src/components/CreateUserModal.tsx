@@ -25,7 +25,7 @@ export function CreateUserModal({ isOpen, onClose }: CreateUserModalProps) {
   const [isActive, setIsActive] = useState(false);
   const [sendSMS, setSendSMS] = useState(true);
   
-  const smsText = "AutoBid.tj: Регистрация завершена! Скачайте приложение в Play Market или App Store и участвуйте в аукционах. Выгодные цены каждый день!";
+  const smsText = "Narxi Tu: Регистрация завершена! Скачайте приложение в Play Market или App Store и участвуйте в аукционах. Выгодные цены каждый день!";
 
   const createUserMutation = useMutation({
     mutationFn: async (userData: {
