@@ -2,7 +2,7 @@ import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
   appId: 'com.autobid.tj',
-  appName: 'AutoBid.TJ',
+  appName: 'NARXI TU',
   webDir: 'dist/public',
   server: {
     // Подключение к вашему Replit серверу с базой данных
