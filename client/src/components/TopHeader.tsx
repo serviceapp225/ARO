@@ -77,7 +77,7 @@ export function TopHeader({
     switch (location) {
       case "/":
       case "/home":
-        return "Narxi Tu";
+        return "NARXI TU";
       case "/auctions":
         return "Аукционы";
       case "/favorites":
@@ -93,7 +93,7 @@ export function TopHeader({
       case "/messages":
         return "Сообщения";
       default:
-        return "Narxi Tu";
+        return "NARXI TU";
     }
   };
 
