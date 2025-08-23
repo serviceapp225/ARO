@@ -1,4 +1,4 @@
-package com.autobid.tj;
+package com.narxi.tu;
 
 import android.os.Bundle;
 import com.getcapacitor.BridgeActivity;
