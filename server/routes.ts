@@ -1575,7 +1575,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             try {
               const participantUser = await storage.getUser(participantId);
               if (participantUser && participantUser.phoneNumber) {
-                const smsMessage = `Ваша ставка перебита! ${carTitle} - новая ставка ${formattedAmount} сомони. Сделайте новую ставку на AUTOBID.TJ`;
+                const smsMessage = `Ваша ставка перебита! ${carTitle} - новая ставка ${formattedAmount} сомони. Сделайте новую ставку на NARXI.TU`;
                 console.log(`📱 Отправляем SMS уведомление пользователю ${participantId} (${participantUser.phoneNumber})`);
                 const smsResult = await sendSMSNotification(participantUser.phoneNumber, smsMessage);
                 if (smsResult.success) {
@@ -2967,6 +2967,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Принудительно обновляем кэш листингов для главной страницы
       await updateListingsCache();
       
+      // 🚀 WEBSOCKET: Уведомляем всех клиентов о новом одобренном объявлении
+      try {
+        const wsManager = (global as any).wsManager;
+        if (wsManager) {
+          console.log(`📡 WebSocket: Отправляем уведомление о новом объявлении ${listing.id}`);
+          wsManager.broadcastListingsUpdate(listing.id, {
+            type: 'new_listing_approved',
+            listing: listing,
+            message: `Новое авто: ${listing.make} ${listing.model} ${listing.year}`
+          });
+        }
+      } catch (wsError) {
+        console.error('❌ Ошибка WebSocket уведомления:', wsError);
+      }
+      
       res.json(listing);
     } catch (error) {
       res.status(500).json({ error: "Failed to approve listing" });
@@ -3609,6 +3624,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Очищаем кеш при изменении статуса
       clearAllCaches();
+      
+      // 🚀 WEBSOCKET: Уведомляем всех клиентов о новом одобренном объявлении
+      try {
+        const wsManager = (global as any).wsManager;
+        if (wsManager) {
+          console.log(`📡 WebSocket (админка): Отправляем уведомление о новом объявлении ${listing.id}`);
+          wsManager.broadcastListingsUpdate(listing.id, {
+            type: 'new_listing_approved',
+            listing: listing,
+            message: `Новое авто: ${listing.make} ${listing.model} ${listing.year}`
+          });
+        }
+      } catch (wsError) {
+        console.error('❌ Ошибка WebSocket уведомления:', wsError);
+      }
       
       console.log(`✅ АДМИН: Объявление ${listingId} успешно одобрено`);
       res.json(listing);
@@ -4370,7 +4400,7 @@ async function sendSMSCode(phoneNumber: string, code: string): Promise<{success:
     const login = process.env.SMS_LOGIN || "zarex";
     const senderName = process.env.SMS_SENDER || "OsonSMS";
     const cleanPhoneNumber = phoneNumber.replace(/[^0-9]/g, '');
-    const message = `Ваш код подтверждения AUTOBID.TJ: ${code}`;
+    const message = `Ваш код подтверждения NARXI.TU: ${code}`;
     const password = process.env.SMS_HASH || ""; // VPS v6 ожидает простой пароль
     
     console.log(`[SMS VPS PROXY] VPS v6 - используем простой пароль (не хеш)`);
@@ -4392,7 +4422,7 @@ async function sendSMSCode(phoneNumber: string, code: string): Promise<{success:
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'User-Agent': 'AUTOBID.TJ Replit Client'
+        'User-Agent': 'NARXI.TU Replit Client'
       },
       body: JSON.stringify(smsPayload)
     });
@@ -4474,7 +4504,7 @@ async function sendSMSNotification(phoneNumber: string, message: string): Promis
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'User-Agent': 'AUTOBID.TJ Replit Client'
+        'User-Agent': 'NARXI.TU Replit Client'
       },
       body: JSON.stringify({
         login: process.env.SMS_LOGIN || "zarex",

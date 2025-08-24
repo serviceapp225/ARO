@@ -96,6 +96,34 @@ export function useOptimizedRealTime(config: RealTimeConfig = {}) {
       console.log('📝 Получено обновление объявления:', message);
       console.log('📊 Данные для обновления:', message.data);
       
+      // Обработка нового одобренного объявления
+      if (message.data && message.data.type === 'new_listing_approved') {
+        console.log('🆕 Получено уведомление о новом одобренном объявлении:', message.data.listing);
+        
+        // Полностью обновляем список аукционов для отображения нового объявления
+        queryClient.invalidateQueries({ queryKey: ['/api/listings'] });
+        
+        // Показываем уведомление пользователю  
+        if (window.Notification && Notification.permission === 'granted') {
+          new Notification('NARXI TU - Новый автомобиль!', {
+            body: message.data.message,
+            icon: '/icon-192x192.png'
+          });
+        } else if (window.Notification && Notification.permission === 'default') {
+          // Запрашиваем разрешения на уведомления
+          Notification.requestPermission().then(permission => {
+            if (permission === 'granted') {
+              new Notification('NARXI TU - Новый автомобиль!', {
+                body: message.data.message,
+                icon: '/icon-192x192.png'
+              });
+            }
+          });
+        }
+        
+        return; // Выходим, чтобы не обрабатывать как обычное обновление
+      }
+      
       // КРИТИЧНО: Обновляем главный кэш списка /api/listings для мгновенного обновления карточек
       if (message.data && message.data.id) {
         queryClient.setQueryData(['/api/listings'], (oldListings: any) => {
