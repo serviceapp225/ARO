@@ -70,7 +70,7 @@ export function NotificationBell({ userId }: NotificationBellProps) {
     refetchInterval: 30 * 1000, // Стабильные 30 секунд - полагаемся на WebSocket для обновлений
     staleTime: 2 * 60 * 1000, // Данные актуальны 2 минуты
     refetchOnWindowFocus: false, // НЕ обновлять при фокусе
-    refetchOnMount: true, // Обновлять при монтировании для свежих данных
+    refetchOnMount: false, // Не перезапрашивать при переходах
     gcTime: 5 * 60 * 1000, // Кэш хранится 5 минут для стабильности
   });
 

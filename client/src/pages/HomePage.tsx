@@ -26,12 +26,14 @@ export default function HomePage() {
     queryKey: ['/api/advertisement-carousel'],
     staleTime: 30 * 60 * 1000, // 30 минут кэширования для рекламы
     gcTime: 60 * 60 * 1000, // 1 час в памяти
+    refetchOnMount: false, // Не перезапрашивать при переходах
   });
 
   const { data: listingsData, isLoading: listingsLoading } = useQuery({
     queryKey: ['/api/listings'],
     staleTime: 10 * 1000, // Объявления остаются свежими 10 секунд
     gcTime: 2 * 60 * 1000, // 2 минуты в памяти для быстрого возврата
+    refetchOnMount: false, // Не перезапрашивать при переходах
   });
 
   // Показываем скелетон только пока критические данные (объявления) не загрузились

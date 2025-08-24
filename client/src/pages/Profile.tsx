@@ -24,6 +24,7 @@ export default function Profile() {
     refetchInterval: 30 * 1000, // Обновляем каждые 30 секунд для стабильности
     staleTime: 2 * 60 * 1000, // Данные актуальны 2 минуты
     gcTime: 5 * 60 * 1000, // Кэш хранится 5 минут
+    refetchOnMount: false, // Не перезапрашивать при переходах
     retry: 3, // Повторяем запрос при ошибке 3 раза
     retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000),
   });

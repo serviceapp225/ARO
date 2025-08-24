@@ -36,7 +36,7 @@ export function AllNotifications({ userId }: AllNotificationsProps) {
     staleTime: 30000, // Данные свежие 30 секунд - полагаемся на WebSocket для real-time обновлений
     gcTime: 300000,   // Кэш живет 5 минут
     refetchOnWindowFocus: false, // Отключаем лишние обновления при фокусе
-    refetchOnMount: true,
+    refetchOnMount: false, // Не перезапрашивать при переходах
     refetchInterval: false, // Убираем автоматическое обновление - используем WebSocket
   });
 

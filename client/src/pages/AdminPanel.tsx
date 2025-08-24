@@ -219,7 +219,7 @@ function ModerationManagement() {
     staleTime: 0, // Всегда загружаем свежие данные
     gcTime: 0, // Не кэшируем вообще
     refetchInterval: 5000, // автообновление каждые 5 секунд
-    refetchOnMount: true,
+    refetchOnMount: false, // Не перезапрашивать при переходах
     refetchOnWindowFocus: true
   });
 

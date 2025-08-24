@@ -43,7 +43,7 @@ export function SellBannerManagement() {
       return response.json();
     },
     staleTime: 0,
-    refetchOnMount: true,
+    refetchOnMount: false, // Не перезапрашивать при переходах
   });
 
   const form = useForm<SellBannerFormData>({

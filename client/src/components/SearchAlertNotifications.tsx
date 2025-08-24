@@ -34,7 +34,7 @@ export function SearchAlertNotifications({ userId }: SearchAlertNotificationsPro
     staleTime: 30000, // 30 секунд кэш
     gcTime: 300000, // 5 минут в памяти
     refetchOnWindowFocus: true, // Обновлять при фокусе окна
-    refetchOnMount: true, // Всегда перезапрашивать при монтировании
+    refetchOnMount: false, // Не перезапрашивать при переходах
     refetchInterval: false, // Отключить автообновление по таймеру
     retry: 2,
     retryDelay: 1000,

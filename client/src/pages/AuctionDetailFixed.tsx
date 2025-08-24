@@ -163,7 +163,7 @@ export default function AuctionDetail() {
     refetchIntervalInBackground: false, // Не обновлять в фоне
     staleTime: 10000, // Данные свежие 10 секунд
     gcTime: 300000, // Кэш на 5 минут
-    refetchOnMount: true, // Обновлять при монтировании
+    refetchOnMount: false, // Не перезапрашивать при переходах
     refetchOnWindowFocus: false, // Не обновлять при фокусе
   });
 
@@ -185,7 +185,7 @@ export default function AuctionDetail() {
     refetchIntervalInBackground: false, // Не обновлять в фоне
     staleTime: 5000, // Данные свежие 5 секунд
     gcTime: 300000, // Кэш на 5 минут
-    refetchOnMount: true, // Обновлять при монтировании
+    refetchOnMount: false, // Не перезапрашивать при переходах
     refetchOnWindowFocus: false, // Не обновлять при фокусе
   });
 
