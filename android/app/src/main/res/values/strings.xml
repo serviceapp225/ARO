@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">autobid-tj</string>
-    <string name="title_activity_main">autobid-tj</string>
-    <string name="package_name">com.autobid.tj</string>
-    <string name="custom_url_scheme">com.autobid.tj</string>
+    <string name="app_name">NARXI TU</string>
+    <string name="title_activity_main">NARXI TU</string>
+    <string name="package_name">com.narxi.tu</string>
+    <string name="custom_url_scheme">com.narxi.tu</string>
 </resources>
