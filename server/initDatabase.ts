@@ -206,8 +206,3 @@ export async function initializeDatabaseWithSampleData() {
 
   console.log("Database initialized with sample data successfully!");
 }
-
-// Запускаем инициализацию если файл запускается напрямую
-if (import.meta.url === `file://${process.argv[1]}`) {
-  initializeDatabaseWithSampleData().catch(console.error);
-}

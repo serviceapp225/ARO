@@ -255,7 +255,7 @@ function ModerationManagement() {
       
       const headers = {
         'Content-Type': 'application/json',
-        'x-user-id': user.userId?.toString() || '1', // fallback для демо
+        'x-user-id': user.userId?.toString() || '4', // fallback для демо
         'x-user-email': user.email || '+992 (90) 333-13-32@autoauction.tj' // fallback для демо
       };
       
@@ -376,7 +376,7 @@ function ModerationManagement() {
       
       const headers = {
         'Content-Type': 'application/json',
-        'x-user-id': user?.userId?.toString() || '1', // fallback для демо
+        'x-user-id': user?.userId?.toString() || '4', // fallback для демо
         'x-user-email': user?.email || '+992 (90) 333-13-32@autoauction.tj' // fallback для демо
       };
       
@@ -2717,7 +2717,7 @@ function ArchiveManagement() {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
-          'x-user-id': user?.userId?.toString() || user?.id?.toString() || '1',
+          'x-user-id': user?.userId?.toString() || user?.id?.toString() || '4',
           'x-user-email': user?.email || '+992 (90) 333-13-32@autoauction.tj'
         }
       });
