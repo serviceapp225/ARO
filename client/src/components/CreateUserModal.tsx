@@ -42,7 +42,7 @@ export function CreateUserModal({ isOpen, onClose }: CreateUserModalProps) {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'x-user-id': currentUser.userId?.toString() || '4',
+          'x-user-id': currentUser.userId?.toString() || '1',
           'x-user-email': currentUser.email || '+992 (90) 333-13-32@autoauction.tj'
         },
         body: JSON.stringify(userData)
