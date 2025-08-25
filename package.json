@@ -50,6 +50,7 @@
     "@types/better-sqlite3": "^7.6.13",
     "@types/compression": "^1.8.1",
     "@types/memoizee": "^0.4.12",
+    "@types/multer": "^2.0.0",
     "@types/node-fetch": "^2.6.13",
     "@uppy/aws-s3": "^4.3.2",
     "@uppy/core": "^4.5.2",
