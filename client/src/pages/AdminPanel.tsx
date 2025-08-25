@@ -2236,7 +2236,7 @@ function AdvertisementCarouselManagement() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (editingItem) {
+    if (editingItem && editingItem.id) {
       updateItemMutation.mutate(formData);
     } else {
       createItemMutation.mutate(formData);
@@ -2324,7 +2324,7 @@ function AdvertisementCarouselManagement() {
         <p className="text-sm text-gray-600 dark:text-gray-400">
           Максимум 3 активных объявления
         </p>
-        <Button onClick={() => setEditingItem({} as AdvertisementCarousel)}>
+        <Button onClick={() => setEditingItem({ id: null } as AdvertisementCarousel)}>
           <Plus className="w-4 h-4 mr-2" />
           Добавить объявление
         </Button>
