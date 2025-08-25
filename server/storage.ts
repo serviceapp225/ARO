@@ -1253,12 +1253,19 @@ export class DatabaseStorage implements IStorage {
 
   async getUnreadMessageCount(userId: number): Promise<number> {
     try {
+      // Поскольку receiver_id не существует, считаем непрочитанные сообщения через conversations
+      // Пользователь получает сообщения в разговорах где он buyer или seller, но не от себя
       const [result] = await db.select({ count: sql<number>`count(*)` })
         .from(messages)
+        .leftJoin(conversations, eq(messages.conversationId, conversations.id))
         .where(
           and(
-            sql`receiver_id = ${userId}`,
-            sql`is_read = false`
+            or(
+              eq(conversations.buyerId, userId),
+              eq(conversations.sellerId, userId)
+            ),
+            ne(messages.senderId, userId), // Не считаем свои сообщения
+            eq(messages.isRead, false)
           )
         );
       return result?.count || 0;
@@ -1375,12 +1382,13 @@ export class DatabaseStorage implements IStorage {
   }
 
   async markMessagesAsRead(conversationId: number, userId: number): Promise<void> {
+    // Отмечаем как прочитанные все сообщения в разговоре, которые НЕ от этого пользователя
     await db.update(messages)
       .set({ isRead: true })
       .where(
         and(
           eq(messages.conversationId, conversationId),
-          sql`receiver_id = ${userId}`
+          ne(messages.senderId, userId) // Отмечаем только сообщения НЕ от этого пользователя
         )
       );
   }
