@@ -2112,6 +2112,13 @@ function AdvertisementCarouselManagement() {
 
   const createItemMutation = useMutation({
     mutationFn: async (data: any) => {
+      console.log('🌐 Sending POST request to create carousel item');
+      console.log('📤 Request data:', data);
+      console.log('👤 User headers:', {
+        'x-user-id': user?.id?.toString() || '',
+        'x-user-email': user?.email || ''
+      });
+      
       const response = await fetch('/api/admin/advertisement-carousel', {
         method: 'POST',
         headers: { 
@@ -2121,7 +2128,15 @@ function AdvertisementCarouselManagement() {
         },
         body: JSON.stringify(data),
       });
-      if (!response.ok) throw new Error('Failed to create item');
+      
+      console.log('📥 Response status:', response.status, response.statusText);
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.log('❌ Error response:', errorText);
+        throw new Error(`Failed to create item: ${response.status} ${errorText}`);
+      }
+      
       return response.json();
     },
     onSuccess: () => {
@@ -2248,9 +2263,15 @@ function AdvertisementCarouselManagement() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('🚀 handleSubmit called');
+    console.log('📝 editingItem:', editingItem);
+    console.log('📋 formData:', formData);
+    
     if (editingItem && editingItem.id) {
+      console.log('🔄 Updating item with ID:', editingItem.id);
       updateItemMutation.mutate(formData);
     } else {
+      console.log('➕ Creating new item');
       createItemMutation.mutate(formData);
     }
   };
