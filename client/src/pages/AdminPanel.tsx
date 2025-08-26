@@ -2528,7 +2528,7 @@ function AdvertisementCarouselManagement() {
                 >
                   {createItemMutation.isPending || updateItemMutation.isPending
                     ? 'Сохранение...'
-                    : editingItem.id
+                    : editingItem && editingItem.id
                     ? 'Обновить'
                     : 'Создать'}
                 </Button>
