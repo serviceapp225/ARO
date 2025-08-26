@@ -2112,38 +2112,52 @@ function AdvertisementCarouselManagement() {
 
   const createItemMutation = useMutation({
     mutationFn: async (data: any) => {
-      console.log('🌐 Using apiRequest to create carousel item');
+      console.log('🌐 Creating carousel item with proper auth');
       console.log('📤 Request data:', data);
-      console.log('👤 User ID:', user?.id, 'Email:', user?.email);
       
-      // Добавляем заголовки в данные запроса для apiRequest
-      const requestOptions = {
+      // Получаем пользователя так же, как это делает apiRequest
+      const userStr = localStorage.getItem('demo-user') || localStorage.getItem('currentUser');
+      let userId = '';
+      let userEmail = '';
+      
+      if (userStr) {
+        try {
+          const userData = JSON.parse(userStr);
+          userId = userData.userId?.toString() || userData.id?.toString() || '';
+          userEmail = userData.email || '';
+          console.log('👤 Auth data from localStorage:', { userId, userEmail });
+        } catch (error) {
+          console.error('Ошибка парсинга пользователя:', error);
+        }
+      }
+      
+      if (!userId || !userEmail) {
+        console.error('❌ No authentication data available');
+        throw new Error('Authentication required');
+      }
+      
+      const response = await fetch('/api/admin/advertisement-carousel', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'x-user-id': user?.id?.toString() || '',
-          'x-user-email': user?.email || ''
-        }
-      };
+          'x-user-id': userId,
+          'x-user-email': userEmail
+        },
+        body: JSON.stringify(data),
+        credentials: 'include'
+      });
       
-      console.log('📋 Request options:', requestOptions);
+      console.log('📥 Response:', response.status, response.statusText);
       
-      try {
-        const result = await apiRequest('/api/admin/advertisement-carousel', {
-          method: 'POST',
-          headers: {
-            'x-user-id': user?.id?.toString() || '',
-            'x-user-email': user?.email || ''
-          },
-          body: data
-        });
-        
-        console.log('✅ apiRequest success response:', result);
-        return result;
-      } catch (apiError) {
-        console.error('🚨 apiRequest error:', apiError);
-        throw apiError;
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('❌ Error:', errorText);
+        throw new Error(`Failed to create: ${response.status} ${errorText}`);
       }
+      
+      const result = await response.json();
+      console.log('✅ Success:', result);
+      return result;
     },
     onSuccess: () => {
       // Принудительно очищаем все кэши
