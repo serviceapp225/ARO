@@ -119,13 +119,19 @@ export function TripleCarouselBanner() {
                     {currentItem.description}
                   </p>
                 )}
-                {currentItem?.linkUrl && (
+                {currentItem?.buttonText && (
                   <div className="mt-4">
-                    <a href={currentItem.linkUrl} className="inline-block">
-                      <span className="px-4 py-2 rounded-full text-sm font-bold bg-white text-emerald-700 hover:bg-gray-100 transition-all duration-300 cursor-pointer inline-flex items-center gap-1">
-                        {currentItem.buttonText || 'Подробнее'} →
+                    {currentItem.linkUrl ? (
+                      <a href={currentItem.linkUrl} className="inline-block">
+                        <span className="px-4 py-2 rounded-full text-sm font-bold bg-white text-emerald-700 hover:bg-gray-100 transition-all duration-300 cursor-pointer inline-flex items-center gap-1">
+                          {currentItem.buttonText} →
+                        </span>
+                      </a>
+                    ) : (
+                      <span className="px-4 py-2 rounded-full text-sm font-bold bg-white text-emerald-700 opacity-80 inline-flex items-center gap-1">
+                        {currentItem.buttonText}
                       </span>
-                    </a>
+                    )}
                   </div>
                 )}
               </div>
