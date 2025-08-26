@@ -2137,7 +2137,9 @@ function AdvertisementCarouselManagement() {
         throw new Error(`Failed to create item: ${response.status} ${errorText}`);
       }
       
-      return response.json();
+      const result = await response.json();
+      console.log('✅ Success response:', result);
+      return result;
     },
     onSuccess: () => {
       // Принудительно очищаем все кэши
