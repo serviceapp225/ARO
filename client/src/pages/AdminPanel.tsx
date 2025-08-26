@@ -2186,17 +2186,53 @@ function AdvertisementCarouselManagement() {
 
   const updateItemMutation = useMutation({
     mutationFn: async (data: any) => {
+      console.log('🔄 Updating carousel item with proper auth');
+      console.log('📤 Update data:', data);
+      console.log('🆔 Item ID:', editingItem?.id);
+      
+      // Получаем пользователя так же, как это делает apiRequest
+      const userStr = localStorage.getItem('demo-user') || localStorage.getItem('currentUser');
+      let userId = '';
+      let userEmail = '';
+      
+      if (userStr) {
+        try {
+          const userData = JSON.parse(userStr);
+          userId = userData.userId?.toString() || userData.id?.toString() || '';
+          userEmail = userData.email || '';
+          console.log('👤 Auth data from localStorage:', { userId, userEmail });
+        } catch (error) {
+          console.error('Ошибка парсинга пользователя:', error);
+        }
+      }
+      
+      if (!userId || !userEmail) {
+        console.error('❌ No authentication data available');
+        throw new Error('Authentication required');
+      }
+      
       const response = await fetch(`/api/admin/advertisement-carousel/${editingItem?.id}`, {
         method: 'PUT',
-        headers: { 
+        headers: {
           'Content-Type': 'application/json',
-          'x-user-id': user?.id?.toString() || '',
-          'x-user-email': user?.email || ''
+          'x-user-id': userId,
+          'x-user-email': userEmail
         },
         body: JSON.stringify(data),
+        credentials: 'include'
       });
-      if (!response.ok) throw new Error('Failed to update item');
-      return response.json();
+      
+      console.log('📥 Update response:', response.status, response.statusText);
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('❌ Update error:', errorText);
+        throw new Error(`Failed to update: ${response.status} ${errorText}`);
+      }
+      
+      const result = await response.json();
+      console.log('✅ Update success:', result);
+      return result;
     },
     onSuccess: async (updatedItem) => {
       // Принудительно очищаем все кэши
