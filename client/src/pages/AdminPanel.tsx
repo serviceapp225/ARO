@@ -2112,38 +2112,37 @@ function AdvertisementCarouselManagement() {
 
   const createItemMutation = useMutation({
     mutationFn: async (data: any) => {
-      console.log('🌐 Sending POST request to create carousel item');
+      console.log('🌐 Using apiRequest to create carousel item');
       console.log('📤 Request data:', data);
-      console.log('👤 User headers:', {
-        'x-user-id': user?.id?.toString() || '',
-        'x-user-email': user?.email || ''
-      });
+      console.log('👤 User ID:', user?.id, 'Email:', user?.email);
+      
+      // Добавляем заголовки в данные запроса для apiRequest
+      const requestOptions = {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-id': user?.id?.toString() || '',
+          'x-user-email': user?.email || ''
+        }
+      };
+      
+      console.log('📋 Request options:', requestOptions);
       
       try {
-        const response = await fetch('/api/admin/advertisement-carousel', {
+        const result = await apiRequest('/api/admin/advertisement-carousel', {
           method: 'POST',
-          headers: { 
-            'Content-Type': 'application/json',
+          headers: {
             'x-user-id': user?.id?.toString() || '',
             'x-user-email': user?.email || ''
           },
-          body: JSON.stringify(data),
+          body: data
         });
         
-        console.log('📥 Response status:', response.status, response.statusText);
-        
-        if (!response.ok) {
-          const errorText = await response.text();
-          console.log('❌ Error response:', errorText);
-          throw new Error(`Failed to create item: ${response.status} ${errorText}`);
-        }
-        
-        const result = await response.json();
-        console.log('✅ Success response:', result);
+        console.log('✅ apiRequest success response:', result);
         return result;
-      } catch (fetchError) {
-        console.error('🚨 Fetch error:', fetchError);
-        throw fetchError;
+      } catch (apiError) {
+        console.error('🚨 apiRequest error:', apiError);
+        throw apiError;
       }
     },
     onSuccess: () => {
