@@ -11,6 +11,7 @@ import { useFavorites } from '@/contexts/FavoritesContext';
 import { useLocation } from 'wouter';
 import { useState, useEffect, useMemo, memo, useCallback, useRef } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
+import WebSocketManager from '@/utils/WebSocketManager';
 
 
 interface ActiveAuctionsProps {
@@ -211,6 +212,37 @@ export const ActiveAuctions = memo(function ActiveAuctions({ searchQuery = "", c
       setLoadingTimeout(false);
     }
   }, [loading, refreshAuctions]);
+
+  // WebSocket обработчик для новых одобренных объявлений
+  useEffect(() => {
+    const wsManager = WebSocketManager.getInstance();
+    
+    const handleMessage = (message: any) => {
+      if (message.type === 'new_listing_approved' || message.type === 'listing_update') {
+        const listing = message.listing || message.data?.listing;
+        console.log('📱 Получено уведомление о новом объявлении:', listing?.make, listing?.model);
+        
+        // Мгновенно обновляем кэш объявлений
+        queryClient.invalidateQueries({ queryKey: ['/api/listings'] });
+        
+        // Принудительно обновляем данные аукционов
+        refreshAuctions();
+        
+        // Показываем уведомление пользователю (опционально)
+        if (listing) {
+          console.log(`✨ Новый автомобиль: ${listing.make} ${listing.model} ${listing.year}`);
+        }
+      }
+    };
+    
+    // Подписываемся на WebSocket сообщения
+    const unsubscribe = wsManager.addMessageHandler(handleMessage);
+    
+    // Отписываемся при размонтировании компонента
+    return () => {
+      unsubscribe();
+    };
+  }, [queryClient, refreshAuctions]);
 
   if (loading && !loadingTimeout) {
     return (
