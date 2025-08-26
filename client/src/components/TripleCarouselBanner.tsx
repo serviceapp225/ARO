@@ -119,30 +119,48 @@ export function TripleCarouselBanner() {
                     {currentItem.description}
                   </p>
                 )}
+                {/* Принудительная тестовая кнопка */}
+                <div className="mt-4">
+                  <span className="px-4 py-2 rounded-full text-sm font-bold bg-white text-emerald-700 inline-flex items-center gap-1">
+                    Связаться с нами (тест)
+                  </span>
+                </div>
+                
+                {/* Оригинальная логика кнопки с детальным логированием */}
                 {(() => {
-                  console.log('🔘 Checking button display:', {
-                    hasButtonText: !!currentItem?.buttonText,
-                    buttonText: currentItem?.buttonText,
-                    hasLinkUrl: !!currentItem?.linkUrl,
-                    linkUrl: currentItem?.linkUrl
+                  const hasButtonText = !!currentItem?.buttonText;
+                  const buttonText = currentItem?.buttonText;
+                  const hasLinkUrl = !!currentItem?.linkUrl;
+                  const linkUrl = currentItem?.linkUrl;
+                  
+                  console.log('🔘 Детальная проверка кнопки:', {
+                    currentItem,
+                    hasButtonText,
+                    buttonText,
+                    hasLinkUrl,
+                    linkUrl,
+                    shouldShowButton: hasButtonText
                   });
+                  
+                  if (hasButtonText) {
+                    return (
+                      <div className="mt-2">
+                        {hasLinkUrl ? (
+                          <a href={linkUrl} className="inline-block">
+                            <span className="px-4 py-2 rounded-full text-sm font-bold bg-white text-blue-700 hover:bg-gray-100 transition-all duration-300 cursor-pointer inline-flex items-center gap-1">
+                              {buttonText} →
+                            </span>
+                          </a>
+                        ) : (
+                          <span className="px-4 py-2 rounded-full text-sm font-bold bg-white text-blue-700 opacity-80 inline-flex items-center gap-1">
+                            {buttonText}
+                          </span>
+                        )}
+                      </div>
+                    );
+                  }
                   return null;
                 })()}
-                {currentItem?.buttonText && (
-                  <div className="mt-4">
-                    {currentItem.linkUrl ? (
-                      <a href={currentItem.linkUrl} className="inline-block">
-                        <span className="px-4 py-2 rounded-full text-sm font-bold bg-white text-emerald-700 hover:bg-gray-100 transition-all duration-300 cursor-pointer inline-flex items-center gap-1">
-                          {currentItem.buttonText} →
-                        </span>
-                      </a>
-                    ) : (
-                      <span className="px-4 py-2 rounded-full text-sm font-bold bg-white text-emerald-700 opacity-80 inline-flex items-center gap-1">
-                        {currentItem.buttonText}
-                      </span>
-                    )}
-                  </div>
-                )}
               </div>
             </div>
 
