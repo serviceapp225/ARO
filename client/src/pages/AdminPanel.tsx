@@ -2119,27 +2119,32 @@ function AdvertisementCarouselManagement() {
         'x-user-email': user?.email || ''
       });
       
-      const response = await fetch('/api/admin/advertisement-carousel', {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'x-user-id': user?.id?.toString() || '',
-          'x-user-email': user?.email || ''
-        },
-        body: JSON.stringify(data),
-      });
-      
-      console.log('📥 Response status:', response.status, response.statusText);
-      
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.log('❌ Error response:', errorText);
-        throw new Error(`Failed to create item: ${response.status} ${errorText}`);
+      try {
+        const response = await fetch('/api/admin/advertisement-carousel', {
+          method: 'POST',
+          headers: { 
+            'Content-Type': 'application/json',
+            'x-user-id': user?.id?.toString() || '',
+            'x-user-email': user?.email || ''
+          },
+          body: JSON.stringify(data),
+        });
+        
+        console.log('📥 Response status:', response.status, response.statusText);
+        
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.log('❌ Error response:', errorText);
+          throw new Error(`Failed to create item: ${response.status} ${errorText}`);
+        }
+        
+        const result = await response.json();
+        console.log('✅ Success response:', result);
+        return result;
+      } catch (fetchError) {
+        console.error('🚨 Fetch error:', fetchError);
+        throw fetchError;
       }
-      
-      const result = await response.json();
-      console.log('✅ Success response:', result);
-      return result;
     },
     onSuccess: () => {
       // Принудительно очищаем все кэши
