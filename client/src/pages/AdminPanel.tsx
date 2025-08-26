@@ -2114,7 +2114,11 @@ function AdvertisementCarouselManagement() {
     mutationFn: async (data: any) => {
       const response = await fetch('/api/admin/advertisement-carousel', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'x-user-id': user?.id?.toString() || '',
+          'x-user-email': user?.email || ''
+        },
         body: JSON.stringify(data),
       });
       if (!response.ok) throw new Error('Failed to create item');
@@ -2149,7 +2153,11 @@ function AdvertisementCarouselManagement() {
     mutationFn: async (data: any) => {
       const response = await fetch(`/api/admin/advertisement-carousel/${editingItem?.id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'x-user-id': user?.id?.toString() || '',
+          'x-user-email': user?.email || ''
+        },
         body: JSON.stringify(data),
       });
       if (!response.ok) throw new Error('Failed to update item');
@@ -2207,6 +2215,10 @@ function AdvertisementCarouselManagement() {
     mutationFn: async (id: number) => {
       const response = await fetch(`/api/admin/advertisement-carousel/${id}`, {
         method: 'DELETE',
+        headers: {
+          'x-user-id': user?.id?.toString() || '',
+          'x-user-email': user?.email || ''
+        }
       });
       if (!response.ok) throw new Error('Failed to delete item');
     },
