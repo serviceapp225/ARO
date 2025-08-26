@@ -119,6 +119,15 @@ export function TripleCarouselBanner() {
                     {currentItem.description}
                   </p>
                 )}
+                {(() => {
+                  console.log('🔘 Checking button display:', {
+                    hasButtonText: !!currentItem?.buttonText,
+                    buttonText: currentItem?.buttonText,
+                    hasLinkUrl: !!currentItem?.linkUrl,
+                    linkUrl: currentItem?.linkUrl
+                  });
+                  return null;
+                })()}
                 {currentItem?.buttonText && (
                   <div className="mt-4">
                     {currentItem.linkUrl ? (
