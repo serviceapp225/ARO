@@ -8,10 +8,12 @@ channel = "stable-24_05"
 packages = ["flutter", "sqlite"]
 
 [deployment]
-deploymentTarget = "gce"
-build = ["sh", "-c", "npm ci && npm run build"]
-run = ["sh", "-c", "npm start"]
+build = ["npm", "run", "build"]
+run = ["npm", "start"]
 ignorePorts = true
+
+[hosting]
+image_tag = "nodejs-20"
 
 [[ports]]
 localPort = 80
