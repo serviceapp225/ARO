@@ -1,5 +1,6 @@
 modules = ["nodejs-20", "web", "postgresql-16", "flutter"]
 run = "npm run dev"
+entrypoint = "server/index.ts"
 hidden = [".config", ".git", "generated-icon.png", "node_modules", "dist"]
 
 [nix]
@@ -10,9 +11,7 @@ packages = ["flutter", "sqlite"]
 deploymentTarget = "gce"
 build = ["sh", "-c", "npm run build"]
 run = ["sh", "-c", "npm start"]
-
-[hosting]
-image_tag = "nodejs-20"
+ignorePorts = true
 
 [[ports]]
 localPort = 80
