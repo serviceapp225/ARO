@@ -1,6 +1,6 @@
 import { Plus } from "lucide-react";
 import { useLocation } from "wouter";
-import placeholderCarImage from "@assets/rodan-can-6cqJPeTIuls-unsplash_1754479984557.jpg";
+import placeholderCarImage from "@/assets/default-car-placeholder.jpg";
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
