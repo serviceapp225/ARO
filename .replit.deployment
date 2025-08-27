@@ -8,7 +8,7 @@ packages = ["flutter", "sqlite"]
 
 [deployment]
 deploymentTarget = "gce"
-build = ["sh", "-c", "npm ci --only=production && npm run build"]
+build = ["sh", "-c", "npm run build"]
 run = ["sh", "-c", "npm start"]
 image_tag = "nodejs-20"
 
