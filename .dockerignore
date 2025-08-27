@@ -1,0 +1,16 @@
+node_modules/
+attached_assets/
+.git/
+.config/
+generated-icon.png
+*.log
+.env.local
+.env.development
+tmp/
+uploads/
+client/dist/
+*.tar.gz
+flutter_workflow/
+android/
+ios/
+autoauction_flutter/
