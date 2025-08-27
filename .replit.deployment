@@ -1,7 +1,7 @@
 modules = ["nodejs-20", "web", "postgresql-16", "flutter"]
 run = "npm run dev"
 entrypoint = "server/index.ts"
-hidden = [".config", ".git", "generated-icon.png", "node_modules", "attached_assets", ".gitignore", "*.log", "tmp", "uploads"]
+hidden = [".config", ".git", "generated-icon.png", "node_modules", "attached_assets"]
 
 [nix]
 channel = "stable-24_05"
@@ -10,7 +10,10 @@ packages = ["flutter", "sqlite"]
 [deployment]
 build = ["npm", "run", "build"]
 run = ["npm", "start"]
-deploymentTarget = "cloudrun"
+ignorePorts = true
+
+[hosting]
+image_tag = "nodejs-20"
 
 [[ports]]
 localPort = 80
