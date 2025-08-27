@@ -10,6 +10,8 @@ packages = ["flutter", "sqlite"]
 deploymentTarget = "gce"
 build = ["sh", "-c", "npm run build"]
 run = ["sh", "-c", "npm start"]
+
+[hosting]
 image_tag = "nodejs-20"
 
 [[ports]]
