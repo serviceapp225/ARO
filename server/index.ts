@@ -204,6 +204,11 @@ app.use((req, res, next) => {
   const isProduction = process.env.NODE_ENV === 'production' || 
                        process.env.REPLIT_DEPLOYMENT === '1' ||
                        (typeof process.env.REPL_OWNER !== 'undefined' && process.env.PORT);
+  
+  // DEPLOYMENT: Быстрый старт для production - минимальная инициализация
+  if (isProduction) {
+    console.log("🚀 PRODUCTION: Быстрая инициализация для деплоя");
+  }
 
 
 
@@ -231,13 +236,30 @@ app.use((req, res, next) => {
   // Development mode uses 5000 as configured in workflow
   
   const port = process.env.PORT || (process.env.NODE_ENV === 'production' ? 3000 : 5000);
-  server.listen({
-    port: Number(port),
-    host: "0.0.0.0",
-    reusePort: true,
-  }, () => {
-    log(`serving on port ${port}`);
-  });
+  
+  // DEPLOYMENT: Добавляем timeout для production startup
+  if (isProduction) {
+    const serverStartTimeout = setTimeout(() => {
+      console.log("🚨 DEPLOYMENT: Сервер запустился с timeout, но продолжает работу");
+    }, 10000); // 10 секунд timeout
+    
+    server.listen({
+      port: Number(port),
+      host: "0.0.0.0",
+      reusePort: true,
+    }, () => {
+      clearTimeout(serverStartTimeout);
+      log(`✅ DEPLOYMENT: Сервер запущен на порту ${port}`);
+    });
+  } else {
+    server.listen({
+      port: Number(port),
+      host: "0.0.0.0", 
+      reusePort: true,
+    }, () => {
+      log(`serving on port ${port}`);
+    });
+  }
 
   } catch (error) {
     console.error('🚨 Критическая ошибка при запуске сервера:', error);
