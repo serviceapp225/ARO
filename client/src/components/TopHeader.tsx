@@ -1,4 +1,5 @@
-import { ArrowLeft, Gavel, Settings, MessageCircle, MessageSquare } from "lucide-react";
+import { ArrowLeft, Gavel, Settings, MessageCircle } from "lucide-react";
+import { FaWhatsapp } from "react-icons/fa";
 import { useLocation, Link } from "wouter";
 import { NotificationBell } from "./NotificationBell";
 import { useAuth } from "@/contexts/AuthContext";
@@ -120,7 +121,7 @@ export function TopHeader({
             className="p-2 text-green-600 hover:text-green-700 hover:bg-green-50 rounded-lg transition-colors"
             title="Связаться через WhatsApp"
           >
-            <MessageSquare className="w-6 h-6" />
+            <FaWhatsapp className="w-6 h-6" />
           </button>
         )}
       </div>
