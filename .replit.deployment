@@ -13,7 +13,7 @@ run = ["npm", "start"]
 deploymentTarget = "cloudrun"
 
 [[ports]]
-localPort = 3000
+localPort = 80
 externalPort = 80
 
 [workflows]

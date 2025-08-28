@@ -213,11 +213,11 @@ app.use((req, res, next) => {
     throw err;
   });
 
-  // DEPLOYMENT: Use PORT from environment or fallback to 3000 for Replit deployment
-  // Replit deployment forwards external port 80 to internal port 3000
+  // DEPLOYMENT: Use PORT from environment or fallback to 80 for Replit deployment
+  // Replit deployment expects internal port 80 for direct mapping
   // Development mode uses 5000 as configured in workflow
   
-  const port = process.env.PORT || (process.env.NODE_ENV === 'production' ? 3000 : 5000);
+  const port = process.env.PORT || (process.env.NODE_ENV === 'production' ? 80 : 5000);
   server.listen({
     port: Number(port),
     host: "0.0.0.0",
