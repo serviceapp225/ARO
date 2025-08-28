@@ -31,7 +31,7 @@ export function TopHeader({
       "+992903331332": 4
     };
     
-    return phoneToUserIdMap[user?.phoneNumber || ''] || 4;
+    return phoneToUserIdMap[user?.phoneNumber || ''] || 18;
   };
 
   const currentUserId = (() => {

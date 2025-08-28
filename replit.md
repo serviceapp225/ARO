@@ -49,6 +49,7 @@ Preferred communication style: Simple, everyday language in Russian.
 - **Mobile App URL Configuration**: Fixed Capacitor mobile app connectivity by detecting native platform and using correct server URLs instead of localhost for API requests and WebSocket connections.
 - **Android Studio Integration**: Successfully resolved compilation errors and established proper server connectivity for Android app production deployment (August 2025).
 - **Production Deployment Fix**: Resolved critical database field errors and optimized expired auction processing to eliminate server hanging during production builds. SMS operations moved to background processing for faster startup (August 2025).
+- **Database Duplicate Key Fix**: Eliminated PostgreSQL duplicate key violation error (code 23505) during production deployment by removing hardcoded fallback user ID '4' from admin panel operations and user creation processes (August 2025).
 
 ### UI/UX Decisions
 - Mobile-first design.
