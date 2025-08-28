@@ -1,0 +1,176 @@
+🚀 Запуск полного обновления всех изображений...
+🔄 Начинаем обновление изображений баннеров...
+✅ Обновление изображений баннеров завершено
+🔄 Начинаем обновление изображений карусели рекламы...
+Starting ultra-fast main listings query for status: active
+Ultra-fast main listings query completed in 883ms, found 1 listings
+✅ Обновление изображений карусели рекламы завершено
+🔄 Начинаем обновление изображений баннера продажи авто...
+🔄 Принудительное обновление кэша для электромобилей
+Starting ultra-fast main listings query for status: active
+✅ Обновление изображений баннера продажи авто завершено
+🎉 Полное обновление всех изображений завершено!
+Ultra-fast main listings query completed in 886ms, found 1 listings
+Starting ultra-fast main listings query for status: active
+Ultra-fast main listings query completed in 220ms, found 1 listings
+Starting ultra-fast main listings query for status: active
+Ultra-fast main listings query completed in 219ms, found 1 listings
+Starting ultra-fast main listings query for status: active
+Ultra-fast main listings query completed in 219ms, found 1 listings
+Starting ultra-fast main listings query for status: active
+Ultra-fast main listings query completed in 219ms, found 1 listings
+Starting ultra-fast main listings query for status: active
+Ultra-fast main listings query completed in 219ms, found 1 listings
+Starting ultra-fast main listings query for status: active
+Ultra-fast main listings query completed in 220ms, found 1 listings
+Starting ultra-fast main listings query for status: active
+Ultra-fast main listings query completed in 219ms, found 1 listings
+Starting ultra-fast main listings query for status: active
+Ultra-fast main listings query completed in 219ms, found 1 listings
+Starting ultra-fast main listings query for status: active
+Ultra-fast main listings query completed in 219ms, found 1 listings
+Starting ultra-fast main listings query for status: active
+Ultra-fast main listings query completed in 220ms, found 1 listings
+Starting ultra-fast main listings query for status: active
+Ultra-fast main listings query completed in 219ms, found 1 listings
+Starting ultra-fast main listings query for status: active
+Ultra-fast main listings query completed in 219ms, found 1 listings
+Starting ultra-fast main listings query for status: active
+Ultra-fast main listings query completed in 219ms, found 1 listings
+Starting ultra-fast main listings query for status: active
+Ultra-fast main listings query completed in 219ms, found 1 listings
+Starting ultra-fast main listings query for status: active
+Ultra-fast main listings query completed in 219ms, found 1 listings
+Starting ultra-fast main listings query for status: active
+Ultra-fast main listings query completed in 219ms, found 1 listings
+Starting ultra-fast main listings query for status: active
+Ultra-fast main listings query completed in 219ms, found 1 listings
+Starting ultra-fast main listings query for status: active
+Ultra-fast main listings query completed in 220ms, found 1 listings
+Starting ultra-fast main listings query for status: active
+Ultra-fast main listings query completed in 219ms, found 1 listings
+Starting ultra-fast main listings query for status: active
+Ultra-fast main listings query completed in 219ms, found 1 listings
+Starting ultra-fast main listings query for status: active
+Ultra-fast main listings query completed in 220ms, found 1 listings
+Starting ultra-fast main listings query for status: active
+Ultra-fast main listings query completed in 220ms, found 1 listings
+Starting ultra-fast main listings query for status: active
+Ultra-fast main listings query completed in 219ms, found 1 listings
+Starting ultra-fast main listings query for status: active
+Ultra-fast main listings query completed in 220ms, found 1 listings
+Starting ultra-fast main listings query for status: active
+Ultra-fast main listings query completed in 220ms, found 1 listings
+Starting ultra-fast main listings query for status: active
+Ultra-fast main listings query completed in 220ms, found 1 listings
+Starting ultra-fast main listings query for status: active
+Ultra-fast main listings query completed in 220ms, found 1 listings
+Starting ultra-fast main listings query for status: active
+Ultra-fast main listings query completed in 219ms, found 1 listings
+Starting ultra-fast main listings query for status: active
+Ultra-fast main listings query completed in 220ms, found 1 listings
+Starting ultra-fast main listings query for status: active
+Ultra-fast main listings query completed in 219ms, found 1 listings
+Starting ultra-fast main listings query for status: active
+Ultra-fast main listings query completed in 219ms, found 1 listings
+Starting ultra-fast main listings query for status: active
+Ultra-fast main listings query completed in 220ms, found 1 listings
+Starting ultra-fast main listings query for status: active
+Ultra-fast main listings query completed in 219ms, found 1 listings
+Starting ultra-fast main listings query for status: active
+Ultra-fast main listings query completed in 219ms, found 1 listings
+Starting ultra-fast main listings query for status: active
+Ultra-fast main listings query completed in 220ms, found 1 listings
+Starting ultra-fast main listings query for status: active
+Ultra-fast main listings query completed in 220ms, found 1 listings
+Starting ultra-fast main listings query for status: active
+Ultra-fast main listings query completed in 219ms, found 1 listings
+Starting ultra-fast main listings query for status: active
+Ultra-fast main listings query completed in 219ms, found 1 listings
+Starting ultra-fast main listings query for status: active
+Ultra-fast main listings query completed in 220ms, found 1 listings
+Starting ultra-fast main listings query for status: active
+Ultra-fast main listings query completed in 219ms, found 1 listings
+Starting ultra-fast main listings query for status: active
+Ultra-fast main listings query completed in 219ms, found 1 listings
+Starting ultra-fast main listings query for status: active
+Ultra-fast main listings query completed in 219ms, found 1 listings
+Starting ultra-fast main listings query for status: active
+Ultra-fast main listings query completed in 219ms, found 1 listings
+Starting ultra-fast main listings query for status: active
+Ultra-fast main listings query completed in 219ms, found 1 listings
+Starting ultra-fast main listings query for status: active
+Ultra-fast main listings query completed in 220ms, found 1 listings
+Starting ultra-fast main listings query for status: active
+Ultra-fast main listings query completed in 219ms, found 1 listings
+Starting ultra-fast main listings query for status: active
+Ultra-fast main listings query completed in 219ms, found 1 listings
+Starting ultra-fast main listings query for status: active
+Ultra-fast main listings query completed in 219ms, found 1 listings
+Starting ultra-fast main listings query for status: active
+Ultra-fast main listings query completed in 219ms, found 1 listings
+Starting ultra-fast main listings query for status: active
+Ultra-fast main listings query completed in 219ms, found 1 listings
+Starting ultra-fast main listings query for status: active
+Ultra-fast main listings query completed in 219ms, found 1 listings
+Starting ultra-fast main listings query for status: active
+Ultra-fast main listings query completed in 219ms, found 1 listings
+Starting ultra-fast main listings query for status: active
+Ultra-fast main listings query completed in 219ms, found 1 listings
+Starting ultra-fast main listings query for status: active
+Ultra-fast main listings query completed in 219ms, found 1 listings
+Starting ultra-fast main listings query for status: active
+Ultra-fast main listings query completed in 219ms, found 1 listings
+Starting ultra-fast main listings query for status: active
+Ultra-fast main listings query completed in 219ms, found 1 listings
+Starting ultra-fast main listings query for status: active
+Ultra-fast main listings query completed in 219ms, found 1 listings
+Starting ultra-fast main listings query for status: active
+Ultra-fast main listings query completed in 219ms, found 1 listings
+Starting ultra-fast main listings query for status: active
+Ultra-fast main listings query completed in 219ms, found 1 listings
+Starting ultra-fast main listings query for status: active
+Ultra-fast main listings query completed in 219ms, found 1 listings
+Starting ultra-fast main listings query for status: active
+Ultra-fast main listings query completed in 220ms, found 1 listings
+Starting ultra-fast main listings query for status: active
+Ultra-fast main listings query completed in 222ms, found 1 listings
+Starting ultra-fast main listings query for status: active
+Ultra-fast main listings query completed in 220ms, found 1 listings
+Starting ultra-fast main listings query for status: active
+Ultra-fast main listings query completed in 219ms, found 1 listings
+Starting ultra-fast main listings query for status: active
+Ultra-fast main listings query completed in 219ms, found 1 listings
+Starting ultra-fast main listings query for status: active
+Ultra-fast main listings query completed in 219ms, found 1 listings
+Starting ultra-fast main listings query for status: active
+Ultra-fast main listings query completed in 220ms, found 1 listings
+Starting ultra-fast main listings query for status: active
+Ultra-fast main listings query completed in 219ms, found 1 listings
+Starting ultra-fast main listings query for status: active
+Ultra-fast main listings query completed in 220ms, found 1 listings
+Starting ultra-fast main listings query for status: active
+Ultra-fast main listings query completed in 221ms, found 1 listings
+Starting ultra-fast main listings query for status: active
+Ultra-fast main listings query completed in 220ms, found 1 listings
+Starting ultra-fast main listings query for status: active
+Ultra-fast main listings query completed in 219ms, found 1 listings
+Starting ultra-fast main listings query for status: active
+Ultra-fast main listings query completed in 219ms, found 1 listings
+Starting ultra-fast main listings query for status: active
+Ultra-fast main listings query completed in 219ms, found 1 listings
+Starting ultra-fast main listings query for status: active
+Ultra-fast main listings query completed in 221ms, found 1 listings
+Starting ultra-fast main listings query for status: active
+Ultra-fast main listings query completed in 220ms, found 1 listings
+Starting ultra-fast main listings query for status: active
+Ultra-fast main listings query completed in 221ms, found 1 listings
+Starting ultra-fast main listings query for status: active
+Ultra-fast main listings query completed in 220ms, found 1 listings
+Starting ultra-fast main listings query for status: active
+Ultra-fast main listings query completed in 219ms, found 1 listings
+Starting ultra-fast main listings query for status: active
+Ultra-fast main listings query completed in 220ms, found 1 listings
+Starting ultra-fast main listings query for status: active
+Ultra-fast main listings query completed in 219ms, found 1 listings
+вот так идет и идет
