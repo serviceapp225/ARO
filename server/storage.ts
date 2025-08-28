@@ -1,6 +1,6 @@
 import { users, carListings, bids, favorites, notifications, carAlerts, banners, sellCarSection, sellCarBanner, advertisementCarousel, documents, alertViews, userWins, conversations, messages, type User, type InsertUser, type CarListing, type InsertCarListing, type Bid, type InsertBid, type Favorite, type InsertFavorite, type Notification, type InsertNotification, type CarAlert, type InsertCarAlert, type Banner, type InsertBanner, type SellCarSection, type InsertSellCarSection, type SellCarBanner, type InsertSellCarBanner, type AdvertisementCarousel, type InsertAdvertisementCarousel, type Document, type InsertDocument, type AlertView, type InsertAlertView, type UserWin, type InsertUserWin, type Conversation, type InsertConversation, type Message, type InsertMessage } from "@shared/schema";
 import { db, pool } from "./db";
-import { eq, and, desc, sql, or, ilike, inArray, isNull, gte, lte } from "drizzle-orm";
+import { eq, and, desc, sql, or, ilike, inArray, isNull, gte, lte, not, lt } from "drizzle-orm";
 
 // Безопасная валидация входных данных
 function sanitizeAndValidateInput(data: any, type: 'string' | 'number' | 'email' | 'phone' = 'string'): any {
@@ -1264,7 +1264,7 @@ export class DatabaseStorage implements IStorage {
               eq(conversations.buyerId, userId),
               eq(conversations.sellerId, userId)
             ),
-            ne(messages.senderId, userId), // Не считаем свои сообщения
+            not(eq(messages.senderId, userId)), // Не считаем свои сообщения
             eq(messages.isRead, false)
           )
         );
@@ -1388,7 +1388,7 @@ export class DatabaseStorage implements IStorage {
       .where(
         and(
           eq(messages.conversationId, conversationId),
-          ne(messages.senderId, userId) // Отмечаем только сообщения НЕ от этого пользователя
+          not(eq(messages.senderId, userId)) // Отмечаем только сообщения НЕ от этого пользователя
         )
       );
   }
@@ -1663,7 +1663,7 @@ export class DatabaseStorage implements IStorage {
       .where(
         and(
           eq(carListings.status, 'active'),
-          lt(carListings.endTime, new Date())
+          lt(carListings.auctionEndTime, new Date())
         )
       );
 
@@ -1680,7 +1680,7 @@ export class DatabaseStorage implements IStorage {
       .select()
       .from(carListings)
       .where(eq(carListings.status, 'expired'))
-      .orderBy(desc(carListings.endTime));
+      .orderBy(desc(carListings.auctionEndTime));
   }
 
   async restartListing(listingId: number): Promise<CarListing | undefined> {
@@ -1695,8 +1695,8 @@ export class DatabaseStorage implements IStorage {
       .update(carListings)
       .set({
         status: 'active',
-        startTime: new Date(),
-        endTime: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 дней
+        auctionStartTime: new Date(),
+        auctionEndTime: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 дней
         currentBid: listing.startingPrice
       })
       .where(eq(carListings.id, listingId))
