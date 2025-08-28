@@ -61,6 +61,12 @@ export function AuctionProvider({ children }: { children: ReactNode }) {
           currentBid: parseFloat(message.currentBid) || 0,
           bidCount: message.bidCount || 0
         });
+      } else if (message.type === 'listing_approved') {
+        console.log('🎉 Новое объявление одобрено:', message);
+        // Обновляем список объявлений при одобрении модератором
+        queryClient.invalidateQueries({
+          queryKey: ['/api/listings']
+        });
       }
     };
 

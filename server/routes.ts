@@ -2969,11 +2969,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // 🚀 WEBSOCKET: Уведомляем всех клиентов о новом одобренном объявлении
       try {
-        const wsManager = (global as any).wsManager;
         if (wsManager) {
           console.log(`📡 WebSocket: Отправляем уведомление о новом объявлении ${listing.id}`);
           wsManager.broadcastListingsUpdate(listing.id, {
-            type: 'new_listing_approved',
+            type: 'listing_approved',
             listing: listing,
             message: `Новое авто: ${listing.make} ${listing.model} ${listing.year}`
           });
