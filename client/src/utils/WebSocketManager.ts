@@ -39,13 +39,25 @@ class WebSocketManager {
     }
 
     try {
-      // Определяем базовый URL для Capacitor приложения
+      // Определяем базовый URL для Capacitor приложения и production
       const isCapacitor = (window as any).Capacitor?.isNativePlatform?.();
-      const baseUrl = isCapacitor ? 'autobidtj-serviceapp225.replit.app' : window.location.host;
-      const protocol = isCapacitor ? 'wss:' : (window.location.protocol === 'https:' ? 'wss:' : 'ws:');
+      const isReplit = window.location.hostname.includes('replit.app');
+      
+      let baseUrl = window.location.host;
+      let protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      
+      if (isCapacitor) {
+        baseUrl = 'autobidtj-serviceapp225.replit.app';
+        protocol = 'wss:';
+      } else if (isReplit) {
+        // Для production Replit всегда используем wss
+        protocol = 'wss:';
+      }
+      
       const wsUrl = `${protocol}//${baseUrl}/ws`;
       
       console.log('🔌 Создание ЕДИНОГО WebSocket соединения:', wsUrl);
+      console.log('🔍 Debug: isCapacitor:', isCapacitor, 'isReplit:', isReplit, 'protocol:', protocol);
       this.ws = new WebSocket(wsUrl);
 
       this.ws.onopen = () => {

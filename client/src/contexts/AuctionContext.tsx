@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useOptimizedRealTime } from "@/hooks/useOptimizedRealTime";
+import WebSocketManager from "@/utils/WebSocketManager";
 
 interface Auction {
   id: string;
@@ -50,57 +51,24 @@ export function AuctionProvider({ children }: { children: ReactNode }) {
     pollingInterval: 5000, // Fallback только если WebSocket недоступен
   });
 
-  // WebSocket соединение для real-time обновлений карточек
-  const [webSocket, setWebSocket] = useState<WebSocket | null>(null);
-
-  // Инициализация WebSocket для обновления карточек
+  // Используем глобальный WebSocketManager для избежания дублирования соединений
   useEffect(() => {
-    // Определяем базовый URL для Capacitor приложения
-    const isCapacitor = (window as any).Capacitor?.isNativePlatform?.();
-    const baseUrl = isCapacitor ? 'autobidtj-serviceapp225.replit.app' : window.location.host;
-    const protocol = isCapacitor ? 'wss:' : (window.location.protocol === 'https:' ? 'wss:' : 'ws:');
-    const wsUrl = `${protocol}//${baseUrl}/ws`;
-    
-    console.log('🔌 Создание WebSocket для обновления карточек:', wsUrl);
-    
-    const ws = new WebSocket(wsUrl);
-    
-    ws.onopen = () => {
-      console.log('✅ WebSocket для карточек подключен');
-      setWebSocket(ws);
-    };
-    
-    ws.onmessage = (event) => {
-      try {
-        const data = JSON.parse(event.data);
-        console.log('📩 WebSocket событие для карточек:', data.type, data);
-        
-        if (data.type === 'bid_placed') {
-          // Мгновенно обновляем карточку аукциона
-          updateAuctionCard(data.listingId, {
-            currentBid: parseFloat(data.currentBid) || 0,
-            bidCount: data.bidCount || 0
-          });
-        }
-      } catch (error) {
-        console.error('❌ Ошибка обработки WebSocket сообщения:', error);
+    const handleBidUpdate = (message: any) => {
+      if (message.type === 'bid_placed') {
+        console.log('📩 Обновление ставки через WebSocketManager:', message);
+        // Мгновенно обновляем карточку аукциона
+        updateAuctionCard(message.listingId, {
+          currentBid: parseFloat(message.currentBid) || 0,
+          bidCount: message.bidCount || 0
+        });
       }
     };
+
+    // Подписываемся на сообщения через глобальный WebSocketManager
+    const wsManager = WebSocketManager.getInstance();
+    const unsubscribe = wsManager.addMessageHandler(handleBidUpdate);
     
-    ws.onclose = () => {
-      console.log('🔌 WebSocket для карточек отключен');
-      setWebSocket(null);
-    };
-    
-    ws.onerror = (error) => {
-      console.error('❌ Ошибка WebSocket для карточек:', error);
-    };
-    
-    return () => {
-      if (ws.readyState === WebSocket.OPEN) {
-        ws.close();
-      }
-    };
+    return unsubscribe;
   }, []);
 
   // Функция для мгновенного обновления карточки аукциона
