@@ -158,37 +158,35 @@ export default function AuctionDetail() {
   // Fetch current auction data
   const { data: currentAuction, refetch: refetchAuction } = useQuery({
     queryKey: [`/api/listings/${id}`],
-    enabled: false, // ВРЕМЕННО ОТКЛЮЧЕНО для стабилизации деплоя
-    refetchInterval: false, // Отключено для деплоя
-    refetchIntervalInBackground: false,
-    staleTime: 60 * 60 * 1000, // 1 час
-    gcTime: 120 * 60 * 1000, // 2 часа
-    refetchOnMount: false,
-    refetchOnWindowFocus: false,
-    retry: 0,
+    enabled: !!id,
+    refetchInterval: 30000, // Умеренное обновление каждые 30 секунд
+    refetchIntervalInBackground: false, // Не обновлять в фоне
+    staleTime: 10000, // Данные свежие 10 секунд
+    gcTime: 300000, // Кэш на 5 минут
+    refetchOnMount: false, // Не перезапрашивать при переходах
+    refetchOnWindowFocus: false, // Не обновлять при фокусе
   });
 
-  // ВРЕМЕННО ОТКЛЮЧЕНО: Принудительное обновление при WebSocket обновлениях для стабилизации деплоя
-  // useEffect(() => {
-  //   if (lastBidUpdate && lastBidUpdate.listingId && parseInt(lastBidUpdate.listingId) === parseInt(id || '0')) {
-  //     console.log(`🔄 Принудительное обновление аукциона ${id} после WebSocket обновления`);
-  //     refetchAuction();
-  //   }
-  // }, [lastBidUpdate, id, refetchAuction]);
+  // Принудительное обновление при получении WebSocket обновления
+  useEffect(() => {
+    if (lastBidUpdate && lastBidUpdate.listingId && parseInt(lastBidUpdate.listingId) === parseInt(id || '0')) {
+      console.log(`🔄 Принудительное обновление аукциона ${id} после WebSocket обновления`);
+      refetchAuction();
+    }
+  }, [lastBidUpdate, id, refetchAuction]);
 
   // Mutation for placing bids (moved to later in the file)
 
   // Fetch real bidding history with auto-refresh
   const { data: bidsData, isLoading: bidsLoading, refetch: refetchBids } = useQuery({
     queryKey: [`/api/listings/${id}/bids`],
-    enabled: false, // ВРЕМЕННО ОТКЛЮЧЕНО для стабилизации деплоя
-    refetchInterval: false, // Отключено для деплоя
-    refetchIntervalInBackground: false,
-    staleTime: 60 * 60 * 1000, // 1 час
-    gcTime: 120 * 60 * 1000, // 2 часа
-    refetchOnMount: false,
-    refetchOnWindowFocus: false,
-    retry: 0,
+    enabled: !!id,
+    refetchInterval: 15000, // Обновление ставок каждые 15 секунд
+    refetchIntervalInBackground: false, // Не обновлять в фоне
+    staleTime: 5000, // Данные свежие 5 секунд
+    gcTime: 300000, // Кэш на 5 минут
+    refetchOnMount: false, // Не перезапрашивать при переходах
+    refetchOnWindowFocus: false, // Не обновлять при фокусе
   });
 
   // Get unique bidder IDs to fetch user data

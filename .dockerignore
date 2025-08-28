@@ -1,6 +1,7 @@
 node_modules/
 attached_assets/
 .git/
+.gitignore
 .config/
 generated-icon.png
 *.log
@@ -14,3 +15,5 @@ flutter_workflow/
 android/
 ios/
 autoauction_flutter/
+**/*.md
+.replit*

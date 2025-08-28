@@ -131,18 +131,17 @@ export function AuctionProvider({ children }: { children: ReactNode }) {
     });
   };
 
-  // ВРЕМЕННО ОТКЛЮЧЕНО для стабилизации деплоя - убираем частые запросы к БД
+  // Ультра-оптимизированный запрос данных для главной страницы
   const { data: listings = [], isLoading, refetch } = useQuery<any[]>({
     queryKey: ['/api/listings'],
-    staleTime: 60 * 60 * 1000, // Данные свежи 1 час
-    gcTime: 120 * 60 * 1000, // Кэш живет 2 часа
-    refetchOnWindowFocus: false, // Отключено для деплоя
-    refetchOnMount: false, // Отключено для деплоя
-    refetchOnReconnect: false, // Отключено для деплоя
-    refetchInterval: false, // Отключено для деплоя
-    enabled: false, // ПОЛНОСТЬЮ ОТКЛЮЧАЕМ автозапросы для деплоя
-    retry: 0, // Никаких повторов
-    retryDelay: 0,
+    staleTime: 5 * 60 * 1000, // Данные свежи 5 минут - WebSocket управляет обновлениями
+    gcTime: 15 * 60 * 1000, // Кэш живет 15 минут
+    refetchOnWindowFocus: false, // WebSocket обеспечивает актуальность
+    refetchOnMount: false, // Используем кэшированные данные
+    refetchOnReconnect: true, // Обновляем только при восстановлении соединения
+    refetchInterval: false, // Полностью полагаемся на WebSocket
+    retry: 2, // Меньше попыток
+    retryDelay: 1000, // Быстрые попытки
   });
 
   // Transform listings to auctions format  

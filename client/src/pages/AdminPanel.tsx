@@ -218,7 +218,7 @@ function ModerationManagement() {
     },
     staleTime: 0, // Всегда загружаем свежие данные
     gcTime: 0, // Не кэшируем вообще
-    refetchInterval: 60000, // автообновление каждые 60 секунд
+    refetchInterval: 5000, // автообновление каждые 5 секунд
     refetchOnMount: false, // Не перезапрашивать при переходах
     refetchOnWindowFocus: true
   });
@@ -867,7 +867,7 @@ function UsersManagement() {
 
   const { data: users = [], isLoading } = useQuery<User[]>({
     queryKey: ['/api/admin/users'],
-    refetchInterval: 60000, // Обновляем каждые 60 секунд
+    refetchInterval: 3000, // Обновляем каждые 3 секунды
     staleTime: 0, // Данные всегда считаются устаревшими
     gcTime: 1000, // Очищаем кэш через 1 секунду
   });
@@ -978,9 +978,6 @@ function ListingsManagement() {
 
   const { data: allListings = [], isLoading } = useQuery<CarListing[]>({
     queryKey: ['/api/admin/listings'],
-    enabled: false, // ВРЕМЕННО ОТКЛЮЧЕНО для стабилизации деплоя
-    staleTime: 60 * 60 * 1000, // 1 час
-    retry: 0,
   });
 
   // Фильтрация объявлений по номеру лота

@@ -10,17 +10,6 @@ import fs from "fs";
 import path from "path";
 import multer from "multer";
 
-// Global error handlers for unhandled promises
-process.on('unhandledRejection', (reason, promise) => {
-  console.error('🚨 Unhandled Rejection at:', promise, 'reason:', reason);
-  // Don't exit process in production, just log the error
-});
-
-process.on('uncaughtException', (error) => {
-  console.error('🚨 Uncaught Exception:', error);
-  // Don't exit process in production, just log the error
-});
-
 // Функция для создания дефолтного банера "Продай свое авто"
 async function ensureDefaultSellCarBanner() {
   try {
@@ -139,24 +128,23 @@ app.use((req, res, next) => {
 });
 
 (async () => {
+  // Безопасная инициализация базы данных для деплоя
+  console.log("🚀 Запуск приложения с безопасной инициализацией...");
+  
   try {
-    // Безопасная инициализация базы данных для деплоя
-    console.log("🚀 Запуск приложения с безопасной инициализацией...");
+    await deploymentSafeInit();
     
-    try {
-      await deploymentSafeInit();
-      
-      // Банер "Продай свое авто" удален по запросу пользователя
-      // await ensureDefaultSellCarBanner();
-      
-      // Инициализация автоматического скачивания изображений
-      ImageUpdateService.initializeOnStartup();
-      
-      console.log("✅ DEPLOYMENT: Инициализация завершена успешно");
-    } catch (error) {
-      console.error("⚠️ DEPLOYMENT: Ошибка инициализации БД:", error);
-      console.log("📝 DEPLOYMENT: Продолжаем запуск приложения...");
-    }
+    // Банер "Продай свое авто" удален по запросу пользователя
+    // await ensureDefaultSellCarBanner();
+    
+    // Инициализация автоматического скачивания изображений
+    ImageUpdateService.initializeOnStartup();
+    
+    console.log("✅ DEPLOYMENT: Инициализация завершена успешно");
+  } catch (error) {
+    console.error("⚠️ DEPLOYMENT: Ошибка инициализации БД:", error);
+    console.log("📝 DEPLOYMENT: Продолжаем запуск приложения...");
+  }
   
   // КРИТИЧНО: Всегда обрабатываем статические файлы /assets ПЕРЕД API роутами
   // Проверяем все возможные пути для статических файлов
@@ -204,11 +192,6 @@ app.use((req, res, next) => {
   const isProduction = process.env.NODE_ENV === 'production' || 
                        process.env.REPLIT_DEPLOYMENT === '1' ||
                        (typeof process.env.REPL_OWNER !== 'undefined' && process.env.PORT);
-  
-  // DEPLOYMENT: Быстрый старт для production - минимальная инициализация
-  if (isProduction) {
-    console.log("🚀 PRODUCTION: Быстрая инициализация для деплоя");
-  }
 
 
 
@@ -225,10 +208,9 @@ app.use((req, res, next) => {
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;
     const message = err.message || "Internal Server Error";
-    
-    console.error('🚨 Express error handler:', err);
+
     res.status(status).json({ message });
-    // Don't throw in production - just log
+    throw err;
   });
 
   // DEPLOYMENT: Use PORT from environment or fallback to 3000 for Replit deployment
@@ -236,33 +218,11 @@ app.use((req, res, next) => {
   // Development mode uses 5000 as configured in workflow
   
   const port = process.env.PORT || (process.env.NODE_ENV === 'production' ? 3000 : 5000);
-  
-  // DEPLOYMENT: Добавляем timeout для production startup
-  if (isProduction) {
-    const serverStartTimeout = setTimeout(() => {
-      console.log("🚨 DEPLOYMENT: Сервер запустился с timeout, но продолжает работу");
-    }, 10000); // 10 секунд timeout
-    
-    server.listen({
-      port: Number(port),
-      host: "0.0.0.0",
-      reusePort: true,
-    }, () => {
-      clearTimeout(serverStartTimeout);
-      log(`✅ DEPLOYMENT: Сервер запущен на порту ${port}`);
-    });
-  } else {
-    server.listen({
-      port: Number(port),
-      host: "0.0.0.0", 
-      reusePort: true,
-    }, () => {
-      log(`serving on port ${port}`);
-    });
-  }
-
-  } catch (error) {
-    console.error('🚨 Критическая ошибка при запуске сервера:', error);
-    process.exit(1);
-  }
+  server.listen({
+    port: Number(port),
+    host: "0.0.0.0",
+    reusePort: true,
+  }, () => {
+    log(`serving on port ${port}`);
+  });
 })();
