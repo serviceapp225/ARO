@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Нет подключения к интернету</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1e40af 0%, #3b82f6 50%, #60a5fa 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .offline-container {
+            max-width: 400px;
+            width: 100%;
+            animation: fadeIn 1s ease-in-out;
+        }
+
+        .icon-container {
+            margin-bottom: 40px;
+            position: relative;
+            display: inline-block;
+        }
+
+        .car-icon {
+            width: 120px;
+            height: 80px;
+            fill: white;
+            opacity: 0.9;
+            animation: pulse 2s infinite;
+        }
+
+        .wifi-icon {
+            position: absolute;
+            top: -20px;
+            right: -20px;
+            width: 50px;
+            height: 50px;
+            fill: white;
+            opacity: 0.8;
+        }
+
+        .wifi-cross {
+            position: absolute;
+            top: -15px;
+            right: -15px;
+            width: 40px;
+            height: 40px;
+            stroke: #ef4444;
+            stroke-width: 4;
+            animation: blink 1.5s infinite;
+        }
+
+        .title {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .description {
+            font-size: 18px;
+            line-height: 1.5;
+            margin-bottom: 40px;
+            opacity: 0.9;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+        }
+
+        .retry-button {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            color: white;
+            border: none;
+            padding: 16px 32px;
+            font-size: 18px;
+            font-weight: 600;
+            border-radius: 12px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+            animation: buttonPulse 3s infinite;
+        }
+
+        .retry-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.3);
+        }
+
+        .retry-button:active {
+            transform: translateY(0);
+        }
+
+        .app-logo {
+            margin-top: 40px;
+            font-size: 24px;
+            font-weight: 800;
+            opacity: 0.7;
+            letter-spacing: 1px;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0.3; }
+        }
+
+        @keyframes buttonPulse {
+            0%, 70%, 100% { transform: scale(1); }
+            35% { transform: scale(1.05); }
+        }
+
+        @media (max-width: 480px) {
+            .title { font-size: 24px; }
+            .description { font-size: 16px; }
+            .car-icon { width: 100px; height: 66px; }
+            .wifi-icon { width: 40px; height: 40px; }
+            .wifi-cross { width: 32px; height: 32px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="offline-container">
+        <div class="icon-container">
+            <!-- Car Icon -->
+            <svg class="car-icon" viewBox="0 0 24 16" xmlns="http://www.w3.org/2000/svg">
+                <path d="M18.92 2.01C18.72 1.42 18.16 1 17.5 1h-11C5.84 1 5.28 1.42 5.08 2.01L3 8v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1V8l-1.92-5.99zM6.5 12c-.83 0-1.5-.67-1.5-1.5S5.67 9 6.5 9s1.5.67 1.5 1.5S7.33 12 6.5 12zm11 0c-.83 0-1.5-.67-1.5-1.5S16.67 9 17.5 9s1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 7l1.5-4.5h11L19 7H5z"/>
+            </svg>
+            
+            <!-- WiFi Icon -->
+            <svg class="wifi-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.07 2.93 1 9zm8 8l3 3 3-3c-1.65-1.66-4.34-1.66-6 0zm-4-4l2 2c2.76-2.76 7.24-2.76 10 0l2-2C15.14 9.14 8.87 9.14 5 13z"/>
+            </svg>
+            
+            <!-- Cross over WiFi -->
+            <svg class="wifi-cross" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <line x1="18" y1="6" x2="6" y2="18"/>
+                <line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+        </div>
+
+        <h1 class="title">Нет подключения к интернету</h1>
+        
+        <p class="description">
+            Для продолжения работы требуется подключение к интернету. Проверьте WiFi или мобильные данные.
+        </p>
+
+        <button class="retry-button" onclick="location.reload()">
+            Повторить попытку
+        </button>
+
+        <div class="app-logo">NARXI TU</div>
+    </div>
+
+    <script>
+        // Проверяем состояние сети при загрузке
+        window.addEventListener('online', function() {
+            location.reload();
+        });
+
+        // Дополнительная проверка через 5 секунд
+        setTimeout(function() {
+            if (navigator.onLine) {
+                location.reload();
+            }
+        }, 5000);
+    </script>
+</body>
+</html>

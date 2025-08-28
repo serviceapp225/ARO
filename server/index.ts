@@ -92,6 +92,27 @@ const upload = multer({
 app.use(express.json({ limit: '150mb', strict: false }));
 app.use(express.urlencoded({ extended: true, limit: '150mb', parameterLimit: 50000 }));
 
+// Добавляем обработку offline страницы ПЕРЕД всеми роутами
+app.get('/offline.html', (_req, res) => {
+  const offlinePath = path.join(process.cwd(), 'public', 'offline.html');
+  if (fs.existsSync(offlinePath)) {
+    res.sendFile(offlinePath);
+  } else {
+    res.status(404).send('Offline page not found');
+  }
+});
+
+// Добавляем обработку Service Worker ПЕРЕД всеми роутами
+app.get('/sw.js', (_req, res) => {
+  const swPath = path.join(process.cwd(), 'public', 'sw.js');
+  if (fs.existsSync(swPath)) {
+    res.setHeader('Content-Type', 'application/javascript');
+    res.sendFile(swPath);
+  } else {
+    res.status(404).send('Service Worker not found');
+  }
+});
+
 app.use((req, res, next) => {
   // ВРЕМЕННО ВКЛЮЧАЕМ логгирование для диагностики POST запросов
   // if (req.path.startsWith('/api/')) {

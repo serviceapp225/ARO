@@ -13,7 +13,9 @@ const config: CapacitorConfig = {
     // Для Android эмулятора разрешаем HTTP запросы
     androidScheme: 'https',
     // Включаем поддержку CORS
-    iosScheme: 'https'
+    iosScheme: 'https',
+    // Настройка offline страницы для сетевых ошибок
+    errorUrl: 'offline.html'
   },
   plugins: {
     // Настройки для пуш-уведомлений

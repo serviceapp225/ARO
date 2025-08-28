@@ -25,4 +25,17 @@ window.addEventListener('unhandledrejection', (event) => {
   }
 });
 
+// Регистрируем Service Worker для offline поддержки
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js')
+      .then((registration) => {
+        console.log('📱 Service Worker зарегистрирован для offline поддержки:', registration.scope);
+      })
+      .catch((error) => {
+        console.log('❌ Ошибка регистрации Service Worker:', error);
+      });
+  });
+}
+
 createRoot(document.getElementById("root")!).render(<App />);
