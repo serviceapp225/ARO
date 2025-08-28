@@ -195,6 +195,12 @@ export function AdvertisementCarousel() {
       return;
     }
     
+    // Проверяем по тексту кнопки - если это "Связаться с нами", тоже показываем поддержку
+    if (currentAd?.buttonText?.includes('Связаться') || currentAd?.buttonText?.includes('связаться')) {
+      handleSupportClick();
+      return;
+    }
+    
     if (currentAd?.linkUrl) {
       let url = currentAd.linkUrl.trim();
       
