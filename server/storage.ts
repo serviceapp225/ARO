@@ -1073,153 +1073,175 @@ export class DatabaseStorage implements IStorage {
     try {
       const now = new Date();
       
-      // Находим просроченные аукционы
+      console.log(`🔄 Начинаем проверку просроченных аукционов на ${now.toISOString()}`);
+      
+      // Находим просроченные аукционы - используем правильное поле
       const expiredListings = await db
         .select()
         .from(carListings)
         .where(
           and(
             eq(carListings.status, 'active'),
-            sql`auction_end_time <= ${now}`
+            lt(carListings.auctionEndTime, now)
           )
         );
+
+      console.log(`🔍 Найдено просроченных аукционов: ${expiredListings.length}`);
+
+      if (expiredListings.length === 0) {
+        console.log(`✅ Нет просроченных аукционов для обработки`);
+        return 0;
+      }
 
       let processedCount = 0;
 
       for (const listing of expiredListings) {
-        // Проверяем наличие ставок для этого аукциона
-        const bidsCount = await db
-          .select({ count: sql<number>`count(*)` })
-          .from(bids)
-          .where(eq(bids.listingId, listing.id));
-
-        const hasBids = bidsCount[0]?.count > 0;
-        let shouldRestart = false;
-
-        if (!hasBids) {
-          // Нет ставок вообще - перезапускаем
-          shouldRestart = true;
-          console.log(`🔄 Перезапуск аукциона ${listing.id}: нет ставок`);
-        } else {
-          // Есть ставки - проверяем достижение резервной цены
-          const currentBidAmount = parseFloat(listing.currentBid || '0');
-          const reservePrice = parseFloat(listing.reservePrice || '0');
-
-          if (reservePrice > 0 && currentBidAmount < reservePrice) {
-            // Резервная цена не достигнута - перезапускаем
-            shouldRestart = true;
-            console.log(`🔄 Перезапуск аукциона ${listing.id}: резервная цена ${reservePrice} не достигнута (текущая ставка: ${currentBidAmount})`);
-          }
-        }
-
-        if (shouldRestart) {
-          // Перезапускаем аукцион: сбрасываем на начальную ставку и продлеваем время
-          const newEndTime = new Date(now.getTime() + (7 * 24 * 60 * 60 * 1000)); // +7 дней
-          
-          await db
-            .update(carListings)
-            .set({
-              currentBid: listing.startingPrice, // Возвращаем к начальной ставке
-              auctionEndTime: newEndTime,
-              updatedAt: now
-              // status остается 'active'
-            })
-            .where(eq(carListings.id, listing.id));
-
-          // Удаляем все предыдущие ставки для чистого старта
-          await db
-            .delete(bids)
+        console.log(`⚡ Обрабатываем аукцион ${listing.id} (${listing.make} ${listing.model})`);
+        
+        try {
+          // Проверяем наличие ставок для этого аукциона
+          const bidsCount = await db
+            .select({ count: sql<number>`count(*)` })
+            .from(bids)
             .where(eq(bids.listingId, listing.id));
 
-          console.log(`✅ Аукцион ${listing.id} перезапущен до ${newEndTime.toISOString()}`);
-        } else {
-          // Завершаем аукцион как обычно (резервная цена достигнута)
-          await db
-            .update(carListings)
-            .set({ status: 'ended', endedAt: now, updatedAt: now })
-            .where(eq(carListings.id, listing.id));
+          const hasBids = bidsCount[0]?.count > 0;
+          let shouldRestart = false;
 
-          // Определяем победителя (самая высокая ставка)
-          const [winningBid] = await db
-            .select()
-            .from(bids)
-            .where(eq(bids.listingId, listing.id))
-            .orderBy(desc(bids.amount))
-            .limit(1);
+          if (!hasBids) {
+            // Нет ставок вообще - перезапускаем
+            shouldRestart = true;
+            console.log(`🔄 Перезапуск аукциона ${listing.id}: нет ставок`);
+          } else {
+            // Есть ставки - проверяем достижение резервной цены
+            const currentBidAmount = parseFloat(listing.currentBid || '0');
+            const reservePrice = parseFloat(listing.reservePrice || '0');
 
-          if (winningBid) {
-            console.log(`🏆 Победитель аукциона ${listing.id}: пользователь ${winningBid.bidderId}, ставка ${winningBid.amount}`);
-            
-            // Создаем уведомление о выигрыше
-            await this.createNotification({
-              userId: winningBid.bidderId,
-              title: "🏆 Поздравляем! Вы выиграли аукцион!",
-              message: `Вы выиграли ${listing.make} ${listing.model} ${listing.year} г. со ставкой ${winningBid.amount} Сомони (лот #${listing.lotNumber})`,
-              type: "auction_won",
-              listingId: listing.id,
-              isRead: false
-            });
-
-            console.log(`✅ Уведомление о выигрыше отправлено пользователю ${winningBid.bidderId}`);
-
-            // Отправка SMS победителю
-            try {
-              const winner = await this.getUserById(winningBid.bidderId);
-              if (winner?.phoneNumber) {
-                const smsMessage = `🏆 Поздравляем! Вы выиграли аукцион ${listing.make} ${listing.model} ${listing.year} г. со ставкой ${winningBid.amount} Сомони (лот #${listing.lotNumber}). AutoBid.TJ`;
-                const { sendSMSNotification } = await import('./routes.js');
-                await sendSMSNotification(winner.phoneNumber, smsMessage);
-                console.log(`📱 SMS о выигрыше отправлено пользователю ${winningBid.bidderId} на номер ${winner.phoneNumber}`);
-              }
-            } catch (error) {
-              console.error(`❌ Ошибка отправки SMS победителю:`, error);
+            if (reservePrice > 0 && currentBidAmount < reservePrice) {
+              // Резервная цена не достигнута - перезапускаем
+              shouldRestart = true;
+              console.log(`🔄 Перезапуск аукциона ${listing.id}: резервная цена ${reservePrice} не достигнута (текущая ставка: ${currentBidAmount})`);
             }
-
-            // Уведомления проигравшим участникам
-            const allBids = await db
-              .select({ bidderId: bids.bidderId })
-              .from(bids)
-              .where(eq(bids.listingId, listing.id))
-              .groupBy(bids.bidderId);
-
-            for (const bid of allBids) {
-              if (bid.bidderId !== winningBid.bidderId) {
-                await this.createNotification({
-                  userId: bid.bidderId,
-                  title: "Аукцион завершен",
-                  message: `К сожалению, вы не выиграли аукцион ${listing.make} ${listing.model} ${listing.year} г. (лот #${listing.lotNumber}). Попробуйте участвовать в других аукционах!`,
-                  type: "auction_lost",
-                  listingId: listing.id,
-                  isRead: false
-                });
-
-                // Отправка SMS проигравшему
-                try {
-                  const loser = await this.getUserById(bid.bidderId);
-                  if (loser?.phoneNumber) {
-                    const smsMessage = `Аукцион завершен. К сожалению, вы не выиграли аукцион ${listing.make} ${listing.model} ${listing.year} г. (лот #${listing.lotNumber}). Попробуйте участвовать в других аукционах! AutoBid.TJ`;
-                    const { sendSMSNotification } = await import('./routes.js');
-                    await sendSMSNotification(loser.phoneNumber, smsMessage);
-                    console.log(`📱 SMS о проигрыше отправлено пользователю ${bid.bidderId} на номер ${loser.phoneNumber}`);
-                  }
-                } catch (error) {
-                  console.error(`❌ Ошибка отправки SMS проигравшему ${bid.bidderId}:`, error);
-                }
-              }
-            }
-
-            console.log(`📢 Уведомления проигравшим участникам отправлены`);
           }
 
-          console.log(`🏁 Аукцион ${listing.id} завершен успешно`);
-        }
+          if (shouldRestart) {
+            // Перезапускаем аукцион: сбрасываем на начальную ставку и продлеваем время
+            const newEndTime = new Date(now.getTime() + (7 * 24 * 60 * 60 * 1000)); // +7 дней
+            
+            await db
+              .update(carListings)
+              .set({
+                currentBid: listing.startingPrice, // Возвращаем к начальной ставке
+                auctionEndTime: newEndTime
+                // status остается 'active'
+              })
+              .where(eq(carListings.id, listing.id));
 
-        processedCount++;
+            // Удаляем все предыдущие ставки для чистого старта
+            await db
+              .delete(bids)
+              .where(eq(bids.listingId, listing.id));
+
+            console.log(`✅ Аукцион ${listing.id} перезапущен до ${newEndTime.toISOString()}`);
+          } else {
+            // Завершаем аукцион как обычно (резервная цена достигнута)
+            await db
+              .update(carListings)
+              .set({ status: 'ended', endedAt: now })
+              .where(eq(carListings.id, listing.id));
+
+            // Определяем победителя (самая высокая ставка)
+            const [winningBid] = await db
+              .select()
+              .from(bids)
+              .where(eq(bids.listingId, listing.id))
+              .orderBy(desc(bids.amount))
+              .limit(1);
+
+            if (winningBid) {
+              console.log(`🏆 Победитель аукциона ${listing.id}: пользователь ${winningBid.bidderId}, ставка ${winningBid.amount}`);
+              
+              // Создаем уведомление о выигрыше (быстрая операция)
+              await this.createNotification({
+                userId: winningBid.bidderId,
+                title: "🏆 Поздравляем! Вы выиграли аукцион!",
+                message: `Вы выиграли ${listing.make} ${listing.model} ${listing.year} г. со ставкой ${winningBid.amount} Сомони (лот #${listing.lotNumber})`,
+                type: "auction_won",
+                listingId: listing.id,
+                isRead: false
+              });
+
+              // Уведомления проигравшим участникам (быстрая операция)
+              const allBids = await db
+                .select({ bidderId: bids.bidderId })
+                .from(bids)
+                .where(eq(bids.listingId, listing.id))
+                .groupBy(bids.bidderId);
+
+              // Создаем уведомления проигравшим
+              for (const bid of allBids) {
+                if (bid.bidderId !== winningBid.bidderId) {
+                  await this.createNotification({
+                    userId: bid.bidderId,
+                    title: "Аукцион завершен",
+                    message: `К сожалению, вы не выиграли аукцион ${listing.make} ${listing.model} ${listing.year} г. (лот #${listing.lotNumber}). Попробуйте участвовать в других аукционах!`,
+                    type: "auction_lost",
+                    listingId: listing.id,
+                    isRead: false
+                  });
+                }
+              }
+
+              console.log(`📢 Уведомления всем участникам созданы`);
+
+              // SMS отправляем в фоновом режиме без ожидания (неблокирующая операция)
+              setImmediate(async () => {
+                try {
+                  const { sendSMSNotification } = await import('./routes.js');
+                  
+                  // SMS победителю
+                  const winner = await this.getUserById(winningBid.bidderId);
+                  if (winner?.phoneNumber) {
+                    const smsMessage = `🏆 Поздравляем! Вы выиграли аукцион ${listing.make} ${listing.model} ${listing.year} г. со ставкой ${winningBid.amount} Сомони (лот #${listing.lotNumber}). AutoBid.TJ`;
+                    await sendSMSNotification(winner.phoneNumber, smsMessage);
+                    console.log(`📱 SMS о выигрыше отправлено пользователю ${winningBid.bidderId}`);
+                  }
+
+                  // SMS проигравшим (в фоне)
+                  for (const bid of allBids) {
+                    if (bid.bidderId !== winningBid.bidderId) {
+                      try {
+                        const loser = await this.getUserById(bid.bidderId);
+                        if (loser?.phoneNumber) {
+                          const smsMessage = `Аукцион завершен. К сожалению, вы не выиграли аукцион ${listing.make} ${listing.model} ${listing.year} г. (лот #${listing.lotNumber}). Попробуйте участвовать в других аукционах! AutoBid.TJ`;
+                          await sendSMSNotification(loser.phoneNumber, smsMessage);
+                          console.log(`📱 SMS о проигрыше отправлено пользователю ${bid.bidderId}`);
+                        }
+                      } catch (error) {
+                        console.error(`❌ Ошибка отправки SMS проигравшему ${bid.bidderId}:`, error);
+                      }
+                    }
+                  }
+                } catch (error) {
+                  console.error(`❌ Ошибка фоновой отправки SMS для аукциона ${listing.id}:`, error);
+                }
+              });
+            }
+
+            console.log(`🏁 Аукцион ${listing.id} завершен успешно`);
+          }
+
+          processedCount++;
+        } catch (listingError) {
+          console.error(`❌ Ошибка обработки аукциона ${listing.id}:`, listingError);
+          // Продолжаем обработку других аукционов
+        }
       }
 
+      console.log(`✅ Обработка завершена. Обработано аукционов: ${processedCount}`);
       return processedCount;
     } catch (error) {
-      console.error('Error processing expired listings:', error);
+      console.error('❌ Критическая ошибка обработки просроченных аукционов:', error);
       return 0;
     }
   }
