@@ -46,7 +46,7 @@ export function AdvertisementCarousel() {
     queryKey: ['/api/advertisement-carousel'],
     staleTime: 5 * 60 * 1000, // Данные актуальны 5 минут
     gcTime: 10 * 60 * 1000, // Кэш хранится 10 минут
-    refetchInterval: 30 * 1000, // Обновляем каждые 30 секунд
+    refetchInterval: 5 * 60 * 1000, // Обновляем каждые 5 минут
     refetchOnWindowFocus: false, // Не обновляем при каждом фокусе
     refetchOnMount: false, // Используем кэш при монтировании
     retry: 3, // Повторяем запрос при ошибке 3 раза
@@ -122,32 +122,28 @@ export function AdvertisementCarousel() {
     });
   }, [activeAds]);
 
-  // Автоматическое переключение слайдов каждые 5 секунд
+  // Автоматическое переключение слайдов каждые 2 минуты
   useEffect(() => {
     if (activeAds.length <= 1 || isPaused) return;
 
     const interval = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % activeAds.length);
-    }, 5000);
+    }, 2 * 60 * 1000); // 2 минуты между слайдами
 
     return () => clearInterval(interval);
   }, [activeAds.length, isPaused]);
 
-  // Автоматическая ротация изображений внутри текущего слайда
-  useEffect(() => {
-    if (!currentAd || isPaused) return;
-
-    const images = getRotationImages(currentAd);
-    if (images.length <= 1) return; // Нет дополнительных изображений для ротации
-
-    // Увеличиваем минимальный интервал до 8 секунд для плавной ротации
-    const interval = Math.max((currentAd.rotationInterval || 8), 8) * 1000;
-    const rotationInterval = setInterval(() => {
-      setCurrentImageIndex((prev) => (prev + 1) % images.length);
-    }, interval);
-
-    return () => clearInterval(rotationInterval);
-  }, [currentAd, isPaused]);
+  // ВРЕМЕННО ОТКЛЮЧЕНА ротация изображений для решения проблем с деплоем
+  // useEffect(() => {
+  //   if (!currentAd || isPaused) return;
+  //   const images = getRotationImages(currentAd);
+  //   if (images.length <= 1) return;
+  //   const interval = 5 * 60 * 1000;
+  //   const rotationInterval = setInterval(() => {
+  //     setCurrentImageIndex((prev) => (prev + 1) % images.length);
+  //   }, interval);
+  //   return () => clearInterval(rotationInterval);
+  // }, [currentAd, isPaused]);
 
   // Сброс индекса изображения при смене слайда
   useEffect(() => {

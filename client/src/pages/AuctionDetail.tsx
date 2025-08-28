@@ -142,7 +142,7 @@ export default function AuctionDetail() {
     queryKey: [`/api/listings/${id}`],
     enabled: !!id,
     staleTime: 500, // Consider data fresh for 0.5 seconds
-    refetchInterval: 1000, // Обновление аукциона каждую секунду
+    refetchInterval: 30000, // Обновление аукциона каждые 30 секунд
     refetchIntervalInBackground: true,
     gcTime: 300000, // Keep in cache for 5 minutes
     refetchOnWindowFocus: false,
@@ -152,7 +152,7 @@ export default function AuctionDetail() {
   const { data: realBiddingHistory = [] } = useQuery({
     queryKey: [`/api/listings/${id}/bids`],
     enabled: !!id,
-    refetchInterval: 500, // Обновление ставок каждые 0.5 секунды для максимальной скорости
+    refetchInterval: 10000, // Обновление ставок каждые 10 секунд
     staleTime: 100, // Данные свежие 0.1 секунды
     refetchOnWindowFocus: false,
     refetchIntervalInBackground: false, // Не обновлять в фоне для экономии ресурсов
