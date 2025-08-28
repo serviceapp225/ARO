@@ -15,12 +15,9 @@ import AuctionFeed from "@/pages/AuctionFeed";
 import AuctionDetail from "@/pages/AuctionDetailFixed";
 import Favorites from "@/pages/Favorites";
 // SellCar загружается динамически для уменьшения размера основного бандла
-import MyBids from "@/pages/MyBids";
-import MyWins from "@/pages/MyWins";
-import Profile from "@/pages/Profile";
+// MyBids, MyWins, Profile, UserData загружаются динамически
 import Notifications from "@/pages/Notifications";
 import MyAlerts from "@/pages/MyAlerts";
-import UserData from "@/pages/UserData";
 import MySales from "@/pages/MySalesSimple";
 import LanguageSelector from "@/components/LanguageSelector";
 import Terms from "@/pages/Terms";
@@ -39,6 +36,10 @@ import { ScrollToTop } from "@/components/ScrollToTop";
 const AdminPanel = lazy(() => import("@/pages/AdminPanel"));
 const SellCar = lazy(() => import("@/pages/SellCar"));
 const Messages = lazy(() => import("@/pages/Messages"));
+const MyBids = lazy(() => import("@/pages/MyBids"));
+const MyWins = lazy(() => import("@/pages/MyWins"));
+const Profile = lazy(() => import("@/pages/Profile"));
+const UserData = lazy(() => import("@/pages/UserData"));
 
 function Router() {
   const [location] = useLocation();
@@ -99,12 +100,28 @@ function Router() {
             <SellCar />
           </Suspense>
         </Route>
-        <Route path="/bids" component={MyBids} />
-        <Route path="/my-wins" component={MyWins} />
-        <Route path="/profile" component={Profile} />
+        <Route path="/bids">
+          <Suspense fallback={<div className="flex justify-center items-center h-96">Загрузка...</div>}>
+            <MyBids />
+          </Suspense>
+        </Route>
+        <Route path="/my-wins">
+          <Suspense fallback={<div className="flex justify-center items-center h-96">Загрузка...</div>}>
+            <MyWins />
+          </Suspense>
+        </Route>
+        <Route path="/profile">
+          <Suspense fallback={<div className="flex justify-center items-center h-96">Загрузка...</div>}>
+            <Profile />
+          </Suspense>
+        </Route>
         <Route path="/notifications" component={Notifications} />
         <Route path="/my-alerts" component={MyAlerts} />
-        <Route path="/user-data" component={UserData} />
+        <Route path="/user-data">
+          <Suspense fallback={<div className="flex justify-center items-center h-96">Загрузка...</div>}>
+            <UserData />
+          </Suspense>
+        </Route>
         <Route path="/my-sales" component={MySales} />
         <Route path="/language" component={LanguageSelector} />
         <Route path="/terms" component={Terms} />
