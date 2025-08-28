@@ -978,6 +978,9 @@ function ListingsManagement() {
 
   const { data: allListings = [], isLoading } = useQuery<CarListing[]>({
     queryKey: ['/api/admin/listings'],
+    enabled: false, // ВРЕМЕННО ОТКЛЮЧЕНО для стабилизации деплоя
+    staleTime: 60 * 60 * 1000, // 1 час
+    retry: 0,
   });
 
   // Фильтрация объявлений по номеру лота

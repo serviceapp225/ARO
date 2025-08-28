@@ -420,7 +420,8 @@ export class DatabaseStorage implements IStorage {
 
   async getListingsByStatus(status: string, limit?: number): Promise<CarListing[]> {
     try {
-      console.log(`Starting ultra-fast main listings query for status: ${status}`);
+      // ВРЕМЕННО ОТКЛЮЧЕНЫ ЛОГИ для стабилизации деплоя - слишком частые вызовы
+      // console.log(`Starting ultra-fast main listings query for status: ${status}`);
       const startTime = Date.now();
       
       // Complete SQL query with all fields needed for moderation
@@ -437,7 +438,8 @@ export class DatabaseStorage implements IStorage {
         LIMIT $2
       `, [status, limit || 20]);
       
-      console.log(`Ultra-fast main listings query completed in ${Date.now() - startTime}ms, found ${result.rows.length} listings`);
+      // ВРЕМЕННО ОТКЛЮЧЕНЫ ЛОГИ для стабилизации деплоя
+      // console.log(`Ultra-fast main listings query completed in ${Date.now() - startTime}ms, found ${result.rows.length} listings`);
       
       // Convert to expected format with complete data from database
       const listings = result.rows.map((row: any) => ({
