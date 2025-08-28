@@ -149,10 +149,10 @@ app.use((req, res, next) => {
   // КРИТИЧНО: Всегда обрабатываем статические файлы /assets ПЕРЕД API роутами
   // Проверяем все возможные пути для статических файлов
   const possibleAssetsPaths = [
-    path.join(process.cwd(), 'dist', 'public', 'assets'),
-    path.join(import.meta.dirname, 'public', 'assets'),
+    path.join(process.cwd(), 'dist', 'public', 'assets'), // Production build path
+    path.join(process.cwd(), 'public', 'assets'),         // Development path
+    path.join(import.meta.dirname, '..', 'public', 'assets'), // Relative to server/index.js
     path.join(process.cwd(), 'dist', 'assets'),
-    path.join(process.cwd(), 'public', 'assets'),
     path.join(process.cwd(), 'server', 'public', 'assets')
   ];
   
@@ -172,6 +172,7 @@ app.use((req, res, next) => {
     
     // Настраиваем обработку /assets с правильными MIME типами ПЕРЕД API роутами
     app.use('/assets', express.static(assetsPath, {
+      maxAge: '1d', // Cache for 1 day
       setHeaders: (res, filePath) => {
         console.log(`📄 Отдаем статический файл: ${filePath}`);
         if (filePath.endsWith('.js')) {
@@ -213,11 +214,11 @@ app.use((req, res, next) => {
     throw err;
   });
 
-  // DEPLOYMENT: Use PORT from environment or fallback to 80 for Replit deployment
-  // Replit deployment expects internal port 80 for direct mapping
+  // DEPLOYMENT: Use PORT from environment or fallback for Replit deployment
+  // Replit deployment provides PORT env variable automatically
   // Development mode uses 5000 as configured in workflow
   
-  const port = process.env.PORT || (process.env.NODE_ENV === 'production' ? 80 : 5000);
+  const port = process.env.PORT || (process.env.NODE_ENV === 'production' ? 3000 : 5000);
   server.listen({
     port: Number(port),
     host: "0.0.0.0",
