@@ -1,8 +1,0 @@
-run = "flutter run -d linux --hot"
-modules = ["flutter"]
-
-[nix]
-channel = "stable-24_05"
-
-[deployment]
-run = ["sh", "-c", "flutter run -d linux --hot"]
