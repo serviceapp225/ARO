@@ -1,7 +1,7 @@
 import { Switch, Route, useLocation } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
-import { useEffect } from "react";
+import { useEffect, lazy, Suspense } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/contexts/AuthContext";
@@ -14,7 +14,7 @@ import HomePage from "@/pages/HomePage";
 import AuctionFeed from "@/pages/AuctionFeed";
 import AuctionDetail from "@/pages/AuctionDetailFixed";
 import Favorites from "@/pages/Favorites";
-import SellCar from "@/pages/SellCar";
+// SellCar загружается динамически для уменьшения размера основного бандла
 import MyBids from "@/pages/MyBids";
 import MyWins from "@/pages/MyWins";
 import Profile from "@/pages/Profile";
@@ -26,14 +26,19 @@ import LanguageSelector from "@/components/LanguageSelector";
 import Terms from "@/pages/Terms";
 import Privacy from "@/pages/Privacy";
 import Login from "@/pages/Login";
-import AdminPanel from "@/pages/AdminPanel";
+// AdminPanel загружается динамически для уменьшения размера основного бандла
 import SpecialOffers from "@/pages/SpecialOffers";
-import Messages from "@/pages/Messages";
+// Messages загружается динамически для уменьшения размера основного бандла
 
 import NotFound from "@/pages/not-found";
 import { FlutterPreview } from "@/pages/FlutterPreview";
 import { BottomNavigation } from "@/components/BottomNavigation";
 import { ScrollToTop } from "@/components/ScrollToTop";
+
+// Динамические импорты для оптимизации размера бандла
+const AdminPanel = lazy(() => import("@/pages/AdminPanel"));
+const SellCar = lazy(() => import("@/pages/SellCar"));
+const Messages = lazy(() => import("@/pages/Messages"));
 
 function Router() {
   const [location] = useLocation();
@@ -89,7 +94,11 @@ function Router() {
         <Route path="/auctions" component={AuctionFeed} />
         <Route path="/auction/:id" component={AuctionDetail} />
         <Route path="/favorites" component={Favorites} />
-        <Route path="/sell" component={SellCar} />
+        <Route path="/sell">
+          <Suspense fallback={<div className="flex justify-center items-center h-96">Загрузка...</div>}>
+            <SellCar />
+          </Suspense>
+        </Route>
         <Route path="/bids" component={MyBids} />
         <Route path="/my-wins" component={MyWins} />
         <Route path="/profile" component={Profile} />
@@ -101,9 +110,17 @@ function Router() {
         <Route path="/terms" component={Terms} />
         <Route path="/privacy" component={Privacy} />
         <Route path="/login" component={Login} />
-        <Route path="/admin" component={AdminPanel} />
+        <Route path="/admin">
+          <Suspense fallback={<div className="flex justify-center items-center h-96">Загрузка админки...</div>}>
+            <AdminPanel />
+          </Suspense>
+        </Route>
         <Route path="/special-offers" component={SpecialOffers} />
-        <Route path="/messages" component={Messages} />
+        <Route path="/messages">
+          <Suspense fallback={<div className="flex justify-center items-center h-96">Загрузка...</div>}>
+            <Messages />
+          </Suspense>
+        </Route>
 
         <Route path="/flutter-preview" component={FlutterPreview} />
         <Route component={NotFound} />
