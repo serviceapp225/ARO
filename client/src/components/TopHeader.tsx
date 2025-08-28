@@ -1,5 +1,4 @@
-import { ArrowLeft, Gavel, Settings, MessageCircle } from "lucide-react";
-import { FaWhatsapp } from "react-icons/fa";
+import { ArrowLeft, Gavel, Settings, MessageCircle, MessageSquare } from "lucide-react";
 import { useLocation, Link } from "wouter";
 import { NotificationBell } from "./NotificationBell";
 import { useAuth } from "@/contexts/AuthContext";
@@ -95,7 +94,7 @@ export function TopHeader({
   };
 
   // Получаем количество непрочитанных сообщений
-  const { data: unreadCount } = useQuery({
+  const { data: unreadCount } = useQuery<{ count: string }>({
     queryKey: [`/api/messages/unread-count/${currentUserId}`],
     refetchInterval: false, // Убираем автоматическое обновление - полагаемся на WebSocket
     staleTime: 60000, // Кэшируем данные на 1 минуту
@@ -121,7 +120,7 @@ export function TopHeader({
             className="p-2 text-green-600 hover:text-green-700 hover:bg-green-50 rounded-lg transition-colors"
             title="Связаться через WhatsApp"
           >
-            <FaWhatsapp className="w-6 h-6" />
+            <MessageSquare className="w-6 h-6" />
           </button>
         )}
       </div>
@@ -154,9 +153,9 @@ export function TopHeader({
           >
             <MessageCircle className="w-5 h-5" />
             {/* Счетчик непрочитанных сообщений */}
-            {unreadCount?.count > 0 && (
+            {unreadCount && parseInt(unreadCount.count) > 0 && (
               <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
-                {unreadCount.count > 9 ? '9+' : unreadCount.count}
+                {parseInt(unreadCount.count) > 9 ? '9+' : unreadCount.count}
               </span>
             )}
           </button>
