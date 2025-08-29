@@ -27,8 +27,8 @@ WORKDIR /app
 RUN addgroup -g 1001 -S nodejs
 RUN adduser -S autobid -u 1001
 
-# Копируем ультра-минимальный production package.json только с базовыми пакетами
-COPY package.digitalocean.ultra.json ./package.json
+# Копируем минимальный production package.json только с core пакетами
+COPY package.digitalocean.core.json ./package.json
 
 # Устанавливаем только production зависимости
 RUN npm install && npm cache clean --force
