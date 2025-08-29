@@ -1,0 +1,63 @@
+
+Aug 29 09:37:14
+   path: 'uploads'
+Aug 29 09:37:14
+ }
+Aug 29 09:37:14
+ Error creating directories: [Error: EACCES: permission denied, mkdir 'uploads'] {
+Aug 29 09:37:14
+   errno: -13,
+Aug 29 09:37:14
+   code: 'EACCES',
+Aug 29 09:37:14
+   syscall: 'mkdir',
+Aug 29 09:37:14
+   path: 'uploads'
+Aug 29 09:37:14
+ }
+Aug 29 09:37:19
+ 🔄 Принудительное обновление кэша для электромобилей
+Aug 29 09:37:19
+ Starting ultra-fast main listings query for status: active
+Aug 29 09:37:19
+ Error fetching listings: TypeError [ERR_INVALID_URL]: Invalid URL
+Aug 29 09:37:19
+     at new NodeError (node:internal/errors:405:5)
+Aug 29 09:37:19
+     at new URL (node:internal/url:676:13)
+Aug 29 09:37:19
+     at Object.parse (file:///app/node_modules/@neondatabase/serverless/index.mjs:838:225)
+Aug 29 09:37:19
+     at parse (file:///app/node_modules/@neondatabase/serverless/index.mjs:845:1)
+Aug 29 09:37:19
+     at new ConnectionParameters (file:///app/node_modules/@neondatabase/serverless/index.mjs:866:23)
+Aug 29 09:37:19
+     at new Client (file:///app/node_modules/@neondatabase/serverless/index.mjs:1222:35)
+Aug 29 09:37:19
+     at new NeonClient (file:///app/node_modules/@neondatabase/serverless/index.mjs:1552:155)
+Aug 29 09:37:19
+     at En.newClient (file:///app/node_modules/@neondatabase/serverless/index.mjs:1374:74)
+Aug 29 09:37:19
+     at En.connect (file:///app/node_modules/@neondatabase/serverless/index.mjs:1374:23)
+Aug 29 09:37:19
+     at En.query (file:///app/node_modules/@neondatabase/serverless/index.mjs:1403:63) {
+Aug 29 09:37:19
+   input: 'postgresql://username:password@host:port/database',
+Aug 29 09:37:19
+   code: 'ERR_INVALID_URL'
+Aug 29 09:37:19
+ }
+Aug 29 09:37:19
+ Error getting recent won listings: TypeError: client.query is not a function
+Aug 29 09:37:19
+     at NeonPreparedQuery.execute (file:///app/node_modules/drizzle-orm/neon-serverless/session.js:39:33)
+Aug 29 09:37:19
+     at file:///app/node_modules/drizzle-orm/pg-core/query-builders/select.js:690:30
+Aug 29 09:37:19
+     at Object.startActiveSpan (file:///app/node_modules/drizzle-orm/tracing.js:8:14)
+Aug 29 09:37:19
+     at PgSelectBase.execute (file:///app/node_modules/drizzle-orm/pg-core/query-builders/select.js:689:19)
+Aug 29 09:37:19
+     at PgSelectBase.then (file:///app/node_modules/drizzle-orm/query-promise.js:21:17)
+Aug 29 09:37:19
+     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)

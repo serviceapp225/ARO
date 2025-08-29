@@ -33,6 +33,9 @@ COPY package.digitalocean.minimal-core.json ./package.json
 # Устанавливаем только production зависимости
 RUN npm install && npm cache clean --force
 
+# Создаем директории для uploads с правильными правами
+RUN mkdir -p uploads && chown autobid:nodejs uploads && chmod 755 uploads
+
 # Копируем собранное приложение из builder этапа
 COPY --from=builder --chown=autobid:nodejs /app/dist ./dist
 COPY --from=builder --chown=autobid:nodejs /app/public ./public
