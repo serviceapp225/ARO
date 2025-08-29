@@ -1,0 +1,43 @@
+
+Aug 29 09:43:13
+ Ultra-fast main listings query completed in 1240ms, found 0 listings
+Aug 29 09:43:13
+ Error getting recent won listings: TypeError: client.query is not a function
+Aug 29 09:43:13
+     at NeonPreparedQuery.execute (file:///app/node_modules/drizzle-orm/neon-serverless/session.js:39:33)
+Aug 29 09:43:13
+     at file:///app/node_modules/drizzle-orm/pg-core/query-builders/select.js:690:30
+Aug 29 09:43:13
+     at Object.startActiveSpan (file:///app/node_modules/drizzle-orm/tracing.js:8:14)
+Aug 29 09:43:13
+     at PgSelectBase.execute (file:///app/node_modules/drizzle-orm/pg-core/query-builders/select.js:689:19)
+Aug 29 09:43:13
+     at PgSelectBase.then (file:///app/node_modules/drizzle-orm/query-promise.js:21:17)
+Aug 29 09:43:13
+     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+Aug 29 09:43:13
+ 🔌 WebSocket сервер запущен для real-time аукционов
+Aug 29 09:43:13
+ 🤖 Автоматическая обработка просроченных аукционов запущена (каждые 5 минут)
+Aug 29 09:43:13
+ 🔄 Сервер перезагружен - сбрасываем демонстрационные флаги для всех пользователей
+Aug 29 09:43:18
+ 🔄 Принудительное обновление кэша для электромобилей
+Aug 29 09:43:18
+ Starting ultra-fast main listings query for status: active
+Aug 29 09:43:18
+ Ultra-fast main listings query completed in 256ms, found 0 listings
+Aug 29 09:43:18
+ Error getting recent won listings: TypeError: client.query is not a function
+Aug 29 09:43:18
+     at NeonPreparedQuery.execute (file:///app/node_modules/drizzle-orm/neon-serverless/session.js:39:33)
+Aug 29 09:43:18
+     at file:///app/node_modules/drizzle-orm/pg-core/query-builders/select.js:690:30
+Aug 29 09:43:18
+     at Object.startActiveSpan (file:///app/node_modules/drizzle-orm/tracing.js:8:14)
+Aug 29 09:43:18
+     at PgSelectBase.execute (file:///app/node_modules/drizzle-orm/pg-core/query-builders/select.js:689:19)
+Aug 29 09:43:18
+     at PgSelectBase.then (file:///app/node_modules/drizzle-orm/query-promise.js:21:17)
+Aug 29 09:43:18
+     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
