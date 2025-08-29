@@ -51,6 +51,7 @@ Preferred communication style: Simple, everyday language in Russian.
 - **Production Deployment Fix**: Resolved critical database field errors and optimized expired auction processing to eliminate server hanging during production builds. SMS operations moved to background processing for faster startup (August 2025).
 - **Database Duplicate Key Fix**: Eliminated PostgreSQL duplicate key violation error (code 23505) during production deployment by removing hardcoded fallback user ID '4' from admin panel operations and user creation processes (August 2025).
 - **DigitalOcean SQLite Fix**: Created `package.digitalocean.json` without `better-sqlite3` dependencies to prevent compilation errors in production. Production uses PostgreSQL only, development uses SQLite. Build script `build-digitalocean.sh` automates deployment preparation (August 2025).
+- **Deployment Package Optimization**: Created ultra-minimal `package.digitalocean.core.json` with only 9 essential packages to resolve npm version conflicts. Reduced from 80+ dependencies to core packages only: express, PostgreSQL, React, Sharp, WebSocket, Zod, Multer, compression, and Drizzle ORM for guaranteed stable deployment (August 2025).
 
 ### UI/UX Decisions
 - Mobile-first design.
