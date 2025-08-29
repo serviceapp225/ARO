@@ -21,17 +21,24 @@ npm error command failed
 ### 1. Файлы созданы:
 
 - **`package.digitalocean.json`** - версия без SQLite зависимостей
+- **`package.digitalocean.minimal.json`** - минимальная версия без проблемных пакетов
 - **`build-digitalocean.sh`** - скрипт автоматической сборки
-- **Обновленный `Dockerfile`** - использует production package.json
+- **Обновленный `Dockerfile`** - использует минимальный production package.json
 
 ### 2. Изменения в зависимостях:
 
 **Убрано из production:**
-- `better-sqlite3`
-- `@types/better-sqlite3`
+- `better-sqlite3` и `@types/better-sqlite3`
+- `@replit/vite-plugin-cartographer` (не найден в npm)
+- `@replit/vite-plugin-runtime-error-modal` (Replit-специфичный)
+- `@tailwindcss/vite` (alpha версия)
+- `start`, `run`, `build` (deprecated пакеты)
 
-**Перенесено в devDependencies:**
-- Все SQLite связанные пакеты
+**Минимальная версия включает только:**
+- Основные runtime зависимости
+- React и UI компоненты
+- PostgreSQL драйвер
+- Express сервер
 
 ### 3. Как деплоить в DigitalOcean:
 

@@ -6,8 +6,8 @@ echo "🚀 Сборка для DigitalOcean без SQLite зависимосте
 # Резервное копирование оригинального package.json
 cp package.json package.json.backup
 
-# Используем production package.json без SQLite
-cp package.digitalocean.json package.json
+# Используем минимальную production версию без проблемных пакетов
+cp package.digitalocean.minimal.json package.json
 
 echo "✅ Package.json заменен на production версию без SQLite"
 

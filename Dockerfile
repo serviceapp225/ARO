@@ -27,11 +27,11 @@ WORKDIR /app
 RUN addgroup -g 1001 -S nodejs
 RUN adduser -S autobid -u 1001
 
-# Копируем production package.json без SQLite зависимостей
-COPY package.digitalocean.json ./package.json
+# Копируем минимальный production package.json без проблемных пакетов
+COPY package.digitalocean.minimal.json ./package.json
 
-# Устанавливаем только продакшн зависимости без SQLite
-RUN npm install --only=production && npm cache clean --force
+# Устанавливаем только production зависимости
+RUN npm install && npm cache clean --force
 
 # Копируем собранное приложение из builder этапа
 COPY --from=builder --chown=autobid:nodejs /app/dist ./dist
