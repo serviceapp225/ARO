@@ -1,36 +1,36 @@
 #!/bin/bash
+set -e
 
-echo "🏗️ Полная сборка для DigitalOcean App Platform..."
+echo "🚀 Сборка для DigitalOcean без SQLite зависимостей..."
 
-# Шаг 1: Стандартная сборка
-echo "📦 Стандартная сборка..."
+# Резервное копирование оригинального package.json
+cp package.json package.json.backup
+
+# Используем production package.json без SQLite
+cp package.digitalocean.json package.json
+
+echo "✅ Package.json заменен на production версию без SQLite"
+
+# Очищаем node_modules и package-lock.json для чистой установки
+rm -rf node_modules package-lock.json
+
+echo "🧹 Очищены node_modules и package-lock.json"
+
+# Устанавливаем зависимости без SQLite
+npm install
+
+echo "📦 Установлены зависимости без SQLite"
+
+# Собираем приложение
 npm run build
 
-# Шаг 2: Сборка продакшн сервера
-echo "🔧 Сборка продакшн сервера..."
-npx esbuild server/production.ts --platform=node --packages=external --bundle --format=esm --outfile=dist/production.js
+echo "🏗️ Приложение собрано успешно"
 
-# Шаг 3: Создание правильного index.js для DigitalOcean
-echo "🔄 Создание index.js для DigitalOcean..."
-cat > dist/index.js << 'EOF'
-#!/usr/bin/env node
+# Восстанавливаем оригинальный package.json для development
+cp package.json.backup package.json
 
-// Запуск production сервера для DigitalOcean
-import('./production.js')
-  .then(() => {
-    console.log('✅ Production server started successfully');
-  })
-  .catch((error) => {
-    console.error('❌ Failed to start production server:', error);
-    process.exit(1);
-  });
-EOF
+echo "🔄 Оригинальный package.json восстановлен"
 
 echo "✅ Сборка для DigitalOcean завершена!"
-echo "📊 Финальные файлы:"
-ls -lah dist/
-echo ""
-echo "🎯 Готово для деплоя в DigitalOcean!"
-echo "   • dist/index.js - точка входа (импортирует production.js)"
-echo "   • dist/production.js - независимый сервер"
-echo "   • dist/public/ - статические файлы"
+echo "📁 Готовые файлы в папке dist/"
+echo "🐳 Можно деплоить в DigitalOcean"
