@@ -122,7 +122,7 @@ export default function HomePage() {
           <div className="flex items-center space-x-3">
             <Shield className="w-6 h-6 text-green-600" />
             <div className="flex-1">
-              <h3 className="font-bold text-green-800 text-lg">Безопасные сделки</h3>
+              <h3 className="font-bold text-green-800 text-lg">Наша миссия - Ваша выгода</h3>
             </div>
           </div>
         </div>
