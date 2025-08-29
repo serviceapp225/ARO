@@ -40,6 +40,10 @@ RUN mkdir -p uploads && chown autobid:nodejs uploads && chmod 755 uploads
 COPY --from=builder --chown=autobid:nodejs /app/dist ./dist
 COPY --from=builder --chown=autobid:nodejs /app/public ./public
 
+# Копируем скрипты диагностики базы данных
+COPY --from=builder --chown=autobid:nodejs /app/quick-db-check.js ./
+COPY --from=builder --chown=autobid:nodejs /app/check-database-connection.js ./
+
 # Устанавливаем права пользователя
 USER autobid
 
