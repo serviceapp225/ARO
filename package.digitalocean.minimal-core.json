@@ -18,6 +18,7 @@
     "@neondatabase/serverless": "0.6.0",
     "zod": "3.21.4",
     "multer": "1.4.4",
-    "sharp": "0.32.6"
+    "sharp": "0.32.6",
+    "node-fetch": "3.3.2"
   }
 }
