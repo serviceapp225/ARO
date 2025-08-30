@@ -7,8 +7,8 @@ services:
     repo: your-repo/autobid-tj
     branch: main
     deploy_on_push: true
-  build_command: cp package.digitalocean.json package.json && npm ci && node build-simple-tsx.cjs
-  run_command: node start.cjs
+  build_command: cp package.digitalocean.minimal-core.json package.json && npm ci && node build-simple-tsx.cjs
+  run_command: NODE_ENV=production node dist/index.js
   environment_slug: node-js
   instance_count: 1
   instance_size_slug: basic-xxs
