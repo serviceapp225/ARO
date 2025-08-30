@@ -1,0 +1,40 @@
+# Digital Ocean App Platform Configuration
+name: narxi-tu-car-auction
+region: fra
+
+services:
+  - name: web
+    source_dir: /
+    github:
+      repo: your-username/your-repo-name
+      branch: main
+      deploy_on_push: true
+    
+    build_command: npm run build
+    run_command: npm start
+    
+    environment_slug: node-js
+    instance_count: 1
+    instance_size_slug: basic-xxs
+    
+    http_port: 3000
+    
+    envs:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        value: ${DATABASE_URL}
+        type: SECRET
+      - key: SESSION_SECRET
+        value: ${SESSION_SECRET}
+        type: SECRET
+    
+    routes:
+      - path: /
+        preserve_path_prefix: false
+
+databases:
+  - name: main-db
+    engine: PG
+    version: "15"
+    size: db-s-dev-database
