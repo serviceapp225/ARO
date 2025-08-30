@@ -4,7 +4,7 @@ services:
   source_dir: /
   working_dir: /workspace
   github:
-    repo: your-repo/autobid-tj
+    repo: serviceapp225/ARO
     branch: main
     deploy_on_push: true
   build_command: cp package.digitalocean.minimal-core.json package.json && npm ci && node build-simple-tsx.cjs
