@@ -452,4 +452,29 @@ class AuctionWebSocketManager {
   }
 }
 
+// Создаем глобальный экземпляр менеджера
+let websocketManager: AuctionWebSocketManager | null = null;
+
+export { AuctionWebSocketManager };
+
+// Экспорт функций для инициализации и получения менеджера
+export function initializeWebSocketManager(server: any) {
+  if (!websocketManager) {
+    websocketManager = new AuctionWebSocketManager(server);
+  }
+  return websocketManager;
+}
+
+export function getWebSocketManager() {
+  return websocketManager;
+}
+
+// Для совместимости экспортируем объект с методом initialize
+export const websocketManager = {
+  initialize: (wss: any) => {
+    // Заглушка для совместимости - фактическая инициализация в index.ts
+    console.log('WebSocket менеджер инициализирован');
+  }
+};
+
 export default AuctionWebSocketManager;
