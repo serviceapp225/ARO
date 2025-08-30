@@ -1,0 +1,166 @@
+wss://seashell-app-gy7p4.ondigitalocean.app/ws' failed: 
+(анонимная) @ index-y0H9AFfS.js:363
+(анонимная) @ index-y0H9AFfS.js:363Пояснение к ошибке
+index-y0H9AFfS.js:363 WebSocket ошибка: Event {isTrusted: true, type: 'error', target: WebSocket, currentTarget: WebSocket, eventPhase: 2, …}
+f.current.onerror @ index-y0H9AFfS.js:363Пояснение к ошибке
+index-y0H9AFfS.js:48  GET https://seashell-app-gy7p4.ondigitalocean.app/api/advertisement-carousel 404 (Not Found)
+(анонимная) @ index-y0H9AFfS.js:48
+i @ index-y0H9AFfS.js:48
+b @ index-y0H9AFfS.js:48
+(анонимная) @ index-y0H9AFfS.js:48
+Promise.then
+(анонимная) @ index-y0H9AFfS.js:48
+Promise.catch
+b @ index-y0H9AFfS.js:48
+(анонимная) @ index-y0H9AFfS.js:48
+Promise.then
+(анонимная) @ index-y0H9AFfS.js:48
+Promise.catch
+b @ index-y0H9AFfS.js:48
+start @ index-y0H9AFfS.js:48
+fetch @ index-y0H9AFfS.js:48
+Si @ index-y0H9AFfS.js:48
+onSubscribe @ index-y0H9AFfS.js:48
+subscribe @ index-y0H9AFfS.js:48
+(анонимная) @ index-y0H9AFfS.js:48
+Yg @ index-y0H9AFfS.js:38
+oc @ index-y0H9AFfS.js:40
+pa @ index-y0H9AFfS.js:40
+g2 @ index-y0H9AFfS.js:40
+cs @ index-y0H9AFfS.js:40
+ip @ index-y0H9AFfS.js:40
+rs @ index-y0H9AFfS.js:38
+(анонимная) @ index-y0H9AFfS.js:40
+setTimeout
+a @ index-y0H9AFfS.js:48
+o @ index-y0H9AFfS.js:48
+batch @ index-y0H9AFfS.js:48
+Bn @ index-y0H9AFfS.js:48
+l @ index-y0H9AFfS.js:48
+x @ index-y0H9AFfS.js:48
+(анонимная) @ index-y0H9AFfS.js:48
+Promise.catch
+b @ index-y0H9AFfS.js:48
+(анонимная) @ index-y0H9AFfS.js:48Пояснение к ошибке
+index-y0H9AFfS.js:363 🔌 Создание ЕДИНОГО WebSocket соединения: wss://seashell-app-gy7p4.ondigitalocean.app/ws
+index-y0H9AFfS.js:363 WebSocket connection to 'wss://seashell-app-gy7p4.ondigitalocean.app/ws' failed: 
+connect @ index-y0H9AFfS.js:363
+(анонимная) @ index-y0H9AFfS.js:363Пояснение к ошибке
+index-y0H9AFfS.js:363 ❌ WebSocket ошибка: Event {isTrusted: true, type: 'error', target: WebSocket, currentTarget: WebSocket, eventPhase: 2, …}
+ws.onerror @ index-y0H9AFfS.js:363Пояснение к ошибке
+index-y0H9AFfS.js:363 ❌ WebSocket соединение закрыто
+index-y0H9AFfS.js:363 🔄 Переподключение WebSocket (попытка 5/5)
+index-y0H9AFfS.js:48  GET https://seashell-app-gy7p4.ondigitalocean.app/api/advertisement-carousel 404 (Not Found)
+(анонимная) @ index-y0H9AFfS.js:48
+i @ index-y0H9AFfS.js:48
+b @ index-y0H9AFfS.js:48
+(анонимная) @ index-y0H9AFfS.js:48
+Promise.then
+(анонимная) @ index-y0H9AFfS.js:48
+Promise.catch
+b @ index-y0H9AFfS.js:48
+(анонимная) @ index-y0H9AFfS.js:48
+Promise.then
+(анонимная) @ index-y0H9AFfS.js:48
+Promise.catch
+b @ index-y0H9AFfS.js:48
+(анонимная) @ index-y0H9AFfS.js:48
+Promise.then
+(анонимная) @ index-y0H9AFfS.js:48
+Promise.catch
+b @ index-y0H9AFfS.js:48
+start @ index-y0H9AFfS.js:48
+fetch @ index-y0H9AFfS.js:48
+Si @ index-y0H9AFfS.js:48
+onSubscribe @ index-y0H9AFfS.js:48
+subscribe @ index-y0H9AFfS.js:48
+(анонимная) @ index-y0H9AFfS.js:48
+Yg @ index-y0H9AFfS.js:38
+oc @ index-y0H9AFfS.js:40
+pa @ index-y0H9AFfS.js:40
+g2 @ index-y0H9AFfS.js:40
+cs @ index-y0H9AFfS.js:40
+ip @ index-y0H9AFfS.js:40
+rs @ index-y0H9AFfS.js:38
+(анонимная) @ index-y0H9AFfS.js:40
+setTimeout
+a @ index-y0H9AFfS.js:48
+o @ index-y0H9AFfS.js:48
+batch @ index-y0H9AFfS.js:48
+Bn @ index-y0H9AFfS.js:48
+l @ index-y0H9AFfS.js:48
+x @ index-y0H9AFfS.js:48
+(анонимная) @ index-y0H9AFfS.js:48
+Promise.catch
+b @ index-y0H9AFfS.js:48
+(анонимная) @ index-y0H9AFfS.js:48Пояснение к ошибке
+index-y0H9AFfS.js:417 🎠 Активные объявления карусели: 0
+index-y0H9AFfS.js:48  GET https://seashell-app-gy7p4.ondigitalocean.app/api/advertisement-carousel 404 (Not Found)
+(анонимная) @ index-y0H9AFfS.js:48
+i @ index-y0H9AFfS.js:48
+b @ index-y0H9AFfS.js:48
+start @ index-y0H9AFfS.js:48
+fetch @ index-y0H9AFfS.js:48
+Si @ index-y0H9AFfS.js:48
+onSubscribe @ index-y0H9AFfS.js:48
+subscribe @ index-y0H9AFfS.js:48
+(анонимная) @ index-y0H9AFfS.js:48
+Yg @ index-y0H9AFfS.js:38
+oc @ index-y0H9AFfS.js:40
+pa @ index-y0H9AFfS.js:40
+g2 @ index-y0H9AFfS.js:40
+cs @ index-y0H9AFfS.js:40
+ip @ index-y0H9AFfS.js:40
+rs @ index-y0H9AFfS.js:38
+(анонимная) @ index-y0H9AFfS.js:40
+setTimeout
+a @ index-y0H9AFfS.js:48
+o @ index-y0H9AFfS.js:48
+batch @ index-y0H9AFfS.js:48
+Bn @ index-y0H9AFfS.js:48
+l @ index-y0H9AFfS.js:48
+x @ index-y0H9AFfS.js:48
+(анонимная) @ index-y0H9AFfS.js:48
+Promise.catch
+b @ index-y0H9AFfS.js:48
+(анонимная) @ index-y0H9AFfS.js:48
+Promise.then
+(анонимная) @ index-y0H9AFfS.js:48
+Promise.catch
+b @ index-y0H9AFfS.js:48
+(анонимная) @ index-y0H9AFfS.js:48
+Promise.then
+(анонимная) @ index-y0H9AFfS.js:48
+Promise.catch
+b @ index-y0H9AFfS.js:48
+(анонимная) @ index-y0H9AFfS.js:48
+Promise.then
+(анонимная) @ index-y0H9AFfS.js:48
+Promise.catch
+b @ index-y0H9AFfS.js:48
+start @ index-y0H9AFfS.js:48
+fetch @ index-y0H9AFfS.js:48
+Si @ index-y0H9AFfS.js:48
+onSubscribe @ index-y0H9AFfS.js:48
+subscribe @ index-y0H9AFfS.js:48
+(анонимная) @ index-y0H9AFfS.js:48
+Yg @ index-y0H9AFfS.js:38
+oc @ index-y0H9AFfS.js:40
+pa @ index-y0H9AFfS.js:40
+g2 @ index-y0H9AFfS.js:40
+cs @ index-y0H9AFfS.js:40
+ip @ index-y0H9AFfS.js:40
+rs @ index-y0H9AFfS.js:38
+(анонимная) @ index-y0H9AFfS.js:40
+setTimeout
+a @ index-y0H9AFfS.js:48
+o @ index-y0H9AFfS.js:48
+batch @ index-y0H9AFfS.js:48
+Bn @ index-y0H9AFfS.js:48
+l @ index-y0H9AFfS.js:48
+x @ index-y0H9AFfS.js:48
+(анонимная) @ index-y0H9AFfS.js:48
+Promise.catch
+b @ index-y0H9AFfS.js:48
+(анонимная) @ index-y0H9AFfS.js:48Пояснение к ошибке
+index-y0H9AFfS.js:48  GET https://seashell-app-gy7p4.ondigitalocean.app/api/advertisement-carousel 404 (Not Found)
