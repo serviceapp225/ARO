@@ -9,16 +9,6 @@ cp package.json package.json.backup
 # Заменяем package.json на минимальный для продакшн (без SQLite)
 cp package.digitalocean.minimal-core.json package.json
 
-echo "🔍 Проверка совместимости package.json с Node.js..."
-if command -v node &> /dev/null; then
-    node_version=$(node --version | cut -d'v' -f2 | cut -d'.' -f1)
-    if [ "$node_version" -lt "18" ]; then
-        echo "❌ Требуется Node.js версии 18 или выше. Текущая версия: $(node --version)"
-        exit 1
-    fi
-    echo "✅ Node.js версия совместима: $(node --version)"
-fi
-
 echo "✅ package.json заменён на production версию без SQLite"
 
 # Чистим node_modules и lock-файлы
