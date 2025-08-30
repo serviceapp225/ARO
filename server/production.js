@@ -22,9 +22,9 @@ app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 // CORS для production
 app.use((req, res, next) => {
   const allowedOrigins = [
-    'https://autobid-tj.ondigitalocean.app',
-    'https://autobid.tj',
-    'https://www.autobid.tj'
+    'https://oyster-app-mfkeh.ondigitalocean.app',
+    'https://narxi.tu',
+    'https://www.narxi.tu'
   ];
   
   const origin = req.headers.origin;
