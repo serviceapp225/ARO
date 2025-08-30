@@ -1,0 +1,21 @@
+name: narxi-tu-auction
+services:
+- name: web
+  source_dir: /
+  github:
+    branch: main
+    repo: serviceapp225/ARO
+  run_command: npm start
+  build_command: npm run build
+  environment_slug: node-js
+  instance_count: 1
+  instance_size_slug: basic-xxs
+  http_port: 3000
+  env:
+  - key: NODE_ENV
+    value: production
+  - key: PORT
+    value: "3000"
+  - key: DATABASE_URL
+    value: postgresql://neondb_owner:npg_btTsuY4Xj1VG@ep-raspy-snow-adivqwmp.c-2.us-east-1.aws.neon.tech/neondb?sslmode=require
+    type: SECRET
