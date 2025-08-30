@@ -14,10 +14,31 @@ DOMAIN="autobid.tj"
 echo "📦 Обновление системы..."
 apt update && apt upgrade -y
 
-# Установка Node.js 20
-echo "⚙️ Установка Node.js 20..."
+# Принудительное обновление Node.js до версии 20
+echo "⚙️ Принудительное обновление Node.js до версии 20..."
+# Удаляем старую версию Node.js
+apt-get remove -y nodejs npm
+apt-get autoremove -y
+
+# Очищаем кэш
+apt-get clean
+rm -rf /usr/local/lib/node_modules
+rm -rf /usr/local/bin/node
+rm -rf /usr/local/bin/npm
+
+# Устанавливаем Node.js 20
 curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
 apt-get install -y nodejs git nginx certbot python3-certbot-nginx
+
+# Проверяем что установлена правильная версия
+echo "🔍 Проверка версии Node.js..."
+node_version=$(node --version)
+if [[ $node_version == v20* ]]; then
+    echo "✅ Node.js 20 успешно установлен: $node_version"
+else
+    echo "❌ Ошибка: Node.js версия $node_version не соответствует требуемой 20.x"
+    exit 1
+fi
 
 # Проверка версий
 echo "✅ Версии установленного ПО:"
